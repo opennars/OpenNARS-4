@@ -1,0 +1,9 @@
+'Robin is not a type of swimmer. 
+<robin --> swimmer>. %0.00;0.90%  
+
+'Robin is not a nonswimming mammal. 
+<robin --> (-,mammal,swimmer)>. %0.00;0.90% 
+
+// get these two sentence with rebundunt terms???
+// <robin-->(&, swimmer, (-, mammal, swimmer))>. %0.000;0.810%
+// <robin-->(|, swimmer, (-, mammal, swimmer))>. %0.000;0.810%
