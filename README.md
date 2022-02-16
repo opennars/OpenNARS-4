@@ -1,40 +1,41 @@
 # PyNARS
 
-#### 介绍
-Python implementation of NARS (Non-Axiomatic-Reasoning-System).
-References:
-OpenNARS 3.0.4, 
-Design Report of OpenNARS 3.1.0
+#### Description
+Python implementation of NARS (Non-Axiomatic-Reasoning-System)
 
-#### 软件架构
-软件架构说明
+Reference:
+ - OpenNARS 3.0.4, 
+ - The Design Report of OpenNARS 3.1.0
 
 
-#### 安装教程
+#### Environments
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+ - Python version: 3.7.10. 
+     - Only tested under this version, however, Python 3.7 and higher versions maybe acceptable.
+ - OS: Windows 10. 
+     - Only tested under this OS, however, other OS might be ok.
+ - Packages Requirements: see `requirements.txt`.
+     - It is noted that the version of the python package `tqdm` should be no higher than 3.1.4, otherwise the color display would be abnormal. This is because of a bug of `tqdm`, which leads to conflicts between `sty` and `tqdm` and cause unexpected color display of `sty`. However, this constraints is not necessary, i.e., higher version of `tqdm` is ok if you don't mind abnormal display occuring. The abnormal case only occur when you first run the PyNARS when SparseLUT (Sparse Look-Up Table) is built.
 
-#### 使用说明
-
-1.  xxxx
-2.  xxxx
-3.  xxxx
-
-#### 参与贡献
-
-1.  Fork 本仓库
-2.  新建 Feat_xxx 分支
-3.  提交代码
-4.  新建 Pull Request
+#### Installation
 
 
-#### 特技
+    pip install pynars
 
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  Gitee 官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解 Gitee 上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是 Gitee 最有价值开源项目，是综合评定出的优秀开源项目
-5.  Gitee 官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  Gitee 封面人物是一档用来展示 Gitee 会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+
+#### Instructions
+
+1.  Copy the file `pynars/config.json` to your workspace-directory. *(Optional)*
+2.  In the workspace-directory, run cmd `python -m pynars.Console`. To execute an `*.nal` file, run cmd `python -m pynars.Console <your-file-name.nal>`
+3.  Input Narsese in the console, input an positive integer to run a number of cycles, or input a comment which is a string with `'` as the beginning, e.g. `' your comment`.
+4.  Press `ctrl`+`C` to exit.
+
+#### Contribution
+
+1.  Fork the repository
+2.  Create Feat_xxx branch
+3.  Commit your code
+4.  Create Pull Request
+
+
+**Note:** This document will be imporved in the future.

@@ -1,14 +1,14 @@
 from typing import List, Tuple
-from NARS.DataStructures._py.Concept import Concept
-from NARS.DataStructures._py.Link import Link, TaskLink, TermLink
-from Narsese import Task
+from pynars.NARS.DataStructures._py.Concept import Concept
+from pynars.NARS.DataStructures._py.Link import Link, TaskLink, TermLink
+from pynars.Narsese import Task
 import Narsese
-from NARS.RuleMap import RuleMap_v2, RuleCallable
-from NARS import Reasoner_3_0_4 as Reasoner
-from Narsese._py.Statement import Statement
-from Narsese._py.Task import Belief
-from Narsese._py.Term import Term
-from NAL.MentalOperation import execute
+from pynars.NARS.RuleMap import RuleMap_v2, RuleCallable
+from pynars.NARS import Reasoner_3_0_4 as Reasoner
+from pynars.Narsese._py.Statement import Statement
+from pynars.Narsese._py.Task import Belief
+from pynars.Narsese._py.Term import Term
+from pynars.NAL.MentalOperation import execute
 
 nars = Reasoner(100, 100)
 rule_map = nars.inference.rule_map

@@ -1,14 +1,14 @@
 
-from Narsese._py.Variable import VarPrefix, Variable
-from Narsese._py.Sentence import Sentence, Tense
+from pynars.Narsese._py.Variable import VarPrefix, Variable
+from pynars.Narsese._py.Sentence import Sentence, Tense
 import Narsese
-from Narsese import Budget
-from Narsese import Compound, Connector
+from pynars.Narsese import Budget
+from pynars.Narsese import Compound, Connector
 import unittest
-from Narsese import Question, Quest, Judgement, Goal
+from pynars.Narsese import Question, Quest, Judgement, Goal
 
-from NARS.DataStructures import Bag, Task, Concept
-from Narsese import Judgement, Term, Statement, Copula, Truth   
+from pynars.NARS.DataStructures import Bag, Task, Concept
+from pynars.Narsese import Judgement, Term, Statement, Copula, Truth   
 
 class TEST_Parser(unittest.TestCase):
     def __init__(self, methodName: str = ...) -> None:

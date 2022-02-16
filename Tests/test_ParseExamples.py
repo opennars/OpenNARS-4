@@ -1,13 +1,13 @@
 import NARS
 import unittest
 
-from NARS.DataStructures import Bag, Task, Concept
-from Narsese import Judgement, Term, Statement, Copula, Truth   
+from pynars.NARS.DataStructures import Bag, Task, Concept
+from pynars.Narsese import Judgement, Term, Statement, Copula, Truth   
 
 from pathlib import Path
 import Narsese
 
-from utils.Print import out_print, PrintType, print_filename
+from pynars.utils.Print import out_print, PrintType, print_filename
 
 examples_path = Path(__file__).parent/'examples'
 single_step_path = examples_path/'single_step'

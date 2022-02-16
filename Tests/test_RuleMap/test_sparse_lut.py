@@ -1,16 +1,16 @@
 from networkx.generators.random_graphs import fast_gnp_random_graph
-from NARS.DataStructures._py.Link import LinkType
-from NARS.RuleMap import Interface_SyllogisticRules, RuleMap_v2
-from Narsese import Budget
+from pynars.NARS.DataStructures._py.Link import LinkType
+from pynars.NARS.RuleMap import Interface_SyllogisticRules, RuleMap_v2
+from pynars.Narsese import Budget
 import unittest
 
-from NARS.DataStructures import Bag, Task, Concept
-from Narsese import Judgement, Term, Statement, Copula, Truth   
+from pynars.NARS.DataStructures import Bag, Task, Concept
+from pynars.Narsese import Judgement, Term, Statement, Copula, Truth   
 
-from utils.SparseLUT import SparseLUT, Any
-from utils.tools import get_size
-from NARS.RuleMap.RuleMap_v2 import CommonId
-from utils.SparseLUT.sparse_lut_v3.branch_list import Node
+from pynars.utils.SparseLUT import SparseLUT, Any
+from pynars.utils.tools import get_size
+from pynars.NARS.RuleMap.RuleMap_v2 import CommonId
+from pynars.utils.SparseLUT.sparse_lut_v3.branch_list import Node
 
 class TEST_SparseLUT(unittest.TestCase):
     

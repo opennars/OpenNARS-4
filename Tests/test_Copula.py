@@ -1,11 +1,11 @@
-from Narsese import Budget
+from pynars.Narsese import Budget
 import unittest
 
-from NARS.DataStructures import Bag, Task
-from Narsese import Judgement, Term, Statement, Copula, Truth   
+from pynars.NARS.DataStructures import Bag, Task
+from pynars.Narsese import Judgement, Term, Statement, Copula, Truth   
 import Narsese
-from NARS.DataStructures import Concept
-from Narsese import Copula
+from pynars.NARS.DataStructures import Concept
+from pynars.Narsese import Copula
 
 class TEST_Concept(unittest.TestCase):
     def __init__(self, methodName: str = ...) -> None:

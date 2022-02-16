@@ -7,12 +7,12 @@ from pathlib import Path
 import NARS
 import Narsese
 import Tests.utils_for_test as utils_for_test
-from NAL.MetaLevelInference.VariableSubstitution import *
-from NARS import Reasoner_3_0_4 as Reasoner
-from NARS.DataStructures import Bag, Concept, Table, Task
-from NARS.DataStructures._py.Link import TaskLink, TermLink
-from NARS.RuleMap import RuleMap_v2
-from Narsese import (Compound, Connector, Copula, Judgement, Statement, Term,
+from pynars.NAL.MetaLevelInference.VariableSubstitution import *
+from pynars.NARS import Reasoner_3_0_4 as Reasoner
+from pynars.NARS.DataStructures import Bag, Concept, Table, Task
+from pynars.NARS.DataStructures._py.Link import TaskLink, TermLink
+from pynars.NARS.RuleMap import RuleMap_v2
+from pynars.Narsese import (Compound, Connector, Copula, Judgement, Statement, Term,
                      Truth, Variable, VarPrefix)
 from Tests.utils_for_test import *
 

@@ -1,15 +1,15 @@
 import NARS
 import unittest
 
-from NARS.DataStructures import Bag, Task, Concept, Table
-from Narsese import Judgement, Term, Statement, Copula, Truth   
+from pynars.NARS.DataStructures import Bag, Task, Concept, Table
+from pynars.Narsese import Judgement, Term, Statement, Copula, Truth   
 
 from pathlib import Path
 import Narsese
-from Narsese import Compound, Connector
-from NAL.MetaLevelInference.VariableSubstitution import *
-from Narsese._py.Variable import VarPrefix, Variable
-from utils.IndexVar import IndexVar
+from pynars.Narsese import Compound, Connector
+from pynars.NAL.MetaLevelInference.VariableSubstitution import *
+from pynars.Narsese._py.Variable import VarPrefix, Variable
+from pynars.utils.IndexVar import IndexVar
 
 class TEST_Compound(unittest.TestCase):
     def test_0(self):

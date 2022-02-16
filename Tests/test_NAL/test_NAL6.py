@@ -1,12 +1,12 @@
 import unittest
 
-from NARS.DataStructures import Task
-from NAL.MetaLevelInference.VariableSubstitution import *
-from NARS.RuleMap import RuleMap_v2
+from pynars.NARS.DataStructures import Task
+from pynars.NAL.MetaLevelInference.VariableSubstitution import *
+from pynars.NARS.RuleMap import RuleMap_v2
 
 import Tests.utils_for_test as utils_for_test
 from Tests.utils_for_test import *
-from utils.Print import PrintType, out_print
+from pynars.utils.Print import PrintType, out_print
 
 # utils_for_test.rule_map = RuleMap_v2()
 

@@ -1,0 +1,18 @@
+ale-py>=0.7.3
+# git+git://github.com/mila-iqia/atari-representation-learning.git
+AutoROM>=0.4.2
+AutoROM.accept-rom-license>=0.4.2
+bidict>=0.21.2
+depq>=1.5.5
+gym>=0.21.0
+jstyleson>=0.0.2
+lark==0.12.0
+matplotlib>=3.5.0
+networkx>=2.6.3
+numpy>=1.21.5
+ordered-set>=4.0.2
+pygame>=2.1.2
+sty>=1.0.0rc2
+tqdm<=3.1.4
+typing>=3.7.4.3
+typing_extensions>=4.0.1

@@ -194,10 +194,10 @@
             "name": "Python: console",
             "type": "python",
             "request": "launch",
-            "program": "Console.py",
+            "module": "pynars.Console",
             "console": "integratedTerminal",
             "args": [
-                // "Tests/examples/single_step/nal7/nal7.7.nal"
+                "Tests/examples/single_step/nal7/nal7.7.nal"
                 // "Tests/examples/single_step/nal5.query.nal"
             ]
         },

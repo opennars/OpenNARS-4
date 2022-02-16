@@ -1,17 +1,17 @@
 import NARS
 import unittest
 
-from NARS.DataStructures import Bag, Task, Concept, Table
-from NARS.DataStructures._py.Link import TaskLink, TermLink
-from Narsese import Judgement, Term, Statement, Copula, Truth   
+from pynars.NARS.DataStructures import Bag, Task, Concept, Table
+from pynars.NARS.DataStructures._py.Link import TaskLink, TermLink
+from pynars.Narsese import Judgement, Term, Statement, Copula, Truth   
 
 from pathlib import Path
 import Narsese
-from Narsese import Compound, Connector
-from NAL.MetaLevelInference.VariableSubstitution import *
-from Narsese import VarPrefix, Variable
-from NARS.RuleMap import RuleMap_v2
-from NARS import Reasoner_3_0_4 as Reasoner
+from pynars.Narsese import Compound, Connector
+from pynars.NAL.MetaLevelInference.VariableSubstitution import *
+from pynars.Narsese import VarPrefix, Variable
+from pynars.NARS.RuleMap import RuleMap_v2
+from pynars.NARS import Reasoner_3_0_4 as Reasoner
 
 import Tests.utils_for_test as utils_for_test
 from Tests.utils_for_test import *

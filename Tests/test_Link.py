@@ -2,16 +2,16 @@ from typing import Dict, List
 import NARS
 import unittest
 
-from NARS.DataStructures import Bag, Task, Concept, Link
-from NARS.DataStructures._py.Link import LinkType, TaskLink, TermLink
-from NARS.DataStructures._py.Memory import Memory
-from Narsese import Judgement, Term, Statement, Copula, Truth, Connector
+from pynars.NARS.DataStructures import Bag, Task, Concept, Link
+from pynars.NARS.DataStructures._py.Link import LinkType, TaskLink, TermLink
+from pynars.NARS.DataStructures._py.Memory import Memory
+from pynars.Narsese import Judgement, Term, Statement, Copula, Truth, Connector
 
 from pathlib import Path
 import Narsese
-from Narsese import Compound, Budget
+from pynars.Narsese import Compound, Budget
 
-from utils.Print import out_print, PrintType, print_filename
+from pynars.utils.Print import out_print, PrintType, print_filename
 
 class TEST_Get_Index(unittest.TestCase):
     '''Examples files in `application`.'''

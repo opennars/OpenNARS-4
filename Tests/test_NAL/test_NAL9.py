@@ -1,11 +1,11 @@
 import unittest
 
-from NAL.MetaLevelInference.VariableSubstitution import *
-from NARS.RuleMap import RuleMap_v2
+from pynars.NAL.MetaLevelInference.VariableSubstitution import *
+from pynars.NARS.RuleMap import RuleMap_v2
 
 import Tests.utils_for_test as utils_for_test
 from Tests.utils_for_test import *
-from NAL.MentalOperation import execute
+from pynars.NAL.MentalOperation import execute
 
 nars = utils_for_test.nars
 

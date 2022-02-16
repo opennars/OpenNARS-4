@@ -1,8 +1,8 @@
 import unittest
 
-from NAL.MetaLevelInference.VariableSubstitution import *
-from NARS.InferenceEngine import GeneralEngine
-from NARS.RuleMap import RuleMap_v2
+from pynars.NAL.MetaLevelInference.VariableSubstitution import *
+from pynars.NARS.InferenceEngine import GeneralEngine
+from pynars.NARS.RuleMap import RuleMap_v2
 
 import Tests.utils_for_test as utils_for_test
 from Tests.utils_for_test import *

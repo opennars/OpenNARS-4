@@ -1,10 +1,10 @@
-from Narsese import Budget
+from pynars.Narsese import Budget
 import unittest
 
-from NARS.DataStructures import Bag, Task, Concept
-from Narsese import Judgement, Term, Statement, Copula, Truth   
+from pynars.NARS.DataStructures import Bag, Task, Concept
+from pynars.Narsese import Judgement, Term, Statement, Copula, Truth   
 
-from Narsese import Base, Task
+from pynars.Narsese import Base, Task
 
 class TEST_Base(unittest.TestCase):
     def __init__(self, methodName: str = ...) -> None:
