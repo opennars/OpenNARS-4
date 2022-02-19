@@ -100,7 +100,7 @@ class Reasoner:
                 self.memory.put_back(concept)
         
         #   temporal induction in NAL-7
-        if task is not None and task.is_judgement and task.is_event:
+        if task is not None and task.is_judgement and task.is_external_event:
             concept_task: Concept = self.memory.take_by_key(task.term, remove=False)
             tasks_derived.extend(
                 self.temporal_inference.step(

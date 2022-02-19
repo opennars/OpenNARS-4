@@ -8,7 +8,7 @@ import os
 from pynars.Narsese.Parser.parser import TreeToNarsese
 from pynars.Narsese import Sentence
 import random
-from pynars.NARS import Reasoner_3_0_4 as Reasoner
+from pynars.NARS import Reasoner as Reasoner
 from pynars.utils.Print import out_print, PrintType
 from pynars.Narsese import Task
 from typing import List

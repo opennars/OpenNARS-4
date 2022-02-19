@@ -1,36 +1,31 @@
-from operator import imod
-import os 
-from pathlib import Path
-from inspect import getmembers, isfunction
-import importlib
-import re
-from typing import Any, List, Tuple, Union
-from typing_extensions import Protocol
-from collections import OrderedDict
-
-from numpy import product
-
-from pynars.Config import Enable
-from pynars.Narsese import Copula, Task
-from pynars.Narsese import Connector, Statement, Belief, Term, Truth, Compound, Budget
-from ..DataStructures import LinkType, TaskLink, TermLink
-from pynars.NAL.Inference import *
-from pynars.utils.SparseLUT import SparseLUT
-from pynars.utils.tools import get_size
-
-from pynars.utils.Print import out_print, PrintType
-
-import time
-from datetime import datetime
-import pickle
-import sty
-from ._extract_feature import extract_feature, _compound_has_common, _compound_at
-from pynars import Global
-
+from copy import copy
+from pynars.NAL.Functions.Tools import project_truth, revisible
+from pynars.NARS.DataStructures._py.Link import LinkType
 from .Rules import *
+from ...RuleMap.add_rule import _compound_has_common, _compound_at, _at, _common
+from pynars.NARS.RuleMap.add_rule import CommonId
+from pynars.Narsese._py.Budget import Budget
+from pynars.Narsese._py.Connector import Connector
+from pynars.Narsese._py.Copula import Copula
+from pynars.Narsese._py.Term import Term
+from ...DataStructures import Task, Belief, Concept, TaskLink, TermLink
+from typing import Callable, List, Tuple
+from ...RuleMap import RuleCallable, RuleMap
+from pynars.NAL.Inference import local__revision
+from pynars import Global
+from ..Engine import Engine
+from .extract_feature import extract_feature
+from pathlib import Path
 
-class RuleMap:
-    def __init__(self, build=True, add_rules={1,2,3,4,5,6,7,8,9}) -> None:
+
+class GeneralEngine(Engine):
+    
+    rule_map = RuleMap(name='LUT', root_rules=Path(__file__).parent/'Rules')
+
+    def __init__(self, build=True, add_rules={1,2,3,4,5,6,7,8,9}):
+        ''''''
+        super().__init__()
+        
         n_link_types = max([t.value for t in LinkType.__members__.values()])
         n_copula = len(Copula)
         n_has_common_id = 2
@@ -51,7 +46,7 @@ class RuleMap:
         n_p1_at_p2 = 2
         n_p2_at_p1 = 2
 
-        self._init_type_map(
+        self.rule_map.init_type(
             ("is_belief_valid", bool, n_is_belief_valid),
 
             ("sentence_type", int, n_sentence_type),
@@ -85,87 +80,58 @@ class RuleMap:
 
         )
         
-        add_rules__NAL1(self.map, self.structure_map) if 1 in add_rules else None
-        add_rules__NAL2(self.map, self.structure_map) if 2 in add_rules else None
-        add_rules__NAL3(self.map, self.structure_map) if 3 in add_rules else None
-        add_rules__NAL4(self.map, self.structure_map) if 4 in add_rules else None
-        add_rules__NAL5(self.map, self.structure_map) if 5 in add_rules else None
-        add_rules__NAL6(self.map, self.structure_map) if 6 in add_rules else None
-        add_rules__NAL7(self.map, self.structure_map) if 7 in add_rules else None
-        add_rules__NAL8(self.map, self.structure_map) if 8 in add_rules else None
-        add_rules__NAL9(self.map, self.structure_map) if 9 in add_rules else None
+        map = self.rule_map.map
+        structure = self.rule_map.structure
+        add_rules__NAL1(map, structure) if 1 in add_rules else None
+        add_rules__NAL2(map, structure) if 2 in add_rules else None
+        add_rules__NAL3(map, structure) if 3 in add_rules else None
+        add_rules__NAL4(map, structure) if 4 in add_rules else None
+        add_rules__NAL5(map, structure) if 5 in add_rules else None
+        add_rules__NAL6(map, structure) if 6 in add_rules else None
+        add_rules__NAL7(map, structure) if 7 in add_rules else None
+        add_rules__NAL8(map, structure) if 8 in add_rules else None
+        add_rules__NAL9(map, structure) if 9 in add_rules else None
 
-        self.build() if build else None
-
+        if build: self.build()
         
         pass
 
 
-    def _init_type_map(self, *slots: Tuple[object, str, int]):
-        '''
-        slots (List[Tuple[object, str, int]]): each slot is filled in with the type, which is a int number, of an object.
-        '''
-        self.structure_map = OrderedDict([(slot[0], tuple(slot[1:])) for slot in slots])
-        # self.map = np.empty([n_type for *_, n_type in slots], dtype=object) # Shape: [LinkType, LinkType, Copula, Copula, match_reverse, common_id, Connector, Connector]. It cost about 1.2GB in memory... it's too expensive. So we have to adopt a more economic way.
-        shape = tuple([n_type for *_, n_type in slots])
-        self.map = SparseLUT(shape)
-        pass
+    @classmethod
+    def match(cls, task: Task, belief: Belief, belief_term: Term, task_link, term_link):
+        '''To verify whether the task and the belief can interact with each other'''
 
+        is_valid = False
+        is_revision = False
+        rules = []
+        if belief is not None:
+            if task == belief:
+                if task.sentence.punct == belief.sentence.punct:
+                    is_revision = revisible(task, belief)
+            elif task.term.equal(belief.term): 
+                # TODO: here
+                pass
+            elif not belief.evidential_base.is_overlaped(task.evidential_base):
+                # Engine.rule_map.verify(task_link, term_link)
+                rules = GeneralEngine.match_rule(task, belief, belief_term, task_link, term_link)
+                if rules is not None and len(rules) > 0:
+                    is_valid = True
+        elif belief_term is not None: # belief is None
+            if task.term == belief_term:pass
+            elif task.term.equal(belief_term): pass
+            else:
+                rules = GeneralEngine.match_rule(task, belief, belief_term, task_link, term_link)
+                if rules is not None and len(rules) > 0:
+                    is_valid = True
+        else: # belief is None and belief_term is None
+            rules = GeneralEngine.match_rule(task, belief, belief_term, task_link, term_link)
+            if rules is not None and len(rules) > 0:
+                is_valid = True
 
-    def build(self, clear=True):
-        root_path = Path(__file__).parent
-        def check_update():
-            cache_path = root_path/'LUT.pkl'
-            try:
-                if not cache_path.exists(): return True
-                this_filepath = Path(__file__)
-                filepaths = (this_filepath.parent/"Rules").glob("NAL*.py")
-                mtime_cache = datetime.fromtimestamp(cache_path.stat().st_mtime)
-                for filepath in filepaths:
-                    mtime_this = datetime.fromtimestamp(filepath.stat().st_mtime)
-                    if mtime_this > mtime_cache:
-                        return True
-                return False
-            except: 
-                if not cache_path.exists(): return True
-                else: return False
-                
-        if check_update():
-            # t_start = time.time()
-            # self.map.build(clear)
-            # t_end = time.time()
-            # self.map.dump(str(root_path))
-            # if Enable.debug: out_print(PrintType.INFO, f'Building time cost: {t_end-t_start}s.')
-            self.rebuild(root_path, clear)
-        else:
-            self.load(str(root_path))
+        return is_valid, is_revision, rules
 
-        # if Enable.debug: out_print(PrintType.INFO, f'The size of map: {get_size(self.map.lut)/1024/1024:.6f}MB')
-        
-    def load(self, root_path: str):
-        if Enable.debug: out_print(PrintType.INFO, f'Loading RuleMap...')
-        t_start = time.time()
-        self.map.load(str(root_path))
-        t_end = time.time()
-        if Enable.debug: out_print(PrintType.INFO, f'Done. Time-cost: {t_end-t_start}s.')
-
-    def rebuild(self, root_path: str, clear=True):
-        ''''''
-        if Enable.debug: out_print(PrintType.INFO, f'Building RuleMap...')
-        t_start = time.time()
-        self.map.build(clear)
-        t_end = time.time()
-        if Enable.debug: out_print(PrintType.INFO, f'Done. Time-cost: {t_end-t_start}s.')
-        if Enable.debug: out_print(PrintType.INFO, f'Saving RuleMap...')
-        self.map.dump(str(root_path))
-        if Enable.debug: out_print(PrintType.INFO, f'Done.')
-
-
-    def draw(self, show_labels=True):
-        self.map.draw(show_labels)
-
-
-    def match(self, task: Task, belief: Union[Belief, None], belief_term: Union[Term, Compound, Statement, None], task_link: TaskLink, term_link: TermLink):
+    @classmethod
+    def match_rule(cls, task: Task, belief: Union[Belief, None], belief_term: Union[Term, Compound, Statement, None], task_link: TaskLink, term_link: TermLink):
         '''
         Given a task and a belief, find the matched rules for one step inference.
         ''' 
@@ -233,20 +199,20 @@ class RuleMap:
                         # Now, `belief` is None
                         compound_common_id = feature.compound_common_id_task
                         connector2 = belief_term.connector
-
-                        common_term = task.term[compound_common_id]
-                        if belief_term.is_double_only:
-                            if common_term == belief_term[0]: 
-                                at_compound_pos = 0 
-                            elif common_term == belief_term[1]:
-                                at_compound_pos = 1
-                            else: raise "Invalid case."
-                        elif belief_term.is_multiple_only:
-                            if common_term == belief_term[0]: 
-                                at_compound_pos = 0 
-                            else:
-                                at_compound_pos = 1
-                            pass
+                        if compound_common_id is not None:
+                            common_term = task.term[compound_common_id]
+                            if belief_term.is_double_only:
+                                if common_term == belief_term[0]: 
+                                    at_compound_pos = 0 
+                                elif common_term == belief_term[1]:
+                                    at_compound_pos = 1
+                                else: raise "Invalid case."
+                            elif belief_term.is_multiple_only:
+                                if common_term == belief_term[0]: 
+                                    at_compound_pos = 0 
+                                else:
+                                    at_compound_pos = 1
+                                pass
 
                     elif feature.compound_common_id_task is None: 
                         # Now, `task` is None
@@ -330,7 +296,7 @@ class RuleMap:
             link2.value if link2 is not None else None,
 
             int(task.term.copula) if not task.term.is_atom else None, 
-            int(belief.term.copula) if belief is not None else (int(belief_term.connector) if ((belief_term is not None) and (not belief_term.is_atom) and belief_term.is_compound) else None),
+            int(belief.term.copula) if (belief is not None and belief_term.is_statement) else (int(belief_term.connector) if (belief_term is not None and belief_term.is_compound) else None),
 
             int(connector1) if connector1 is not None else None, 
             int(connector2) if connector2 is not None else None,
@@ -352,41 +318,76 @@ class RuleMap:
             
             
         )
-        rules: RuleCallable = self.map[indices]
+        rules: RuleCallable = cls.rule_map[indices]
         return rules
 
+    def step(self, concept: Concept):
+        '''One step inference.'''
+        tasks_derived = []
+        
+        # Based on the selected concept, take out a task and a belief for further inference.
+        task_link_valid: TaskLink = concept.task_links.take(remove=True)
+        if task_link_valid is None: return tasks_derived
+        concept.task_links.put_back(task_link_valid)
 
-    def verify(self, task_link: TaskLink, term_link: TermLink, *args):
-        raise "Invalid function."
+        task: Task = task_link_valid.target
 
-
-    def diagnose(self, indices):
-        '''
-        Given a `indices`, check whether a valid rule can be retrieved.
-        If not, return the index of the position where an error occurs.
-        Else, return None.
-        In each case, Prompt message is printed.
-        '''
-        for i in range(1,len(indices)):
-            if self.map[indices[:i]] is None:
-                name_str, (name_type, _) = list(self.structure_map.items())[i]
-                print(f"{sty.fg.blue}Diagnose: {sty.fg.red}ERROR.\n    {sty.fg.blue}{i}: {sty.ef.bold}{name_str}, {name_type}{sty.rs.all}")
-                
-                return i
-        print(f"{sty.fg.blue}Diagnose: {sty.fg.green}PASS.{sty.rs.all}")
-        return None
-
-
-    def __repr__(self) -> str:
-        '''print self.type_map'''
-        r = f"<RuleMap: #rules={len(self.map)}>\n"
-        for key, item in self.structure_map.items():
-            r += f"    {key}, {item}\n"
-        return r
+        # inference for single-premise rules
+        is_valid, _, rules_immediate = GeneralEngine.match(task, None, None, task_link_valid, None)
+        if is_valid:
+            tasks = self.inference(task, None, None, task_link_valid, None, rules_immediate)
+            tasks_derived.extend(tasks)
     
+        # inference for two-premises rules
+        term_links = []
+        term_link_valid = None
+        is_valid = False
+        for _ in range(len(concept.term_links)):
+            #To find a belief, which is valid to interact with the task, by iterating over the term-links.
+            term_link: TaskLink = concept.term_links.take(remove=True)
+            term_links.append(term_link)
+            
+            concept_target: Concept = term_link.target
+            belief = concept_target.get_belief() # TODO: consider all beliefs.
+            term_belief = concept_target.term
+            # if belief is None: continue
+            # Verify the validity of the interaction, and find a pair which is valid for inference.
+            is_valid, is_revision, rules = GeneralEngine.match(task, belief, term_belief, task_link_valid, term_link)
+            if is_revision: tasks_derived.append(local__revision(task, belief, task_link_valid.budget, term_link.budget))
+            if is_valid: 
+                term_link_valid = term_link
+                break
+                
+        
+        if is_valid:
+            tasks = self.inference(task, belief, term_belief, task_link_valid, term_link_valid, rules)
+            if term_link_valid is not None: # TODO: Check here whether the budget updating is the same as OpenNARS 3.0.4.
+                for task in tasks: TermLink.update_budget(term_link_valid.budget, task.budget.quality, belief.budget.priority if belief is not None else concept_target.budget.priority)
+            
+            tasks_derived.extend(tasks)
+        
+        for term_link in term_links: concept.term_links.put_back(term_link)
+        
+        return tasks_derived
 
+    @staticmethod
+    def inference(task: Task, belief: Belief, term_belief: Term, task_link: TaskLink, term_link: TermLink, rules: List[RuleCallable]) -> List[Task]: # Tuple[List[Task], List[Tuple[Budget, float, float]]]:
+        '''
+        It should be ensured that 
+            1. the task and the belief can interact with each other;
+            2. the task is the target node of the task-link, and the concept correspoding to the belief is the target node of the term-link.
+            3. there is a function, indexed by the task_link and the term_link, in the RuleMap.
+        '''
+        # Temporal Projection and Eternalization
+        if belief is not None:
+            # TODO: Hanlde the backward inference.
+            if not belief.is_eternal and (belief.is_judgement or belief.is_goal):
+                truth_belief = project_truth(task.sentence, belief.sentence)
+                belief = belief.eternalize(truth_belief)
+                # beleif_eternalized = belief # TODO: should it be added into the `tasks_derived`?
 
-if __name__ == '__main__':
-    root_path = Path(__file__).parent
-    rulemap = RuleMap(build=False)
-    rulemap.rebuild(root_path)
+        belief = belief if belief is not None else term_belief
+        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules]
+
+        return tasks_derived
+

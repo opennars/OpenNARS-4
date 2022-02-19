@@ -3,11 +3,11 @@ import unittest
 
 from pynars.NARS.DataStructures import Bag, Task
 from pynars.Narsese import Judgement, Term, Statement, Copula, Truth   
-import Narsese
+from pynars import Narsese
 from pynars.NARS.DataStructures import Concept
 from pynars.Narsese import Copula
-from pynars.NARS.RuleMap import RuleMap_v2
-from pynars.NARS.RuleMap.RuleMap_v2 import CommonId
+from pynars.NARS.RuleMap import RuleMap
+from pynars.NARS.RuleMap.RuleMap import CommonId
 from pynars.NARS.DataStructures import LinkType
 
 class TEST_RuleMap_v2(unittest.TestCase):
@@ -15,7 +15,7 @@ class TEST_RuleMap_v2(unittest.TestCase):
         super().__init__(methodName=methodName)
     
     def test_0(self):
-        rulemap = RuleMap_v2(False)
+        rulemap = RuleMap(False)
         rulemap.build(False)
         rulemap.draw(show_labels=False)
         pass

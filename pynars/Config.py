@@ -102,7 +102,7 @@ def load(file_path: str):
         valid = False
     if not valid:
         file_path = Path(__file__).parent/'config.json'
-        print(f'config file: {file_path}')
+        print(f'Loaded config file: {file_path}')
     try:
         with open(file_path, 'r') as f:
             content = json.load(f)

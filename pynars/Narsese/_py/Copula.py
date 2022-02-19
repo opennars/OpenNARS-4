@@ -32,6 +32,9 @@ class Copula(IdEnum):
         )
     
     @property
+    def is_temporal(self):
+        return self in (Copula.ConcurrentEquivalence, Copula.PredictiveEquivalence, Copula.ConcurrentImplication, Copula.PredictiveImplication, Copula.RetrospectiveImplication)
+    
     def symmetrize(self):
         if self is Copula.Inheritance:
             return Copula.Similarity
@@ -43,6 +46,14 @@ class Copula(IdEnum):
             return Copula.PredictiveEquivalence
         else:
             raise "Invalid case."
+
+    def inverse(self):
+        if self is Copula.PredictiveImplication:
+            return Copula.RetrospectiveImplication
+        elif self is Copula.RetrospectiveImplication:
+            return Copula.PredictiveImplication
+        else: 
+            return self
                 
     
     @property

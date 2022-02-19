@@ -3,4 +3,6 @@
 <A =|> B>.
 <B =|> C>.
 
+5
+
 ''outputMustContain('<A =|> C>. %1.00;0.81%')

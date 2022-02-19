@@ -29,7 +29,7 @@ def believe(statement: Term, term_truth: Term):
     ''''''
     truth = truth_from_term(term_truth)
     budget = Budget(Config.p_judgement, Config.d_judgement, truth_to_quality(truth))
-    stamp = Stamp(Global.time, Global.time, None, Base((Global.get_input_id(),)))
+    stamp = Stamp(Global.time, Global.time, None, Base((Global.get_input_id(),)), is_eternal=False)
     sentence = Judgement(statement, stamp=stamp, truth=truth)
     return Task(sentence, budget)
 
@@ -45,7 +45,7 @@ def doubt(beliefs: List[Belief]):
 def evaluate(statement: Term):
     ''''''
     budget = Budget(Config.p_quest, Config.d_quest, 1.0)
-    stamp = Stamp(Global.time, Global.time, None, Base((Global.get_input_id(),)))
+    stamp = Stamp(Global.time, Global.time, None, Base((Global.get_input_id(),)), is_eternal=False)
     sentence = Quest(statement, stamp=stamp)
     return Task(sentence, budget)
 
@@ -62,7 +62,7 @@ def want(statement: Term):
     ''''''
     truth = Truth(1.0, Config.c_judgement, Config.k)
     budget = Budget(Config.p_judgement, Config.d_judgement, truth_to_quality(truth))
-    stamp = Stamp(Global.time, Global.time, None, Base((Global.get_input_id(),)))
+    stamp = Stamp(Global.time, Global.time, None, Base((Global.get_input_id(),)), is_eternal=False)
     sentence = Goal(statement, stamp, truth)
     return Task(sentence, budget)
 
@@ -70,7 +70,7 @@ def want(statement: Term):
 def wonder(statement: Term):
     ''''''
     budget = Budget(Config.p_question, Config.d_question, 1)
-    stamp = Stamp(Global.time, Global.time, None, Base((Global.get_input_id(),)))
+    stamp = Stamp(Global.time, Global.time, None, Base((Global.get_input_id(),)), is_eternal=False)
     sentence = Question(statement, stamp=stamp)
     return Task(sentence, budget)
 

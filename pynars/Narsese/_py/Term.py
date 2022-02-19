@@ -1,3 +1,4 @@
+from pynars.Narsese._py.Connector import Connector
 from .Copula import Copula
 from pynars.Config import Enable
 from typing import Iterable, List, Set, Type
@@ -17,6 +18,7 @@ class Term:
 
     type = TermType.ATOM
     copula: Copula = None
+    connector: Connector = None
     _complexity: float = 1.0 # The complexity of the term. Read only.
     has_var: bool = False # Whether the term contains variable(s).
     has_ivar: bool = False # Whether the term contains independent variable(s).
@@ -202,3 +204,5 @@ class Term:
         # clone = copy(self)
         return self
         
+
+place_holder = Term('_', True)

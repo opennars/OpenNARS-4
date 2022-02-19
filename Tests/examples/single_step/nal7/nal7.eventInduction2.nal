@@ -3,7 +3,7 @@
 'John is opening door_101 now
 <(*,John,door_101) --> open>. :|: 
 
-6
+60
 
 'John is entering room_101 now
 <(*,John,room_101) --> enter>. :|: 

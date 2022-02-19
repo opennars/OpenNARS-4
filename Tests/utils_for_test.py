@@ -1,17 +1,19 @@
 from typing import List, Tuple
+from pynars.NAL import Inference
 from pynars.NARS.DataStructures._py.Concept import Concept
 from pynars.NARS.DataStructures._py.Link import Link, TaskLink, TermLink
+from pynars.NARS.InferenceEngine.GeneralEngine.GeneralEngine import GeneralEngine
 from pynars.Narsese import Task
-import Narsese
-from pynars.NARS.RuleMap import RuleMap_v2, RuleCallable
-from pynars.NARS import Reasoner_3_0_4 as Reasoner
+from pynars import Narsese
+from pynars.NARS.RuleMap import RuleMap, RuleCallable
+from pynars.NARS import Reasoner as Reasoner
 from pynars.Narsese._py.Statement import Statement
 from pynars.Narsese._py.Task import Belief
 from pynars.Narsese._py.Term import Term
 from pynars.NAL.MentalOperation import execute
 
 nars = Reasoner(100, 100)
-rule_map = nars.inference.rule_map
+engine: GeneralEngine = nars.inference
 
 
 def rule_map_two_premises(premise1: str, premise2: str, term_common: str, inverse: bool=False, is_belief_term: bool=False, index_task=None, index_belief=None) -> Tuple[List[RuleCallable], Task, Belief, Concept, TaskLink, TermLink, Tuple[Task, Task, Task, Task]]:
@@ -47,7 +49,7 @@ def rule_map_two_premises(premise1: str, premise2: str, term_common: str, invers
     term_link = concept.term_links.take_by_key(TermLink(concept, belief, None, index=index_belief))
     
     belief: Belief
-    rules = rule_map.match(task, (belief if not is_belief_term else None), belief.term, task_link, term_link)
+    _, _, rules = engine.match(task, (belief if not is_belief_term else None), belief.term, task_link, term_link)
     return rules, task, belief, concept, task_link, term_link, result1, result2
 
 def rule_map_task_only(premise1: str, conecept_term: str, index_concept_task: tuple):
@@ -59,7 +61,7 @@ def rule_map_task_only(premise1: str, conecept_term: str, index_concept_task: tu
     concept = nars.memory.take_by_key(concept_term)
     task_link = concept.task_links.take_by_key(TaskLink(concept, task, None, index=index_concept_task))
 
-    rules = rule_map.match(task, None, None, task_link, None)
+    rules = engine.match(task, None, None, task_link, None)
     return rules, task, concept, task_link, result1
 
 

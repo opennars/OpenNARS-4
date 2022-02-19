@@ -1,1 +1,1 @@
-from .Control import Reasoner_3_0_4
+from .Control import Reasoner

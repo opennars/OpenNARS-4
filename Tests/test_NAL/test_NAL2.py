@@ -1,6 +1,6 @@
 import unittest
 
-import Narsese
+from pynars import Narsese
 from pynars.NAL.MetaLevelInference.VariableSubstitution import *
 
 from Tests.utils_for_test import *

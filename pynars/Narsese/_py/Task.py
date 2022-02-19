@@ -82,6 +82,10 @@ class Task(Item):
         return self.sentence.is_event
 
     @property
+    def is_external_event(self) -> bool:
+        return self.sentence.is_external_event
+
+    @property
     def is_operation(self) -> bool:
         return self.term.is_operation
     

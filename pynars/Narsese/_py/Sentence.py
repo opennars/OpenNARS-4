@@ -35,7 +35,7 @@ class Punctuation(Enum):
 
 class Stamp:
     
-    def __init__(self, t_creation: int, t_occurrence: int, t_put: int, evidential_base: Type['Base']) -> None:
+    def __init__(self, t_creation: int, t_occurrence: int, t_put: int, evidential_base: Type['Base'], is_external: bool=True) -> None:
         '''
         Args:
             t_creation(int): creation time of the stamp
@@ -46,11 +46,12 @@ class Stamp:
         self.t_occurrence = t_occurrence
         self.t_put = t_put
         self.evidential_base: Type['Base'] = evidential_base
+        self.is_external = is_external # whether a sentence is from the external world or the internal world. Only those sentences derived from Mental Operations are internal.
 
 
     @property
     def tense(self):
-        return Tense.Eternal if self.t_occurrence is None else Tense.Future if self.t_occurrence > Global.time+Config.temporal_duration else Tense.Past if self.t_occurrence < Global.time-Config.temporal_duration else Tense.Present
+        return Tense.Eternal if self.t_occurrence is None else Tense.Future if self.t_occurrence >= Global.time+Config.temporal_duration else Tense.Past if self.t_occurrence <= Global.time-Config.temporal_duration else Tense.Present
     
     @property
     def is_eternal(self):
@@ -135,11 +136,16 @@ class Sentence:
     
     @property
     def is_eternal(self) -> bool:
-        return self.tense == Tense.Eternal
+        return self.stamp.is_eternal
     
     @property
     def is_event(self) -> bool:
-        return self.tense != Tense.Eternal
+        return not self.stamp.is_eternal
+
+    @property
+    def is_external_event(self) -> bool:
+        return not self.is_eternal and self.stamp.is_external
+
 
 
 class Judgement(Sentence):

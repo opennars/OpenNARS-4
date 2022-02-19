@@ -31,6 +31,7 @@ Feature = namedtuple(
     ],
     defaults=[False, True, None, None, False, None, None, False, None, None, False, None, None, None, None]# False, False, False, None, None]
 )
+
 def _mirorr_feature(premise1: Union[Term, Compound, Statement], premise2: Union[Term, Compound, Statement]):
     feature = extract_feature(premise2, premise1)
     return Feature(
@@ -51,27 +52,6 @@ def _mirorr_feature(premise1: Union[Term, Compound, Statement], premise2: Union[
         feature.the_other1
     )
 
-def _compound_has_common(term1: Union[Term, Compound, Statement], term2: Union[Term, Compound, Statement]):
-    if term1.is_compound:
-        return (term2 in term1.terms) or term1.has_common(term2)
-    elif term2.is_compound:
-        return (term1 in term2.terms) or term1.has_common(term2)
-    else: return False
-
-def _compound_at(term1: Union[Term, Compound, Statement], term2: Compound, compound_has_common: bool=None):
-    if term2.is_compound:
-        if not term1.is_compound: 
-            if term2.connector is Connector.SequentialEvents: 
-                return term2.terms[0] == term1
-            else: 
-                return term2.contains(term1)
-        else: 
-            empty = True if len(term2.terms - term1.terms) == 0 else False
-            if term2.connector is Connector.SequentialEvents: 
-                return (not empty) and term2.terms[:len(term1.terms)] == term1.terms
-            else: 
-                return (not empty) and (compound_has_common if compound_has_common is not None else _compound_has_common(term1, term2))
-    else: return False
 
 def extract_feature(premise1: Union[Term, Compound, Statement], premise2: Union[Term, Compound, Statement]) -> Feature:
     '''
@@ -454,78 +434,4 @@ def extract_feature(premise1: Union[Term, Compound, Statement], premise2: Union[
         else: raise "Invalide case"
 
 
-
-def _at(compound: Union[Compound, Statement], term: Term):
-    '''
-    To judge whether the `component` is in the `compound`.
-
-    e.g. A@(&&,A,B), then return (True, 0); 
-        B@(&&,A,B), then return (True, 1); 
-        C@(&&,A,B), then return (False, None)
-    '''
-    if compound.is_atom:
-        return (False, None)
-    else:
-        if compound.is_compound:
-            terms = compound
-        elif compound.is_statement:
-            terms = (compound.subject, compound.predicate)
-        else: raise "Invalid case."
-
-        for i, component in enumerate(terms):
-            if component == term:
-                return (True, i)
-        else:
-            return (False, None)
-    
-
-def _common(premise1: Statement, premise2: Statement):
-    '''
-    To judge whether the `premise1` and the `premise2` have common term.
-
-    e.g. <S-->M>, <M-->P>, then return (True, 1, 0);
-        <M-->P>, <S-->M>, then return (True, 0, 1);
-        <M-->P>, <M-->S>, then return (True, 0, 0);
-        <P-->M>, <S-->M>, then return (True, 1, 1);
-        <A==>B>, A, then return (True, 0, 0)
-        <A==>B>, B, then return (True, 1, 0)
-
-        <A==><B-->C>>, <B-->C>
-        <A==>(&, B, C)>, (&, B, C)
-        <A==>(&, B, C, D)>, (&, B, C)
-        <A-->(|, B, C), <A-->C> |- <A-->B>
-        <(&, A, B)-->(|, C, D), <(&, A, B)-->D> |- <(&, A, B)-->C>
-
-    Return:
-        has_common_id (bool), common_id_task (int), common_id_belief (int), match_reverse (bool)
-    '''
-    if premise1.is_statement and premise2.is_statement:
-        if premise1.subject == premise2.predicate and premise1.predicate == premise2.subject:
-            return True, None, None, True
-        if premise1.subject == premise2.subject:
-            return True, 0, 0, False
-        elif premise1.subject == premise2.predicate:
-            return True, 0, 1, False
-        elif premise1.predicate == premise2.subject:
-            return True, 1, 0, False
-        elif premise1.predicate == premise2.predicate:
-            return True, 1, 1, False
-        else:
-            return False, None, None, False
-    elif premise1.is_statement and premise2.is_atom:
-        if premise1.subject == premise2:
-            return True, 0, 0, False
-        elif premise1.predicate == premise2:
-            return True, 1, 0, False
-        else:
-            return False, None, None, False
-    elif premise2.is_statement and premise1.is_atom:
-        if premise2.subject == premise1:
-            return True, 0, 0, False
-        elif premise2.predicate == premise1:
-            return True, 0, 1, False
-        else:
-            return False, None, None, False
-    else:
-        return False, None, None, False
 

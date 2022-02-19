@@ -2,7 +2,7 @@ import unittest
 
 from pynars.NAL.MetaLevelInference.VariableSubstitution import *
 from pynars.NARS.InferenceEngine import GeneralEngine
-from pynars.NARS.RuleMap import RuleMap_v2
+from pynars.NARS.RuleMap import RuleMap
 
 import Tests.utils_for_test as utils_for_test
 from Tests.utils_for_test import *
@@ -629,6 +629,346 @@ class TEST_NAL7(unittest.TestCase):
         )
         pass
 
+class TEST_NAL7_ANALOGY(unittest.TestCase):
+    def test_analogy_0_0__0(self):
+        '''
+        
+        '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '<A=/>B>. %1.00;0.90%',
+            '<A</>C>. %1.00;0.90%',
+            'A.'
+        )
+        if rules is not None:
+            tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+            self.assertFalse(
+                output_contains(tasks_derived, '<C=/>B>. %1.00;0.81%')
+            )
+    
+    def test_analogy_0_0__1(self):
+        '''
+        
+        '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '<A=/>B>. %1.00;0.90%',
+            '<A<|>C>. %1.00;0.90%',
+            'A.'
+        )
+        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+        self.assertTrue(
+            output_contains(tasks_derived, '<C=/>B>. %1.00;0.81%')
+        )
+    
+    def test_analogy_0_0__2(self):
+        '''
+        
+        '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '<A=\>B>. %1.00;0.90%',
+            '<A</>C>. %1.00;0.90%',
+            'A.'
+        )
+        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+        self.assertTrue(
+            output_contains(tasks_derived, '<B=/>C>. %1.00;0.81%')
+        )
+
+    def test_analogy_0_0__3(self):
+        '''
+        
+        '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '<A=\>B>. %1.00;0.90%',
+            '<A<|>C>. %1.00;0.90%',
+            'A.'
+        )
+        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+        self.assertTrue(
+            output_contains(tasks_derived, '<B=/>C>. %1.00;0.81%')
+        )
+
+    def test_analogy_0_0__4(self):
+        '''
+        
+        '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '<A=|>B>. %1.00;0.90%',
+            '<A</>C>. %1.00;0.90%',
+            'A.'
+        )
+        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+        self.assertTrue(
+            output_contains(tasks_derived, '<C=\>B>. %1.00;0.81%')
+        )
+
+    def test_analogy_0_0__5(self):
+        '''
+        
+        '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '<A=|>B>. %1.00;0.90%',
+            '<A<|>C>. %1.00;0.90%',
+            'A.'
+        )
+        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+        self.assertTrue(
+            output_contains(tasks_derived, '<C=|>B>. %1.00;0.81%')
+        )
+
+    def test_analogy_0_1__0(self):
+        '''
+        
+        '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '<A=/>B>. %1.00;0.90%',
+            '<C</>A>. %1.00;0.90%',
+            'A.'
+        )
+        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+        self.assertTrue(
+            output_contains(tasks_derived, '<C=/>B>. %1.00;0.81%')
+        )
+
+    def test_analogy_0_1__1(self):
+        '''
+        
+        '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '<A=/>B>. %1.00;0.90%',
+            '<C<|>A>. %1.00;0.90%',
+            'A.'
+        )
+        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+        self.assertTrue(
+            output_contains(tasks_derived, '<C=/>B>. %1.00;0.81%')
+        )
+
+    def test_analogy_0_1__2(self):
+        '''
+        
+        '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '<A=\>B>. %1.00;0.90%',
+            '<C</>A>. %1.00;0.90%',
+            'A.'
+        )
+        if rules is not None:
+            tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+            self.assertFalse(
+                output_contains(tasks_derived, '<C=/>B>. %1.00;0.81%')
+            )
+        
+    def test_analogy_0_1__3(self):
+        '''
+        
+        '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '<A=\>B>. %1.00;0.90%',
+            '<C<|>A>. %1.00;0.90%',
+            'A.'
+        )
+        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+        self.assertTrue(
+            output_contains(tasks_derived, '<B=/>C>. %1.00;0.81%')
+        )
+
+    def test_analogy_0_1__4(self):
+        '''
+        
+        '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '<A=|>B>. %1.00;0.90%',
+            '<C</>A>. %1.00;0.90%',
+            'A.'
+        )
+        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+        self.assertTrue(
+            output_contains(tasks_derived, '<C=/>B>. %1.00;0.81%')
+        )
+
+    def test_analogy_0_1__5(self):
+        '''
+        
+        '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '<A=|>B>. %1.00;0.90%',
+            '<C<|>A>. %1.00;0.90%',
+            'A.'
+        )
+        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+        self.assertTrue(
+            output_contains(tasks_derived, '<C=|>B>. %1.00;0.81%')
+        )
+
+    def test_analogy_1_0__0(self):
+        '''
+        
+        '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '<A=/>B>. %1.00;0.90%',
+            '<B</>C>. %1.00;0.90%',
+            'B.'
+        )
+        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+        self.assertTrue(
+            output_contains(tasks_derived, '<A=/>C>. %1.00;0.81%')
+        )
+
+    def test_analogy_1_0__1(self):
+        '''
+        
+        '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '<A=/>B>. %1.00;0.90%',
+            '<B<|>C>. %1.00;0.90%',
+            'B.'
+        )
+        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+        self.assertTrue(
+            output_contains(tasks_derived, '<A=/>C>. %1.00;0.81%')
+        )
+
+    def test_analogy_1_0__2(self):
+        '''
+        
+        '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '<A=\>B>. %1.00;0.90%',
+            '<B</>C>. %1.00;0.90%',
+            'B.'
+        )
+        if rules is not None:
+            tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+            self.assertFalse(
+                output_contains(tasks_derived, '<A=/>C>. %1.00;0.81%')
+            )
+    
+    def test_analogy_1_0__3(self):
+        '''
+        
+        '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '<A=\>B>. %1.00;0.90%',
+            '<B<|>C>. %1.00;0.90%',
+            'B.'
+        )
+        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+        self.assertTrue(
+            output_contains(tasks_derived, '<C=/>A>. %1.00;0.81%')
+        )
+
+    def test_analogy_1_0__4(self):
+        '''
+        
+        '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '<A=|>B>. %1.00;0.90%',
+            '<B</>C>. %1.00;0.90%',
+            'B.'
+        )
+        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+        self.assertTrue(
+            output_contains(tasks_derived, '<A=/>C>. %1.00;0.81%')
+        )
+
+    def test_analogy_1_0__5(self):
+        '''
+        
+        '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '<A=|>B>. %1.00;0.90%',
+            '<B<|>C>. %1.00;0.90%',
+            'B.'
+        )
+        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+        self.assertTrue(
+            output_contains(tasks_derived, '<A=|>C>. %1.00;0.81%')
+        )
+
+    def test_analogy_1_1__0(self):
+        '''
+        
+        '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '<A=/>B>. %1.00;0.90%',
+            '<C</>B>. %1.00;0.90%',
+            'B.'
+        )
+        if rules is not None:
+            tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+            self.assertTrue(
+                output_contains(tasks_derived, '<A=/>C>. %1.00;0.81%')
+            )
+
+    def test_analogy_1_1__1(self):
+        '''
+        
+        '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '<A=/>B>. %1.00;0.90%',
+            '<C<|>B>. %1.00;0.90%',
+            'B.'
+        )
+        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+        self.assertTrue(
+            output_contains(tasks_derived, '<A=/>C>. %1.00;0.81%')
+        )
+
+    def test_analogy_1_1__2(self):
+        '''
+        
+        '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '<A=\>B>. %1.00;0.90%',
+            '<C</>B>. %1.00;0.90%',
+            'B.'
+        )
+        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+        self.assertTrue(
+            output_contains(tasks_derived, '<C=/>A>. %1.00;0.81%')
+        )
+
+    def test_analogy_1_1__3(self):
+        '''
+        
+        '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '<A=\>B>. %1.00;0.90%',
+            '<C<|>B>. %1.00;0.90%',
+            'B.'
+        )
+        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+        self.assertTrue(
+            output_contains(tasks_derived, '<C=/>A>. %1.00;0.81%')
+        )
+
+    def test_analogy_1_1__4(self):
+        '''
+        
+        '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '<A=|>B>. %1.00;0.90%',
+            '<C</>B>. %1.00;0.90%',
+            'B.'
+        )
+        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+        self.assertTrue(
+            output_contains(tasks_derived, '<A=\>C>. %1.00;0.81%')
+        )
+
+    def test_analogy_1_1__5(self):
+        '''
+        
+        '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '<A=|>B>. %1.00;0.90%',
+            '<C<|>B>. %1.00;0.90%',
+            'B.'
+        )
+        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+        self.assertTrue(
+            output_contains(tasks_derived, '<A=|>C>. %1.00;0.81%')
+        )
 
 if __name__ == '__main__':
 

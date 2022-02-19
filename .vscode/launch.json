@@ -197,7 +197,7 @@
             "module": "pynars.Console",
             "console": "integratedTerminal",
             "args": [
-                "Tests/examples/single_step/nal7/nal7.7.nal"
+                "Tests/examples/single_step/nal7/nal7.revrev.nal"
                 // "Tests/examples/single_step/nal5.query.nal"
             ]
         },
@@ -205,7 +205,7 @@
             "name": "Python: _generate_init_file",
             "type": "python",
             "request": "launch",
-            "module": "NAL._generate_init_file"
+            "module": "pynars.NAL._generate_init_file"
         },
         {
             "name": "Python: Parser test",

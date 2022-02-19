@@ -1,6 +1,6 @@
 # from enum import Enum
 from pynars.utils.IdEnum import IdEnum
-from .Term import Term
+# from .Term import Term
 
 class Connector(IdEnum):
     Conjunction = "&&"
@@ -59,6 +59,10 @@ class Connector(IdEnum):
             Connector.ExtensionalImage
         )
 
+    @property
+    def is_temporal(self):
+        return self in (Connector.SequentialEvents, Connector.ParallelEvents)
+
     def check_valid(self, len_terms: int):
         if self.is_single_only: return len_terms == 1
         elif self.is_double_only: return len_terms == 2
@@ -77,4 +81,4 @@ class Connector(IdEnum):
     #         Connector.ExtensionalSet
     #     )
 
-place_holder = Term('_', True)
+# place_holder = Term('_', True)

@@ -14,6 +14,7 @@ _temporal_interval = {
 
 def Stamp_merge(stamp1: Stamp, stamp2: Stamp, order_mark: Union[Copula, Connector]=None, reverse_order=False, t_bias=0):
     stamp: Stamp = deepcopy(stamp1)
+    # stamp.is_external = stamp1.is_external
     if stamp is not None:
         stamp.extend_evidenital_base(stamp2.evidential_base)
         if not stamp1.is_eternal and not stamp2.is_eternal:

@@ -13,9 +13,9 @@ Reference:
  - Python version: 3.7.10. 
      - Only tested under this version, however, Python 3.7 and higher versions maybe acceptable.
  - OS: Windows 10. 
-     - Only tested under this OS, however, other OS might be ok.
+     - Only tested under this OS, however, other OSs might be ok.
  - Packages Requirements: see `requirements.txt`.
-     - It is noted that the version of the python package `tqdm` should be no higher than 3.1.4, otherwise the color display would be abnormal. This is because of a bug of `tqdm`, which leads to conflicts between `sty` and `tqdm` and cause unexpected color display of `sty`. However, this constraints is not necessary, i.e., higher version of `tqdm` is ok if you don't mind abnormal display occuring. The abnormal case only occur when you first run the PyNARS when SparseLUT (Sparse Look-Up Table) is built.
+     - It is noted that the version of the python package `tqdm` should be no higher than 3.1.4, otherwise the color display would be abnormal. This is because of a bug of `tqdm`, which leads to conflicts between `sty` and `tqdm` and cause unexpected color display of `sty`. However, this constraints is not necessary, i.e., higher version of `tqdm` is ok if you don't mind abnormal display occuring. The abnormal case only occurs if you first run PyNARS when SparseLUT (Sparse Look-Up Table) is built.
 
 #### Installation
 

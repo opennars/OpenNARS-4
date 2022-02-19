@@ -2,7 +2,7 @@ from collections import OrderedDict
 from pynars.NARS.DataStructures import LinkType, TaskLink, TermLink
 from pynars.utils.SparseLUT import SparseLUT
 from pynars import Global
-from .add_rule import *
+from ....RuleMap.add_rule import *
 from pynars.NARS.MentalOperation import *
 
 def add_rules__NAL9(sparse_lut: SparseLUT=None, structure: OrderedDict=None):

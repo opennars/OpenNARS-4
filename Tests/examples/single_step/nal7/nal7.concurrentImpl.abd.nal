@@ -1,6 +1,8 @@
-' (A =|> B),      (A =|> C)                       |-      (B =|> C)               (Truth:Abduction)
+' (A =|> B),      (C =|> B)                       |-      (A =|> C)               (Truth:Induction)
 
 <A =|> B>.
-<A =|> C>.
+<C =|> B>.
 
-''outputMustContain('<B =|> C>. %1.00;0.45%')
+5
+
+''outputMustContain('<A =|> C>. %1.00;0.45%')

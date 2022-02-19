@@ -4,15 +4,13 @@ from pynars.Narsese._py.Budget import Budget
 from pynars.Narsese._py.Term import Term
 from ..DataStructures import Task, Belief, Concept, TaskLink, TermLink
 from typing import Callable, List, Tuple
-from ..RuleMap import RuleCallable, RuleMap_v2
+from ..RuleMap import RuleCallable, RuleMap
 from pynars.NAL.Inference import local__revision
 from pynars import Global
 
 
 class Engine:
-    
-    rule_map = RuleMap_v2()
-
+    rule_map: RuleMap
     def __init__(self):
         pass
 
@@ -24,3 +22,6 @@ class Engine:
 
     def step(self, *args, **kwargs):
         pass
+
+    def build(self):
+        self.rule_map.build()

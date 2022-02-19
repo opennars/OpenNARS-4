@@ -1,7 +1,7 @@
 from pynars.utils.RuleLUT import RuleLUT, Any
 
 from pynars.NARS.DataStructures._py.Link import LinkType
-from pynars.NARS.RuleMap import Interface_SyllogisticRules, RuleMap_v2
+from pynars.NARS.RuleMap import Interface_SyllogisticRules, RuleMap
 from pynars.Narsese import Budget
 import unittest
 
@@ -10,7 +10,7 @@ from pynars.Narsese import Judgement, Term, Statement, Copula, Truth
 
 from pynars.utils.SparseLUT import SparseLUT
 
-from pynars.NARS.RuleMap.RuleMap_v2 import CommonId
+from pynars.NARS.RuleMap.RuleMap import CommonId
 
 class TEST_RuleLUT(unittest.TestCase):
     

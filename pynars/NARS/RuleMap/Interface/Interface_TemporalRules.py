@@ -3,6 +3,7 @@ from pynars.Narsese import Belief
 from pynars.NAL.Inference import *
 from pynars.NAL.Theorems import *
 from pynars import Global
+from pynars.Narsese._py.Copula import Copula
 
 
 def _temporal__deduction_sequence_eliminate__0(task: Task, belief: Belief, tasklink: TaskLink=None, termlink: TermLink=None):
@@ -24,23 +25,111 @@ def _temporal__abduction__1_prime(task: Task, belief: Belief, tasklink: TaskLink
     '''{C. :|: <(&/, C, +100, S, ...) =/> P>.} |- <S=/>P>. :!105:'''
     return temporal__abduction(task, belief, (tasklink.budget if tasklink is not None else None), (termlink.budget if termlink is not None else None), inverse_premise=True)
 
+def _temporal__deduction_sequence_replace__0_1(task: Task, belief: Belief, tasklink: TaskLink=None, termlink: TermLink=None):
+    '''{<(&&, C, S, ...) ==> P>. <C ==> P>.} |- P.'''
+    return temporal__deduction_sequence_replace(task, belief, (tasklink.budget if tasklink is not None else None), (termlink.budget if termlink is not None else None), inverse_premise=False)
 
-def _temporal__implication_induction(task: Task, belief: Belief, tasklink: TaskLink=None, termlink: TermLink=None):
+def _temporal__deduction_sequence_replace__1_0(task: Task, belief: Belief, tasklink: TaskLink=None, termlink: TermLink=None):
+    '''{<C ==> P>. <(&&, C, S, ...) ==> P>.} |- P.'''
+    return temporal__deduction_sequence_replace(task, belief, (tasklink.budget if tasklink is not None else None), (termlink.budget if termlink is not None else None), inverse_premise=True)
+
+
+
+'''analogy'''
+def _temporal__analogy__0_1(task: Task, belief: Belief, tasklink: TaskLink=None, termlink: TermLink=None):
+    is_equivalence = belief.term.copula in (Copula.ConcurrentEquivalence, Copula.PredictiveEquivalence)
+    return temporal__analogy(task, belief, (tasklink.budget if tasklink is not None else None), (termlink.budget if termlink is not None else None), inverse_premise=False if is_equivalence else True, inverse_copula=False if is_equivalence else True)
+
+
+def _temporal__analogy__1_0(task: Task, belief: Belief, tasklink: TaskLink=None, termlink: TermLink=None):
+    is_equivalence = belief.term.copula in (Copula.ConcurrentEquivalence, Copula.PredictiveEquivalence)
+    return temporal__analogy(task, belief, (tasklink.budget if tasklink is not None else None), (termlink.budget if termlink is not None else None), inverse_premise=False if is_equivalence else True, inverse_copula=True if is_equivalence else False)
+
+
+def _temporal__analogy__0_0(task: Task, belief: Belief, tasklink: TaskLink=None, termlink: TermLink=None):
+    is_equivalence = belief.term.copula in (Copula.ConcurrentEquivalence, Copula.PredictiveEquivalence)
+    return temporal__analogy(task, belief, (tasklink.budget if tasklink is not None else None), (termlink.budget if termlink is not None else None), inverse_premise=False if is_equivalence else True, inverse_copula=False)
+
+
+def _temporal__analogy__1_1(task: Task, belief: Belief, tasklink: TaskLink=None, termlink: TermLink=None):
+    is_equivalence = belief.term.copula in (Copula.ConcurrentEquivalence, Copula.PredictiveEquivalence)
+    return temporal__analogy(task, belief, (tasklink.budget if tasklink is not None else None), (termlink.budget if termlink is not None else None), inverse_premise=False if is_equivalence else True, inverse_copula=True)
+
+'''Sequential induction'''
+# TODO: the name of each rule may need to be modifed.
+def _temporal__induction_implication(task: Task, belief: Belief, tasklink: TaskLink=None, termlink: TermLink=None):
     ''''''
-    return temporal__implication_induction(task, belief, (tasklink.budget if tasklink is not None else None), (termlink.budget if termlink is not None else None), inverse_premise=False)
+    return temporal__induction_implication(task, belief, (tasklink.budget if tasklink is not None else None), (termlink.budget if termlink is not None else None), inverse_premise=False)
 
 
-def _temporal__implication_induction_prime(task: Task, belief: Belief, tasklink: TaskLink=None, termlink: TermLink=None):
+def _temporal__induction_implication_prime(task: Task, belief: Belief, tasklink: TaskLink=None, termlink: TermLink=None):
     ''''''
-    return temporal__implication_induction(task, belief, (tasklink.budget if tasklink is not None else None), (termlink.budget if termlink is not None else None), inverse_premise=True)
+    return temporal__induction_implication(task, belief, (tasklink.budget if tasklink is not None else None), (termlink.budget if termlink is not None else None), inverse_premise=True)
 
 
-def _temporal__composition_induction(task: Task, belief: Belief, tasklink: TaskLink=None, termlink: TermLink=None):
+def _temporal__induction_equivalence(task: Task, belief: Belief, tasklink: TaskLink=None, termlink: TermLink=None):
     ''''''
-    return temporal__composition_induction(task, belief, (tasklink.budget if tasklink is not None else None), (termlink.budget if termlink is not None else None), inverse_premise=False)
+    return temporal__induction_equivalence(task, belief, (tasklink.budget if tasklink is not None else None), (termlink.budget if termlink is not None else None), inverse_premise=False)
 
 
-def _temporal__composition_induction_prime(task: Task, belief: Belief, tasklink: TaskLink=None, termlink: TermLink=None):
+def _temporal__induction_composition(task: Task, belief: Belief, tasklink: TaskLink=None, termlink: TermLink=None):
     ''''''
-    return temporal__composition_induction(task, belief, (tasklink.budget if tasklink is not None else None), (termlink.budget if termlink is not None else None), inverse_premise=True)
+    return temporal__induction_composition(task, belief, (tasklink.budget if tasklink is not None else None), (termlink.budget if termlink is not None else None), inverse_premise=False)
 
+''''''
+def _temporal__induction_predictieve_implication_composition(task: Task, belief: Belief, tasklink: TaskLink=None, termlink: TermLink=None):
+    ''''''
+    return temporal__induction_predictive_implication_composition(task, belief, (tasklink.budget if tasklink is not None else None), (termlink.budget if termlink is not None else None), inverse_premise=False, inverse_copula=False)
+
+
+def _temporal__induction_predictive_implication_composition_prime(task: Task, belief: Belief, tasklink: TaskLink=None, termlink: TermLink=None):
+    ''''''
+    return temporal__induction_predictive_implication_composition(task, belief, (tasklink.budget if tasklink is not None else None), (termlink.budget if termlink is not None else None), inverse_premise=True, inverse_copula=False)
+
+
+def _temporal__induction_predictive_implication_composition_inverse(task: Task, belief: Belief, tasklink: TaskLink=None, termlink: TermLink=None):
+    ''''''
+    return temporal__induction_predictive_implication_composition(task, belief, (tasklink.budget if tasklink is not None else None), (termlink.budget if termlink is not None else None), inverse_premise=False, inverse_copula=True)
+
+
+def _temporal__induction_predictive_implication_composition_inverse_prime(task: Task, belief: Belief, tasklink: TaskLink=None, termlink: TermLink=None):
+    ''''''
+    return temporal__induction_predictive_implication_composition(task, belief, (tasklink.budget if tasklink is not None else None), (termlink.budget if termlink is not None else None), inverse_premise=True, inverse_copula=True)
+
+
+''''''
+def _temporal__induction_retrospective_implication_composition(task: Task, belief: Belief, tasklink: TaskLink=None, termlink: TermLink=None):
+    ''''''
+    return temporal__induction_retrospective_implication_composition(task, belief, (tasklink.budget if tasklink is not None else None), (termlink.budget if termlink is not None else None), inverse_premise=False, inverse_copula=False)
+
+
+def _temporal__induction_retrospective_implication_composition_prime(task: Task, belief: Belief, tasklink: TaskLink=None, termlink: TermLink=None):
+    ''''''
+    return temporal__induction_retrospective_implication_composition(task, belief, (tasklink.budget if tasklink is not None else None), (termlink.budget if termlink is not None else None), inverse_premise=True, inverse_copula=False)
+
+
+def _temporal__induction_retrospective_implication_composition_inverse(task: Task, belief: Belief, tasklink: TaskLink=None, termlink: TermLink=None):
+    ''''''
+    return temporal__induction_retrospective_implication_composition(task, belief, (tasklink.budget if tasklink is not None else None), (termlink.budget if termlink is not None else None), inverse_premise=False, inverse_copula=True)
+
+
+def _temporal__induction_retrospective_implication_composition_inverse_prime(task: Task, belief: Belief, tasklink: TaskLink=None, termlink: TermLink=None):
+    ''''''
+    return temporal__induction_retrospective_implication_composition(task, belief, (tasklink.budget if tasklink is not None else None), (termlink.budget if termlink is not None else None), inverse_premise=True, inverse_copula=True)
+
+
+def _temporal__induction_predictive_equivalance_composition(task: Task, belief: Belief, tasklink: TaskLink=None, termlink: TermLink=None):
+    ''''''
+    return temporal__induction_predictive_equivalance_composition(task, belief, (tasklink.budget if tasklink is not None else None), (termlink.budget if termlink is not None else None), inverse_premise=False, inverse_copula=False)
+
+def _temporal__induction_predictive_equivalance_composition_prime(task: Task, belief: Belief, tasklink: TaskLink=None, termlink: TermLink=None):
+    ''''''
+    return temporal__induction_predictive_equivalance_composition(task, belief, (tasklink.budget if tasklink is not None else None), (termlink.budget if termlink is not None else None), inverse_premise=True, inverse_copula=False)
+
+def _temporal__induction_retrospective_equivalance_composition(task: Task, belief: Belief, tasklink: TaskLink=None, termlink: TermLink=None):
+    ''''''
+    return temporal__induction_retrospective_equivalance_composition(task, belief, (tasklink.budget if tasklink is not None else None), (termlink.budget if termlink is not None else None), inverse_premise=False, inverse_copula=False)
+
+def _temporal__induction_retrospective_equivalance_composition_prime(task: Task, belief: Belief, tasklink: TaskLink=None, termlink: TermLink=None):
+    ''''''
+    return temporal__induction_retrospective_equivalance_composition(task, belief, (tasklink.budget if tasklink is not None else None), (termlink.budget if termlink is not None else None), inverse_premise=True, inverse_copula=False)

@@ -1,14 +1,14 @@
-import NARS
+from pynars import NARS
 import unittest
 
 from pynars.NARS.DataStructures import Bag, Task, Concept, Table
 from pynars.Narsese import Judgement, Term, Statement, Copula, Truth   
 
 from pathlib import Path
-import Narsese
+from pynars import Narsese
 from pynars.Narsese import Compound, Connector
 
-from pynars.NARS.RuleMap.RuleMap_v2 import extract_feature
+from pynars.NARS.RuleMap.RuleMap import extract_feature
 
 class TEST_ExtractFeature(unittest.TestCase):
 

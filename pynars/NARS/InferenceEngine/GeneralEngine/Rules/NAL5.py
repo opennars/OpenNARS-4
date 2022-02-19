@@ -2,7 +2,7 @@ from collections import OrderedDict
 from pynars.NARS.DataStructures import LinkType, TaskLink, TermLink
 from pynars.utils.SparseLUT import SparseLUT
 from pynars import Global
-from .add_rule import *
+from ....RuleMap.add_rule import *
 
 
 def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
@@ -20,7 +20,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         Copula1 = Copula.Implication,
         Copula2 = Copula.Implication,
         match_reverse = False,
-        common_id = CommonId(0, 1)
+        common_id = CommonId(0, 1),
+        is_belief_valid = True,
     )
 
     add_rule(sparse_lut, structure,
@@ -31,7 +32,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         Copula1 = Copula.Implication,
         Copula2 = Copula.Implication,
         match_reverse = False,
-        common_id = CommonId(1, 0)
+        common_id = CommonId(1, 0),
+        is_belief_valid = True,
     )
 
     '''exemplification'''
@@ -43,7 +45,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         Copula1 = Copula.Implication,
         Copula2 = Copula.Implication,
         match_reverse = False,
-        common_id = CommonId(0, 1)
+        common_id = CommonId(0, 1),
+        is_belief_valid = True,
     )
 
     add_rule(sparse_lut, structure,
@@ -54,7 +57,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         Copula1 = Copula.Implication,
         Copula2 = Copula.Implication,
         match_reverse = False,
-        common_id = CommonId(1, 0)
+        common_id = CommonId(1, 0),
+        is_belief_valid = True,
     )
 
     '''induction'''
@@ -66,7 +70,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         Copula1 = Copula.Implication,
         Copula2 = Copula.Implication,
         match_reverse = False,
-        common_id = CommonId(0, 0)
+        common_id = CommonId(0, 0),
+        is_belief_valid = True,
     )
 
     add_rule(sparse_lut, structure,
@@ -77,7 +82,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         Copula1 = Copula.Implication,
         Copula2 = Copula.Implication,
         match_reverse = False,
-        common_id = CommonId(0, 0)
+        common_id = CommonId(0, 0),
+        is_belief_valid = True,
     )
 
     '''abduction'''
@@ -89,7 +95,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         Copula1 = Copula.Implication,
         Copula2 = Copula.Implication,
         match_reverse = False,
-        common_id = CommonId(1, 1)
+        common_id = CommonId(1, 1),
+        is_belief_valid = True,
     )
 
     add_rule(sparse_lut, structure,
@@ -100,7 +107,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         Copula1 = Copula.Implication,
         Copula2 = Copula.Implication,
         match_reverse = False,
-        common_id = CommonId(1, 1)
+        common_id = CommonId(1, 1),
+        is_belief_valid = True,
     )
 
     '''reversion'''
@@ -111,7 +119,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         has_common_id = True,
         Copula1 = Copula.Implication,
         Copula2 = Copula.Implication,
-        match_reverse = True
+        match_reverse = True,
+        is_belief_valid = True,
     )
 
 
@@ -125,7 +134,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         Copula1 = Copula.Implication,   # ==>
         Copula2 = Copula.Implication,   # ==>
         match_reverse = False,
-        common_id = CommonId(0, 0)
+        common_id = CommonId(0, 0),
+        is_belief_valid = True,
     )
 
     add_rule(sparse_lut, structure,
@@ -136,7 +146,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         Copula1 = Copula.Implication,   # ==>
         Copula2 = Copula.Implication,   # ==>
         match_reverse = False,
-        common_id = CommonId(0, 0)
+        common_id = CommonId(0, 0),
+        is_belief_valid = True,
     )
 
     add_rule(sparse_lut, structure,
@@ -147,7 +158,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         Copula1 = Copula.Implication,   # ==>
         Copula2 = Copula.Implication,   # ==>
         match_reverse = False,
-        common_id = CommonId(1, 1)
+        common_id = CommonId(1, 1),
+        is_belief_valid = True,
     )
 
     add_rule(sparse_lut, structure,
@@ -158,7 +170,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         Copula1 = Copula.Implication,   # ==>
         Copula2 = Copula.Implication,   # ==>
         match_reverse = False,
-        common_id = CommonId(1, 1)
+        common_id = CommonId(1, 1),
+        is_belief_valid = True,
     )
     '''analogy'''
     add_rule(sparse_lut, structure,
@@ -169,7 +182,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         Copula1 = Copula.Implication,   # ==>
         Copula2 = Copula.Equivalence,   # <=>
         match_reverse = False,
-        common_id = CommonId(0, 0)
+        common_id = CommonId(0, 0),
+        is_belief_valid = True,
     )
 
     add_rule(sparse_lut, structure,
@@ -180,7 +194,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         Copula1 = Copula.Implication,   # ==>
         Copula2 = Copula.Equivalence,    # <=>
         match_reverse = False,
-        common_id = CommonId(0, 1)
+        common_id = CommonId(0, 1),
+        is_belief_valid = True,
     )
 
     add_rule(sparse_lut, structure,
@@ -191,7 +206,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         Copula1 = Copula.Implication,   # ==>
         Copula2 = Copula.Equivalence,    # <=>
         match_reverse = False,
-        common_id = CommonId(1, 0)
+        common_id = CommonId(1, 0),
+        is_belief_valid = True,
     )
 
     add_rule(sparse_lut, structure,
@@ -202,7 +218,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         Copula1 = Copula.Implication,   # ==>
         Copula2 = Copula.Equivalence,    # <=>
         match_reverse = False,
-        common_id = CommonId(1, 1)
+        common_id = CommonId(1, 1),
+        is_belief_valid = True,
     )
 
     add_rule(sparse_lut, structure,
@@ -213,7 +230,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         Copula1 = Copula.Equivalence,   # <=>
         Copula2 = Copula.Implication,   # ==>
         match_reverse = False,
-        common_id = CommonId(0, 0)
+        common_id = CommonId(0, 0),
+        is_belief_valid = True,
     )
 
     add_rule(sparse_lut, structure,
@@ -224,7 +242,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         Copula1 = Copula.Equivalence,    # <=>
         Copula2 = Copula.Implication,   # ==>
         match_reverse = False,
-        common_id = CommonId(0, 1)
+        common_id = CommonId(0, 1),
+        is_belief_valid = True,
     )
 
     add_rule(sparse_lut, structure,
@@ -235,7 +254,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         Copula1 = Copula.Equivalence,    # <=>
         Copula2 = Copula.Implication,   # ==>
         match_reverse = False,
-        common_id = CommonId(1, 0)
+        common_id = CommonId(1, 0),
+        is_belief_valid = True,
     )
 
     add_rule(sparse_lut, structure,
@@ -246,7 +266,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         Copula1 = Copula.Equivalence,    # <=>
         Copula2 = Copula.Implication,   # ==>
         match_reverse = False,
-        common_id = CommonId(1, 1)
+        common_id = CommonId(1, 1),
+        is_belief_valid = True,
     )
     '''resemblance'''
     add_rule(sparse_lut, structure,
@@ -257,7 +278,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         Copula1 = Copula.Equivalence,   # <=>
         Copula2 = Copula.Equivalence,   # <=>
         match_reverse = False,
-        common_id = CommonId(0, 0)
+        common_id = CommonId(0, 0),
+        is_belief_valid = True,
     )
 
     add_rule(sparse_lut, structure,
@@ -268,7 +290,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         Copula1 = Copula.Equivalence,   # <=>
         Copula2 = Copula.Equivalence,   # <=>
         match_reverse = False,
-        common_id = CommonId(0, 1)
+        common_id = CommonId(0, 1),
+        is_belief_valid = True,
     )
 
     add_rule(sparse_lut, structure,
@@ -279,7 +302,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         Copula1 = Copula.Equivalence,   # <=>
         Copula2 = Copula.Equivalence,   # <=>
         match_reverse = False,
-        common_id = CommonId(1, 0)
+        common_id = CommonId(1, 0),
+        is_belief_valid = True,
     )
 
     add_rule(sparse_lut, structure,
@@ -290,7 +314,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         Copula1 = Copula.Equivalence,   # <=>
         Copula2 = Copula.Equivalence,   # <=>
         match_reverse = False,
-        common_id = CommonId(1, 1)
+        common_id = CommonId(1, 1),
+        is_belief_valid = True,
     )
 
     '''---------NAL 3---------'''
@@ -314,7 +339,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         Copula2 = Copula.Implication,
         match_reverse = False,
         common_id = CommonId(0, 0),
-        sentence_type = class_sentence_to_list(Judgement)
+        sentence_type = class_sentence_to_list(Judgement),
+        is_belief_valid = True,
     )
 
     add_rule(sparse_lut, structure,
@@ -332,7 +358,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         Copula2 = Copula.Implication,
         match_reverse = False,
         common_id = CommonId(1, 1),
-        sentence_type = class_sentence_to_list(Judgement)
+        sentence_type = class_sentence_to_list(Judgement),
+        is_belief_valid = True,
     )
 
     add_rule(sparse_lut, structure,
@@ -350,7 +377,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         Copula2 = Copula.Implication,
         match_reverse = False,
         common_id = CommonId(0, 0),
-        sentence_type = class_sentence_to_list(Judgement)
+        sentence_type = class_sentence_to_list(Judgement),
+        is_belief_valid = True,
     )
 
     add_rule(sparse_lut, structure,
@@ -368,7 +396,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         Copula2 = Copula.Implication,
         match_reverse = False,
         common_id = CommonId(1, 1),
-        sentence_type = class_sentence_to_list(Judgement)
+        sentence_type = class_sentence_to_list(Judgement),
+        is_belief_valid = True,
     )
 
     '''
@@ -389,7 +418,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         the_other_compound_p1_at_p2 = False,
         the_other_compound_p2_at_p1 = True,
         Connector1 = Connector.Conjunction,
-        Connector2 = Any
+        Connector2 = Any,
+        is_belief_valid = True,
     )
 
     add_rule(sparse_lut, structure,
@@ -406,7 +436,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         the_other_compound_p1_at_p2 = True,
         the_other_compound_p2_at_p1 = False,
         Connector1 = Any,
-        Connector2 = Connector.Conjunction
+        Connector2 = Connector.Conjunction,
+        is_belief_valid = True,
     )
     
 
@@ -427,7 +458,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         match_reverse = False,
         common_id = CommonId(0),
         has_at = True,
-        p2_at_p1=True
+        p2_at_p1=True,
+        is_belief_valid = True,
     )
 
     add_rule(sparse_lut, structure,
@@ -440,7 +472,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         match_reverse = False,
         common_id = CommonId(0),
         has_at = True,
-        p1_at_p2=True
+        p1_at_p2=True,
+        is_belief_valid = True,
     )
     '''deduction (compound eliminate)'''
     add_rule(sparse_lut, structure,
@@ -488,7 +521,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         Copula2 = Copula.Implication,
         match_reverse = False,
         compound_common_id = CommonId(0, 1),
-        Connector1 = Connector.Conjunction
+        Connector1 = Connector.Conjunction,
+        is_belief_valid = True,
     )
 
 
@@ -508,7 +542,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         Copula2 = Copula.Implication,
         match_reverse = False,
         compound_common_id = CommonId(1, 0),
-        Connector2 = Connector.Conjunction
+        Connector2 = Connector.Conjunction,
+        is_belief_valid = True,
     )
 
     '''abduction'''
@@ -522,7 +557,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         match_reverse = False,
         common_id = CommonId(1),
         has_at = True,
-        p2_at_p1=True
+        p2_at_p1=True,
+        is_belief_valid = True,
     )
 
     add_rule(sparse_lut, structure,
@@ -535,7 +571,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         match_reverse = False,
         common_id = CommonId(1),
         has_at = True,
-        p1_at_p2=True
+        p1_at_p2=True,
+        is_belief_valid = True,
     )
 
     '''abudction (compound eliminate)'''
@@ -558,7 +595,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         the_other_compound_p1_at_p2 = False,
         the_other_compound_p2_at_p1 = True,
         Connector1 = Connector.Conjunction,
-        Connector2 = None
+        Connector2 = None,
+        is_belief_valid = True,
     )
 
     add_rule(sparse_lut, structure,
@@ -580,7 +618,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         the_other_compound_p1_at_p2 = True,
         the_other_compound_p2_at_p1 = False,
         Connector1 = None,
-        Connector2 = Connector.Conjunction
+        Connector2 = Connector.Conjunction,
+        is_belief_valid = True,
     )
 
     add_rule(sparse_lut, structure,
@@ -605,7 +644,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         the_other_compound_p1_at_p2 = True,
         the_other_compound_p2_at_p1 = True,
         Connector1 = Connector.Conjunction,
-        Connector2 = Connector.Conjunction
+        Connector2 = Connector.Conjunction,
+        is_belief_valid = True,
     )
 
     '''induction (compound replace)'''
@@ -625,7 +665,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         Copula2 = Copula.Implication,
         match_reverse = False,
         compound_common_id = CommonId(0, 0),
-        Connector1 = Connector.Conjunction
+        Connector1 = Connector.Conjunction,
+        is_belief_valid = True,
     )
 
 
@@ -645,7 +686,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         Copula2 = Copula.Implication,
         match_reverse = False,
         compound_common_id = CommonId(0, 0),
-        Connector2 = Connector.Conjunction
+        Connector2 = Connector.Conjunction,
+        is_belief_valid = True,
     )
 
     '''analogy'''
@@ -659,7 +701,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         match_reverse = False,
         common_id = CommonId(0),
         has_at = True,
-        p1_at_p2=True
+        p1_at_p2=True,
+        is_belief_valid = True,
     )
 
     add_rule(sparse_lut, structure,
@@ -672,7 +715,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         match_reverse = False,
         common_id = CommonId(0),
         has_at = True,
-        p2_at_p1=True
+        p2_at_p1=True,
+        is_belief_valid = True,
     )
 
     add_rule(sparse_lut, structure,
@@ -685,7 +729,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         match_reverse = False,
         common_id = CommonId(1),
         has_at = True,
-        p1_at_p2=True
+        p1_at_p2=True,
+        is_belief_valid = True,
     )
 
     add_rule(sparse_lut, structure,
@@ -698,7 +743,8 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         match_reverse = False,
         common_id = CommonId(1),
         has_at = True,
-        p2_at_p1=True
+        p2_at_p1=True,
+        is_belief_valid = True,
     )
 
     '''
@@ -793,7 +839,7 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         # LinkType2 = LinkType.COMPOUND, 
         Connector1 = Connector.Conjunction,
         p2_at_p1 = True,
-        is_belief_valid = False
+        is_belief_valid = False,
     )
     
     add_rule(sparse_lut, structure,

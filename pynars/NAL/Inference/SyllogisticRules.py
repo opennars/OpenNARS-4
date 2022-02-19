@@ -461,7 +461,7 @@ def comparison(task: Task, belief: Belief, budget_tasklink: Budget=None, budget_
     stat2: Statement = premise2.term
     stamp = Stamp_merge(stamp_task, stamp_belief)
 
-    copula = stat1.copula.symmetrize if not inverse_copula else stat2.copula.symmetrize
+    copula = stat1.copula.symmetrize() if not inverse_copula else stat2.copula.symmetrize()
     statement = Statement(stat2.predicate, copula, stat1.predicate) if not inverse_copula else Statement(stat2.subject, copula, stat1.subject)
 
     if punct_task.is_judgement:
@@ -539,7 +539,7 @@ def reversion(task: Task, belief: Belief, budget_tasklink: Budget=None, budget_t
     stamp = Stamp_merge(stamp_task, stamp_belief)
 
     if task.is_judgement:
-        statement = Statement(stat2.subject, stat1.copula.symmetrize, stat1.subject)
+        statement = Statement(stat2.subject, stat1.copula.symmetrize(), stat1.subject)
         truth = Truth_intersection(premise1.truth, premise2.truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgement(statement, stamp, truth)

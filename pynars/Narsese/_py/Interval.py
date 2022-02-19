@@ -1,3 +1,4 @@
+from typing import Type
 from .Term import Term
 
 
@@ -12,3 +13,6 @@ class Interval(Term):
     
     def __int__(self) -> int:
         return self.interval
+    
+    def __add__(self, o: Type['Interval']):
+        return Interval(int(self)+int(o))

@@ -1,1 +1,1 @@
-from .Reasoner_OpenNARS_3_0_4 import Reasoner as Reasoner_3_0_4
+from .Reasoner import Reasoner

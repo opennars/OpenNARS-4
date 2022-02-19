@@ -54,10 +54,17 @@ from .SyllogisticRules import \
 
 from .TemporalRules import \
 	abduction as temporal__abduction, \
+	analogy as temporal__analogy, \
 	deduction_sequence_eliminate as temporal__deduction_sequence_eliminate, \
+	deduction_sequence_replace as temporal__deduction_sequence_replace, \
 	immediate_goal_deriviation as temporal__immediate_goal_deriviation, \
 	induction_composition as temporal__induction_composition, \
+	induction_equivalence as temporal__induction_equivalence, \
 	induction_implication as temporal__induction_implication, \
+	induction_predictive_equivalance_composition as temporal__induction_predictive_equivalance_composition, \
+	induction_predictive_implication_composition as temporal__induction_predictive_implication_composition, \
+	induction_retrospective_equivalance_composition as temporal__induction_retrospective_equivalance_composition, \
+	induction_retrospective_implication_composition as temporal__induction_retrospective_implication_composition, \
 	sequence as temporal__sequence, \
 	sequence_predictive_implication as temporal__sequence_predictive_implication 
 

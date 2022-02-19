@@ -6,9 +6,9 @@ from matplotlib.pyplot import axis
 from pynars.Config import Enable
 from pynars.Narsese._py.Interval import Interval 
 from pynars.utils.IndexVar import IndexVar
-from .Term import Term, TermType
+from .Term import Term, TermType, place_holder
 from .Terms import Terms
-from .Connector import Connector, place_holder
+from .Connector import Connector
 from typing import Iterable, List, Type, Union
 from ordered_set import OrderedSet
 from typing import Set
@@ -201,6 +201,9 @@ class Compound(Term): #, OrderedSet):
             # otherwise, return `connector_parent` as the connector.
             return connector_parent, Terms(terms, is_commutative=True, is_input=is_input)
         else:
+            # e.g. (&/, (&/, A, B), (&|, C, D), E) will be converted to (&/, A, B, (&|, C, D), E)
+            terms = (term2 for term1 in (((term0 for term0 in term.terms) if term.is_compound and (term.connector is connector_parent) else (term,))for term in terms) for term2 in term1)
+
             return connector_parent, Terms(terms, is_commutative=False, is_input=is_input)
 
 
