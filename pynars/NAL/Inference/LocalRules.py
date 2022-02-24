@@ -15,8 +15,8 @@ from pynars.Config import Enable
 from pynars.NAL.Functions.Tools import calculate_solution_quality, truth_to_quality
 
 def revision(task: Task, belief: Task, budget_tasklink: Budget=None, budget_termlink: Budget=None):
-    premise1: Judgement = task.sentence
-    premise2: Judgement = belief.sentence
+    premise1: Union[Judgement, Goal] = task.sentence
+    premise2: Union[Judgement, Goal] = belief.sentence
     truth1 = premise1.truth
     truth2 = premise2.truth
     if Enable.temporal_rasoning:
@@ -27,7 +27,11 @@ def revision(task: Task, belief: Task, budget_tasklink: Budget=None, budget_term
     term = premise1.term
     stamp: Stamp = deepcopy(task.sentence.stamp) # Stamp(Global.time, task.sentence.stamp.t_occurrence, None, (j1.stamp.evidential_base | j2.stamp.evidential_base))
     stamp.evidential_base.extend(premise2.evidential_base)
-    return Task(Judgement(term, stamp, truth), budget)
+    if task.is_judgement:
+        statement = Judgement(term, stamp, truth)
+    elif task.is_goal:
+        statement = Goal(term, stamp, desire=truth)
+    return Task(statement, budget)
 
 def solution_question(task: Task, belief: Belief, budget_tasklink: Budget=None, budget_termlink: Budget=None):
     question: Union[Question, Quest] = task.sentence
