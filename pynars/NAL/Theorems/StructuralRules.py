@@ -15,7 +15,7 @@ def uni_composition(task: Task, term_concept: Term, budget_tasklink: Budget=None
     <P --> S>.          (inverse_copula: <S --> P>.)
     (|, P, Q)           (inverse_copula: (&, P, Q))
     |- 
-    <(&, P, Q) --> S>.  (inverse_copula: <S --> (|, P, Q)>.)
+    <(|, P, Q) --> S>.  (inverse_copula: <S --> (&, P, Q)>.)
     '''
     stamp_task: Stamp = task.stamp
     premise: Judgement = task.sentence
