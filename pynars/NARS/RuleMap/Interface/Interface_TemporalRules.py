@@ -4,6 +4,7 @@ from pynars.NAL.Inference import *
 from pynars.NAL.Theorems import *
 from pynars import Global
 from pynars.Narsese._py.Copula import Copula
+from pynars.Narsese._py.Term import Term
 
 
 def _temporal__deduction_sequence_eliminate__0(task: Task, belief: Belief, tasklink: TaskLink=None, termlink: TermLink=None):
@@ -34,6 +35,30 @@ def _temporal__deduction_sequence_replace__1_0(task: Task, belief: Belief, taskl
     return temporal__deduction_sequence_replace(task, belief, (tasklink.budget if tasklink is not None else None), (termlink.budget if termlink is not None else None), inverse_premise=True)
 
 
+def _temporal__sequence_immediate(task: Task, term_belief: Term, tasklink: TaskLink=None, termlink: TermLink=None):
+    '''{(&/, A, B, C)! A} |- A!.'''
+    return temporal__sequence_immediate(task, term_belief, (tasklink.budget if tasklink is not None else None), (termlink.budget if termlink is not None else None), inverse_premise=False)
+
+def _temporal__sequence(task: Task, belief: Belief, tasklink: TaskLink=None, termlink: TermLink=None):
+    '''{(&/, A, B, C)! A} |- A!.'''
+    return temporal__sequence(task, belief, (tasklink.budget if tasklink is not None else None), (termlink.budget if termlink is not None else None), inverse_premise=False)
+
+def _temporal__sequence_prime(task: Task, belief: Belief, tasklink: TaskLink=None, termlink: TermLink=None):
+    '''{C! (&/, A, B, C).} |- (&/, A, B)!'''
+    return temporal__sequence(task, belief, (tasklink.budget if tasklink is not None else None), (termlink.budget if termlink is not None else None), inverse_premise=True, inverse_copula=True)
+
+    
+def _temporal__parallel_immediate(task: Task, term_belief: Term, tasklink: TaskLink=None, termlink: TermLink=None):
+    '''{(&/, A, B, C)! A} |- A!.'''
+    return temporal__parallel_immediate(task, term_belief, (tasklink.budget if tasklink is not None else None), (termlink.budget if termlink is not None else None), inverse_premise=False)
+
+def _temporal__parallel(task: Task, belief: Belief, tasklink: TaskLink=None, termlink: TermLink=None):
+    '''{(&/, A, B, C)! A} |- A!.'''
+    return temporal__parallel(task, belief, (tasklink.budget if tasklink is not None else None), (termlink.budget if termlink is not None else None), inverse_premise=False)
+
+# def _temporal__parallel_prime(task: Task, belief: Belief, tasklink: TaskLink=None, termlink: TermLink=None):
+#     '''{(&/, A, B, C)! A} |- A!.'''
+#     return temporal__parallel(task, belief, (tasklink.budget if tasklink is not None else None), (termlink.budget if termlink is not None else None), inverse_premise=True)
 
 '''analogy'''
 def _temporal__analogy__0_1(task: Task, belief: Belief, tasklink: TaskLink=None, termlink: TermLink=None):

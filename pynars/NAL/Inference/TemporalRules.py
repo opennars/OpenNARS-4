@@ -45,10 +45,13 @@ def deduction_sequence_eliminate(task: Task, belief: Belief, budget_tasklink: Bu
         t_bias = int(interval)
         compound = None
 
-    if compound is not None: statement = Statement(compound, stat1.copula, stat1.predicate)
-    else: statement = stat1.predicate
+    if compound is not None: 
+        statement = Statement(compound, stat1.copula, stat1.predicate)
+        stamp = Stamp_merge(stamp_task, stamp_belief, None, t_bias=t_bias)
+    else: 
+        statement = stat1.predicate
+        stamp = Stamp_merge(stamp_task, stamp_belief, stat1.copula, t_bias=t_bias)
 
-    stamp = Stamp_merge(stamp_task, stamp_belief, stat1.copula, t_bias=t_bias)
 
     if task.is_judgement:
         truth = Truth_deduction(premise1.truth, premise2.truth)
@@ -120,6 +123,7 @@ def deduction_sequence_replace(task: Task, belief: Belief, budget_tasklink: Budg
     else: raise "Invalid case."
 
     return Task(sentence_derived, budget)
+
 
 def abduction(task: Task, belief: Belief, budget_tasklink: Budget=None, budget_termlink: Budget=None, inverse_premise: bool=False, inverse_copula: bool=False):
     '''
@@ -219,14 +223,14 @@ def analogy(task: Task, belief: Belief, budget_tasklink: Budget=None, budget_ter
         elif stat2.subject == stat1_subject:
             if copula1 is Copula.ConcurrentImplication and copula2 is Copula.PredictiveEquivalence:
                 # {A=|>B>. <A</>C>.} |- <A=\>C>.
-                copula = copula.inverse()
+                copula = copula.reverse
             statement = Statement(stat2.predicate, copula, stat1_predicate)
         else: raise "Invalid case."
     else:
         if stat2.predicate == stat1_predicate:
             if copula1 is Copula.ConcurrentImplication and copula2 is Copula.PredictiveEquivalence:
                 # {A=|>B>. <C</>B>.} |- <A=\>C>.
-                copula = copula.inverse()
+                copula = copula.reverse
             statement = Statement(stat1_subject, copula, stat2.subject)
         elif stat2.subject == stat1_predicate:
             statement = Statement(stat1_subject, copula, stat2.predicate)
@@ -261,8 +265,19 @@ analogy.copula_dict = {
     (Copula.ConcurrentImplication, Copula.ConcurrentEquivalence): Copula.ConcurrentImplication,
 }
 
+
 def sequence(task: Task, belief: Belief, budget_tasklink: Budget=None, budget_termlink: Budget=None, inverse_premise: bool=False, inverse_copula: bool=False):
     '''
+    (&/, A, B, C).
+    A.
+    |- 
+    (&/, B, C).
+
+    (&/, A, B, C).
+    C!
+    |- 
+    (&/, A, B)!
+
     (&/, A, B, C)!
     A.
     |- 
@@ -279,7 +294,7 @@ def sequence(task: Task, belief: Belief, budget_tasklink: Budget=None, budget_te
 
     compound: Compound = stat1
     if compound.connector is Connector.SequentialEvents:
-        compound_terms = compound.terms[1:]
+        compound_terms = compound.terms[1:] if not inverse_copula else compound.terms[:-1]
         if compound.is_multiple_only and len(compound_terms)==1:
             compound = compound_terms[0]
         else:
@@ -300,6 +315,75 @@ def sequence(task: Task, belief: Belief, budget_tasklink: Budget=None, budget_te
     else: raise "Invalid case."
 
     return Task(sentence_derived, budget)
+
+
+def parallel(task: Task, belief: Belief, budget_tasklink: Budget=None, budget_termlink: Budget=None, inverse_premise: bool=False, inverse_copula: bool=False):
+    '''
+    (&|, A, B, C)!
+    A.
+    |- 
+    (&|, B, C)!
+
+    '''
+    premise1, premise2 = (task.sentence, belief.sentence) if not inverse_premise else (belief.sentence, task.sentence)
+
+    stamp_task: Stamp = task.stamp
+    stamp_belief: Stamp = belief.stamp
+    
+    stat1: Statement = premise1.term
+    stat2: Statement = premise2.term
+
+    statement = stat1 - stat2
+
+    stamp = Stamp_merge(stamp_task, stamp_belief)
+
+    if task.is_goal:
+        truth = Desire_deduction(task.truth, belief.truth)
+        budget = Budget_forward(truth, budget_tasklink, budget_termlink)
+        sentence_derived = Goal(statement, stamp, truth)
+    else: raise "Invalid case."
+
+    return Task(sentence_derived, budget)
+
+
+
+def sequence_immediate(task: Task, term_belief: Term, budget_tasklink: Budget=None, budget_termlink: Budget=None, inverse_premise: bool=False, inverse_copula: bool=False):
+    '''
+    (&/, A, B, C)!
+    A
+    |- 
+    A!
+    '''
+
+    stamp: Stamp = copy(task.stamp)
+
+    if task.is_goal:
+        truth = Desire_deduction(task.truth, truth_analytic)
+        budget = Budget_forward(truth, budget_tasklink, budget_termlink)
+        sentence_derived = Goal(term_belief, stamp, truth)
+    else: raise "Invalid case."
+
+    return Task(sentence_derived, budget)
+
+def parallel_immediate(task: Task, term_belief: Term, budget_tasklink: Budget=None, budget_termlink: Budget=None, inverse_premise: bool=False, inverse_copula: bool=False):
+    '''
+    (&|, A, B, C)!
+    A
+    |- 
+    A!
+    '''
+
+    stamp: Stamp = copy(task.stamp)
+
+    if task.is_goal:
+        truth = Desire_deduction(task.truth, truth_analytic)
+        budget = Budget_forward(truth, budget_tasklink, budget_termlink)
+        sentence_derived = Goal(term_belief, stamp, truth)
+    else: raise "Invalid case."
+
+    return Task(sentence_derived, budget)
+
+
 
 
 def sequence_predictive_implication(task: Task, belief: Belief, budget_tasklink: Budget=None, budget_termlink: Budget=None, inverse_premise: bool=False, inverse_copula: bool=False):
@@ -536,7 +620,7 @@ def induction_predictive_implication_composition(task: Task, belief: Belief, bud
     stat1: Statement = premise1.term
     stat2: Statement = premise2.term
 
-    # stat2_subject, stat2_predicate, stat2_copula = (stat2.subject, stat2.predicate, stat2.copula) if not inverse_copula else (stat2.predicate, stat2.subject, stat2.copula.inverse())
+    # stat2_subject, stat2_predicate, stat2_copula = (stat2.subject, stat2.predicate, stat2.copula) if not inverse_copula else (stat2.predicate, stat2.subject, stat2.copula.reverse)
 
     time_diff = premise2.stamp.t_occurrence - premise1.stamp.t_occurrence
     interval = Interval(abs(time_diff))
@@ -564,7 +648,7 @@ def induction_predictive_implication_composition(task: Task, belief: Belief, bud
         predicate = Compound.SequentialEvents(stat2.predicate, interval, stat1)
         stamp = Stamp_merge(premise1.stamp, premise2.stamp)
     if inverse_copula:
-        subject, copula, predicate = predicate, copula.inverse(), subject
+        subject, copula, predicate = predicate, copula.reverse, subject
     statement = Statement(subject, copula, predicate)
 
     if task.is_judgement:
@@ -608,23 +692,23 @@ def induction_retrospective_implication_composition(task: Task, belief: Belief, 
         # # predicate = stat2.predicate
 
         subject = stat2.predicate
-        copula = stat2.copula.inverse()
+        copula = stat2.copula.reverse
         predicate =  Compound.ParallelEvents(stat1, stat2.subject)
         stamp = Stamp_merge(stamp_task, stamp_belief)
     elif time_diff > 0:
         # predictive
         subject = Compound.SequentialEvents(stat1, interval, stat2.predicate)
-        copula = stat2.copula.inverse()
+        copula = stat2.copula.reverse
         predicate = stat2.subject
         stamp = Stamp_merge(premise2.stamp, premise1.stamp)
     else: # time_diff < 0
         # retrospective
         subject = stat2.predicate
-        copula = stat2.copula.inverse()
+        copula = stat2.copula.reverse
         predicate = Compound.SequentialEvents(stat2.subject, interval, stat1)
         stamp = Stamp_merge(premise1.stamp, premise2.stamp)
     if inverse_copula:
-        subject, copula, predicate = predicate, copula.inverse(), subject
+        subject, copula, predicate = predicate, copula.reverse, subject
     statement = Statement(subject, copula, predicate)
 
     if task.is_judgement:
@@ -658,7 +742,7 @@ def induction_predictive_equivalance_composition(task: Task, belief: Belief, bud
     stat1: Statement = premise1.term
     stat2: Statement = premise2.term
 
-    # stat2_subject, stat2_predicate, stat2_copula = (stat2.subject, stat2.predicate, stat2.copula) if not inverse_copula else (stat2.predicate, stat2.subject, stat2.copula.inverse())
+    # stat2_subject, stat2_predicate, stat2_copula = (stat2.subject, stat2.predicate, stat2.copula) if not inverse_copula else (stat2.predicate, stat2.subject, stat2.copula.reverse)
 
     time_diff = premise2.stamp.t_occurrence - premise1.stamp.t_occurrence
     interval = Interval(abs(time_diff))
@@ -686,7 +770,7 @@ def induction_predictive_equivalance_composition(task: Task, belief: Belief, bud
         predicate = Compound.SequentialEvents(stat2.predicate, interval, stat1)
         stamp = Stamp_merge(premise1.stamp, premise2.stamp)
     if inverse_copula:
-        subject, copula, predicate = predicate, copula.inverse(), subject
+        subject, copula, predicate = predicate, copula.reverse, subject
     statement = Statement(subject, copula, predicate)
 
     if task.is_judgement:
@@ -746,7 +830,7 @@ def induction_retrospective_equivalance_composition(task: Task, belief: Belief, 
         predicate = Compound.SequentialEvents(stat2.subject, interval, stat1)
         stamp = Stamp_merge(premise1.stamp, premise2.stamp)
     if inverse_copula:
-        subject, copula, predicate = predicate, copula.inverse(), subject
+        subject, copula, predicate = predicate, copula.reverse, subject
     statement = Statement(subject, copula, predicate)
 
     if task.is_judgement:

@@ -1038,6 +1038,35 @@ class TEST_NAL5(unittest.TestCase):
         )
         pass
 
+    def test_question_0(self):
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '(&&, A, B)?', 
+            'A.', 
+            'A.', is_belief_term=True)
+        tasks_derived = [rule(task, belief.term, task_link, term_link) for rule in rules] 
+        self.assertTrue(
+            output_contains(tasks_derived, 'A?')
+        )
+
+    def test_question_1(self):
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            'C?', 
+            '<(&&, A, B)==>C>.', 
+            'C.')
+        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+        self.assertTrue(
+            output_contains(tasks_derived, '(&&, A, B)?')
+        )
+
+    def test_0(self):
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            'A.', 
+            '<(&&, A, B)==>C>.', 
+            'A.')
+        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+        self.assertTrue(
+            output_contains(tasks_derived, '<B==>C>. %1.00;0.81%')
+        )
 
 
 if __name__ == '__main__':

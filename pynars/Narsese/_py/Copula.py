@@ -47,13 +47,13 @@ class Copula(IdEnum):
         else:
             raise "Invalid case."
 
-    def inverse(self):
-        if self is Copula.PredictiveImplication:
-            return Copula.RetrospectiveImplication
-        elif self is Copula.RetrospectiveImplication:
-            return Copula.PredictiveImplication
-        else: 
-            return self
+    # def inverse(self):
+    #     if self is Copula.PredictiveImplication:
+    #         return Copula.RetrospectiveImplication
+    #     elif self is Copula.RetrospectiveImplication:
+    #         return Copula.PredictiveImplication
+    #     else: 
+    #         return self
                 
     
     @property

@@ -7,9 +7,9 @@ import unittest
 from pynars.NARS.DataStructures import Bag, Task, Concept
 from pynars.Narsese import Judgement, Term, Statement, Copula, Truth   
 
-from pynars.utils.SparseLUT import SparseLUT, Any
-from pynars.utils.tools import get_size
-from pynars.NARS.RuleMap.RuleMap import CommonId
+from sparse_lut import SparseLUT, Any
+# from pynars.utils.tools import get_size
+# from pynars.NARS.RuleMap.RuleMap import CommonId
 from pynars.utils.SparseLUT.branch_list import Node
 
 class TEST_SparseLUT(unittest.TestCase):

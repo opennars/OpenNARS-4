@@ -400,7 +400,9 @@ def extract_feature(premise1: Union[Term, Compound, Statement], premise2: Union[
                 # (&&, A, B, C), (&&, A, B)
                 # (&&, A, B, C), (&&, A, B, D)
                 return Feature(
-                    has_compound_common_id=True
+                    has_compound_common_id=True,
+                    p2_at_p1=True,
+                    p1_at_p2=True,
                 )
             else:
                 return Feature(
@@ -410,7 +412,8 @@ def extract_feature(premise1: Union[Term, Compound, Statement], premise2: Union[
             if premise2 in premise1.terms:
                 # (&&, A, B, C), A.
                 return Feature(
-                    has_compound_common_id=True
+                    has_compound_common_id=True,
+                    p2_at_p1=True,
                 )
             else:
                 return Feature(

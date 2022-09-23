@@ -22,7 +22,7 @@ class Variable(Term):
         word = prefix.value
         super().__init__(word, do_hashing=do_hashing)
         self.dependents = [] # only for dependent variable. TODO: implement son classes of Variable, including DependentVar, IndependentVar, QueryVar.
-        self.has_variable: bool = True
+        # self.has_variable: bool = True
 
         self.is_ivar = self.has_ivar = self.prefix == VarPrefix.Independent
         self.is_dvar = self.has_dvar = self.prefix == VarPrefix.Dependent

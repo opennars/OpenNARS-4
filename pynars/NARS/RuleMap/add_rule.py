@@ -20,7 +20,7 @@ from pynars.Narsese._py.Term import Term
 from pynars.Narsese import Belief, Term, Truth, Compound, Budget
 from ..DataStructures import LinkType, TaskLink, TermLink
 from pynars.NAL.Inference import *
-from pynars.utils.SparseLUT import SparseLUT
+from sparse_lut import SparseLUT
 from pynars.utils.tools import get_size
 
 from pynars.utils.Print import out_print, PrintType

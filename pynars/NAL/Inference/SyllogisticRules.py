@@ -355,21 +355,21 @@ def induction(task: Task, belief: Belief, budget_tasklink: Budget=None, budget_t
 
     statement = Statement(stat2.predicate, stat1.copula, stat1.predicate)
 
-    if punct_task.is_judgement:
+    if task.is_judgement:
         truth = Truth_induction(premise1.truth, premise2.truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgement(statement, stamp, truth)
-    elif punct_task.is_goal:
+    elif task.is_goal:
         Desire_function = Desire_strong if not inverse_premise else Desire_weak
         truth = Desire_function(premise1.truth, premise2.truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
         sentence_derived = Goal(statement, stamp, truth)
-    elif punct_task.is_question:
+    elif task.is_question:
         curiosity = None # TODO
         Budget_function = Budget_backward if not inverse_premise else Budget_backward_weak
         budget = Budget_function(truth_belief, budget_tasklink, budget_termlink)
         sentence_derived = Question(statement, stamp, curiosity)
-    elif punct_task.is_quest:
+    elif task.is_quest:
         curiosity = None # TODO
         Budget_function = Budget_backward_weak if not inverse_premise else Budget_backward
         budget = Budget_function(truth_belief, budget_tasklink, budget_termlink)

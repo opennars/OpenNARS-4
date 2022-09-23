@@ -5,7 +5,7 @@ __pycache__/
 Tests/*.png
 *.pkl
 !pynars/utils/SparseLUT/*.pyd
-temp/
+
 # C extensions
 *.so
 

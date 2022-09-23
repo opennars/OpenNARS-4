@@ -30,9 +30,10 @@ def product_to_image(task: Task, term_concept: Term, budget_tasklink: Budget=Non
         subject = compound_product[idx_product]
         predicate = Compound.ExtensionalImage(term_relation, compound_product=compound_product, idx=idx_product)
     else: raise "Invalid case."
-    stat_image = Statement(subject, stat_product.copula, predicate)
+    stat_image = Statement(subject, stat_product.copula, predicate) # BUG: the statment input should be replaced with `stat_image`, not using the stat_image as the statement output.
     budget = task.budget
     stamp = task.stamp
+    # term_task
 
     if task.is_judgement:
         truth = task.truth

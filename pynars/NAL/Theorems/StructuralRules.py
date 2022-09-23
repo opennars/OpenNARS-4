@@ -15,7 +15,7 @@ def uni_composition(task: Task, term_concept: Term, budget_tasklink: Budget=None
     <P --> S>.          (inverse_copula: <S --> P>.)
     (|, P, Q)           (inverse_copula: (&, P, Q))
     |- 
-    <(&, P, Q) --> S>.  (inverse_copula: <S --> (|, P, Q)>.)
+    <(|, P, Q) --> S>.  (inverse_copula: <S --> (&, P, Q)>.)
     '''
     stamp_task: Stamp = task.stamp
     premise: Judgement = task.sentence
@@ -92,8 +92,8 @@ def uni_decomposition(task: Task, term_concept: Term, budget_tasklink: Budget=No
     premise: Judgement = task.sentence
     stat: Statement = premise.term
     
-    subject: Compound | Term = stat.subject if not inverse_copula else term_concept
-    predicate: Compound | Term = term_concept if not inverse_copula else stat.predicate
+    subject: Union[Compound, Term] = stat.subject if not inverse_copula else term_concept
+    predicate: Union[Compound, Term] = term_concept if not inverse_copula else stat.predicate
 
     truth = Truth_deduction(premise.truth, truth_analytic)
     statement = Statement(subject, stat.copula, predicate)
@@ -648,10 +648,13 @@ def implication_theorem3(task: Task, term_concept: Term, budget_tasklink: Budget
     elif premise.is_question:
         sentence_derived = Question(term_concept, stamp)
         budget = Budget_backward_compound(premise.term, budget_tasklink, budget_termlink)
+        # budget = Budget_backward_compound(sentence_derived.term, budget_tasklink, budget_termlink)
+        
     elif premise.is_quest:
         sentence_derived = Quest(term_concept, stamp)
         budget = Budget_backward_compound(premise.term, budget_tasklink, budget_termlink)
-    else: raise 'Invalid case.'
+        # budget = Budget_backward_compound(sentence_derived.term, budget_tasklink, budget_termlink) 
+    else: raise 'Invalid case.' 
     
     return Task(sentence_derived, budget)
 

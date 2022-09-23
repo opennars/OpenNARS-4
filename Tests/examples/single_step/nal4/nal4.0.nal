@@ -3,7 +3,7 @@
 'An acid and a base can have a reaction.
 <(*,acid,base) --> reaction>.
 
-6
+3
 
 'Acid can react with base.
 ''outputMustContain('<acid --> (/,reaction,_,base)>. %1.00;0.90%')

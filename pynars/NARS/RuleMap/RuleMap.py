@@ -1,32 +1,16 @@
-from operator import imod
-import os 
 from pathlib import Path
-from inspect import getmembers, isfunction
-import importlib
-import re
 from typing import Any, Callable, Iterable, List, Tuple, Union
-from typing_extensions import Protocol
 from collections import OrderedDict
 
-from numpy import iterable, product
 
+from sparse_lut import SparseLUT
 from pynars.Config import Enable
-from pynars.Narsese import Copula, Task
-from pynars.Narsese import Connector, Statement, Belief, Term, Truth, Compound, Budget
-from ..DataStructures import LinkType, TaskLink, TermLink
-from pynars.NAL.Inference import *
-from pynars.utils.SparseLUT import SparseLUT
-from pynars.utils.tools import get_size
 
 from pynars.utils.Print import out_print, PrintType
 
 import time
 from datetime import datetime
-import pickle
 import sty
-# from ..InferenceEngine.GeneralEngine.extract_feature import extract_feature
-from .add_rule import _compound_has_common, _compound_at
-from pynars import Global
 
 
 class RuleMap:
@@ -96,11 +80,6 @@ class RuleMap:
 
     def draw(self, show_labels=True):
         self.map.draw(show_labels)
-
-
-    def verify(self, task_link: TaskLink, term_link: TermLink, *args):
-        raise "Invalid function."
-
 
     def diagnose(self, indices):
         '''
