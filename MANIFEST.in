@@ -1,5 +1,0 @@
-include requirements.txt
-include pynars/*.json
-include pynars/utils/SparseLUT/*.pyd
-include pynars/utils/SparseLUT/*.pyi
-include pynars/Narsese/Parser/*.lark

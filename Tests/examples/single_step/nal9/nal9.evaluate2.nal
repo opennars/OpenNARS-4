@@ -1,3 +1,0 @@
-(^evaluate,{SELF},<cat --> animal>)!
-10
-''outputMustContain('<cat --> animal>@')
