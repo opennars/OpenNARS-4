@@ -14,6 +14,8 @@ from ..DataStructures.MC.GlobalBufferMC import GlobalBufferMC
 from ..DataStructures.MC.InternalBufferMC import InternalBufferMC
 from ..DataStructures.MC.OutputBufferMC import OutputBufferMC
 from ..DataStructures.MC.SampleChannels.SampleChannel1 import SampleChannel1
+from ..DataStructures.MC.SampleChannels.SampleChannel2 import SampleChannel2
+from ..DataStructures.MC.SampleChannels.SampleEnvironment1 import SampleEnvironment1
 from ..InferenceEngine import GeneralEngine
 from pynars import Config
 from pynars.Config import Enable
@@ -31,7 +33,8 @@ class ReasonerMC:
         # self.temporal_inference = TemporalEngine()  # for temporal causal reasoning
         self.memory = Memory(n_memory)
         self.channels: List[ChannelMC] = [
-            SampleChannel1("SC1", 3, 10, 10, 10, self.memory)
+            # SampleChannel1("SC1", 3, 10, 10, 10, self.memory)
+            SampleChannel2("SC2", 3, 10, 10, 10, self.memory, SampleEnvironment1())
         ]
         # TODO, these parameters could come from config.json
         self.internal_buffer = InternalBufferMC(3, 10, 10, 10, self.memory)

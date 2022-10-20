@@ -30,3 +30,4 @@ class SampleChannel1(ChannelMC):
         for each in line:
             tasks.append(parser.parse("<(*, {Channel1}, " + each + ") --> ^see>."))
         return tasks
+

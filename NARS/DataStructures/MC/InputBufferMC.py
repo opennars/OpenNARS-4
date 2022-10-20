@@ -63,6 +63,13 @@ class InputBufferMC(object):
                 # term generation
                 each_compound_term = [each.term for each in each_compound]
                 term = Compound.ParallelEvents(*each_compound_term)
+                existed = False
+                existed_p = 0
+                for each_existed_event in self.slots[self.present].events:
+                    if each_existed_event.term.equal(term):
+                        existed = True
+                        existed_p = p_value(each_existed_event)
+                        break
                 # judgment punctuation
                 punctuation = Punctuation.Judgement
                 # truth, using truth-induction function (TODO, may subject to change)
@@ -81,7 +88,10 @@ class InputBufferMC(object):
                 sentence = Judgement(term, stamp, truth)
                 # task generation
                 task = Task(sentence, budget)
-                self.slots[self.present].update_events(task)
+                if not existed:
+                    self.slots[self.present].update_events(task)
+                elif p_value(task) > existed_p:
+                    self.slots[self.present].update_events(task)
             else:
                 self.slots[self.present].update_events(each_compound[0])
         # check concurrent compound anticipations
@@ -225,7 +235,7 @@ class InputBufferMC(object):
                 if self.slots[i].candidate:
                     # TODO, this is ugly
                     term1 = Compound.SequentialEvents(self.slots[i].candidate.term, Interval(abs(self.present - i)))
-                    term2 = self.slots[self.present].term
+                    term2 = self.slots[self.present].candidate.term
                     term = Statement.PredictiveImplication(term1, term2)
                     # <term1 =/> term2>
                     # truth, using truth-induction function (TODO, may subject to change)

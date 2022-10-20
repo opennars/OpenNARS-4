@@ -20,33 +20,42 @@ class SlotMC:
 
     def update_events(self, t: Task):
         for i in range(len(self.events)):
-            if self.events[i].term == t.term:
+            if self.events[i].term.equal(t.term):
                 del self.events[i]
                 break
         P = self.p_value(t)
+        added = False
         for i in range(len(self.events)):
             if P > self.p_value(self.events[i]):
                 self.events = self.events[:i] + [t] + self.events[i:]
+                added = True
                 break
-        self.events = [t] + self.events
+        if not added:
+            self.events = [t] + self.events
         if len(self.events) > self.num_event:
             self.events = self.events[1:]
 
     def update_events_historical(self, t: Task):
         for i in range(len(self.events_historical)):
-            if self.events_historical[i].term == t.term:
+            if self.events_historical[i].term.equal(t.term):
                 del self.events_historical[i]
                 break
         P = self.p_value(t)
+        added = False
         for i in range(len(self.events_historical)):
             if P > self.p_value(self.events_historical[i]):
                 self.events_historical = self.events_historical[:i] + [t] + self.events_historical[i:]
+                added = True
                 break
+        if not added:
+            self.events_historical = [t] + self.events_historical
         if len(self.events_historical) > self.num_event:
             self.events_historical = self.events_historical[1:]
 
     def update_anticipation(self, a: AnticipationMC):
         self.anticipations.append(a)
+        if len(self.anticipations) > self.num_anticipation:
+            self.anticipations = self.anticipations[1:]
 
     def check_anticipation(self, prediction_table, mode_unexpected = False):
         events_updates = []
@@ -56,7 +65,7 @@ class SlotMC:
         for each_event in self.events:
             event_used = False
             for each_anticipation in self.anticipations:
-                if not each_anticipation.solved and each_anticipation.term.equal(each_event.term):
+                if not each_anticipation.solved and each_anticipation.t.term.equal(each_event.term):
                     events_updates.append(each_anticipation.satisfied(prediction_table, each_event))
                     each_anticipation.solved = True
                     event_used = True
