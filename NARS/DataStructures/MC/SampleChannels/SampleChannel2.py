@@ -13,8 +13,8 @@ def task_generation_util(v, ID):
 
 class SampleChannel2(ChannelMC):
 
-    def __init__(self, ID: str, num_slot, num_event, num_anticipation, num_prediction, memory, env):
-        super(SampleChannel2, self).__init__(ID, num_slot, num_event, num_anticipation, num_prediction, memory)
+    def __init__(self, ID: str, num_slot, num_event, num_anticipation, num_prediction, memory, env, root_UI):
+        super(SampleChannel2, self).__init__(ID, num_slot, num_event, num_anticipation, num_prediction, memory, root_UI)
         self.operations = [Term("^rotate"), Term("^zoom"), Term("^up"), Term("^down"), Term("^right"), Term("^left")]
         self.env = env
 

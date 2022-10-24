@@ -1,11 +1,16 @@
+import math
 from copy import deepcopy
-
 from pynars.NAL.Functions import Stamp_merge, Budget_merge, Truth_induction, Truth_deduction
 from pynars.NAL.Inference import LocalRules
 from pynars.NARS.DataStructures import Memory
 from pynars.NARS.DataStructures.MC.AnticipationMC import AnticipationMC
 from pynars.NARS.DataStructures.MC.SlotMC import SlotMC
 from pynars.Narsese import Compound, Punctuation, Sentence, Task, Judgement, Interval, Term, Statement
+import tkinter as tk
+from tkinter import ttk
+import tkinter.font as tkFont
+from tkinter.scrolledtext import ScrolledText
+import ctypes
 
 
 # the priority value of predictions
@@ -15,7 +20,7 @@ def p_value(t: Task):
 
 class InputBufferMC(object):
 
-    def __init__(self, num_slot, num_event, num_anticipation, num_prediction, memory: Memory):
+    def __init__(self, num_slot, num_event, num_anticipation, num_prediction, memory: Memory, root_UI, UI_name):
         self.num_slot = num_slot * 2 + 1
         self.present = num_slot
         self.num_event = num_event
@@ -24,6 +29,149 @@ class InputBufferMC(object):
         self.memory = memory
         self.prediction_table = []
         self.slots = [SlotMC(num_event, num_anticipation) for _ in range(self.num_slot)]
+
+        # GUI
+        ctypes.windll.shcore.SetProcessDpiAwareness(1)
+        SF = ctypes.windll.shcore.GetScaleFactorForDevice(0)
+        self.top = tk.Toplevel(root_UI, width=160, height=50)
+        self.top.title(UI_name)
+        self.top.tk.call("tk", "scaling", SF / 75)
+        self.notebook = ttk.Notebook(self.top)
+        self.notebook.pack(pady=10, padx=10, expand=True)
+        # each time slot has one page
+        self.P = {}
+        self.contents_UI = []
+        self.word_pos_1 = 1
+        self.word_pos_2 = 1
+        self.word_pos_3 = 1
+        self.word_pos_4 = 1
+        for i in range(self.num_slot):
+            P_i = ttk.Frame(self.notebook, width=160, height=50)
+            self.P.update({P_i: None})
+            self.contents_UI.append({"historical_compound": [],
+                                     "concurrent_compound": [],
+                                     "anticipation": [],
+                                     "prediction": []})
+            P_i.pack(fill="both", expand=True)
+            self.notebook.add(P_i, text="Slot [" + str(i - self.present) + "]     ")
+            F_1 = tk.LabelFrame(P_i, width=41, height=50, text="Historical Compound")
+            F_2 = tk.LabelFrame(P_i, width=41, height=50, text="Concurrent Compound")
+            F_3 = tk.LabelFrame(P_i, width=41, height=50, text="Anticipation")
+            F_4 = tk.LabelFrame(P_i, width=41, height=50, text="Prediction")
+            F_1.pack(side=tk.LEFT)
+            F_2.pack(side=tk.LEFT)
+            F_3.pack(side=tk.LEFT)
+            F_4.pack(side=tk.LEFT)
+            Font = tkFont.Font(family="monaco", size=8)
+            T_1 = ScrolledText(F_1, width=41, height=50, font=Font)
+            T_2 = ScrolledText(F_2, width=41, height=50, font=Font)
+            T_3 = ScrolledText(F_3, width=41, height=50, font=Font)
+            T_4 = ScrolledText(F_4, width=41, height=50, font=Font)
+            T_1.pack(side=tk.RIGHT)
+            T_2.pack(side=tk.RIGHT)
+            T_3.pack(side=tk.RIGHT)
+            T_4.pack(side=tk.RIGHT)
+            T_1.insert(tk.END, "=" * 18 + "START" + "=" * 18)
+            T_2.insert(tk.END, "=" * 18 + "START" + "=" * 18)
+            T_3.insert(tk.END, "=" * 18 + "START" + "=" * 18)
+            T_4.insert(tk.END, "=" * 18 + "START" + "=" * 18)
+            T_1.configure(state="disabled")
+            T_2.configure(state="disabled")
+            T_3.configure(state="disabled")
+            T_4.configure(state="disabled")
+            T = [T_1, T_2, T_3, T_4]
+            self.P[P_i] = T
+        # each element in content_to_show contains four parts:
+        # 1) historical compound
+        # 2) concurrent compound
+        # 3) anticipation
+        # 4) prediction
+
+    def UI_roll(self):
+        self.contents_UI = self.contents_UI[1:]
+        self.contents_UI.append({"historical_compound": [],
+                                 "concurrent_compound": [],
+                                 "anticipation": [],
+                                 "prediction": []})
+
+    def UI_better_content(self, task):
+        budget = "%" + str(task.budget.priority)[:4] + ";" + str(task.budget.durability)[:4] + ";" + str(
+            task.budget.quality)[:4] + "% | "
+        word = "".join(task.sentence.word.split(" ")) + "\n"
+        word.replace("-->", "->")
+        word.replace("==>", "=>")
+        truth = str(task.truth.f)[:4] + ";" + str(task.truth.c)[:4] + "%\n"
+        end = "=" * 41 + "\n"
+        return [budget + truth, word, end]
+        # return "%" + str(task.budget.priority)[:4] + ";" + str(task.budget.durability)[:4] + ";" + str(
+        #     task.budget.quality)[:4] + "% \n " + task.sentence.word + " \n %" + str(task.truth.f)[:4] + ";" + str(
+        #     task.truth.c)[:4] + "%\n" + "=" * 41
+
+    def UI_show_single_page(self, P_i, content_UI):
+        T_1, T_2, T_3, T_4 = self.P[P_i][0], self.P[P_i][1], self.P[P_i][2], self.P[P_i][3]
+        Font = tkFont.Font(family="monaco", size=8, weight="bold")
+
+        T_1.tag_config("tag_1", font=Font)
+        T_1.tag_config("tag_2", foreground="red")
+        T_2.tag_config("tag_1", font=Font)
+        T_2.tag_config("tag_2", foreground="red")
+        T_3.tag_config("tag_1", font=Font)
+        T_3.tag_config("tag_2", foreground="red")
+        T_4.tag_config("tag_1", font=Font)
+        T_4.tag_config("tag_2", foreground="red")
+
+        T_1.configure(state="normal")
+        T_2.configure(state="normal")
+        T_3.configure(state="normal")
+        T_4.configure(state="normal")
+        T_1.delete("1.0", "end")
+        T_2.delete("1.0", "end")
+        T_3.delete("1.0", "end")
+        T_4.delete("1.0", "end")
+        for each in content_UI["historical_compound"]:
+            if each is not None and len(each) != 0:
+                BT = each[0]
+                word = each[1]
+                end = each[2]
+                T_1.insert(tk.END, BT, "tag_2")
+                T_1.insert(tk.END, word, "tag_1")
+                T_1.insert(tk.END, end)
+        for each in content_UI["concurrent_compound"]:
+            if each is not None and len(each) != 0:
+                BT = each[0]
+                word = each[1]
+                end = each[2]
+                T_2.insert(tk.END, BT, "tag_2")
+                T_2.insert(tk.END, word, "tag_1")
+                T_2.insert(tk.END, end)
+        for each in content_UI["anticipation"]:
+            if each is not None and len(each) != 0:
+                BT = each[0]
+                word = each[1]
+                end = each[2]
+                T_3.insert(tk.END, BT, "tag_2")
+                T_3.insert(tk.END, word, "tag_1")
+                T_3.insert(tk.END, end)
+        for each in content_UI["prediction"]:
+            if each is not None and len(each) != 0:
+                BT = each[0]
+                word = each[1]
+                end = each[2]
+                T_4.insert(tk.END, BT, "tag_2")
+                T_4.insert(tk.END, word, "tag_1")
+                T_4.insert(tk.END, end)
+        # T_1.insert(tk.END, content_UI["historical_compound"])
+        # T_2.insert(tk.END, content_UI["concurrent_compound"])
+        # T_3.insert(tk.END, content_UI["anticipation"])
+        # T_4.insert(tk.END, content_UI["prediction"])
+        T_1.configure(state="disabled")
+        T_2.configure(state="disabled")
+        T_3.configure(state="disabled")
+        T_4.configure(state="disabled")
+
+    def UI_show(self):
+        for i, each in enumerate(self.P):
+            self.UI_show_single_page(each, self.contents_UI[i])
 
     def update_prediction(self, p: Task):
         for i in range(len(self.prediction_table)):
@@ -70,8 +218,6 @@ class InputBufferMC(object):
                         existed = True
                         existed_p = p_value(each_existed_event)
                         break
-                # judgment punctuation
-                punctuation = Punctuation.Judgement
                 # truth, using truth-induction function (TODO, may subject to change)
                 truth = each_compound[0].truth
                 for each in each_compound[1:]:
@@ -104,20 +250,12 @@ class InputBufferMC(object):
                     # term generation
                     term = Compound.SequentialEvents(previous_event_concurrent.term, Interval(abs(self.present - i)),
                                                      each_event.term)
-                    # judgment punctuation
-                    punctuation = Punctuation.Judgement
                     # truth, using truth-induction function (TODO, may subject to change)
-                    truth = each_compound[0].truth
-                    for each in each_compound[1:]:
-                        truth = Truth_induction(truth, each.truth)
+                    truth = Truth_induction(previous_event_concurrent.truth, each_event.truth)
                     # stamp, using stamp-merge function (TODO, may subject to change)
-                    stamp = each_compound[0].stamp
-                    for each in each_compound[1:]:
-                        stamp = Stamp_merge(stamp, each.stamp)
+                    stamp = Stamp_merge(previous_event_concurrent.stamp, each_event.stamp)
                     # budget, using budget-merge function (TODO, may subject to change)
-                    budget = each_compound[0].budget
-                    for each in each_compound[1:]:
-                        budget = Budget_merge(budget, each.budget)
+                    budget = Budget_merge(previous_event_concurrent.budget, each_event.budget)
                     # sentence composition
                     sentence = Judgement(term, stamp, truth)
                     # task generation
@@ -127,22 +265,14 @@ class InputBufferMC(object):
             if previous_compound_historical:
                 for each_event in self.slots[self.present].events:
                     # term generation
-                    term = Compound.SequentialEvents(previous_compound_historical, Interval(abs(self.present - i)),
-                                                     each_event)
-                    # judgment punctuation
-                    punctuation = Punctuation.Judgement
+                    term = Compound.SequentialEvents(previous_compound_historical.term, Interval(abs(self.present - i)),
+                                                     each_event.term)
                     # truth, using truth-induction function (TODO, may subject to change)
-                    truth = each_compound[0].truth
-                    for each in compounds[1:]:
-                        truth = Truth_induction(truth, each.truth)
+                    truth = Truth_induction(previous_compound_historical.truth, each_event.truth)
                     # stamp, using stamp-merge function (TODO, may subject to change)
-                    stamp = each_compound[0].stamp
-                    for each in compounds[1:]:
-                        stamp = Stamp_merge(stamp, each.stamp)
+                    stamp = Stamp_merge(previous_compound_historical.stamp, each_event.stamp)
                     # budget, using budget-merge function (TODO, may subject to change)
-                    budget = each_compound[0].budget
-                    for each in compounds[1:]:
-                        budget = Budget_merge(budget, each.budget)
+                    budget = Budget_merge(previous_compound_historical.budget, each_event.budget)
                     # sentence composition
                     sentence = Judgement(term, stamp, truth)
                     # task generation
@@ -158,8 +288,6 @@ class InputBufferMC(object):
                 if each_prediction.term.subject.equal(each_event.term):
                     # term generation
                     term = each_prediction.term.predicate
-                    # judgment punctuation
-                    punctuation = Punctuation.Judgement
                     # truth, using truth-deduction function (TODO, may subject to change)
                     truth = Truth_deduction(each_prediction.truth, each_event.truth)
                     # stamp, using stamp-merge function (TODO, may subject to change)
@@ -177,8 +305,6 @@ class InputBufferMC(object):
                 if each_prediction.term.subject.equal(each_event_historical.term):
                     # term generation
                     term = each_prediction.term.predicate
-                    # judgment punctuation
-                    punctuation = Punctuation.Judgement
                     # truth, using truth-deduction function (TODO, may subject to change)
                     truth = Truth_deduction(each_prediction.truth, each_event_historical.truth)
                     # stamp, using stamp-merge function (TODO, may subject to change)
@@ -259,4 +385,14 @@ class InputBufferMC(object):
         self.local_evaluation()
         self.memory_based_evaluations()
         task_forward = self.prediction_generation()
+        # after each buffer cycle, GUI will upload what has been processed
+        self.UI_roll()
+        self.contents_UI[self.present].update(
+            {"historical_compound": [self.UI_better_content(each) for each in
+                                     self.slots[self.present].events_historical],
+             "concurrent_compound": [self.UI_better_content(each) for each in self.slots[self.present].events],
+             "anticipation": [self.UI_better_content(each.t) for each in self.slots[self.present].anticipations],
+             "prediction": [self.UI_better_content(each) for each in self.prediction_table]})
+        self.UI_show()
+        # print("BC finished")
         return task_forward

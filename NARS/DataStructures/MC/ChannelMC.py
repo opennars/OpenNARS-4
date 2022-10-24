@@ -4,10 +4,10 @@ from pynars.Narsese import Term
 
 class ChannelMC:
 
-    def __init__(self, ID: str, num_slot, num_event, num_anticipation, num_prediction, memory):
+    def __init__(self, ID: str, num_slot, num_event, num_anticipation, num_prediction, memory, root_UI):
         self.ID = ID
         self.operations = []
-        self.event_buffer = EventBufferMC(num_slot, num_event, num_anticipation, num_prediction, memory)
+        self.event_buffer = EventBufferMC(num_slot, num_event, num_anticipation, num_prediction, memory, root_UI, ID)
 
     def execute(self, term: Term):
         # TODO, you need to do it

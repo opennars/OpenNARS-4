@@ -1,3 +1,5 @@
+import _thread
+import ctypes
 from os import remove
 from pynars.NAL.Functions.Tools import truth_to_quality
 from pynars.NARS.DataStructures._py.Channel import Channel
@@ -22,6 +24,11 @@ from pynars.Config import Enable
 from typing import Callable, List, Tuple, Union
 import pynars.NARS.Operation as Operation
 from pynars import Global
+import tkinter as tk
+import tkinter.font as tkFont
+from tkinter.scrolledtext import ScrolledText
+
+from ...Narsese import parser
 
 
 class ReasonerMC:
@@ -32,16 +39,100 @@ class ReasonerMC:
         self.inference = GeneralEngine()
         # self.temporal_inference = TemporalEngine()  # for temporal causal reasoning
         self.memory = Memory(n_memory)
+        self.root = tk.Tk()  # GUI
+        ctypes.windll.shcore.SetProcessDpiAwareness(1)
+        SF = ctypes.windll.shcore.GetScaleFactorForDevice(0)
+        self.root.tk.call("tk", "scaling", SF/75)
+        self.F_1 = tk.LabelFrame(self.root, width=79, height=30, text="Output")
+        self.F_2 = tk.LabelFrame(self.root, width=69, height=10, text="Input")
+        self.F_21 = tk.Frame(self.F_2, width=75, height=10)
+        self.F_22 = tk.Frame(self.F_2, width=4, height=10)
+        self.F_1.pack(side=tk.TOP)
+        self.F_2.pack(side=tk.TOP)
+        self.F_21.pack(side=tk.LEFT)
+        self.F_22.pack(side=tk.LEFT)
+        Font = tkFont.Font(family="monaco", size=8)
+        self.T = ScrolledText(self.F_1, width=79, height=30, font=Font)
+        self.T.tag_config("tag_1", background="#D5D5D5")
+        self.T_using_tag = True
+        # self.T.insert(tk.END, "=" * 37 + "START" + "=" * 37)
+        self.T.configure(state="disabled")
+        # turn it into "normal" if you want to edit
+        self.E = tk.Text(self.F_21, width=75, height=10, font=Font)  # TODO, binding
+        self.B_1 = tk.Button(self.F_22, text="Step", height=1, width=5, command=self.cycle, font=Font)
+        self.B_2 = tk.Button(self.F_22, text="Enter", height=1, width=5, command=self.input_lines, font=Font)
+        # self.B_3 = tk.Button(self.F_22, text="Start", height=1, width=5, command=self.start, font=Font)
+        # self.B_4 = tk.Button(self.F_22, text="Pause", height=1, width=5, command=self.pause, font=Font)
+
+        self.T.pack(side=tk.BOTTOM)
+        self.E.pack(side=tk.LEFT, padx=1)
+        self.B_1.pack(side=tk.TOP)
+        self.B_2.pack(side=tk.TOP)
+        # self.B_3.pack(side=tk.TOP)
+        # self.B_4.pack(side=tk.TOP)
+
+        self.root.title("root UI")
         self.channels: List[ChannelMC] = [
             # SampleChannel1("SC1", 3, 10, 10, 10, self.memory)
-            SampleChannel2("SC2", 3, 10, 10, 10, self.memory, SampleEnvironment1())
+            SampleChannel2("SC2", 3, 10, 10, 10, self.memory, SampleEnvironment1(), self.root)
         ]
         # TODO, these parameters could come from config.json
-        self.internal_buffer = InternalBufferMC(3, 10, 10, 10, self.memory)
-        self.global_buffer = GlobalBufferMC(3, 10, 10, 10, self.memory)
+        self.internal_buffer = InternalBufferMC(3, 10, 10, 10, self.memory, self.root, "Internal Buffer")
+        self.global_buffer = GlobalBufferMC(3, 10, 10, 10, self.memory, self.root, "Global Buffer")
         self.output_buffer = OutputBufferMC()
         for each_channel in self.channels:
             self.output_buffer.register_channel(each_channel)
+
+    # def start(self):
+    #     if not self.mark:
+    #         self.mark = True
+    #     while self.mark:
+    #         self.cycle()
+
+    # def pause(self):
+        self.mark = False
+
+    def input_lines(self):
+        # print("called!")
+        t = self.E.get("1.0", "end")
+        sentences = t.split("\n")
+        sentences = list(filter(None, sentences))
+        self.E.delete("1.0", "end")
+        for each in sentences:
+            if len(each) == 0:
+                # print("entry1")
+                continue
+            elif each.isdigit():
+                # print("entry2")
+                num = int(each)
+                self.T.configure(state="normal")
+                if self.T_using_tag:
+                    self.T.insert(tk.END, "Running " + each + " cycles. \n", "tag_1")
+                    self.T_using_tag = False
+                else:
+                    self.T.insert(tk.END, "Running " + each + " cycles. \n")
+                    self.T_using_tag = True
+                self.T.configure(state="disabled")
+                self.cycles(num)
+            else:
+                # print("entry3")
+                try:
+                    task = parser.parse(each)
+                except:
+                    self.T.insert(tk.END, each + "PARSE ERROR!\n")
+                    continue
+                self.T.configure(state="normal")
+                if self.T_using_tag:
+                    self.T.insert(tk.END, "Task accepted: " + each + "\n", "tag_1")
+                    self.T_using_tag = False
+                else:
+                    self.T.insert(tk.END, "Task accepted: " + each + "\n")
+                    self.T_using_tag = True
+                self.T.configure(state="disabled")
+                self.memory.accept(task)
+        self.T.configure(state="normal")
+        self.T.insert(tk.END, "=" * 79 + "\n")
+        self.T.configure(state="disabled")
 
     def reset(self):
         """
@@ -51,6 +142,7 @@ class ReasonerMC:
 
     def cycles(self, n_cycle: int):
         for _ in range(n_cycle):
+            # print("i did")
             self.cycle()
 
     def cycle(self):

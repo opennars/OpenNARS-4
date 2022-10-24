@@ -9,8 +9,9 @@ class GlobalBufferMC(InputBufferMC):
     The internal buffer may take the mental operation carried out in consideration, but it is not here yet.
     """
 
-    def __init__(self, num_slot, num_event, num_anticipation, num_prediction, memory: Memory):
-        super(GlobalBufferMC, self).__init__(num_slot, num_event, num_anticipation, num_prediction, memory)
+    def __init__(self, num_slot, num_event, num_anticipation, num_prediction, memory: Memory, root_UI, UI_name):
+        super(GlobalBufferMC, self).__init__(num_slot, num_event, num_anticipation, num_prediction, memory, root_UI,
+                                             UI_name)
 
     def prediction_generation(self):
         """
@@ -68,11 +69,14 @@ class GlobalBufferMC(InputBufferMC):
                     predicate = self.slots[self.present].candidate.term
                     term = Statement(subject, copula, predicate)
                     # truth, using truth-induction function (TODO, may subject to change)
-                    truth = Truth_induction(self.slots[i].candidate.truth, self.slots[self.present].candidate.truth)
+                    truth = Truth_induction(self.slots[self.present].events_historical[i].truth,
+                                            self.slots[self.present].candidate.truth)
                     # stamp, using stamp-merge function (TODO, may subject to change)
-                    stamp = Stamp_merge(self.slots[i].candidate.stamp, self.slots[self.present].candidate.stamp)
+                    stamp = Stamp_merge(self.slots[self.present].events_historical[i].stamp,
+                                        self.slots[self.present].candidate.stamp)
                     # budget, using budget-merge function (TODO, may subject to change)
-                    budget = Budget_merge(self.slots[i].candidate.budget, self.slots[self.present].candidate.budget)
+                    budget = Budget_merge(self.slots[self.present].events_historical[i].budget,
+                                          self.slots[self.present].candidate.budget)
                     # sentence composition
                     sentence = Judgement(term, stamp, truth)
                     # task generation

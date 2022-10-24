@@ -1,3 +1,4 @@
+import _thread
 from copy import deepcopy
 from typing import Tuple, Union
 from pathlib import Path
@@ -5,7 +6,6 @@ from pynars import Narsese, NAL, NARS
 from time import sleep
 from multiprocessing import Process
 import os
-
 from pynars.NARS.Control.ReasonerMC import ReasonerMC
 from pynars.Narsese.Parser.parser import TreeToNarsese
 from pynars.Narsese import Sentence
@@ -35,12 +35,14 @@ def run_nars_MC():
     rand_seed(seed)
     out_print(PrintType.COMMENT, f'rand_seed={seed}', comment_title='Setup')
     nars = ReasonerMC(100)
+    # nars = Reasoner(100, 100)
     out_print(PrintType.COMMENT, 'Init...', comment_title='NARS')
     out_print(PrintType.COMMENT, 'Run...', comment_title='NARS')
     # console
     out_print(PrintType.COMMENT, 'Console.', comment_title='NARS')
-    for i in range(10):
-        nars.cycle()
+    # nars.cycles(10)
+    nars.root.mainloop()
+    print("Finished")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Parse NAL files.')

@@ -78,7 +78,7 @@ class SlotMC:
         for each_event_historical in self.events_historical:
             event_used = False
             for each_anticipation in self.anticipations:
-                if not each_anticipation.solved and each_anticipation.term.equal(each_event_historical.term):
+                if not each_anticipation.solved and each_anticipation.t.term.equal(each_event_historical.term):
                     events_updates.append(each_anticipation.satisfied(prediction_table, each_event_historical))
                     each_anticipation.solved = True
                     event_used = True
