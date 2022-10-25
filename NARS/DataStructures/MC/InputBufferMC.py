@@ -71,10 +71,10 @@ class InputBufferMC(object):
             T_2.pack(side=tk.RIGHT)
             T_3.pack(side=tk.RIGHT)
             T_4.pack(side=tk.RIGHT)
-            T_1.insert(tk.END, "=" * 18 + "START" + "=" * 18)
-            T_2.insert(tk.END, "=" * 18 + "START" + "=" * 18)
-            T_3.insert(tk.END, "=" * 18 + "START" + "=" * 18)
-            T_4.insert(tk.END, "=" * 18 + "START" + "=" * 18)
+            T_1.insert(tk.END, "=" * 18 + "READY" + "=" * 18)
+            T_2.insert(tk.END, "=" * 18 + "READY" + "=" * 18)
+            T_3.insert(tk.END, "=" * 18 + "READY" + "=" * 18)
+            T_4.insert(tk.END, "=" * 18 + "READY" + "=" * 18)
             T_1.configure(state="disabled")
             T_2.configure(state="disabled")
             T_3.configure(state="disabled")
@@ -100,9 +100,10 @@ class InputBufferMC(object):
         word = "".join(task.sentence.word.split(" ")) + "\n"
         word.replace("-->", "->")
         word.replace("==>", "=>")
-        truth = str(task.truth.f)[:4] + ";" + str(task.truth.c)[:4] + "%\n"
+        truth = str(task.truth.f)[:4] + ";" + str(task.truth.c)[:4] + "% | "
+        priority_value = str(p_value(task))[:4] + "\n"
         end = "=" * 41 + "\n"
-        return [budget + truth, word, end]
+        return [budget + truth + priority_value, word, end]
         # return "%" + str(task.budget.priority)[:4] + ";" + str(task.budget.durability)[:4] + ";" + str(
         #     task.budget.quality)[:4] + "% \n " + task.sentence.word + " \n %" + str(task.truth.f)[:4] + ";" + str(
         #     task.truth.c)[:4] + "%\n" + "=" * 41
@@ -169,6 +170,17 @@ class InputBufferMC(object):
         T_3.configure(state="disabled")
         T_4.configure(state="disabled")
 
+    def UI_content_update(self):
+        for i in range(self.num_slot):
+            self.contents_UI[i].update({"historical_compound": [self.UI_better_content(each) for each in
+                                                                self.slots[i].events_historical],
+                                        "concurrent_compound": [self.UI_better_content(each) for each in
+                                                                self.slots[i].events],
+                                        "anticipation": [self.UI_better_content(each.t) for each in
+                                                         self.slots[i].anticipations],
+                                        "prediction": [self.UI_better_content(each) for each in
+                                                       self.prediction_table]})
+
     def UI_show(self):
         for i, each in enumerate(self.P):
             self.UI_show_single_page(each, self.contents_UI[i])
@@ -179,13 +191,17 @@ class InputBufferMC(object):
                 del self.prediction_table[i]
                 break
         P = p_value(p)
+        added = False
+        # large to small
         for i in range(len(self.prediction_table)):
             if P > p_value(self.prediction_table[i]):
                 self.prediction_table = self.prediction_table[:i] + [p] + self.prediction_table[i:]
+                added = True
                 break
-        self.prediction_table = [p] + self.prediction_table
+        if not added:
+            self.prediction_table = self.prediction_table + [p]
         if len(self.prediction_table) > self.num_prediction:
-            self.prediction_table = self.prediction_table[1:]
+            self.prediction_table = self.prediction_table[:-1]
 
     def combination(self, lst, start, num, tmp, cpds):
         if num == 0:
@@ -284,8 +300,15 @@ class InputBufferMC(object):
     def local_evaluation(self):
         # generate anticipation
         for each_prediction in self.prediction_table:
+            # predictions may be like "(&/, A, +1) =/> B", the content of the subject will just be A
+            time_offset = 0
+            if isinstance(each_prediction.term.subject.terms[-1], Interval):
+                subject = Compound.SequentialEvents(*each_prediction.term.subject.terms[:-1])
+                time_offset = int(each_prediction.term.subject.terms[-1])
+            else:
+                subject = each_prediction.term.subject
             for each_event in self.slots[self.present].events:
-                if each_prediction.term.subject.equal(each_event.term):
+                if subject.equal(each_event.term):
                     # term generation
                     term = each_prediction.term.predicate
                     # truth, using truth-deduction function (TODO, may subject to change)
@@ -300,9 +323,10 @@ class InputBufferMC(object):
                     task = Task(sentence, budget)
                     # anticipation generation
                     anticipation = AnticipationMC(task, each_prediction)
-                    self.slots[self.present].update_anticipation(anticipation)
+                    if time_offset <= self.present:
+                        self.slots[self.present + time_offset].update_anticipation(anticipation)
             for each_event_historical in self.slots[self.present].events_historical:
-                if each_prediction.term.subject.equal(each_event_historical.term):
+                if subject.equal(each_event_historical.term):
                     # term generation
                     term = each_prediction.term.predicate
                     # truth, using truth-deduction function (TODO, may subject to change)
@@ -317,7 +341,8 @@ class InputBufferMC(object):
                     task = Task(sentence, budget)
                     # anticipation generation
                     anticipation = AnticipationMC(task, each_prediction)
-                    self.slots[self.present].update_anticipation(anticipation)
+                    if time_offset <= self.present:
+                        self.slots[self.present + time_offset].update_anticipation(anticipation)
         # check anticipations with un-expectation handling
         self.slots[self.present].check_anticipation(self.prediction_table, mode_unexpected=True)
 
@@ -341,9 +366,9 @@ class InputBufferMC(object):
         for each_event_historical in events_historical_updates:
             self.slots[self.present].update_events_historical(each_event_historical)
         if len(self.slots[self.present].events) != 0:
-            self.slots[self.present].highest_compound = self.slots[self.present].events[-1]
+            self.slots[self.present].highest_compound = self.slots[self.present].events[0]
         if len(self.slots[self.present].events_historical) != 0:
-            self.slots[self.present].highest_compound_historical = self.slots[self.present].events_historical[-1]
+            self.slots[self.present].highest_compound_historical = self.slots[self.present].events_historical[0]
         if len(self.slots[self.present].events) != 0 and len(self.slots[self.present].events_historical) != 0:
             if self.slots[0].p_value(self.slots[self.present].highest_compound) > self.slots[0].p_value(
                     self.slots[self.present].highest_compound_historical):
@@ -387,12 +412,13 @@ class InputBufferMC(object):
         task_forward = self.prediction_generation()
         # after each buffer cycle, GUI will upload what has been processed
         self.UI_roll()
-        self.contents_UI[self.present].update(
-            {"historical_compound": [self.UI_better_content(each) for each in
-                                     self.slots[self.present].events_historical],
-             "concurrent_compound": [self.UI_better_content(each) for each in self.slots[self.present].events],
-             "anticipation": [self.UI_better_content(each.t) for each in self.slots[self.present].anticipations],
-             "prediction": [self.UI_better_content(each) for each in self.prediction_table]})
+        self.UI_content_update()
+        # self.contents_UI[self.present].update(
+        #     {"historical_compound": [self.UI_better_content(each) for each in
+        #                              self.slots[self.present].events_historical],
+        #      "concurrent_compound": [self.UI_better_content(each) for each in self.slots[self.present].events],
+        #      "anticipation": [self.UI_better_content(each.t) for each in self.slots[self.present].anticipations],
+        #      "prediction": [self.UI_better_content(each) for each in self.prediction_table]})
         self.UI_show()
         # print("BC finished")
         return task_forward

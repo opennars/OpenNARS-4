@@ -71,4 +71,8 @@ class SampleChannel2(ChannelMC):
             ret.append(task_C)
         if task_D:
             ret.append(task_D)
+        # print(self.env.mask_position)
+        # print(self.env.mask_size)
+        # print(self.env.rotation)
+        # print("==>")
         return ret

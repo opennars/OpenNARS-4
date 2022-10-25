@@ -25,15 +25,16 @@ class SlotMC:
                 break
         P = self.p_value(t)
         added = False
+        # large to small
         for i in range(len(self.events)):
             if P > self.p_value(self.events[i]):
                 self.events = self.events[:i] + [t] + self.events[i:]
                 added = True
                 break
-        if not added:
-            self.events = [t] + self.events
+        if not added:  # smallest
+            self.events = self.events + [t]
         if len(self.events) > self.num_event:
-            self.events = self.events[1:]
+            self.events = self.events[:-1]
 
     def update_events_historical(self, t: Task):
         for i in range(len(self.events_historical)):
@@ -42,15 +43,16 @@ class SlotMC:
                 break
         P = self.p_value(t)
         added = False
+        # large to small
         for i in range(len(self.events_historical)):
             if P > self.p_value(self.events_historical[i]):
                 self.events_historical = self.events_historical[:i] + [t] + self.events_historical[i:]
                 added = True
                 break
-        if not added:
-            self.events_historical = [t] + self.events_historical
+        if not added:  # smallest
+            self.events_historical = self.events_historical + [t]
         if len(self.events_historical) > self.num_event:
-            self.events_historical = self.events_historical[1:]
+            self.events_historical = self.events_historical[:-1]
 
     def update_anticipation(self, a: AnticipationMC):
         self.anticipations.append(a)

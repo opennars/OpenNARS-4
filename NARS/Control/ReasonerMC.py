@@ -71,7 +71,7 @@ class ReasonerMC:
         # self.B_3.pack(side=tk.TOP)
         # self.B_4.pack(side=tk.TOP)
 
-        self.root.title("root UI")
+        self.root.title("PyNARS 0.0.2.MC Console")
         self.channels: List[ChannelMC] = [
             # SampleChannel1("SC1", 3, 10, 10, 10, self.memory)
             SampleChannel2("SC2", 3, 10, 10, 10, self.memory, SampleEnvironment1(), self.root)
@@ -157,7 +157,10 @@ class ReasonerMC:
         # step 2, Take out a task from each channel, and put it into the global buffer
         tasks_from_channels = []
         for each_channel in self.channels:
+            # print("X")
             tasks_from_channels.append(each_channel.step())
+        print(tasks_from_channels)
+        print("==>")
 
         # step 2.5, merge the task from the internal buffer and the tasks from channels
         tasks_for_global_buffer = tasks_from_channels + [task_from_internal_buffer]
