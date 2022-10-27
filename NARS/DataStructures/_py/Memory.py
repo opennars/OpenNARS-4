@@ -10,19 +10,22 @@ from .Concept import Concept
 from .Bag import Bag
 from pynars.NAL.Functions.Tools import revisible
 from pynars.NAL.Inference import local__revision
+
+
 # from pynars.NARS import Operation
 
 class Memory:
-    def __init__(self, capacity: int, n_buckets: int = None, take_in_order: bool = False) -> None:
+    def __init__(self, capacity: int, n_buckets: int = None, take_in_order: bool = False, output_buffer = None) -> None:
         self.concepts = Bag(capacity, n_buckets=n_buckets, take_in_order=take_in_order)
-        
+        self.output_buffer = output_buffer
+
     def accept(self, task: Task):
         '''
         **Accept task**: Accept a task from the `Overall Experience`, and link it from all directly related concepts. Ref: *The Conceptual Design of OpenNARS 3.1.0*.
         '''
         # merging the new task as a concept into the memory
         concept: Concept = Concept._conceptualize(self, task.term, task.budget)
-        if concept is None: return None # The memroy is full. The concept fails to get into the memory.
+        if concept is None: return None  # The memroy is full. The concept fails to get into the memory.
 
         # then process each task according to its type
         task_revised, goal_derived, answers_question, answer_quest = None, None, None, None
@@ -30,10 +33,30 @@ class Memory:
             # revised the belief if there has been one, and try to solve question if there has been a corresponding one.
             task_revised, answers_question = self._accept_judgement(task, concept)
         elif task.is_goal:
-            task_revised, belief_selected = self._accept_goal(task, concept)        
+            task_revised, belief_selected = self._accept_goal(task, concept)
+            # TODO, ugly!
+            exist = False
+            for i in range(len(self.output_buffer.active_goals)):
+                if self.output_buffer.active_goals[i][0].term.equal(task.term):
+                    self.output_buffer.active_goals = self.output_buffer.active_goals[:i] + [
+                        [task, "updated"]] + self.output_buffer.active_goals[i:]
+                    exist = True
+                    break
+            if not exist:
+                self.output_buffer.active_goals.append([task, "initialized"])
         elif task.is_question:
             # add the question to the question-table of the concept, and try to find a solution.
             answers_question = self._accept_question(task, concept)
+            # TODO, ugly!
+            exist = False
+            for i in range(len(self.output_buffer.active_questions)):
+                if self.output_buffer.active_questions[i][0].term.equal(task.term):
+                    self.output_buffer.active_questions = self.output_buffer.active_questions[:i] + [
+                        [task, "updated"]] + self.output_buffer.active_questions[i:]
+                    exist = True
+                    break
+            if not exist:
+                self.output_buffer.active_questions.append([task, "initialized"])
         elif task.is_quest:
             answer_quest = self._accept_quest(task, concept)
         else:
@@ -46,18 +69,17 @@ class Memory:
             # if (!task.sentence.isEternal() && !(task.sentence.term instanceof Operation)) {
             #     globalBuffer.eventInference(task, cont, false); //can be triggered by Buffer itself in the future
             # }
-            raise # TODO
-        
+            raise  # TODO
+
         return task_revised, goal_derived, answers_question, answer_quest
-        
-    
+
     def _accept_judgement(self, task: Task, concept: Concept):
         ''''''
         belief_revised = None
         answers = None
-        if Enable.operation: raise # InternalExperienceBuffer.handleOperationFeedback(task, nal);
-        if Enable.anticipation: raise # ProcessAnticipation.confirmAnticipation(task, concept, nal);
-        
+        if Enable.operation: raise  # InternalExperienceBuffer.handleOperationFeedback(task, nal);
+        if Enable.anticipation: raise  # ProcessAnticipation.confirmAnticipation(task, concept, nal);
+
         # j1: Judgement = task.sentence
         belief: Belief = concept.match_belief(task.sentence)
         if belief is not None:
@@ -75,10 +97,10 @@ class Memory:
                     }
                     '''
                     raise
-                belief_revised = local__revision(task, belief) # TODO: handling the stamps
+                belief_revised = local__revision(task, belief)  # TODO: handling the stamps
                 # reduce priority by achieving level
                 task.reduce_budget_by_achieving_level(belief)
-                
+
         if task.budget.is_above_thresh:
             '''final int nnq = concept.questions.size();
             for (int i = 0; i < nnq; i++) {
@@ -93,39 +115,36 @@ class Memory:
             # try to solve questions
             answers = self._solve_judgement(task, concept)
 
-        
-        return belief_revised, answers 
-    
+        return belief_revised, answers
 
     def _accept_question(self, task: Task, concept: Concept):
-        ''''''        
+        ''''''
         concept.question_table.add(task, 0.5)
 
-        if task.is_query: 
+        if task.is_query:
             answers = self._solve_query(task, concept)
-        else: 
+        else:
             answers = self._solve_question(task, concept)
-        
-        return answers
 
+        return answers
 
     def _accept_goal(self, task: Task, concept: Concept):
         ''''''
         desire_revised = None
         belief_selected = None
-        if Enable.operation: raise # InternalExperienceBuffer.handleOperationFeedback(task, nal);
-        if Enable.anticipation: raise # ProcessAnticipation.confirmAnticipation(task, concept, nal);
-        
+        if Enable.operation: raise  # InternalExperienceBuffer.handleOperationFeedback(task, nal);
+        if Enable.anticipation: raise  # ProcessAnticipation.confirmAnticipation(task, concept, nal);
+
         g1: Goal = task.sentence
         desire: Desire = concept.match_desire(g1)
         if desire is not None:
             g2: Goal = desire.sentence
             if revisible(task, desire):
                 # TODO: Temporal projection
-                desire_revised = local__revision(task, desire) # TODO: handling the stamps
+                desire_revised = local__revision(task, desire)  # TODO: handling the stamps
                 # reduce priority by achieving level
-                task.reduce_budget_by_achieving_level(desire)                
-                
+                task.reduce_budget_by_achieving_level(desire)
+
         if task.budget.is_above_thresh:
             '''
             for (final Task iQuest : concept.quests ) {
@@ -136,28 +155,25 @@ class Memory:
                 trySolution(beliefT.sentence, task, nal, true);
             }
             '''
-            
+
             # 1. try to solve questions
 
             # 2. try to solve quests
 
-
             concept.add_desire(task)
-        
-        return desire_revised, belief_selected
 
+        return desire_revised, belief_selected
 
     def _accept_quest(self, task: Task, concept: Concept):
         ''''''
         concept.quest_table.add(task, 0.5)
 
-        if task.is_query: 
+        if task.is_query:
             answers = self._solve_query(task, concept)
-        else: 
+        else:
             answers = self._solve_quest(task, concept)
-        
-        return answers
 
+        return answers
 
     def _solve_judgement(self, belief: Task, concept: Concept):
         '''
@@ -188,8 +204,6 @@ class Memory:
 
         return answers
 
-
-
     def _solve_question(self, question: Task, concept: Concept):
         '''
         Args:
@@ -203,7 +217,6 @@ class Memory:
             answer = solution_question(question, belief_answer)
             if answer is not None: answers.append(answer)
         return answers
-        
 
     def _solve_query(self, query: Task, concept: Concept):
         '''
@@ -233,9 +246,9 @@ class Memory:
             pass
         elif query.is_quest:
             pass
-        else: raise "Invalid case."
+        else:
+            raise "Invalid case."
         return answers
-
 
     def _solve_goal(self, task: Task, concept: Concept):
         '''
@@ -243,7 +256,6 @@ class Memory:
             task (Task): Its sentence should be a goal.
             concept (Concept): The concept corresponding to the task.
         '''
-
 
     def _solve_quest(self, task: Task, concept: Concept):
         '''
@@ -254,24 +266,23 @@ class Memory:
         answers = []
         return answers
 
-        
-    def take(self, remove=True) -> Concept:
+    def take(self, remove = True) -> Concept:
         '''
         Take out a concept according to priority.
         '''
         return self.concepts.take(remove)
 
-    def take_by_key(self, key: Task, remove=True) -> Concept:
+    def take_by_key(self, key: Task, remove = True) -> Concept:
         return self.concepts.take_by_key(key, remove)
 
     def put(self, concept: Concept):
         return self.concepts.put(concept)
-    
+
     def put_back(self, concept: Concept):
         return self.concepts.put_back(concept)
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__}: #items={len(self.concepts)}, #buckets={len(self.concepts.levels)}>"
-    
+
     def __len__(self) -> int:
         return len(self.concepts)

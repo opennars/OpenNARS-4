@@ -18,6 +18,21 @@ def p_value(t: Task):
     return t.budget.summary * t.truth.e / t.term.complexity ** 2
 
 
+def UI_better_content(task: Task):
+    budget = "%" + str(task.budget.priority)[:4] + ";" + str(task.budget.durability)[:4] + ";" + str(
+        task.budget.quality)[:4] + "% | "
+    word = "".join(task.sentence.word.split(" ")) + "\n"
+    word.replace("-->", "->")
+    word.replace("==>", "=>")
+    truth = str(task.truth.f)[:4] + ";" + str(task.truth.c)[:4] + "% | "
+    priority_value = str(p_value(task))[:4] + "\n"
+    end = "=" * 41 + "\n"
+    return [budget + truth + priority_value, word, end]
+    # return "%" + str(task.budget.priority)[:4] + ";" + str(task.budget.durability)[:4] + ";" + str(
+    #     task.budget.quality)[:4] + "% \n " + task.sentence.word + " \n %" + str(task.truth.f)[:4] + ";" + str(
+    #     task.truth.c)[:4] + "%\n" + "=" * 41
+
+
 class InputBufferMC(object):
 
     def __init__(self, num_slot, num_event, num_anticipation, num_prediction, memory: Memory, root_UI, UI_name):
@@ -94,20 +109,6 @@ class InputBufferMC(object):
                                  "anticipation": [],
                                  "prediction": []})
 
-    def UI_better_content(self, task):
-        budget = "%" + str(task.budget.priority)[:4] + ";" + str(task.budget.durability)[:4] + ";" + str(
-            task.budget.quality)[:4] + "% | "
-        word = "".join(task.sentence.word.split(" ")) + "\n"
-        word.replace("-->", "->")
-        word.replace("==>", "=>")
-        truth = str(task.truth.f)[:4] + ";" + str(task.truth.c)[:4] + "% | "
-        priority_value = str(p_value(task))[:4] + "\n"
-        end = "=" * 41 + "\n"
-        return [budget + truth + priority_value, word, end]
-        # return "%" + str(task.budget.priority)[:4] + ";" + str(task.budget.durability)[:4] + ";" + str(
-        #     task.budget.quality)[:4] + "% \n " + task.sentence.word + " \n %" + str(task.truth.f)[:4] + ";" + str(
-        #     task.truth.c)[:4] + "%\n" + "=" * 41
-
     def UI_show_single_page(self, P_i, content_UI):
         T_1, T_2, T_3, T_4 = self.P[P_i][0], self.P[P_i][1], self.P[P_i][2], self.P[P_i][3]
         Font = tkFont.Font(family="monaco", size=8, weight="bold")
@@ -172,13 +173,13 @@ class InputBufferMC(object):
 
     def UI_content_update(self):
         for i in range(self.num_slot):
-            self.contents_UI[i].update({"historical_compound": [self.UI_better_content(each) for each in
+            self.contents_UI[i].update({"historical_compound": [UI_better_content(each) for each in
                                                                 self.slots[i].events_historical],
-                                        "concurrent_compound": [self.UI_better_content(each) for each in
+                                        "concurrent_compound": [UI_better_content(each) for each in
                                                                 self.slots[i].events],
-                                        "anticipation": [self.UI_better_content(each.t) for each in
+                                        "anticipation": [UI_better_content(each.t) for each in
                                                          self.slots[i].anticipations],
-                                        "prediction": [self.UI_better_content(each) for each in
+                                        "prediction": [UI_better_content(each) for each in
                                                        self.prediction_table]})
 
     def UI_show(self):

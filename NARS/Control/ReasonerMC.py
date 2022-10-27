@@ -15,7 +15,7 @@ from ..DataStructures.MC.ChannelMC import ChannelMC
 from ..DataStructures.MC.GlobalBufferMC import GlobalBufferMC
 from ..DataStructures.MC.InternalBufferMC import InternalBufferMC
 from ..DataStructures.MC.OutputBufferMC import OutputBufferMC
-from ..DataStructures.MC.SampleChannels.SampleChannel1 import SampleChannel1
+# from ..DataStructures.MC.SampleChannels.SampleChannel1 import SampleChannel1
 from ..DataStructures.MC.SampleChannels.SampleChannel2 import SampleChannel2
 from ..DataStructures.MC.SampleChannels.SampleEnvironment1 import SampleEnvironment1
 from ..InferenceEngine import GeneralEngine
@@ -38,11 +38,10 @@ class ReasonerMC:
         Config.load(config)
         self.inference = GeneralEngine()
         # self.temporal_inference = TemporalEngine()  # for temporal causal reasoning
-        self.memory = Memory(n_memory)
         self.root = tk.Tk()  # GUI
         ctypes.windll.shcore.SetProcessDpiAwareness(1)
         SF = ctypes.windll.shcore.GetScaleFactorForDevice(0)
-        self.root.tk.call("tk", "scaling", SF/75)
+        self.root.tk.call("tk", "scaling", SF / 75)
         self.F_1 = tk.LabelFrame(self.root, width=79, height=30, text="Output")
         self.F_2 = tk.LabelFrame(self.root, width=69, height=10, text="Input")
         self.F_21 = tk.Frame(self.F_2, width=75, height=10)
@@ -54,6 +53,9 @@ class ReasonerMC:
         Font = tkFont.Font(family="monaco", size=8)
         self.T = ScrolledText(self.F_1, width=79, height=30, font=Font)
         self.T.tag_config("tag_1", background="#D5D5D5")
+        self.T.tag_config("tag_2", font=tkFont.Font(family="monaco", size=8, weight="bold"))
+        self.T.tag_config("tag_2_updated", font=tkFont.Font(family="monaco", size=8, weight="bold"), background="yellow")
+        self.T.tag_config("updated", background="yellow")
         self.T_using_tag = True
         # self.T.insert(tk.END, "=" * 37 + "START" + "=" * 37)
         self.T.configure(state="disabled")
@@ -72,6 +74,8 @@ class ReasonerMC:
         # self.B_4.pack(side=tk.TOP)
 
         self.root.title("PyNARS 0.0.2.MC Console")
+        self.output_buffer = OutputBufferMC(self.T)
+        self.memory = Memory(n_memory, output_buffer=self.output_buffer)
         self.channels: List[ChannelMC] = [
             # SampleChannel1("SC1", 3, 10, 10, 10, self.memory)
             SampleChannel2("SC2", 3, 10, 10, 10, self.memory, SampleEnvironment1(), self.root)
@@ -79,17 +83,16 @@ class ReasonerMC:
         # TODO, these parameters could come from config.json
         self.internal_buffer = InternalBufferMC(3, 10, 10, 10, self.memory, self.root, "Internal Buffer")
         self.global_buffer = GlobalBufferMC(3, 10, 10, 10, self.memory, self.root, "Global Buffer")
-        self.output_buffer = OutputBufferMC()
         for each_channel in self.channels:
             self.output_buffer.register_channel(each_channel)
 
-    # def start(self):
-    #     if not self.mark:
-    #         self.mark = True
-    #     while self.mark:
-    #         self.cycle()
+        # def start(self):
+        #     if not self.mark:
+        #         self.mark = True
+        #     while self.mark:
+        #         self.cycle()
 
-    # def pause(self):
+        # def pause(self):
         self.mark = False
 
     def input_lines(self):
@@ -98,11 +101,13 @@ class ReasonerMC:
         sentences = t.split("\n")
         sentences = list(filter(None, sentences))
         self.E.delete("1.0", "end")
+        have_content = False
         for each in sentences:
             if len(each) == 0:
                 # print("entry1")
                 continue
             elif each.isdigit():
+                have_content = True
                 # print("entry2")
                 num = int(each)
                 self.T.configure(state="normal")
@@ -121,6 +126,7 @@ class ReasonerMC:
                 except:
                     self.T.insert(tk.END, each + "PARSE ERROR!\n")
                     continue
+                have_content = True
                 self.T.configure(state="normal")
                 if self.T_using_tag:
                     self.T.insert(tk.END, "Task accepted: " + each + "\n", "tag_1")
@@ -131,7 +137,8 @@ class ReasonerMC:
                 self.T.configure(state="disabled")
                 self.memory.accept(task)
         self.T.configure(state="normal")
-        self.T.insert(tk.END, "=" * 79 + "\n")
+        if have_content:
+            self.T.insert(tk.END, "=" * 79 + "\n")
         self.T.configure(state="disabled")
 
     def reset(self):
@@ -169,8 +176,41 @@ class ReasonerMC:
         # step 3, feed these tasks to the global buffer and send the one from the global buffer to the main memory
         task_from_global_buffer = self.global_buffer.step(tasks_for_global_buffer)
         if task_from_global_buffer:
-            judgement_revised, goal_revised, answers_question, answers_quest = self.memory.accept(
-                task_from_global_buffer)
+            judgement_revised, goal_revised, answers_question, answers_quest = \
+                self.memory.accept(task_from_global_buffer)
+            # GUI - output buffer
+            # if False:
+            #     if judgement_revised is not None:
+            #         pass  # TODO, do I need to process this situation?
+            # TODO, ugly!
+            if goal_revised is not None:
+                exist = False
+                for i in range(len(self.output_buffer.active_goals)):
+                    if self.output_buffer.active_goals[i][0].term.equal(goal_revised.term):
+                        self.output_buffer.active_goals = self.output_buffer.active_goals[:i] + [
+                            [goal_revised, "updated"]] + self.output_buffer.active_goals[i:]
+                        exist = True
+                        break
+                if not exist:
+                    self.output_buffer.active_goals.append([goal_revised, "initialized"])
+            if answers_question is not None and len(answers_question) != 0:
+                for each in answers_question:
+                    exist = False
+                    for i in range(len(self.output_buffer.active_questions)):
+                        if self.output_buffer.active_questions[i][0].term.equal(each.term):
+                            self.output_buffer.active_questions = self.output_buffer.active_questions[:i] + [
+                                [each, "updated"]] + self.output_buffer.active_questions[i:]
+                            exist = True
+                            break
+                    if not exist:
+                        self.output_buffer.active_questions.append([each, "initialized"])
+            # TODO, quests handling?
+            # if answers_quest is not None:
+            #     for i in range(len(self.output_buffer.active_quests)):
+            #         if self.output_buffer.active_quests[i][0].term.equal(answers_quest.term):
+            #             self.output_buffer.active_quests = self.output_buffer.active_quests[:i] + [
+            #                 [answers_quest, "updated"]] + self.output_buffer.active_quests[i:]
+            #             break
             # if Enable.temporal_rasoning:
             #     # TODO: Temporal Inference
             #     raise
@@ -187,6 +227,7 @@ class ReasonerMC:
             #         self.internal_buffer.update_inference_result(answer)
         else:
             judgement_revised, goal_revised, answers_question, answers_quest = None, None, None, None
+        self.output_buffer.UI_show()
 
         # step 4, apply general inference step
         concept: Concept = self.memory.take(remove=True)

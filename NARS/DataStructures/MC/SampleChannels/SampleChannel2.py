@@ -24,6 +24,7 @@ class SampleChannel2(ChannelMC):
         elif term.equal(self.operations[1]):
             self.env.zoom()
         elif term.equal(self.operations[2]):
+            # print("DID up")
             self.env.up()
         elif term.equal(self.operations[3]):
             self.env.down()
@@ -31,6 +32,8 @@ class SampleChannel2(ChannelMC):
             self.env.right()
         elif term.equal(self.operations[5]):
             self.env.left()
+        else:
+            return
 
     def information_gathering(self):
         ret = []
