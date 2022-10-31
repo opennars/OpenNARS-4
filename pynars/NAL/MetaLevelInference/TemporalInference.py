@@ -1,0 +1,3 @@
+'''
+**Temporal inference.** Temporal inference is carried out by processing the logical factor and the temporal factor in the premises in parallel. First, temporal variants of IL rules are obtained by turning some statements in the premises into events by adding temporal order among them, and the conclusion must keep the same temporal information. Then these rules are extended into strong NAL rules by using the same truth-value function. The rules of weak inference are formed as the inverse of the strong rules.
+'''

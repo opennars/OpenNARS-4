@@ -1,0 +1,20 @@
+// <Tweety {-- robin>.
+// <robin --> bird>.
+// <bird --> animal>.
+// 30 
+// <Tweety {-- bird>?
+// 10
+// <Tweety {-- animal>?
+// 1
+//得到答案：
+//<{Tweety} --> animal>. %1.00;0.73%
+
+<Tweety {-- robin>.
+<robin --> bird>.
+<bird --> animal>.
+<Tweety {-- bird>?
+30
+<Tweety {-- animal>?
+1
+// 得到答案
+// <{Tweety} --> animal>. %1.00;0.29%

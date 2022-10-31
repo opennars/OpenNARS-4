@@ -1,0 +1,12 @@
+'********** deduction with interval summation
+
+' a + 1 = b
+<(&/, a, +1) =/> (&/, b, c)>.
+
+' b + 1 = c
+<(&/, c, b, +1) =/> d>.
+  
+10
+
+' a + 2 = c
+''outputMustNotContain('<(&/,a,+2) =/> d>. %1.00;0.81%')

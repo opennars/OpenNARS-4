@@ -1,0 +1,3 @@
+'''
+**Goal derivation.** A goal G and a judgment J produce a derived goal G', if and only if the solution to G', call it J', can be used with J to derive a solution to G by a two-premise inference rule; a goal G by itself produces a derived goal G', if and only if the solution to G', call it J', can be used to derive a solution to G by a one-premise inference rule. In both cases, the desire-value of G' is derived as the truth-value of G' ⇒ D from the desire-value of G, as the truth-value of G ⇒ D, as well as the truth-value of J (if it is involved).
+'''

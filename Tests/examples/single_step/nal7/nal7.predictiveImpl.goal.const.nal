@@ -1,0 +1,6 @@
+<<something --> [hardened]> =/> <something --> [unscrewing]>>. %1.00;0.90%
+<something --> [unscrewing]>!
+
+15
+
+''outputMustContain('<something --> [hardened]>! %1.00;0.81%')

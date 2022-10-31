@@ -1,0 +1,52 @@
+
+{
+    "PROGRAM": {
+        "VERSION": "0.0.1",
+        "DRIVER": "py" // py: python, pyx: cython, cypy: cython with python style, cpp: c++
+    },
+    "HYPER-PARAMS": {
+        "DEFAULT": {
+            "BUDGET": {
+                "PRIORITY_JUDGEMENT": 0.8,
+                "DURABILITY_JUDGEMENT": 0.5,
+                "PRIORITY_QUESTION": 0.9,
+                "DURABILITY_QUESTION": 0.9,
+                "PRIORITY_QUEST": 0.9,
+                "DURABILITY_QUEST": 0.9,
+                "PRIORITY_GOAL": 0.9,
+                "DURABILITY_GOAL": 0.9,
+                "THRESHOLD": 0.01
+            },
+            "NUM_BUCKETS": 100,
+            "TRUTH": {
+                "FREQUENCY": 1.0,
+                "CONFIDENCE": 0.9,
+                "CONFIDENCE_JUDGEMENT": 0.9,
+                "CONFIDENCE_GOAL": 0.9,
+                "K": 1
+            },
+            "MAX_DURATION": 1000,
+            "CONCEPT": {
+                "NUM_LEVELS_TASKLINK_BAG": 1000,
+                "CAPACITY_TASKLINK_BAG": 10000,
+                "NUM_LEVELS_TERMLINK_BAG": 1000,
+                "CAPACITY_TERMLINK_BAG": 10000,
+                "CAPACITY_TABLE": 100
+            },
+            "COMPLEXITY_UNIT": 1.0, //1.0 - oo
+            "QUALITY_MIN": 0.3,
+            "CYCLES_PER_DURATION": 5,
+            "NUM_FORGET_DURATIONS": 2,
+            "REVISION_MAX_OCCURRENCE_DISTANCE": 10,
+            "RATE_DISCOUNT_CONFIDENCE": 0.5, // The rate of confidence decrease in mental operations Doubt and Hesitate
+            "RATE_DISCOUNT_PRIORITY_INTERNAL_EXPERIENCE": 0.1,
+            "RATE_DISCOUNT_DURABILITY_INTERNAL_EXPERIENCE": 0.1,
+            "TEMPORAL_DURATION": 5,
+            "NUM_SEQUENCE_ATTEMPTS": 10,
+            "NUM_OP_CONDITION_ATTEMPTS": 10
+        },
+        "TRUTH_EPSILON": 0.01,
+        "BUDGET_EPSILON": 0.0001,
+        "COMPLEXITY_UNIT": 1.0
+    }
+}

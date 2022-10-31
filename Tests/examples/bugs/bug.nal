@@ -1,0 +1,15 @@
+// 版本：3.0.4  来源：https://github.com/opennars/opennars
+// 错误描述：不存在swimmer相关的证据，该词项仅出现在question中，但是推理出了<swan --> swimmer>. %0.09;0.06%
+// 代码如下。20个cycle可观察到相同现象。
+<swan --> bird>. %0.90%
+<swan --> (|,bird,swimmer)>?
+20
+
+//(^wonder,{SELF},<swan --> (|,bird,swimmer)>). :|: %1.00;0.90%
+//     <{SELF} --> (/,^wonder,_,<swan --> (|,bird,swimmer)>)>. :-5: %1.00;0.90%
+//     <swan --> (|,bird,swimmer)>. %0.90;0.73%
+//     <(|,swan,swimmer) --> (|,bird,swimmer)>. %0.90;0.73%
+//     (^believe,{SELF},<swan --> (|,bird,swimmer)>,TRUE). :|: %1.00;0.90%
+//Answer <swan --> (|,bird,swimmer)>. %0.90;0.73%
+//     <swan --> (|,bird,swimmer)>. %0.90;0.73%
+//     <swan --> swimmer>. %0.09;0.06%
