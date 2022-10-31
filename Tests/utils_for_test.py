@@ -38,7 +38,7 @@ def rule_map_two_premises(premise1: str, premise2: str, term_common: str, invers
 
 
     if index_belief is None:
-        if belief.term == concept.term: index_task = ()
+        if belief.term == concept.term: index_belief = ()
         else:
             if belief.term.complexity > concept.term.complexity: indices_belief = Link.get_index(belief.term, concept.term)
             else: indices_belief = Link.get_index(concept.term, belief.term)
@@ -61,7 +61,7 @@ def rule_map_task_only(premise1: str, conecept_term: str, index_concept_task: tu
     concept = nars.memory.take_by_key(concept_term)
     task_link = concept.task_links.take_by_key(TaskLink(concept, task, None, index=index_concept_task))
 
-    rules = engine.match(task, None, None, task_link, None)
+    _, _, rules = engine.match(task, None, None, task_link, None)
     return rules, task, concept, task_link, result1
 
 

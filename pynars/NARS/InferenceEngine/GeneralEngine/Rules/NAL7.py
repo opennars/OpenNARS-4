@@ -1,6 +1,6 @@
 from collections import OrderedDict
 from pynars.NARS.DataStructures import LinkType, TaskLink, TermLink
-from pynars.utils.SparseLUT import SparseLUT
+from sparse_lut import SparseLUT
 from pynars import Global
 from ....RuleMap.add_rule import *
 
@@ -719,7 +719,7 @@ def add_rules__NAL7(sparse_lut: SparseLUT, structure: OrderedDict):
     '''deduction'''
     add_rule(sparse_lut, structure,
         Interface_ConditionalRules._conditional__deduction__0, 
-        LinkType1 = LinkType.COMPOUND_CONDITION, 
+        LinkType1 = [LinkType.COMPOUND_CONDITION, LinkType.COMPOUND_STATEMENT], 
         # LinkType2 = LinkType.COMPOUND_STATEMENT, 
         has_common_id = True,
         Copula1 = [
@@ -737,7 +737,7 @@ def add_rules__NAL7(sparse_lut: SparseLUT, structure: OrderedDict):
     add_rule(sparse_lut, structure,
         Interface_ConditionalRules._conditional__deduction__0_prime, 
         # LinkType1 = LinkType.COMPOUND_STATEMENT, 
-        LinkType2 = LinkType.COMPOUND_CONDITION, 
+        LinkType1 = [LinkType.COMPOUND_CONDITION, LinkType.COMPOUND_STATEMENT],
         has_common_id = True,
         # Copula1 = Copula.Implication,
         Copula2 = [

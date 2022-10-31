@@ -10,7 +10,10 @@ class Table:
         self._table = DEPQ(maxlen=capacity)
 
     def add(self, task: Task, p: float):
+        if task in self:
+            self._table.remove(task)
         self._table.insert(task, p)
+
 
     # def remove(self, task: Task):
     #     self._table.elim(task)

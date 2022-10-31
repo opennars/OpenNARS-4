@@ -2,117 +2,118 @@ import unittest
 
 from pynars.NARS.DataStructures import Task
 from pynars.NAL.MetaLevelInference.VariableSubstitution import *
-from pynars.NARS.RuleMap import RuleMap
+# from pynars.NARS.RuleMap import RuleMap
 
-import Tests.utils_for_test as utils_for_test
+# import Tests.utils_for_test as utils_for_test
 from Tests.utils_for_test import *
 from pynars.utils.Print import PrintType, out_print
 
+
 # utils_for_test.rule_map = RuleMap_v2()
 
-class SubstituteVar:
-    ''''''
-    def __init__(self, mapping_ivar: bidict, mapping_dvar: bidict, mapping_qvar: bidict) -> None:
-        self.mapping_ivar = mapping_ivar
-        self.mapping_dvar = mapping_dvar
-        self.mapping_qvar = mapping_qvar
+# class SubstituteVar:
+#     ''''''
+#     def __init__(self, mapping_ivar: bidict, mapping_dvar: bidict, mapping_qvar: bidict) -> None:
+#         self.mapping_ivar = mapping_ivar
+#         self.mapping_dvar = mapping_dvar
+#         self.mapping_qvar = mapping_qvar
     
-    @property
-    def is_valid(self):
-        return len(self.mapping_dvar) > 0 or len(self.mapping_ivar) > 0 or len(self.mapping_qvar) > 0
+#     @property
+#     def is_valid(self):
+#         return len(self.mapping_dvar) > 0 or len(self.mapping_ivar) > 0 or len(self.mapping_qvar) > 0
 
-    @property
-    def is_qvar_valid(self):
-        return len(self.mapping_qvar) > 0
+#     @property
+#     def is_qvar_valid(self):
+#         return len(self.mapping_qvar) > 0
     
-    @property
-    def is_dvar_valid(self):
-        return len(self.mapping_dvar) > 0
+#     @property
+#     def is_dvar_valid(self):
+#         return len(self.mapping_dvar) > 0
 
-    @property
-    def is_ivar_valid(self):
-        return len(self.mapping_ivar) > 0
+#     @property
+#     def is_ivar_valid(self):
+#         return len(self.mapping_ivar) > 0
     
-    def apply(self, term1: Term, term2: Term, inverse=False):
-        mapping_ivar = self.mapping_ivar
-        mapping_dvar = self.mapping_dvar
-        mapping_qvar = self.mapping_qvar
-        if inverse:
-            term1, term2 = term2, term1            
-            mapping_ivar = mapping_ivar.inverse
-            mapping_dvar = mapping_dvar.inverse
-            mapping_qvar = mapping_qvar.inverse
-        ivar = [int(var) for var in term2._index_var.var_independent]
-        dvar = [int(var) for var in term2._index_var.var_dependent]
-        qvar = [int(var) for var in term2._index_var.var_query]
+#     def apply(self, term1: Term, term2: Term, inverse=False):
+#         mapping_ivar = self.mapping_ivar
+#         mapping_dvar = self.mapping_dvar
+#         mapping_qvar = self.mapping_qvar
+#         if inverse:
+#             term1, term2 = term2, term1            
+#             mapping_ivar = mapping_ivar.inverse
+#             mapping_dvar = mapping_dvar.inverse
+#             mapping_qvar = mapping_qvar.inverse
+#         ivar = [int(var) for var in term2._index_var.var_independent]
+#         dvar = [int(var) for var in term2._index_var.var_dependent]
+#         qvar = [int(var) for var in term2._index_var.var_query]
 
-        term2._index_var.var_independent = [var(mapping_ivar[var_int]) for var, var_int in zip(term2._index_var.var_independent, ivar)]
-        term2._index_var.var_dependent = [var(mapping_dvar[var_int]) for var, var_int in zip(term2._index_var.var_dependent, dvar)]
-        term2._index_var.var_query = [var(mapping_qvar[var_int]) for var, var_int in zip(term2._index_var.var_query, qvar)]
-        # TODO: to recursively apply the variable-mapping to the terms.
+#         term2._index_var.var_independent = [var(mapping_ivar[var_int]) for var, var_int in zip(term2._index_var.var_independent, ivar)]
+#         term2._index_var.var_dependent = [var(mapping_dvar[var_int]) for var, var_int in zip(term2._index_var.var_dependent, dvar)]
+#         term2._index_var.var_query = [var(mapping_qvar[var_int]) for var, var_int in zip(term2._index_var.var_query, qvar)]
+#         # TODO: to recursively apply the variable-mapping to the terms.
 
 
 
-find_var_with_pos: Callable = lambda pos_search, variables, positions: [var for var, pos in zip(variables, positions) if pos[:len(pos_search)] == pos_search]
+# find_var_with_pos: Callable = lambda pos_search, variables, positions: [var for var, pos in zip(variables, positions) if pos[:len(pos_search)] == pos_search]
 
-def _build_mapping(variables1, variables2, var_common1, var_common2):
-    if len(variables1) == 0 and len(variables2) == 0:
-        mapping = bidict()
-    elif len(variables1) > 0 and len(variables2) > 0:
-        var_diff1 = sorted(list(set(variables1)-set(var_common1)))
-        var_diff2 = sorted(list(set(variables2)-set(var_common2)))
-        var_bias1 = max(variables1) + 1
-        var_bias2 = max(variables2) + 1
-        var_diff_new1 = [ivar+var_bias2 for ivar in var_diff1]
-        var_diff_new2 = [ivar+var_bias1 for ivar in var_diff2]
-        # mapping the second to the first
-        mapping = bidict({int(key): int(value) for key, value in (*zip(var_common2, var_common1), *zip(var_diff2, var_diff_new2), *zip(var_diff_new1, var_diff1))})
-    else: # (len(variables1) > 0) ^ (len(variables2) > 0)
+# def _build_mapping(variables1, variables2, var_common1, var_common2):
+#     if len(variables1) == 0 and len(variables2) == 0:
+#         mapping = bidict()
+#     elif len(variables1) > 0 and len(variables2) > 0:
+#         var_diff1 = sorted(list(set(variables1)-set(var_common1)))
+#         var_diff2 = sorted(list(set(variables2)-set(var_common2)))
+#         var_bias1 = max(variables1) + 1
+#         var_bias2 = max(variables2) + 1
+#         var_diff_new1 = [ivar+var_bias2 for ivar in var_diff1]
+#         var_diff_new2 = [ivar+var_bias1 for ivar in var_diff2]
+#         # mapping the second to the first
+#         mapping = bidict({int(key): int(value) for key, value in (*zip(var_common2, var_common1), *zip(var_diff2, var_diff_new2), *zip(var_diff_new1, var_diff1))})
+#     else: # (len(variables1) > 0) ^ (len(variables2) > 0)
         
-        mapping = bidict()
-        pass
-    return mapping
+#         mapping = bidict()
+#         pass
+#     return mapping
 
-def unification_variable(term1: Term, term2: Term, pos_common1: List[int], pos_common2: List[int]):
-    ''''''
-    # 1. find the variables in the first common position
-    ivar1 = find_var_with_pos(pos_common1, term1._index_var.var_independent, term1._index_var.positions_ivar)
-    dvar1 = find_var_with_pos(pos_common1, term1._index_var.var_dependent, term1._index_var.positions_dvar)
-    qvar1 = find_var_with_pos(pos_common1, term1._index_var.var_query, term1._index_var.positions_qvar)
+# def unification__var_var(term1: Term, term2: Term, pos_common1: List[int], pos_common2: List[int]):
+#     ''''''
+#     # 1. find the variables in the first common position
+#     ivar1 = find_var_with_pos(pos_common1, term1._index_var.var_independent, term1._index_var.positions_ivar)
+#     dvar1 = find_var_with_pos(pos_common1, term1._index_var.var_dependent, term1._index_var.positions_dvar)
+#     qvar1 = find_var_with_pos(pos_common1, term1._index_var.var_query, term1._index_var.positions_qvar)
 
-    # 2. find the variables in the second common position
-    ivar2 = find_var_with_pos(pos_common2, term2._index_var.var_independent, term2._index_var.positions_ivar)
-    dvar2 = find_var_with_pos(pos_common2, term2._index_var.var_dependent, term2._index_var.positions_dvar)
-    qvar2 = find_var_with_pos(pos_common2, term2._index_var.var_query, term2._index_var.positions_qvar)
+#     # 2. find the variables in the second common position
+#     ivar2 = find_var_with_pos(pos_common2, term2._index_var.var_independent, term2._index_var.positions_ivar)
+#     dvar2 = find_var_with_pos(pos_common2, term2._index_var.var_dependent, term2._index_var.positions_dvar)
+#     qvar2 = find_var_with_pos(pos_common2, term2._index_var.var_query, term2._index_var.positions_qvar)
 
-    # 3. build the mapping
-    mapping_ivar = _build_mapping(term1._index_var.var_independent, term2._index_var.var_independent, ivar1, ivar2)
-    mapping_dvar = _build_mapping(term1._index_var.var_dependent, term2._index_var.var_dependent, dvar1, dvar2)
-    mapping_qvar = _build_mapping(term1._index_var.var_query, term2._index_var.var_query, qvar1, qvar2)
+#     # 3. build the mapping
+#     mapping_ivar = _build_mapping(term1._index_var.var_independent, term2._index_var.var_independent, ivar1, ivar2)
+#     mapping_dvar = _build_mapping(term1._index_var.var_dependent, term2._index_var.var_dependent, dvar1, dvar2)
+#     mapping_qvar = _build_mapping(term1._index_var.var_query, term2._index_var.var_query, qvar1, qvar2)
 
-    return SubstituteVar(mapping_ivar, mapping_dvar, mapping_qvar)
+#     return SubstituteVar(mapping_ivar, mapping_dvar, mapping_qvar)
 
 
 
 class TEST_NAL6(unittest.TestCase):
     ''''''
 
-    def test_substition_var_to_var(self):
-        '''
-        <(&&, <#x-->A>, <#x-->B>, <<$y-->C>==><$y-->D>>, <$z-->E>) ==> <$z-->F>>.
-        <<$x-->F>==><$x-->H>>.
-        |-
-        <(&&, <#x-->A>, <#x-->B>, <<$y-->C>==><$y-->D>>, <$z-->E>) ==> <$x-->H>>.
-        '''
-        term1 = Narsese.parse("<<$x-->F>==><$x-->H>>.").term
-        term2 = Narsese.parse("<(&&, <#x-->A>, <#x-->B>, <<$y-->C>==><$y-->D>>, <$z-->E>) ==> <$z-->F>>.").term
-        subst_var = unification_variable(term1, term2, [0], [1]) # to find possible replacement.
-        subst_var.apply(term1, term2)
-        # subst_var.apply()
-        term3 = Statement.Implication(term1[0], term2[1])
-        # term_substitution = substitution(compound, Term("A"), Term("D"))
-        # self.assertEqual(term_substitution, term_new)
-        pass
+    # def test_substition_var_to_var(self):
+    #     '''
+    #     <(&&, <#x-->A>, <#x-->B>, <<$y-->C>==><$y-->D>>, <$z-->E>) ==> <$z-->F>>.
+    #     <<$x-->F>==><$x-->H>>.
+    #     |-
+    #     <(&&, <#x-->A>, <#x-->B>, <<$y-->C>==><$y-->D>>, <$z-->E>) ==> <$x-->H>>.
+    #     '''
+    #     term1 = Narsese.parse("<<$x-->F>==><$x-->H>>.").term
+    #     term2 = Narsese.parse("<(&&, <#x-->A>, <#x-->B>, <<$y-->C>==><$y-->D>>, <$z-->E>) ==> <$z-->F>>.").term
+    #     subst_var = unification__var_var(term1, term2, [0], [1]) # to find possible replacement.
+    #     subst_var.apply(term1, term2)
+    #     # subst_var.apply()
+    #     term3 = Statement.Implication(term1[0], term2[1])
+    #     # term_substitution = substitution(compound, Term("A"), Term("D"))
+    #     # self.assertEqual(term_substitution, term_new)
+    #     pass
 
     def test_unification_0(self):
         '''
@@ -164,7 +165,7 @@ class TEST_NAL6(unittest.TestCase):
         )
         self.assertNotEqual(rules, None)
 
-        subst_var = unification_variable(task.term, belief.term, [0], [1]) # to find possible replacement.
+        subst_var = unification__var_var(task.term, belief.term, [0], [1]) # to find possible replacement.
         subst_var.apply(task.term, belief.term)
         tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
 
@@ -217,7 +218,7 @@ class TEST_NAL6(unittest.TestCase):
         )
         self.assertNotEqual(rules, None)
 
-        subst_var = unification_variable(task.term, belief.term, [0], [0]) # to find possible replacement.
+        subst_var = unification__var_var(task.term, belief.term, [0], [0]) # to find possible replacement.
         subst_var.apply(task.term, belief.term)
         tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
 
@@ -274,7 +275,7 @@ class TEST_NAL6(unittest.TestCase):
         )
         self.assertNotEqual(rules, None)
 
-        subst_var = unification_variable(task.term, belief.term, [1], [1]) # to find possible replacement.
+        subst_var = unification__var_var(task.term, belief.term, [1], [1]) # to find possible replacement.
         subst_var.apply(task.term, belief.term)
         tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
 
@@ -317,7 +318,7 @@ class TEST_NAL6(unittest.TestCase):
         )
         self.assertNotEqual(rules, None)
 
-        subst_var = unification_variable(task.term, belief.term, [0,0], [1]) # to find possible replacement.
+        subst_var = unification__var_var(task.term, belief.term, [0,0], [1]) # to find possible replacement.
         subst_var.apply(task.term, belief.term)
         tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
 
@@ -345,6 +346,16 @@ class TEST_NAL6(unittest.TestCase):
 
         'I guess if something has wings, then it can fly and eats worms.
         ''outputMustContain('<<$1 --> [with_wings]> ==> (&&,<$1 --> flyer>,<(*,$1,worms) --> food>)>. %1.00;0.45%')
+        '''
+        pass
+
+    def test_unification_5_1(self):
+        '''
+        'Variable unification 
+        <(&&,<$x --> A>,<$x --> B>, <$y --> C>) ==> <$y --> D>>. 
+        <(&&,<$x --> C>, <$x --> E>) ==> <$x --> D>>.
+
+        ''outputMustContain('<(&&,<$x --> A>,<$x --> B>) ==> <$y --> D>>.  %1.00;0.45%')
         '''
         pass
 
@@ -390,7 +401,7 @@ class TEST_NAL6(unittest.TestCase):
         )
         self.assertNotEqual(rules, None)
 
-        subst_var = unification_variable(task.term, belief.term, [0], [0]) # to find possible replacement.
+        subst_var = unification__var_var(task.term, belief.term, [0], [0]) # to find possible replacement.
         subst_var.apply(task.term, belief.term)
         tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
 
@@ -906,7 +917,7 @@ class TEST_NAL6(unittest.TestCase):
         )
         self.assertNotEqual(rules, None)
 
-        subst_var = unification_variable(task.term, belief.term, [1], [0]) # to find possible replacement.
+        subst_var = unification__var_var(task.term, belief.term, [1], [0]) # to find possible replacement.
         subst_var.apply(task.term, belief.term)
         tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
 

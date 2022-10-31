@@ -72,4 +72,6 @@ def unification__var_const(term1: Term, term2: Term, pos_common1: List[IntVar], 
 
 
 def unification() -> Substitution:
-    ''''''
+    '''
+    "The procedure of finding a possible substitution is called “unification”, which has been specified in the study of reasoning systems [Russell and Norvig (2010)]. "[Ref: NAL Book, Page 133]
+    '''

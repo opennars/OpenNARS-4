@@ -8,7 +8,7 @@ import unittest
 from pynars.NARS.DataStructures import Bag, Task, Concept
 from pynars.Narsese import Judgement, Term, Statement, Copula, Truth   
 
-from pynars.utils.SparseLUT import SparseLUT
+from sparse_lut import SparseLUT
 
 from pynars.NARS.RuleMap.RuleMap import CommonId
 

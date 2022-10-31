@@ -1,19 +1,31 @@
 from typing import List
-import NARS
 import unittest
 
 from pynars.NARS.DataStructures import Bag, Task, Concept
 from pynars.Narsese import Judgement, Term, Statement, Copula, Truth   
 
 from pathlib import Path
-import Narsese
+from pynars import Narsese, NARS
 
 from pynars.utils.Print import out_print, PrintType, print_filename
 
 examples_path = Path(__file__).parent/'examples'
 
+def print_tasks(tasks_line):
+    tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest, (task_operation_return, task_executed) = tasks_line
+    for task in tasks_derived: out_print(PrintType.OUT, task.sentence.repr(), *task.budget)
+    
+    if judgement_revised is not None: out_print(PrintType.OUT, judgement_revised.sentence.repr(), *judgement_revised.budget)
+    if goal_revised is not None: out_print(PrintType.OUT, goal_revised.sentence.repr(), *goal_revised.budget)
+    if answers_question is not None: 
+        for answer in answers_question: out_print(PrintType.ANSWER, answer.sentence.repr(), *answer.budget)
+    if answers_quest is not None: 
+        for answer in answers_quest: out_print(PrintType.ANSWER, answers_quest.sentence.repr(), *answers_quest.budget)
+    if task_executed is not None:
+        out_print(PrintType.EXE, f'{task_executed.term.repr()} = {str(task_operation_return) if task_operation_return is not None else None}')
+
 def run_file(file: str):
-    nars = NARS.Reasoner_3_0_4(100, 100)
+    nars = NARS.Reasoner(100, 100)
 
     with open(file, 'r') as f:
         lines = f.readlines()
@@ -46,8 +58,10 @@ def run_file(file: str):
             out_print(PrintType.INFO, f'Run {n_cycle} cycles.')
             for _ in range(n_cycle):
                 tasks_derived = nars.cycle()
-                tasks_derived_all.extend(tasks_derived)
-                for task in tasks_derived: out_print(PrintType.OUT, str(task.sentence), *task.budget)
+                # tasks_derived_all.extend(tasks_derived)
+                # for task in tasks_derived: out_print(PrintType.OUT, str(task.sentence), *task.budget)
+                print_tasks(tasks_derived)
+
 
         else:
             line = line.rstrip(' \n')
@@ -60,21 +74,23 @@ def run_file(file: str):
                 else: out_print(PrintType.ERROR, f'Invalid input! Failed to parse: {line}')
 
                 tasks_derived = nars.cycle()
-                tasks_derived_all.extend(tasks_derived)
-                for task in tasks_derived: out_print(PrintType.OUT, str(task.sentence), *task.budget)
+                print_tasks(tasks_derived)
+                # tasks_derived_all.extend(tasks_derived)
+                # for task in tasks_derived: out_print(PrintType.OUT, str(task.sentence), *task.budget)
+                
                 if not success:
                     raise
             except:
                 out_print(PrintType.ERROR, f'{file}, line {i}, {line}')
                 raise
-    if expect_out_empty and len(output_contains)==0:
-        if len(tasks_derived_all) != 0: raise
-    else:
-        output_not_contains = set(output_contains) - set(tasks_derived_all)
-        if len(output_not_contains) > 0:
-            for output in output_not_contains:
-                out_print(PrintType.ERROR, f'Fail to reason out: {output.sentence}')
-            raise
+    # if expect_out_empty and len(output_contains)==0:
+    #     if len(tasks_derived_all) != 0: raise
+    # else:
+    #     output_not_contains = set(output_contains) - set(tasks_derived_all)
+    #     if len(output_not_contains) > 0:
+    #         for output in output_not_contains:
+    #             out_print(PrintType.ERROR, f'Fail to reason out: {output.sentence}')
+    #         raise
     
 
 class TEST_Examples_Single_NAL1(unittest.TestCase):
@@ -88,7 +104,7 @@ class TEST_Examples_Single_NAL1(unittest.TestCase):
 
     def test_deduction_0(self):
         print('\n')
-        file = examples_path/'single_step/nal1/nal1.0.nal'
+        file = examples_path/'single_step/nal5/nal5.29.nal'
         print_filename(file.name)
         run_file(file)
 

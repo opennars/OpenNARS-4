@@ -1,6 +1,7 @@
 from typing import List, Union
 from pynars.NAL.Functions.BudgetFunctions import Budget_revision
 from pynars.NAL.Functions.ExtendedBooleanFunctions import Or
+from pynars.NAL.Functions.StampFunctions import Stamp_merge
 from pynars.Narsese import Stamp, Task
 from pynars.Narsese._py.Budget import Budget
 from pynars.Narsese._py.Sentence import Goal, Quest, Question
@@ -15,6 +16,12 @@ from pynars.Config import Enable
 from pynars.NAL.Functions.Tools import calculate_solution_quality, truth_to_quality
 
 def revision(task: Task, belief: Task, budget_tasklink: Budget=None, budget_termlink: Budget=None):
+    '''
+    S. %f1;c1%
+    S. %f2;c2%
+    |-
+    S. %F_rev%
+    '''
     premise1: Union[Judgement, Goal] = task.sentence
     premise2: Union[Judgement, Goal] = belief.sentence
     truth1 = premise1.truth
@@ -25,13 +32,17 @@ def revision(task: Task, belief: Task, budget_tasklink: Budget=None, budget_term
     truth = Truth_revision(truth1, truth2)
     budget, *_ = Budget_revision(task.budget, truth1, truth2, truth, budget_tasklink=budget_tasklink, budget_termlink=budget_termlink)
     term = premise1.term
-    stamp: Stamp = deepcopy(task.sentence.stamp) # Stamp(Global.time, task.sentence.stamp.t_occurrence, None, (j1.stamp.evidential_base | j2.stamp.evidential_base))
-    stamp.evidential_base.extend(premise2.evidential_base)
+
+    # stamp: Stamp = deepcopy(task.sentence.stamp) # Stamp(Global.time, task.sentence.stamp.t_occurrence, None, (j1.stamp.evidential_base | j2.stamp.evidential_base))
+    # stamp.evidential_base.extend(premise2.evidential_base)
+    stamp: Stamp = Stamp_merge(premise1.stamp, premise2.stamp)
     if task.is_judgement:
-        statement = Judgement(term, stamp, truth)
+        task = Task(Judgement(term, stamp, truth), budget)
     elif task.is_goal:
-        statement = Goal(term, stamp, desire=truth)
-    return Task(statement, budget)
+        task = Task(Goal(term, stamp, truth), budget)
+    else:
+        raise "Invalid case."
+    return task
 
 def solution_question(task: Task, belief: Belief, budget_tasklink: Budget=None, budget_termlink: Budget=None):
     question: Union[Question, Quest] = task.sentence

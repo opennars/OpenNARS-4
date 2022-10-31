@@ -6,9 +6,7 @@ from .CompositionalRules import \
 	conjunction_intension as compositional__conjunction_intension, \
 	conjunstion_composition as compositional__conjunstion_composition, \
 	difference_extension as compositional__difference_extension, \
-	difference_extension2 as compositional__difference_extension2, \
 	difference_intension as compositional__difference_intension, \
-	difference_intension2 as compositional__difference_intension2, \
 	disjunction_composition as compositional__disjunction_composition, \
 	disjunction_extension as compositional__disjunction_extension, \
 	disjunction_intension as compositional__disjunction_intension, \
@@ -22,7 +20,7 @@ from .ConditionalSyllogisticRules import \
 	abduction_compound_eliminate as conditional__abduction_compound_eliminate, \
 	abduction_compound_eliminate2 as conditional__abduction_compound_eliminate2, \
 	analogy as conditional__analogy, \
-	analogy_compound_replace as conditional__analogy_compound_replace, \
+	analogy_compound_eliminate as conditional__analogy_compound_eliminate, \
 	comparison as conditional__comparison, \
 	deduction as conditional__deduction, \
 	deduction_compound_eliminate as conditional__deduction_compound_eliminate, \
@@ -65,6 +63,9 @@ from .TemporalRules import \
 	induction_predictive_implication_composition as temporal__induction_predictive_implication_composition, \
 	induction_retrospective_equivalance_composition as temporal__induction_retrospective_equivalance_composition, \
 	induction_retrospective_implication_composition as temporal__induction_retrospective_implication_composition, \
+	parallel as temporal__parallel, \
+	parallel_immediate as temporal__parallel_immediate, \
 	sequence as temporal__sequence, \
+	sequence_immediate as temporal__sequence_immediate, \
 	sequence_predictive_implication as temporal__sequence_predictive_implication 
 

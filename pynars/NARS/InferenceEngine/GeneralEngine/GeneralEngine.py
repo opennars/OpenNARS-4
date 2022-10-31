@@ -98,7 +98,7 @@ class GeneralEngine(Engine):
 
 
     @classmethod
-    def match(cls, task: Task, belief: Belief, belief_term: Term, task_link, term_link):
+    def match(cls, task: Task, belief: Belief, term_belief: Term, task_link, term_link):
         '''To verify whether the task and the belief can interact with each other'''
 
         is_valid = False
@@ -113,18 +113,18 @@ class GeneralEngine(Engine):
                 pass
             elif not belief.evidential_base.is_overlaped(task.evidential_base):
                 # Engine.rule_map.verify(task_link, term_link)
-                rules = GeneralEngine.match_rule(task, belief, belief_term, task_link, term_link)
+                rules = GeneralEngine.match_rule(task, belief, term_belief, task_link, term_link)
                 if rules is not None and len(rules) > 0:
                     is_valid = True
-        elif belief_term is not None: # belief is None
-            if task.term == belief_term:pass
-            elif task.term.equal(belief_term): pass
+        elif term_belief is not None: # belief is None
+            if task.term == term_belief:pass
+            elif task.term.equal(term_belief): pass
             else:
-                rules = GeneralEngine.match_rule(task, belief, belief_term, task_link, term_link)
+                rules = GeneralEngine.match_rule(task, belief, term_belief, task_link, term_link)
                 if rules is not None and len(rules) > 0:
                     is_valid = True
         else: # belief is None and belief_term is None
-            rules = GeneralEngine.match_rule(task, belief, belief_term, task_link, term_link)
+            rules = GeneralEngine.match_rule(task, belief, term_belief, task_link, term_link)
             if rules is not None and len(rules) > 0:
                 is_valid = True
 
@@ -146,6 +146,9 @@ class GeneralEngine(Engine):
         compound_common_id = None
 
         feature = extract_feature(task.term, (belief.term if belief is not None else belief_term))
+        p2_at_p1 = feature.p2_at_p1
+        p1_at_p2 = feature.p1_at_p2
+
         if belief_term is None:
             if link1 is LinkType.TRANSFORM:
                 compound_transform: Compound = task.term[task_link.component_index[:-1]]
@@ -220,25 +223,15 @@ class GeneralEngine(Engine):
                         task_term: Compound = task.term
                         if task_term.is_compound: 
                             connector1 = task_term.connector
-                        #     # raise "Is this case valid?"
-
-
-                        # compound_common_id = feature.compound_common_id_belief
-                        # connector1 = task_term.connector
-
-                        # common_term = belief.term[compound_common_id]
-                        # if task_term.is_double_only:
-                        #     if common_term == task_term[0]: 
-                        #         at_compound_pos = 0 
-                        #     elif common_term == task_term[1]:
-                        #         at_compound_pos = 1
-                        #     else: raise "Invalid case."
-                        # elif task_term.is_multiple_only:
-                        #     if common_term == task_term[0]: 
-                        #         at_compound_pos = 0 
-                        #     else:
-                        #         at_compound_pos = 1
-                        #     pass
+                        #     compound_belief = belief_term[compound_common_id]
+                        #     if compound_belief.is_compound:
+                        #         connector2 = compound_belief.connector
+                        # elif belief_term.is_compound:
+                        #     connector2 = belief_term.connector
+                        #     compound_task = task_term[compound_common_id]
+                        #     if compound_task.is_compound:
+                        #         connector1 = compound_task.connector
+                        
 
                 elif feature.common_id_task is not None and feature.common_id_belief is not None:
                     common_id = feature.common_id_task*2 + feature.common_id_belief
@@ -284,7 +277,19 @@ class GeneralEngine(Engine):
                         #     if term2 == term1[0]: at_compound_pos = 0 
                         #     elif term2 == term1[1]: at_compound_pos = 1
                         #     else: raise "Invalid case."
-        
+        if connector1 is not None and connector1 is Connector.SequentialEvents:
+            # if connector1 is &/, then judge whether p1 is the first component of p1
+            if p2_at_p1 and belief_term is not None:
+                # (&/, A, B, C)! A.
+                if not belief_term.equal(task.term.terms[0]):
+                    p2_at_p1 = False
+        elif connector2 is not None and connector2 is Connector.SequentialEvents:
+            # if connector1 is &/, then judge whether p1 is the first component of p1
+            if p1_at_p2 and belief_term is not None:
+                # C! (&/, A, B, C).
+                if not task.term.equal(belief_term.terms[-1]):
+                    p1_at_p2 = False
+
 
 
         indices = (
@@ -295,8 +300,8 @@ class GeneralEngine(Engine):
             link1.value,
             link2.value if link2 is not None else None,
 
-            int(task.term.copula) if not task.term.is_atom else None, 
-            int(belief.term.copula) if (belief is not None and belief_term.is_statement) else (int(belief_term.connector) if (belief_term is not None and belief_term.is_compound) else None),
+            int(task.term.copula) if task.term.is_statement else None, 
+            int(belief.term.copula) if (belief is not None and belief_term.is_statement) else None, # (int(belief_term.connector) if (belief_term is not None and belief_term.is_compound) else None),
 
             int(connector1) if connector1 is not None else None, 
             int(connector2) if connector2 is not None else None,
@@ -312,8 +317,8 @@ class GeneralEngine(Engine):
             int(feature.has_common_id), 
             int(feature.has_compound_common_id), 
             int(feature.has_at), 
-            int(feature.p1_at_p2) if feature.p1_at_p2 is not None else None,
-            int(feature.p2_at_p1) if feature.p2_at_p1 is not None else None,
+            int(p1_at_p2) if p1_at_p2 is not None else None,
+            int(p2_at_p1) if p2_at_p1 is not None else None,
             common_id, 
             
             

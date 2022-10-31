@@ -8,7 +8,7 @@
             "name": "Python: Pong",
             "type": "python",
             "request": "launch",
-            "module": "RL.Pong.main"
+            "module": "pynars.RL.Pong.main"
         },
         {
             "name": "Python: test_nal9",
@@ -197,7 +197,7 @@
             "module": "pynars.Console",
             "console": "integratedTerminal",
             "args": [
-                "Tests/examples/single_step/nal7/nal7.revrev.nal"
+                // "Tests/examples/single_step/nal7/nal7.revrev.nal"
                 // "Tests/examples/single_step/nal5.query.nal"
             ]
         },

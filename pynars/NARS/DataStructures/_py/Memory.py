@@ -10,6 +10,7 @@ from .Concept import Concept
 from .Bag import Bag
 from pynars.NAL.Functions.Tools import revisible
 from pynars.NAL.Inference import local__revision
+# from pynars.NARS import Operation
 
 class Memory:
     def __init__(self, capacity: int, n_buckets: int = None, take_in_order: bool = False) -> None:
@@ -123,7 +124,7 @@ class Memory:
                 # TODO: Temporal projection
                 desire_revised = local__revision(task, desire) # TODO: handling the stamps
                 # reduce priority by achieving level
-                task.reduce_budget_by_achieving_level(desire)
+                task.reduce_budget_by_achieving_level(desire)                
                 
         if task.budget.is_above_thresh:
             '''

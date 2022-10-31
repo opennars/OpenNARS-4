@@ -3,7 +3,7 @@ import unittest
 
 from pynars.NARS.DataStructures import Bag, Task
 from pynars.Narsese import Judgement, Term, Statement, Copula, Truth   
-import Narsese
+from pynars import Narsese
 from pynars.NARS.DataStructures import Concept
 
 class TEST_Concept(unittest.TestCase):

@@ -1,11 +1,11 @@
-import NARS
+from pynars import NARS
 import unittest
 
 from pynars.NARS.DataStructures import Bag, Task, Concept, Table
 from pynars.Narsese import Judgement, Term, Statement, Copula, Truth   
 
 from pathlib import Path
-import Narsese
+from pynars import Narsese
 from pynars.Narsese import Compound, Connector
 from pynars.NAL.MetaLevelInference.VariableSubstitution import *
 from pynars.Narsese._py.Variable import VarPrefix, Variable

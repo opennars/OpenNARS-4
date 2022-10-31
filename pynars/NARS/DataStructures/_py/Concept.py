@@ -89,7 +89,7 @@ class Concept(Item):
 
     def match_belief(self, sentence: Union[Judgement, Question]) -> Belief:
         '''
-        Select a belief with highest `belief_quality`, within the belief_table, according the task
+        Select a belief with highest quality, within the belief_table, according to the task
         '''
         belief_table: List[Task] = self.belief_table
         if len(belief_table) == 0: return None
@@ -99,7 +99,7 @@ class Concept(Item):
         
     def match_desire(self, goal: Goal) -> Task:
         '''
-        Select a belief with highest `belief_quality`, within the belief_table, according the task
+        Select a desire with highest quality, within the desire_table, according to the task
         '''
         desire_table: List[Tuple[Task, float]] = self.desire_table
         if len(desire_table) == 0: return None

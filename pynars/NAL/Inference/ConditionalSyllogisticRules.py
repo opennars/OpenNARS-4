@@ -487,12 +487,12 @@ def induction_compound_replace(task: Task, belief: Belief, budget_tasklink: Budg
     return Task(sentence_derived, budget)
 
 
-def analogy_compound_replace(task: Task, belief: Belief, budget_tasklink: Budget=None, budget_termlink: Budget=None, inverse_premise: bool=False, inverse_copula: bool=False):
+def analogy_compound_eliminate(task: Task, belief: Belief, budget_tasklink: Budget=None, budget_termlink: Budget=None, inverse_premise: bool=False, inverse_copula: bool=False):
     '''
     S
-    (&&, C, S) <=> P    
+    (&&, C, S, ...) <=> P    
     |-
-    C <=> P
+    (&&, C, ...) <=> P
     '''
     premise1, premise2 = (task.sentence, belief.sentence) if not inverse_premise else (belief.sentence, task.sentence)
 

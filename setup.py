@@ -17,7 +17,7 @@ def read_requirements(filename):
 setup(
     name='pynars',
     python_requires='>=3.7.0', # python version
-    version= pynars.version+'-6', # package version
+    version= pynars.version, # package version
     description="An implementation of Non-Axiomatic Reasoning System",  # introduction, displayed on PyPI
     long_description=read_file('README.md'), # Readme
     long_description_content_type="text/markdown",  # markdown

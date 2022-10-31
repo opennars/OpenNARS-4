@@ -5,7 +5,7 @@
 <(&,swan,swimmer) --> bird>?
 
 'Is swimming swan a type of bird?
-50
+100
 
 'Swimming swan is a type of bird.
 ''outputMustContain('<(&,swan,swimmer) --> bird>. %0.90;0.73%')
