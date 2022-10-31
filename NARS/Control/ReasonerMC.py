@@ -1,171 +1,193 @@
-import _thread
 import ctypes
-from os import remove
-from pynars.NAL.Functions.Tools import truth_to_quality
-from pynars.NARS.DataStructures._py.Channel import Channel
+import tkinter as tk
+from typing import List
 
-from pynars.NARS.DataStructures._py.Link import TaskLink
-from pynars.NARS.InferenceEngine import TemporalEngine
-# from pynars.NARS.Operation import Interface_Awareness
-from pynars.Narsese._py.Budget import Budget
-from pynars.Narsese._py.Statement import Statement
-from pynars.Narsese._py.Task import Belief
-from ..DataStructures import Bag, Memory, NarseseChannel, Buffer, Task, Concept
+from ..DataStructures.MC.SampleChannels.SampleChannel3 import SampleChannel3
+from ...Narsese import parser
+import tkinter.font as tkFont
+from pynars import Config, Global
+import pynars.NARS.Operation as Operation
+from ..InferenceEngine import GeneralEngine
+from tkinter.scrolledtext import ScrolledText
+from ..DataStructures import Memory, Task, Concept
 from ..DataStructures.MC.ChannelMC import ChannelMC
 from ..DataStructures.MC.GlobalBufferMC import GlobalBufferMC
-from ..DataStructures.MC.InternalBufferMC import InternalBufferMC
 from ..DataStructures.MC.OutputBufferMC import OutputBufferMC
-# from ..DataStructures.MC.SampleChannels.SampleChannel1 import SampleChannel1
+from ..DataStructures.MC.InternalBufferMC import InternalBufferMC
 from ..DataStructures.MC.SampleChannels.SampleChannel2 import SampleChannel2
 from ..DataStructures.MC.SampleChannels.SampleEnvironment1 import SampleEnvironment1
-from ..InferenceEngine import GeneralEngine
-from pynars import Config
-from pynars.Config import Enable
-from typing import Callable, List, Tuple, Union
-import pynars.NARS.Operation as Operation
-from pynars import Global
-import tkinter as tk
-import tkinter.font as tkFont
-from tkinter.scrolledtext import ScrolledText
-
-from ...Narsese import parser
 
 
 class ReasonerMC:
 
     def __init__(self, n_memory, config = './config.json') -> None:
-        # print('''Init...''')
         Config.load(config)
         self.inference = GeneralEngine()
-        # self.temporal_inference = TemporalEngine()  # for temporal causal reasoning
-        self.root = tk.Tk()  # GUI
-        ctypes.windll.shcore.SetProcessDpiAwareness(1)
+
+        # GUI
+        # ==============================================================================================================
+        self.root = tk.Tk()
+        ctypes.windll.shcore.SetProcessDpiAwareness(1)  # scaling for any resolution rates
         SF = ctypes.windll.shcore.GetScaleFactorForDevice(0)
         self.root.tk.call("tk", "scaling", SF / 75)
+
+        # the frame for the output box
         self.F_1 = tk.LabelFrame(self.root, width=79, height=30, text="Output")
+        # the frane for the interacting box, has two parts, 1) user input, 2) buttons
         self.F_2 = tk.LabelFrame(self.root, width=69, height=10, text="Input")
+        # sub-frame for the user input
         self.F_21 = tk.Frame(self.F_2, width=75, height=10)
+        # sub-frame for buttons
         self.F_22 = tk.Frame(self.F_2, width=4, height=10)
+
         self.F_1.pack(side=tk.TOP)
         self.F_2.pack(side=tk.TOP)
         self.F_21.pack(side=tk.LEFT)
         self.F_22.pack(side=tk.LEFT)
+
         Font = tkFont.Font(family="monaco", size=8)
         self.T = ScrolledText(self.F_1, width=79, height=30, font=Font)
-        self.T.tag_config("tag_1", background="#D5D5D5")
+        self.T.tag_config("tag_1", background="#D5D5D5")  # gray background, used for immediate user input responses
+        # tag_2's are for immediate responses from inference, i.e., responses for questions/goals
+        # plain background for the first update, yellow background for continue updates
         self.T.tag_config("tag_2", font=tkFont.Font(family="monaco", size=8, weight="bold"))
-        self.T.tag_config("tag_2_updated", font=tkFont.Font(family="monaco", size=8, weight="bold"), background="yellow")
-        self.T.tag_config("updated", background="yellow")
-        self.T_using_tag = True
-        # self.T.insert(tk.END, "=" * 37 + "START" + "=" * 37)
-        self.T.configure(state="disabled")
-        # turn it into "normal" if you want to edit
-        self.E = tk.Text(self.F_21, width=75, height=10, font=Font)  # TODO, binding
+        self.T.tag_config("tag_2_updated", font=tkFont.Font(family="monaco", size=8, weight="bold"),
+                          background="yellow")
+        self.T.configure(state="disabled")  # disable user input
+
+        self.E = tk.Text(self.F_21, width=75, height=10, font=Font)
         self.B_1 = tk.Button(self.F_22, text="Step", height=1, width=5, command=self.cycle, font=Font)
         self.B_2 = tk.Button(self.F_22, text="Enter", height=1, width=5, command=self.input_lines, font=Font)
-        # self.B_3 = tk.Button(self.F_22, text="Start", height=1, width=5, command=self.start, font=Font)
-        # self.B_4 = tk.Button(self.F_22, text="Pause", height=1, width=5, command=self.pause, font=Font)
+        self.B_3 = tk.Button(self.F_22, text="Reset", height=1, width=5, command=self.reset, font=Font)
+        self.B_4 = tk.Button(self.F_22, text="Clear", height=1, width=5, command=self.clear, font=Font)
 
         self.T.pack(side=tk.BOTTOM)
         self.E.pack(side=tk.LEFT, padx=1)
         self.B_1.pack(side=tk.TOP)
         self.B_2.pack(side=tk.TOP)
-        # self.B_3.pack(side=tk.TOP)
-        # self.B_4.pack(side=tk.TOP)
+        self.B_3.pack(side=tk.TOP)
+        self.B_4.pack(side=tk.TOP)
 
         self.root.title("PyNARS 0.0.2.MC Console")
+        # ==============================================================================================================
+
         self.output_buffer = OutputBufferMC(self.T)
         self.memory = Memory(n_memory, output_buffer=self.output_buffer)
+        env = SampleEnvironment1()
         self.channels: List[ChannelMC] = [
             # SampleChannel1("SC1", 3, 10, 10, 10, self.memory)
-            SampleChannel2("SC2", 3, 10, 10, 10, self.memory, SampleEnvironment1(), self.root)
+            SampleChannel2(3, 10, 10, 10, self.memory, env, self.root, "SC2"),
+            SampleChannel3(3, 10, 10, 10, self.memory, env, self.root, "SC3")
         ]
-        # TODO, these parameters could come from config.json
         self.internal_buffer = InternalBufferMC(3, 10, 10, 10, self.memory, self.root, "Internal Buffer")
         self.global_buffer = GlobalBufferMC(3, 10, 10, 10, self.memory, self.root, "Global Buffer")
         for each_channel in self.channels:
             self.output_buffer.register_channel(each_channel)
 
-        # def start(self):
-        #     if not self.mark:
-        #         self.mark = True
-        #     while self.mark:
-        #         self.cycle()
-
-        # def pause(self):
-        self.mark = False
+    """
+    collect the content in the input window; parse them into Narsese and process
+    a task will be directly accept() by the main memory
+    """
 
     def input_lines(self):
-        # print("called!")
-        t = self.E.get("1.0", "end")
+        t = self.E.get("1.0", "end")  # get content
         sentences = t.split("\n")
         sentences = list(filter(None, sentences))
-        self.E.delete("1.0", "end")
+        self.E.delete("1.0", "end")  # clear window
         have_content = False
         for each in sentences:
             if len(each) == 0:
-                # print("entry1")
                 continue
-            elif each.isdigit():
+            elif each.isdigit():  # digit input, run n cycles
                 have_content = True
-                # print("entry2")
-                num = int(each)
-                self.T.configure(state="normal")
-                if self.T_using_tag:
-                    self.T.insert(tk.END, "Running " + each + " cycles. \n", "tag_1")
-                    self.T_using_tag = False
-                else:
-                    self.T.insert(tk.END, "Running " + each + " cycles. \n")
-                    self.T_using_tag = True
-                self.T.configure(state="disabled")
-                self.cycles(num)
+                self.T.configure(state="normal")  # enable inputting
+                self.T.insert(tk.END, "Running " + each + " cycles. \n", "tag_1")
+                self.T.configure(state="disabled")  # disable user input
+                self.cycles(int(each))
             else:
-                # print("entry3")
                 try:
                     task = parser.parse(each)
                 except:
-                    self.T.insert(tk.END, each + "PARSE ERROR!\n")
+                    self.T.insert(tk.END, each + "PARSE ERROR! \n", "tag_1")
                     continue
                 have_content = True
                 self.T.configure(state="normal")
-                if self.T_using_tag:
-                    self.T.insert(tk.END, "Task accepted: " + each + "\n", "tag_1")
-                    self.T_using_tag = False
-                else:
-                    self.T.insert(tk.END, "Task accepted: " + each + "\n")
-                    self.T_using_tag = True
+                self.T.insert(tk.END, "Task accepted: " + each + "\n", "tag_1")
                 self.T.configure(state="disabled")
                 self.memory.accept(task)
+
         self.T.configure(state="normal")
         if have_content:
             self.T.insert(tk.END, "=" * 79 + "\n")
         self.T.configure(state="disabled")
 
+    """
+    Everything in the buffers should be cleared: 1) slots, 2) prediction table, 3) operation agenda.
+    """
+
     def reset(self):
-        """
-        Everything in the buffers should be cleared.
-        """
-        # TODO
+        self.output_buffer.reset()
+        self.internal_buffer.reset()
+        self.global_buffer.reset()
+        for each in self.channels:
+            each.event_buffer.reset()
+
+    def clear(self):
+        self.T.configure(state="normal")
+        self.T.delete("1.0", "end")  # clear window
+        self.T.configure(state="disabled")
 
     def cycles(self, n_cycle: int):
         for _ in range(n_cycle):
-            # print("i did")
             self.cycle()
 
+    """
+    Copied from Reasoner.py, all returns should be forwarded to InternalBufferMC.previous_inference_result
+    """
+
+    def mental_operation(self, task: Task, concept: Concept, answers_question: Task, answers_quest: Task):
+        # handle the mental operations in NAL-9
+        task_operation_return, task_executed, belief_aware = None, None, None
+
+        # belief-awareness
+        for answers in (answers_question, answers_quest):
+            if answers is None:
+                continue
+            for answer in answers:
+                belief_aware = Operation.aware__believe(answer)
+
+        if task is not None:
+            # question-awareness
+            if task.is_question:
+                belief_aware = Operation.aware__wonder(task)
+            # quest-awareness
+            elif task.is_quest:
+                belief_aware = Operation.aware__evaluate(task)
+
+        # execute mental operation
+        if task is not None and task.is_executable:
+            task_operation_return, task_executed = Operation.execute(task, concept, self.memory)
+
+        return task_operation_return, task_executed, belief_aware
+
+    """
+    Everything to do by NARS in a single working cycle
+    """
+
     def cycle(self):
-        """Everything to do by NARS in a single working cycle"""
 
         # step 1, take out a task from the internal buffer, and put it into the global buffer
         task_from_internal_buffer = self.internal_buffer.step(self.internal_buffer.previous_inference_result)
 
-        # step1.5, execute the task if executable
+        # step 1.5, execute the task if executable
         self.output_buffer.step(task_from_internal_buffer)
 
         # step 2, Take out a task from each channel, and put it into the global buffer
         tasks_from_channels = []
         for each_channel in self.channels:
-            # print("X")
             tasks_from_channels.append(each_channel.step())
+
+        # debugging information
         print(tasks_from_channels)
         print("==>")
 
@@ -175,14 +197,10 @@ class ReasonerMC:
 
         # step 3, feed these tasks to the global buffer and send the one from the global buffer to the main memory
         task_from_global_buffer = self.global_buffer.step(tasks_for_global_buffer)
-        if task_from_global_buffer:
+        if task_from_global_buffer is not None:
             judgement_revised, goal_revised, answers_question, answers_quest = \
                 self.memory.accept(task_from_global_buffer)
-            # GUI - output buffer
-            # if False:
-            #     if judgement_revised is not None:
-            #         pass  # TODO, do I need to process this situation?
-            # TODO, ugly!
+
             if goal_revised is not None:
                 exist = False
                 for i in range(len(self.output_buffer.active_goals)):
@@ -204,30 +222,28 @@ class ReasonerMC:
                             break
                     if not exist:
                         self.output_buffer.active_questions.append([each, "initialized"])
-            # TODO, quests handling?
+            # temporally disabled
             # if answers_quest is not None:
             #     for i in range(len(self.output_buffer.active_quests)):
             #         if self.output_buffer.active_quests[i][0].term.equal(answers_quest.term):
             #             self.output_buffer.active_quests = self.output_buffer.active_quests[:i] + [
             #                 [answers_quest, "updated"]] + self.output_buffer.active_quests[i:]
             #             break
-            # if Enable.temporal_rasoning:
-            #     # TODO: Temporal Inference
-            #     raise
-            # TODO, what does this mean
-            # if judgement_revised is not None:
-            #     self.internal_buffer.update_inference_result(judgement_revised)
-            # if goal_revised is not None:
-            #     self.internal_buffer.update_inference_result(goal_revised)
-            # if answers_question is not None:
-            #     for answer in answers_question:
-            #         self.internal_buffer.update_inference_result(answer)
+
+            # update inference results (by accepting one task into the main memory)
+            if judgement_revised is not None:
+                self.internal_buffer.update_inference_result(judgement_revised)
+            if goal_revised is not None:
+                self.internal_buffer.update_inference_result(goal_revised)
+            if answers_question is not None:
+                for answer in answers_question:
+                    self.internal_buffer.update_inference_result(answer)
+            # temporally disabled
             # if answers_quest is not None:
             #     for answer in answers_quest:
             #         self.internal_buffer.update_inference_result(answer)
         else:
             judgement_revised, goal_revised, answers_question, answers_quest = None, None, None, None
-        self.output_buffer.UI_show()
 
         # step 4, apply general inference step
         concept: Concept = self.memory.take(remove=True)
@@ -235,87 +251,27 @@ class ReasonerMC:
         if concept is not None:
             tasks_inference_derived = self.inference.step(concept)
             tasks_derived.extend(tasks_inference_derived)
-            # TODO: relevant process
             is_concept_valid = True
             if is_concept_valid:
                 self.memory.put_back(concept)
-        self.internal_buffer.previous_inference_result = tasks_derived
 
-        #   temporal induction in NAL-7
-        # if False and task_from_global_buffer is not None and task_from_global_buffer.is_judgement and
-        # task_from_global_buffer.is_external_event:
-        #     concept_task: Concept = self.memory.take_by_key(task_from_global_buffer.term, remove=False)
-        #     tasks_derived.extend(
-        #         self.temporal_inference.step(
-        #             task_from_global_buffer, concept_task,
-        #             self.sequence_buffer,
-        #             self.operations_buffer
-        #         )
-        #     )
-        # else:
-        #     pass  # TODO: select a task from `self.sequence_buffer`?
+        # mental operation
+        task_operation_return, task_executed = None, None
+        task_operation_return, task_executed, belief_aware = self.mental_operation(task_from_global_buffer,
+                                                                                   concept,
+                                                                                   answers_question,
+                                                                                   answers_quest)
+        if task_operation_return is not None:
+            self.internal_buffer.update_inference_result(task_operation_return)
+        if task_executed is not None:
+            self.internal_buffer.update_inference_result(task_executed)
+        if belief_aware is not None:
+            self.internal_buffer.update_inference_result(belief_aware)
 
-        #   mental operation of NAL-9
-        # TODO, what does it mean
-        # task_operation_return, task_executed = None, None
-        # if False:
-        #     task_operation_return, task_executed, belief_awared = self.mental_operation(task,
-        #     concept, answers_question, answers_quest)
-        #     if task_operation_return is not None: tasks_derived.append(task_operation_return)
-        #     if task_executed is not None: tasks_derived.append(task_executed)
-        #     if belief_awared is not None: tasks_derived.append(belief_awared)
-
-        #   execute registered operations
-        # if task is not None and task.is_executable:
-        #     from pynars.NARS import Operation
-        #     stat: Statement = task.term
-        #     op = stat.predicate
-        #     if op in Operation.registered_operations and not task.is_mental_operation:
-        #         # to judge whether the goal is satisfied
-        #         task_operation_return, task_executed = Operation.execute(task, concept, self.memory)
-        #         concept_task = self.memory.take_by_key(task, remove=False)
-        #         if concept_task is not None:
-        #             belief: Belief = concept_task.match_belief(task.sentence)
-        #         if belief is not None:
-        #             task.budget.reduce_by_achieving_level(belief.truth.e)
-        #         if task_operation_return is not None: tasks_derived.append(task_operation_return)
-        #         if task_executed is not None: tasks_derived.append(task_executed)
-
-        #   put the tasks-derived into the internal-experience.
-        # for task_derived in tasks_derived:
-        #     self.internal_experience.put(task_derived)
+        self.output_buffer.UI_show()
 
         # handle the sense of time
         Global.time += 1
 
-        return tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest, (None, None)
-
-    # def mental_operation(self, task: Task, concept: Concept, answers_question: Task, answers_quest: Task):
-    #     # handle the mental operations in NAL-9
-    #     task_operation_return, task_executed, belief_awared = None, None, None
-    #
-    #     # belief-awareness
-    #     for answers in (answers_question, answers_quest):
-    #         if answers is None: continue
-    #         for answer in answers:
-    #             belief_awared = Operation.aware__believe(answer)
-    #
-    #     if task is not None:
-    #         # question-awareness
-    #         if task.is_question:
-    #             belief_awared = Operation.aware__wonder(task)
-    #         # quest-awareness
-    #         elif task.is_quest:
-    #             belief_awared = Operation.aware__evaluate(task)
-    #
-    #             # execute mental operation
-    #     if task is not None and task.is_executable:
-    #         task_operation_return, task_executed = Operation.execute(task, concept, self.memory)
-    #
-    #     return task_operation_return, task_executed, belief_awared
-
-    # def register_operation(self, name_operation: str, callback: Callable):
-    #     """"""
-    #     from pynars.Narsese import Operation as Op
-    #     op = Op(name_operation)
-    #     Operation.register(op, callback)
+        return tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest, (
+            task_operation_return, task_executed)

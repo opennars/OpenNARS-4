@@ -1,5 +1,5 @@
-from pynars.NARS.DataStructures.MC.ChannelMC import ChannelMC
 from pynars.Narsese import Term, parser
+from pynars.NARS.DataStructures.MC.ChannelMC import ChannelMC
 
 
 # task generation utility function
@@ -7,14 +7,15 @@ def task_generation_util(v, ID):
     if v > 0.5:
         round_v = round(v)
         task = parser.parse(
-            "<" + ID + " --> shape_" + str(round_v) + ">. %" + str(1 - abs(round_v - v)) + ";0.5%")
+            "<" + ID + " --> shape_" + str(round_v) + ">. :|: %" + str(1 - abs(round_v - v)) + ";0.5%")
         return task
 
 
 class SampleChannel2(ChannelMC):
 
-    def __init__(self, ID: str, num_slot, num_event, num_anticipation, num_prediction, memory, env, root_UI):
-        super(SampleChannel2, self).__init__(ID, num_slot, num_event, num_anticipation, num_prediction, memory, root_UI)
+    def __init__(self, num_slot, num_event, num_anticipation, num_prediction, memory, env, root_UI, UI_name):
+        super(SampleChannel2, self).__init__(num_slot, num_event, num_anticipation, num_prediction, memory, root_UI,
+                                             UI_name)
         self.operations = [Term("^rotate"), Term("^zoom"), Term("^up"), Term("^down"), Term("^right"), Term("^left")]
         self.env = env
 
@@ -24,7 +25,6 @@ class SampleChannel2(ChannelMC):
         elif term.equal(self.operations[1]):
             self.env.zoom()
         elif term.equal(self.operations[2]):
-            # print("DID up")
             self.env.up()
         elif term.equal(self.operations[3]):
             self.env.down()

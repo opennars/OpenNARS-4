@@ -4,7 +4,7 @@ from pynars.NARS.DataStructures.MC.InputBufferMC import InputBufferMC
 
 class EventBufferMC(InputBufferMC):
     """
-    Event buffers may subject to change to specific channels.
+    The same as InputBufferMC without further specification.
     """
 
     def __init__(self, num_slot, num_event, num_anticipation, num_prediction, memory: Memory, root_UI, UI_name):

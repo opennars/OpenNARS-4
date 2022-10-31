@@ -1,16 +1,15 @@
-import math
-from copy import deepcopy
-from pynars.NAL.Functions import Stamp_merge, Budget_merge, Truth_induction, Truth_deduction
-from pynars.NAL.Inference import LocalRules
-from pynars.NARS.DataStructures import Memory
-from pynars.NARS.DataStructures.MC.AnticipationMC import AnticipationMC
-from pynars.NARS.DataStructures.MC.SlotMC import SlotMC
-from pynars.Narsese import Compound, Punctuation, Sentence, Task, Judgement, Interval, Term, Statement
+import ctypes
 import tkinter as tk
 from tkinter import ttk
+from copy import deepcopy
 import tkinter.font as tkFont
 from tkinter.scrolledtext import ScrolledText
-import ctypes
+from pynars.NARS.DataStructures import Memory
+from pynars.NARS.DataStructures.MC.SlotMC import SlotMC
+from pynars.NARS.DataStructures.MC.AnticipationMC import AnticipationMC
+from pynars.NARS.DataStructures.MC.SlotMC import p_value as p_value_events
+from pynars.Narsese import Compound, Task, Judgement, Interval, Statement, Copula
+from pynars.NAL.Functions import Stamp_merge, Budget_merge, Truth_induction, Truth_deduction
 
 
 # the priority value of predictions
@@ -19,21 +18,23 @@ def p_value(t: Task):
 
 
 def UI_better_content(task: Task):
-    budget = "%" + str(task.budget.priority)[:4] + ";" + str(task.budget.durability)[:4] + ";" + str(
-        task.budget.quality)[:4] + "% | "
+    budget = "$" + str(task.budget.priority)[:4] + ";" + str(task.budget.durability)[:4] + ";" + str(
+        task.budget.quality)[:4] + "$ | "
     word = "".join(task.sentence.word.split(" ")) + "\n"
+    end = "=" * 41 + "\n"
     word.replace("-->", "->")
     word.replace("==>", "=>")
-    truth = str(task.truth.f)[:4] + ";" + str(task.truth.c)[:4] + "% | "
-    priority_value = str(p_value(task))[:4] + "\n"
-    end = "=" * 41 + "\n"
-    return [budget + truth + priority_value, word, end]
-    # return "%" + str(task.budget.priority)[:4] + ";" + str(task.budget.durability)[:4] + ";" + str(
-    #     task.budget.quality)[:4] + "% \n " + task.sentence.word + " \n %" + str(task.truth.f)[:4] + ";" + str(
-    #     task.truth.c)[:4] + "%\n" + "=" * 41
+    if task.truth is not None:
+        truth = "% " + str(task.truth.f)[:4] + ";" + str(task.truth.c)[:4] + "%\n"
+        return [budget + truth, word, end]
+    else:
+        return [budget + "\n", word, end]
 
 
 class InputBufferMC(object):
+    """
+    The super class of all input buffers (event buffer, internal buffer, global buffer).
+    """
 
     def __init__(self, num_slot, num_event, num_anticipation, num_prediction, memory: Memory, root_UI, UI_name):
         self.num_slot = num_slot * 2 + 1
@@ -41,35 +42,36 @@ class InputBufferMC(object):
         self.num_event = num_event
         self.num_anticipation = num_anticipation
         self.num_prediction = num_prediction
+
         self.memory = memory
         self.prediction_table = []
         self.slots = [SlotMC(num_event, num_anticipation) for _ in range(self.num_slot)]
 
         # GUI
-        ctypes.windll.shcore.SetProcessDpiAwareness(1)
+        # ==============================================================================================================
+        ctypes.windll.shcore.SetProcessDpiAwareness(1)  # auto-resolution rate
         SF = ctypes.windll.shcore.GetScaleFactorForDevice(0)
-        self.top = tk.Toplevel(root_UI, width=160, height=50)
+
+        self.top = tk.Toplevel(root_UI, width=160, height=50)  # top canvas created
         self.top.title(UI_name)
         self.top.tk.call("tk", "scaling", SF / 75)
-        self.notebook = ttk.Notebook(self.top)
+
+        self.notebook = ttk.Notebook(self.top)  # notebook created
         self.notebook.pack(pady=10, padx=10, expand=True)
-        # each time slot has one page
-        self.P = {}
-        self.contents_UI = []
-        self.word_pos_1 = 1
-        self.word_pos_2 = 1
-        self.word_pos_3 = 1
-        self.word_pos_4 = 1
+        # each time slot has one page on the notebook
+        self.P = {}  # reference of all notebook pages
+        self.contents_UI = []  # reference of the content of each notebook page
         for i in range(self.num_slot):
-            P_i = ttk.Frame(self.notebook, width=160, height=50)
-            self.P.update({P_i: None})
+            P_i = ttk.Frame(self.notebook, width=160, height=50)  # notebook page created
             self.contents_UI.append({"historical_compound": [],
                                      "concurrent_compound": [],
                                      "anticipation": [],
                                      "prediction": []})
             P_i.pack(fill="both", expand=True)
             self.notebook.add(P_i, text="Slot [" + str(i - self.present) + "]     ")
-            F_1 = tk.LabelFrame(P_i, width=41, height=50, text="Historical Compound")
+
+            # frames of each part on the page
+            F_1 = tk.LabelFrame(P_i, width=41, height=50, text="Historical Compound")  # frame created on the page
             F_2 = tk.LabelFrame(P_i, width=41, height=50, text="Concurrent Compound")
             F_3 = tk.LabelFrame(P_i, width=41, height=50, text="Anticipation")
             F_4 = tk.LabelFrame(P_i, width=41, height=50, text="Prediction")
@@ -78,7 +80,7 @@ class InputBufferMC(object):
             F_3.pack(side=tk.LEFT)
             F_4.pack(side=tk.LEFT)
             Font = tkFont.Font(family="monaco", size=8)
-            T_1 = ScrolledText(F_1, width=41, height=50, font=Font)
+            T_1 = ScrolledText(F_1, width=41, height=50, font=Font)  # scrolled text created on the frame
             T_2 = ScrolledText(F_2, width=41, height=50, font=Font)
             T_3 = ScrolledText(F_3, width=41, height=50, font=Font)
             T_4 = ScrolledText(F_4, width=41, height=50, font=Font)
@@ -86,21 +88,16 @@ class InputBufferMC(object):
             T_2.pack(side=tk.RIGHT)
             T_3.pack(side=tk.RIGHT)
             T_4.pack(side=tk.RIGHT)
-            T_1.insert(tk.END, "=" * 18 + "READY" + "=" * 18)
+            T_1.insert(tk.END, "=" * 18 + "READY" + "=" * 18)  # initialization reminder
             T_2.insert(tk.END, "=" * 18 + "READY" + "=" * 18)
             T_3.insert(tk.END, "=" * 18 + "READY" + "=" * 18)
             T_4.insert(tk.END, "=" * 18 + "READY" + "=" * 18)
-            T_1.configure(state="disabled")
+            T_1.configure(state="disabled")  # disable user input (just for display)
             T_2.configure(state="disabled")
             T_3.configure(state="disabled")
             T_4.configure(state="disabled")
-            T = [T_1, T_2, T_3, T_4]
-            self.P[P_i] = T
-        # each element in content_to_show contains four parts:
-        # 1) historical compound
-        # 2) concurrent compound
-        # 3) anticipation
-        # 4) prediction
+            self.P.update({P_i: [T_1, T_2, T_3, T_4]})
+        # ==============================================================================================================
 
     def UI_roll(self):
         self.contents_UI = self.contents_UI[1:]
@@ -111,10 +108,11 @@ class InputBufferMC(object):
 
     def UI_show_single_page(self, P_i, content_UI):
         T_1, T_2, T_3, T_4 = self.P[P_i][0], self.P[P_i][1], self.P[P_i][2], self.P[P_i][3]
-        Font = tkFont.Font(family="monaco", size=8, weight="bold")
 
-        T_1.tag_config("tag_1", font=Font)
-        T_1.tag_config("tag_2", foreground="red")
+        # add tags
+        Font = tkFont.Font(family="monaco", size=8, weight="bold")
+        T_1.tag_config("tag_1", font=Font)  # for the word of each task
+        T_1.tag_config("tag_2", foreground="red")  # for the budget and truth-value
         T_2.tag_config("tag_1", font=Font)
         T_2.tag_config("tag_2", foreground="red")
         T_3.tag_config("tag_1", font=Font)
@@ -122,51 +120,44 @@ class InputBufferMC(object):
         T_4.tag_config("tag_1", font=Font)
         T_4.tag_config("tag_2", foreground="red")
 
-        T_1.configure(state="normal")
+        T_1.configure(state="normal")  # enable inputting
         T_2.configure(state="normal")
         T_3.configure(state="normal")
         T_4.configure(state="normal")
-        T_1.delete("1.0", "end")
+        T_1.delete("1.0", "end")  # delete old contents
         T_2.delete("1.0", "end")
         T_3.delete("1.0", "end")
         T_4.delete("1.0", "end")
+
         for each in content_UI["historical_compound"]:
             if each is not None and len(each) != 0:
-                BT = each[0]
-                word = each[1]
-                end = each[2]
+                BT, word, end = each[0], each[1], each[2]
                 T_1.insert(tk.END, BT, "tag_2")
                 T_1.insert(tk.END, word, "tag_1")
                 T_1.insert(tk.END, end)
+
         for each in content_UI["concurrent_compound"]:
             if each is not None and len(each) != 0:
-                BT = each[0]
-                word = each[1]
-                end = each[2]
+                BT, word, end = each[0], each[1], each[2]
                 T_2.insert(tk.END, BT, "tag_2")
                 T_2.insert(tk.END, word, "tag_1")
                 T_2.insert(tk.END, end)
+
         for each in content_UI["anticipation"]:
             if each is not None and len(each) != 0:
-                BT = each[0]
-                word = each[1]
-                end = each[2]
+                BT, word, end = each[0], each[1], each[2]
                 T_3.insert(tk.END, BT, "tag_2")
                 T_3.insert(tk.END, word, "tag_1")
                 T_3.insert(tk.END, end)
+
         for each in content_UI["prediction"]:
             if each is not None and len(each) != 0:
-                BT = each[0]
-                word = each[1]
-                end = each[2]
+                BT, word, end = each[0], each[1], each[2]
                 T_4.insert(tk.END, BT, "tag_2")
                 T_4.insert(tk.END, word, "tag_1")
                 T_4.insert(tk.END, end)
-        # T_1.insert(tk.END, content_UI["historical_compound"])
-        # T_2.insert(tk.END, content_UI["concurrent_compound"])
-        # T_3.insert(tk.END, content_UI["anticipation"])
-        # T_4.insert(tk.END, content_UI["prediction"])
-        T_1.configure(state="disabled")
+
+        T_1.configure(state="disabled")  # disable user input
         T_2.configure(state="disabled")
         T_3.configure(state="disabled")
         T_4.configure(state="disabled")
@@ -199,11 +190,14 @@ class InputBufferMC(object):
                 self.prediction_table = self.prediction_table[:i] + [p] + self.prediction_table[i:]
                 added = True
                 break
-        if not added:
+        if not added:  # smallest
             self.prediction_table = self.prediction_table + [p]
         if len(self.prediction_table) > self.num_prediction:
             self.prediction_table = self.prediction_table[:-1]
 
+    """
+    Compound utility function.
+    """
     def combination(self, lst, start, num, tmp, cpds):
         if num == 0:
             cpds.append(deepcopy(tmp))
@@ -219,7 +213,9 @@ class InputBufferMC(object):
         for new_content in new_contents:
             self.slots[self.present].update_events(new_content)
         # check atomic anticipations
-        self.slots[self.present].check_anticipation(self.prediction_table)
+        self.slots[self.present].check_anticipation(self)  # looks strange?
+
+        # concurrent compounds generation
         compounds = []
         for i in range(len(self.slots[self.present].events)):
             self.combination(self.slots[self.present].events, 0, i + 1, [], compounds)
@@ -228,13 +224,17 @@ class InputBufferMC(object):
                 # term generation
                 each_compound_term = [each.term for each in each_compound]
                 term = Compound.ParallelEvents(*each_compound_term)
-                existed = False
-                existed_p = 0
-                for each_existed_event in self.slots[self.present].events:
-                    if each_existed_event.term.equal(term):
-                        existed = True
-                        existed_p = p_value(each_existed_event)
-                        break
+
+                # avoid duplicate compounds, when there are duplicates, only save the highest one
+                # temporally disabled to save some time
+                # existed = False
+                # existed_p = 0
+                # for each_existed_event in self.slots[self.present].events:
+                #     if each_existed_event.term.equal(term):
+                #         existed = True
+                #         existed_p = p_value(each_existed_event)
+                #         break
+
                 # truth, using truth-induction function (TODO, may subject to change)
                 truth = each_compound[0].truth
                 for each in each_compound[1:]:
@@ -251,16 +251,22 @@ class InputBufferMC(object):
                 sentence = Judgement(term, stamp, truth)
                 # task generation
                 task = Task(sentence, budget)
-                if not existed:
-                    self.slots[self.present].update_events(task)
-                elif p_value(task) > existed_p:
-                    self.slots[self.present].update_events(task)
+                self.slots[self.present].update_events(task)
+
+                # temporally disabled to save some time
+                # if not existed:
+                #     self.slots[self.present].update_events(task)
+                # elif p_value(task) > existed_p:
+                #     self.slots[self.present].update_events(task)
+
             else:
                 self.slots[self.present].update_events(each_compound[0])
         # check concurrent compound anticipations
-        self.slots[self.present].check_anticipation(self.prediction_table)
-        # generate historical compounds
+        self.slots[self.present].check_anticipation(self)
+
+        # historical compounds generation
         for i in range(self.present):
+
             previous_event_concurrent = self.slots[i].highest_compound
             if previous_event_concurrent:
                 for each_event in self.slots[self.present].events:
@@ -278,6 +284,7 @@ class InputBufferMC(object):
                     # task generation
                     task = Task(sentence, budget)
                     self.slots[self.present].update_events_historical(task)
+
             previous_compound_historical = self.slots[i].highest_compound_historical
             if previous_compound_historical:
                 for each_event in self.slots[self.present].events:
@@ -295,19 +302,22 @@ class InputBufferMC(object):
                     # task generation
                     task = Task(sentence, budget)
                     self.slots[self.present].update_events_historical(task)
+
         # check historical compound anticipations
-        self.slots[self.present].check_anticipation(self.prediction_table)
+        self.slots[self.present].check_anticipation(self)
+        # TODO, I've checked anticipations four times, can I be more efficient?
 
     def local_evaluation(self):
         # generate anticipation
         for each_prediction in self.prediction_table:
             # predictions may be like "(&/, A, +1) =/> B", the content of the subject will just be A
-            time_offset = 0
+            interval = 0
             if isinstance(each_prediction.term.subject.terms[-1], Interval):
                 subject = Compound.SequentialEvents(*each_prediction.term.subject.terms[:-1])
-                time_offset = int(each_prediction.term.subject.terms[-1])
+                interval = int(each_prediction.term.subject.terms[-1])
             else:
                 subject = each_prediction.term.subject
+
             for each_event in self.slots[self.present].events:
                 if subject.equal(each_event.term):
                     # term generation
@@ -324,8 +334,9 @@ class InputBufferMC(object):
                     task = Task(sentence, budget)
                     # anticipation generation
                     anticipation = AnticipationMC(task, each_prediction)
-                    if time_offset <= self.present:
-                        self.slots[self.present + time_offset].update_anticipation(anticipation)
+                    if interval <= self.present:  # avoid time slots overflow
+                        self.slots[self.present + interval].update_anticipation(anticipation)
+
             for each_event_historical in self.slots[self.present].events_historical:
                 if subject.equal(each_event_historical.term):
                     # term generation
@@ -342,23 +353,33 @@ class InputBufferMC(object):
                     task = Task(sentence, budget)
                     # anticipation generation
                     anticipation = AnticipationMC(task, each_prediction)
-                    if time_offset <= self.present:
-                        self.slots[self.present + time_offset].update_anticipation(anticipation)
-        # check anticipations with un-expectation handling
-        self.slots[self.present].check_anticipation(self.prediction_table, mode_unexpected=True)
+                    if interval <= self.present:
+                        self.slots[self.present + interval].update_anticipation(anticipation)
 
+        # check anticipations with un-expectation handling (non-anticipation events)
+        self.slots[self.present].check_anticipation(self, mode_unexpected=True)
+
+        # unsatisfied anticipation handling
+        for each_anticipation in self.slots[self.present].anticipations:
+            if not each_anticipation.solved:
+                each_anticipation.unsatisfied(self)
+
+    """
+    Find whether a concept is already in the main memory. If so, merger the budget.
+    """
     def memory_based_evaluations(self):
         events_updates = []
         events_historical_updates = []
+
         for each_event in self.slots[self.present].events:
             tmp = self.memory.concepts.take_by_key(each_event.term, remove=False)
-            if tmp:
+            if tmp is not None:
                 budget = Budget_merge(each_event.budget, tmp.budget)
                 task = Task(each_event.sentence, budget)
                 events_updates.append(task)
         for each_event_historical in self.slots[self.present].events_historical:
             tmp = self.memory.concepts.take_by_key(each_event_historical.term, remove=False)
-            if tmp:
+            if tmp is not None:
                 budget = Budget_merge(each_event_historical.budget, tmp.budget)
                 task = Task(each_event_historical.sentence, budget)
                 events_historical_updates.append(task)
@@ -366,13 +387,15 @@ class InputBufferMC(object):
             self.slots[self.present].update_events(each_event)
         for each_event_historical in events_historical_updates:
             self.slots[self.present].update_events_historical(each_event_historical)
+
+        # find the highest concurrent/historical compound
         if len(self.slots[self.present].events) != 0:
             self.slots[self.present].highest_compound = self.slots[self.present].events[0]
         if len(self.slots[self.present].events_historical) != 0:
             self.slots[self.present].highest_compound_historical = self.slots[self.present].events_historical[0]
         if len(self.slots[self.present].events) != 0 and len(self.slots[self.present].events_historical) != 0:
-            if self.slots[0].p_value(self.slots[self.present].highest_compound) > self.slots[0].p_value(
-                    self.slots[self.present].highest_compound_historical):
+            if p_value_events(self.slots[self.present].highest_compound) > \
+                    p_value_events(self.slots[self.present].highest_compound_historical):
                 self.slots[self.present].candidate = self.slots[self.present].highest_compound
             else:
                 self.slots[self.present].candidate = self.slots[self.present].highest_compound_historical
@@ -382,20 +405,24 @@ class InputBufferMC(object):
             self.slots[self.present].candidate = self.slots[self.present].highest_compound_historical
 
     def prediction_generation(self):
+        # =/>
         if self.slots[self.present].candidate:
+            predicate = self.slots[self.present].candidate.term
             for i in range(self.present):
                 if self.slots[i].candidate:
-                    # TODO, this is ugly
-                    term1 = Compound.SequentialEvents(self.slots[i].candidate.term, Interval(abs(self.present - i)))
-                    term2 = self.slots[self.present].candidate.term
-                    term = Statement.PredictiveImplication(term1, term2)
-                    # <term1 =/> term2>
+                    # e.g., (E, +1) as the subject
+                    subject = Compound.SequentialEvents(self.slots[i].candidate.term, Interval(abs(self.present - i)))
+                    copula = Copula.PredictiveImplication  # =/>
+                    term = Statement(subject, copula, predicate)
                     # truth, using truth-induction function (TODO, may subject to change)
-                    truth = Truth_induction(self.slots[i].candidate.truth, self.slots[self.present].candidate.truth)
+                    truth = Truth_induction(self.slots[i].candidate.truth,
+                                            self.slots[self.present].candidate.truth)
                     # stamp, using stamp-merge function (TODO, may subject to change)
-                    stamp = Stamp_merge(self.slots[i].candidate.stamp, self.slots[self.present].candidate.stamp)
+                    stamp = Stamp_merge(self.slots[i].candidate.stamp,
+                                        self.slots[self.present].candidate.stamp)
                     # budget, using budget-merge function (TODO, may subject to change)
-                    budget = Budget_merge(self.slots[i].candidate.budget, self.slots[self.present].candidate.budget)
+                    budget = Budget_merge(self.slots[i].candidate.budget,
+                                          self.slots[self.present].candidate.budget)
                     # sentence composition
                     sentence = Judgement(term, stamp, truth)
                     # task generation
@@ -404,22 +431,47 @@ class InputBufferMC(object):
         return self.slots[self.present].candidate
 
     def step(self, new_contents):
-        # remove the oldest slot and create a new slot
+        # remove the oldest slot and create a new one
         self.slots = self.slots[1:]
         self.slots.append(SlotMC(self.num_event, self.num_anticipation))
-        self.compound_generation(new_contents)
-        self.local_evaluation()
-        self.memory_based_evaluations()
-        task_forward = self.prediction_generation()
-        # after each buffer cycle, GUI will upload what has been processed
+
+        self.compound_generation(new_contents)  # 1st step
+        self.local_evaluation()  # 2nd step
+        self.memory_based_evaluations()  # 3rd step
+        task_forward = self.prediction_generation()  # 4th step
+
+        # GUI
+        # ==============================================================================================================
         self.UI_roll()
         self.UI_content_update()
-        # self.contents_UI[self.present].update(
-        #     {"historical_compound": [self.UI_better_content(each) for each in
-        #                              self.slots[self.present].events_historical],
-        #      "concurrent_compound": [self.UI_better_content(each) for each in self.slots[self.present].events],
-        #      "anticipation": [self.UI_better_content(each.t) for each in self.slots[self.present].anticipations],
-        #      "prediction": [self.UI_better_content(each) for each in self.prediction_table]})
         self.UI_show()
-        # print("BC finished")
+        # ==============================================================================================================
         return task_forward
+
+    def reset(self):
+        self.slots = [SlotMC(self.num_event, self.num_anticipation) for _ in range(self.num_slot)]
+        self.prediction_table = []
+        self.contents_UI = []
+        for i in range(self.num_slot):
+            self.contents_UI.append({"historical_compound": [],
+                                     "concurrent_compound": [],
+                                     "anticipation": [],
+                                     "prediction": []})
+        for each in self.P:
+            T_1, T_2, T_3, T_4 = self.P[each]
+            T_1.configure(state="normal")
+            T_2.configure(state="normal")
+            T_3.configure(state="normal")
+            T_4.configure(state="normal")
+            T_1.delete("1.0", "end")
+            T_2.delete("1.0", "end")
+            T_3.delete("1.0", "end")
+            T_4.delete("1.0", "end")
+            T_1.insert(tk.END, "=" * 18 + "READY" + "=" * 18)  # initialization reminder
+            T_2.insert(tk.END, "=" * 18 + "READY" + "=" * 18)
+            T_3.insert(tk.END, "=" * 18 + "READY" + "=" * 18)
+            T_4.insert(tk.END, "=" * 18 + "READY" + "=" * 18)
+            T_1.configure(state="disabled")  # disable user input
+            T_2.configure(state="disabled")
+            T_3.configure(state="disabled")
+            T_4.configure(state="disabled")

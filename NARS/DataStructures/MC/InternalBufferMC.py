@@ -1,11 +1,11 @@
+from pynars.Narsese import Task
 from pynars.NARS.DataStructures import Memory
 from pynars.NARS.DataStructures.MC.InputBufferMC import InputBufferMC
-from pynars.Narsese import Task
 
 
 class InternalBufferMC(InputBufferMC):
     """
-    The internal buffer may take the mental operation carried out in consideration, but it is not here yet.
+    TODO, The internal buffer takes mental operations and evaluations into consideration.
     """
 
     def __init__(self, num_slot, num_event, num_anticipation, num_prediction, memory: Memory, root_UI, UI_name):

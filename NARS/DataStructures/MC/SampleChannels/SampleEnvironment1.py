@@ -96,12 +96,14 @@ class SampleEnvironment1:
             return
 
     def check_shape(self):
+        shapes_detected = []
         for each_shape in self.shapes:
             if self.mask_position[0] <= self.shapes[each_shape][0][0] \
                     and self.mask_position[1] <= self.shapes[each_shape][0][1] \
                     and self.mask_position[0] + self.mask_size >= self.shapes[each_shape][1][0] \
                     and self.mask_position[1] + self.mask_size >= self.shapes[each_shape][1][1]:
-                return each_shape
+                shapes_detected.append(each_shape)
+        return shapes_detected
 
 
-Env = SampleEnvironment1()
+# Env = SampleEnvironment1()
