@@ -1,23 +1,15 @@
 import numpy as np
 
 
-class SampleEnvironment1:
+class SampleEnvironment1_1:
 
     def __init__(self):
-        self.content = np.array([[2, 2, 1, 1, 0, 0, 0, 2],
-                                 [2, 0, 1, 1, 1, 0, 0, 2],
-                                 [0, 0, 0, 1, 0, 0, 0, 0],
-                                 [0, 0, 0, 0, 0, 0, 0, 0],
-                                 [0, 0, 0, 0, 0, 0, 0, 0],
-                                 [0, 0, 0, 0, 0, 0, 0, 0],
-                                 [0, 0, 0, 0, 0, 0, 0, 0],
-                                 [2, 2, 0, 0, 0, 0, 0, 0]])
-        self.grid_size = 8
+        self.content = None
+        self.grid_size = None
+        self.content_generation(8)
         self.mask_size = 2
         self.step_length = 1
         self.mask_position = [0, 0]  # left_top corner
-        self.rotation = 0
-        self.shapes = {"shape1": [[0, 2], [1, 3]]}
 
     def content_generation(self, n):
         self.grid_size = n
@@ -54,33 +46,22 @@ class SampleEnvironment1:
             B = self.content[0:self.grid_size - self.mask_position[0], 0:self.grid_size - self.mask_position[1]]
             C = self.content[self.mask_position[0]:self.grid_size, 0:self.grid_size - self.mask_position[1]]
             D = self.content[0:self.grid_size - self.mask_position[0], self.mask_position[1]:self.grid_size]
-            return np.rot90(np.squeeze(np.array([[A, C], [D, B]])), self.rotation)
+            return np.squeeze(np.array([[A, C], [D, B]]))
         elif self.mask_position[0] + self.mask_size > self.grid_size:
             A = self.content[self.mask_position[0]:self.grid_size,
                 self.mask_position[1]:self.mask_position[1] + self.mask_size]
             B = self.content[0:self.grid_size - self.mask_position[0],
                 self.mask_position[1]:self.mask_position[1] + self.mask_size]
-            return np.rot90(np.squeeze(np.array([[A], [B]])), self.rotation)
+            return np.squeeze(np.array([[A], [B]]))
         elif self.mask_position[1] + self.mask_size > self.grid_size:
             A = self.content[self.mask_position[0]:self.mask_position[0] + self.mask_size,
                 self.mask_position[1]:self.grid_size]
             B = self.content[self.mask_position[0]:self.mask_position[0] + self.mask_size,
                 0:self.grid_size - self.mask_position[1]]
-            return np.rot90(np.squeeze(np.array([A, B])), self.rotation)
+            return np.squeeze(np.array([A, B]))
         else:
-            return np.rot90(np.squeeze(self.content[self.mask_position[0]:self.mask_position[0] + self.mask_size,
-                                       self.mask_position[1]:self.mask_position[1] + self.mask_size]), self.rotation)
-
-    def zoom(self):
-        if self.mask_size == 2:
-            self.mask_size = 4
-            return
-        if self.mask_size == 4:
-            self.mask_size = 8
-            return
-        if self.mask_size == 8:
-            self.mask_size = 2
-            return
+            return np.squeeze(self.content[self.mask_position[0]:self.mask_position[0] + self.mask_size,
+                              self.mask_position[1]:self.mask_position[1] + self.mask_size])
 
     def up(self):
         if self.mask_position[0] == 0:
@@ -106,29 +87,13 @@ class SampleEnvironment1:
         else:
             self.mask_position[1] -= 1
 
-    def rotate(self):
-        if self.rotation == 0:
-            self.rotation = 1
-            return
-        if self.rotation == 1:
-            self.rotation = 2
-            return
-        if self.rotation == 2:
-            self.rotation = 3
-            return
-        if self.rotation == 3:
-            self.rotation = 0
-            return
-
     def check_shape(self):
-        shapes_detected = []
-        for each_shape in self.shapes:
-            if self.mask_position[0] <= self.shapes[each_shape][0][0] \
-                    and self.mask_position[1] <= self.shapes[each_shape][0][1] \
-                    and self.mask_position[0] + self.mask_size >= self.shapes[each_shape][1][0] \
-                    and self.mask_position[1] + self.mask_size >= self.shapes[each_shape][1][1]:
-                shapes_detected.append(each_shape)
-        return shapes_detected
-
-
-# Env = SampleEnvironment1()
+        tmp = self.visual_signal()
+        if tmp.all() == 1:
+            return "block_1"
+        elif tmp.all() == 2:
+            return "block_2"
+        elif tmp.all() == 3:
+            return "block_3"
+        elif tmp.all() == 4:
+            return "block_4"

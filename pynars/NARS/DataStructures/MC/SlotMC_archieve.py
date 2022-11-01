@@ -24,15 +24,8 @@ class SlotMC:
 
     def update_events(self, t: Task):
         word = t.term.word
-        if len(self.events) != 0:
-            self.events = np.delete(self.events, np.where(self.events[:, 0] == word), axis=0).reshape((-1, 3))
-        if len(self.events) == 0:
-            self.events = np.array([(word, t, p_value(t))])
-        else:
-            self.events = np.append(self.events, [(word, t, p_value(t))], 0)
-        if len(self.events_historical) > self.num_event:
-            self.events = np.delete(self.events, np.where(self.events[:, 2] == self.events[:, 2].min()),
-                                    axis=0).reshape((-1, 3))
+        np.delete(self.events, np.where(self.events[:, 0] == word))
+        np.append(self.events, [(word, t, p_value(t))])
 
     # def update_events(self, t: Task):
     #     for i in range(len(self.events)):
@@ -54,17 +47,8 @@ class SlotMC:
 
     def update_events_historical(self, t: Task):
         word = t.term.word
-        if len(self.events_historical) != 0:
-            self.events_historical = np.delete(self.events_historical,
-                                               np.where(self.events_historical[:, 0] == word),
-                                               axis=0).reshape((-1, 3))
-        if len(self.events_historical) == 0:
-            self.events_historical = np.array([(word, t, p_value(t))])
-        else:
-            self.events_historical = np.append(self.events_historical, [(word, t, p_value(t))], 0)
-        if len(self.events_historical) > self.num_event:
-            self.events_historical = np.delete(self.events_historical, np.where(
-                self.events_historical[:, 2] == self.events_historical[:, 2].min()), axis=0).reshape((-1, 3))
+        np.delete(self.events_historical, np.where(self.events_historical[:, 0] == word))
+        np.append(self.events_historical, [(word, t, p_value(t))])
 
     # def update_events_historical(self, t: Task):
     #     for i in range(len(self.events_historical)):
@@ -87,19 +71,14 @@ class SlotMC:
     """
     There might be duplicate anticipations. All are used for revision.
     """
-
     def update_anticipation(self, a: AnticipationMC):
-        if len(self.anticipations) < self.num_anticipation:
-            word = a.t.term.word
-            if word in self.anticipations and p_value(a.t) > p_value(self.anticipations[word].t):
-                self.anticipations.update({word: a})
-            else:
-                self.anticipations.update({word: a})
+        self.anticipations.append(a)
+        if len(self.anticipations) > self.num_anticipation:
+            self.anticipations = self.anticipations[1:]
 
     """
     Unexpected event:= not an anticipation
     """
-
     def check_anticipation(self, buffer: InputBufferMC, mode_unexpected = False):
         events_updates = []
         events_historical_updates = []
@@ -108,23 +87,32 @@ class SlotMC:
         events_historical_updates_unexpected = []
 
         for each_event in self.events:
-            if each_event[0] in self.anticipations:
-                events_updates.append(self.anticipations[each_event[0]].satisfied(buffer, each_event[1]))
-            elif mode_unexpected:
-                task = Task(each_event[1].sentence,
-                            Budget(min(0.99, each_event[1].budget.priority * 1.1), each_event[1].budget.durability,
-                                   each_event[1].budget.quality))
+            event_used = False  # whether it is used to fit an anticipation
+            for each_anticipation in self.anticipations:
+                if not each_anticipation.solved and each_anticipation.t.term.equal(each_event.term):
+                    events_updates.append(each_anticipation.satisfied(buffer, each_event))
+                    each_anticipation.solved = True
+                    event_used = True
+                    break
+            if not event_used and mode_unexpected:  # unexpected event, budget.priority *= 1.1
+                task = Task(each_event.sentence,
+                            Budget(min(0.99, each_event.budget.priority * 1.1), each_event.budget.durability,
+                                   each_event.budget.quality))
                 events_updates_unexpected.append(task)
 
         for each_event_historical in self.events_historical:
-            if each_event_historical[0] in self.anticipations:
-                events_historical_updates.append(
-                    self.anticipations[each_event_historical[0]].satisfied(buffer, each_event_historical[1]))
-            elif mode_unexpected:
-                task = Task(each_event_historical[1].sentence,
-                            Budget(min(0.99, each_event_historical[1].budget.priority * 1.1),
-                                   each_event_historical[1].budget.durability,
-                                   each_event_historical[1].budget.quality))
+            event_used = False
+            for each_anticipation in self.anticipations:
+                if not each_anticipation.solved and each_anticipation.t.term.equal(each_event_historical.term):
+                    events_updates.append(each_anticipation.satisfied(buffer, each_event_historical))
+                    each_anticipation.solved = True
+                    event_used = True
+                    break
+            if not event_used and mode_unexpected:
+                task = Task(each_event_historical.sentence,
+                            Budget(min(0.99, each_event_historical.budget.priority * 1.1),
+                                   each_event_historical.budget.durability,
+                                   each_event_historical.budget.quality))
                 events_historical_updates_unexpected.append(task)
 
         for each_event in events_updates:

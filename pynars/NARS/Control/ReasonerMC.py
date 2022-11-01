@@ -1,8 +1,10 @@
 import ctypes
 import tkinter as tk
 from typing import List
+import time
 
 from ..DataStructures.MC.SampleChannels.SampleChannel3 import SampleChannel3
+from ..DataStructures.MC.SampleChannels.SampleEnvironment1_1 import SampleEnvironment1_1
 from ...Narsese import parser
 import tkinter.font as tkFont
 from pynars import Config, Global
@@ -56,6 +58,14 @@ class ReasonerMC:
         self.T.configure(state="disabled")  # disable user input
 
         self.E = tk.Text(self.F_21, width=75, height=10, font=Font)
+        # initial inputs
+        # ==============================================================================================================
+        self.E.insert(tk.END, "Play!\n")
+        self.E.insert(tk.END, "<^up =/> Play>.\n")
+        self.E.insert(tk.END, "<^down =/> Play>.\n")
+        self.E.insert(tk.END, "<^left =/> Play>.\n")
+        self.E.insert(tk.END, "<^right =/> Play>.\n")
+        # ==============================================================================================================
         self.B_1 = tk.Button(self.F_22, text="Step", height=1, width=5, command=self.cycle, font=Font)
         self.B_2 = tk.Button(self.F_22, text="Enter", height=1, width=5, command=self.input_lines, font=Font)
         self.B_3 = tk.Button(self.F_22, text="Reset", height=1, width=5, command=self.reset, font=Font)
@@ -74,13 +84,14 @@ class ReasonerMC:
         self.output_buffer = OutputBufferMC(self.T)
         self.memory = Memory(n_memory, output_buffer=self.output_buffer)
         env = SampleEnvironment1()
+        # env = SampleEnvironment1_1()
         self.channels: List[ChannelMC] = [
             # SampleChannel1("SC1", 3, 10, 10, 10, self.memory)
-            SampleChannel2(3, 10, 10, 10, self.memory, env, self.root, "SC2"),
-            SampleChannel3(3, 10, 10, 10, self.memory, env, self.root, "SC3")
+            SampleChannel2(3, 5, 10, 10, self.memory, env, self.root, "SC2"),
+            # SampleChannel3(3, 10, 10, 10, self.memory, env, self.root, "SC3")
         ]
-        self.internal_buffer = InternalBufferMC(3, 10, 10, 10, self.memory, self.root, "Internal Buffer")
-        self.global_buffer = GlobalBufferMC(3, 10, 10, 10, self.memory, self.root, "Global Buffer")
+        self.internal_buffer = InternalBufferMC(3, 5, 10, 10, self.memory, self.root, "Internal Buffer")
+        self.global_buffer = GlobalBufferMC(3, 5, 10, 10, self.memory, self.root, "Global Buffer")
         for each_channel in self.channels:
             self.output_buffer.register_channel(each_channel)
 
@@ -93,33 +104,32 @@ class ReasonerMC:
         t = self.E.get("1.0", "end")  # get content
         sentences = t.split("\n")
         sentences = list(filter(None, sentences))
+        tmp_mark = False
         self.E.delete("1.0", "end")  # clear window
-        have_content = False
         for each in sentences:
             if len(each) == 0:
                 continue
             elif each.isdigit():  # digit input, run n cycles
-                have_content = True
                 self.T.configure(state="normal")  # enable inputting
                 self.T.insert(tk.END, "Running " + each + " cycles. \n", "tag_1")
                 self.T.configure(state="disabled")  # disable user input
                 self.cycles(int(each))
             else:
+                tmp_mark = True
                 try:
                     task = parser.parse(each)
                 except:
                     self.T.insert(tk.END, each + "PARSE ERROR! \n", "tag_1")
                     continue
-                have_content = True
                 self.T.configure(state="normal")
                 self.T.insert(tk.END, "Task accepted: " + each + "\n", "tag_1")
                 self.T.configure(state="disabled")
                 self.memory.accept(task)
 
-        self.T.configure(state="normal")
-        if have_content:
-            self.T.insert(tk.END, "=" * 79 + "\n")
-        self.T.configure(state="disabled")
+        if tmp_mark:
+            self.T.configure(state="normal")
+            self.T.insert(tk.END, "=" * 79)
+            self.T.configure(state="disabled")
 
     """
     Everything in the buffers should be cleared: 1) slots, 2) prediction table, 3) operation agenda.
@@ -140,6 +150,7 @@ class ReasonerMC:
     def cycles(self, n_cycle: int):
         for _ in range(n_cycle):
             self.cycle()
+        self.output_buffer.UI_show()
 
     """
     Copied from Reasoner.py, all returns should be forwarded to InternalBufferMC.previous_inference_result
@@ -177,7 +188,7 @@ class ReasonerMC:
     def cycle(self):
 
         # step 1, take out a task from the internal buffer, and put it into the global buffer
-        task_from_internal_buffer = self.internal_buffer.step(self.internal_buffer.previous_inference_result)
+        task_from_internal_buffer = self.internal_buffer.step(self.internal_buffer.previous_inference_result, "internal")
 
         # step 1.5, execute the task if executable
         self.output_buffer.step(task_from_internal_buffer)
@@ -188,8 +199,8 @@ class ReasonerMC:
             tasks_from_channels.append(each_channel.step())
 
         # debugging information
-        print(tasks_from_channels)
-        print("==>")
+        # print(tasks_from_channels)
+        # print("==>")
 
         # step 2.5, merge the task from the internal buffer and the tasks from channels
         tasks_for_global_buffer = tasks_from_channels + [task_from_internal_buffer]
@@ -198,10 +209,12 @@ class ReasonerMC:
         # step 3, feed these tasks to the global buffer and send the one from the global buffer to the main memory
         task_from_global_buffer = self.global_buffer.step(tasks_for_global_buffer)
         if task_from_global_buffer is not None:
+
             judgement_revised, goal_revised, answers_question, answers_quest = \
                 self.memory.accept(task_from_global_buffer)
 
             if goal_revised is not None:
+
                 exist = False
                 for i in range(len(self.output_buffer.active_goals)):
                     if self.output_buffer.active_goals[i][0].term.equal(goal_revised.term):
@@ -209,9 +222,11 @@ class ReasonerMC:
                             [goal_revised, "updated"]] + self.output_buffer.active_goals[i:]
                         exist = True
                         break
+
                 if not exist:
                     self.output_buffer.active_goals.append([goal_revised, "initialized"])
             if answers_question is not None and len(answers_question) != 0:
+
                 for each in answers_question:
                     exist = False
                     for i in range(len(self.output_buffer.active_questions)):
@@ -222,6 +237,7 @@ class ReasonerMC:
                             break
                     if not exist:
                         self.output_buffer.active_questions.append([each, "initialized"])
+
             # temporally disabled
             # if answers_quest is not None:
             #     for i in range(len(self.output_buffer.active_quests)):
@@ -246,9 +262,11 @@ class ReasonerMC:
             judgement_revised, goal_revised, answers_question, answers_quest = None, None, None, None
 
         # step 4, apply general inference step
+
         concept: Concept = self.memory.take(remove=True)
         tasks_derived: List[Task] = []
         if concept is not None:
+
             tasks_inference_derived = self.inference.step(concept)
             tasks_derived.extend(tasks_inference_derived)
             is_concept_valid = True
@@ -257,6 +275,7 @@ class ReasonerMC:
 
         # mental operation
         task_operation_return, task_executed = None, None
+
         task_operation_return, task_executed, belief_aware = self.mental_operation(task_from_global_buffer,
                                                                                    concept,
                                                                                    answers_question,
@@ -268,10 +287,16 @@ class ReasonerMC:
         if belief_aware is not None:
             self.internal_buffer.update_inference_result(belief_aware)
 
-        self.output_buffer.UI_show()
-
         # handle the sense of time
         Global.time += 1
+
+        for each in tasks_derived:
+            if each.is_question:
+                self.output_buffer.active_questions.append([each, "derived"])
+            elif each.is_goal:
+                self.output_buffer.active_goals.append([each, "derived"])
+
+        # self.output_buffer.UI_show()
 
         return tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest, (
             task_operation_return, task_executed)

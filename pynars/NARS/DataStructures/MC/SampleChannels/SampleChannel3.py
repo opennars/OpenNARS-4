@@ -13,11 +13,14 @@ class SampleChannel3(ChannelMC):
     def execute(self, term: Term):
         pass
 
+    # def information_gathering(self):
+    #     ret = []
+    #     shapes_detected = self.env.check_shape()
+    #     for each in shapes_detected:
+    #         task = parser.parse("<whole --> " + each + ">. :|:")
+    #         # print(task)
+    #     # print("==>")
+    #     return ret
+
     def information_gathering(self):
-        ret = []
-        shapes_detected = self.env.check_shape()
-        for each in shapes_detected:
-            task = parser.parse("<whole --> " + each + ">. :|:")
-            # print(task)
-        # print("==>")
-        return ret
+        return self.env.check_shape()

@@ -4,10 +4,9 @@ from pynars.NARS.DataStructures.MC.ChannelMC import ChannelMC
 
 # task generation utility function
 def task_generation_util(v, ID):
-    if v > 0.5:
-        round_v = round(v)
+    if round(v) != 0:
         task = parser.parse(
-            "<" + ID + " --> shape_" + str(round_v) + ">. :|: %" + str(1 - abs(round_v - v)) + ";0.5%")
+            "<" + ID + " --> shape_" + str(round(v)) + ">. :|: %0.9;0.5%")
         return task
 
 
@@ -16,14 +15,18 @@ class SampleChannel2(ChannelMC):
     def __init__(self, num_slot, num_event, num_anticipation, num_prediction, memory, env, root_UI, UI_name):
         super(SampleChannel2, self).__init__(num_slot, num_event, num_anticipation, num_prediction, memory, root_UI,
                                              UI_name)
-        self.operations = [Term("^rotate"), Term("^zoom"), Term("^up"), Term("^down"), Term("^right"), Term("^left")]
+        # self.operations = [Term("^rotate"), Term("^zoom"), Term("^up"), Term("^down"), Term("^right"), Term("^left")]
+        # rotation, zoom temporally disabled
+        self.operations = [Term("^up"), Term("^down"), Term("^right"), Term("^left")]
         self.env = env
 
     def execute(self, term: Term):
         if term.equal(self.operations[0]):
-            self.env.rotate()
+            # self.env.rotate()
+            pass
         elif term.equal(self.operations[1]):
-            self.env.zoom()
+            # self.env.zoom()
+            pass
         elif term.equal(self.operations[2]):
             self.env.up()
         elif term.equal(self.operations[3]):
@@ -78,4 +81,8 @@ class SampleChannel2(ChannelMC):
         # print(self.env.mask_size)
         # print(self.env.rotation)
         # print("==>")
+        # ret.append(parser.parse("<X1 --> X2>."))
+        # ret.append(parser.parse("<X3 --> X4>."))
+        # ret.append(parser.parse("<X5 --> X6>."))
+        # ret.append(parser.parse("<X7 --> X8>."))
         return ret

@@ -30,6 +30,7 @@ class OutputBufferMC:
         self.active_goals = []
         # self.active_quests = []
         self.T = T  # T is the text box in the main UI
+        self.shown_content = False
         # ==============================================================================================================
 
     def register_channel(self, channel):  # register operations
@@ -69,11 +70,17 @@ class OutputBufferMC:
         for each in self.active_questions:
             BT, word, _ = UI_better_content(each[0])
             if each[1] == "updated":
-                self.T.insert(tk.END, "[Answer updated]: " + BT)
+                self.T.insert(tk.END, "[Question updated]: " + BT)
                 self.T.insert(tk.END, word, "tag_2_updated")
+                self.shown_content = True
             elif each[1] == "initialized":
-                self.T.insert(tk.END, "[Answer found]: " + BT)
+                self.T.insert(tk.END, "[Question found]: " + BT)
                 self.T.insert(tk.END, word, "tag_2")
+                self.shown_content = True
+            elif each[1] == "derived":
+                self.T.insert(tk.END, "[Question derived]: " + BT)
+                self.T.insert(tk.END, word, "tag_2_updated")
+                self.shown_content = True
             each[1] = ""
 
         # show active goals
@@ -84,12 +91,22 @@ class OutputBufferMC:
                 self.T.insert(tk.END, "[Goal updated]: " + BT)
                 self.T.insert(tk.END, "Achieving level: " + AL)
                 self.T.insert(tk.END, word, "tag_2_updated")
+                self.shown_content = True
             elif each[1] == "initialized":
                 self.T.insert(tk.END, "[Goal found]: " + BT)
                 self.T.insert(tk.END, "Achieving level: " + AL)
                 self.T.insert(tk.END, word, "tag_2")
+                self.shown_content = True
+            elif each[1] == "derived":
+                self.T.insert(tk.END, "[Goal derived]: " + BT)
+                self.T.insert(tk.END, "Achieving level: " + AL)
+                self.T.insert(tk.END, word, "tag_2_updated")
+                self.shown_content = True
             each[1] = ""
 
+        if self.shown_content:
+            self.T.insert(tk.END, "=" * 79 + "\n")
+            self.shown_content = False
         self.T.configure(state="disabled")  # disable user input
 
     """

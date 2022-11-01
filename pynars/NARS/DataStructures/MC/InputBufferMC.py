@@ -1,9 +1,13 @@
+import time
 import ctypes
 import tkinter as tk
 from tkinter import ttk
 from copy import deepcopy
 import tkinter.font as tkFont
 from tkinter.scrolledtext import ScrolledText
+
+import numpy as np
+
 from pynars.NARS.DataStructures import Memory
 from pynars.NARS.DataStructures.MC.SlotMC import SlotMC
 from pynars.NARS.DataStructures.MC.AnticipationMC import AnticipationMC
@@ -164,12 +168,12 @@ class InputBufferMC(object):
 
     def UI_content_update(self):
         for i in range(self.num_slot):
-            self.contents_UI[i].update({"historical_compound": [UI_better_content(each) for each in
+            self.contents_UI[i].update({"historical_compound": [UI_better_content(each[1]) for each in
                                                                 self.slots[i].events_historical],
-                                        "concurrent_compound": [UI_better_content(each) for each in
+                                        "concurrent_compound": [UI_better_content(each[1]) for each in
                                                                 self.slots[i].events],
-                                        "anticipation": [UI_better_content(each.t) for each in
-                                                         self.slots[i].anticipations],
+                                        "anticipation": [UI_better_content(self.slots[i].anticipations[each].t) for each
+                                                         in self.slots[i].anticipations],
                                         "prediction": [UI_better_content(each) for each in
                                                        self.prediction_table]})
 
@@ -198,6 +202,7 @@ class InputBufferMC(object):
     """
     Compound utility function.
     """
+
     def combination(self, lst, start, num, tmp, cpds):
         if num == 0:
             cpds.append(deepcopy(tmp))
@@ -209,16 +214,21 @@ class InputBufferMC(object):
             self.combination(lst, start + 1, num - 1, tmp, cpds)
             self.combination(lst[:-1], start + 1, num, tmp, cpds)
 
-    def compound_generation(self, new_contents):
+    def compound_generation(self, new_contents, origin = ""):
+        if new_contents is None:
+            return
         for new_content in new_contents:
             self.slots[self.present].update_events(new_content)
         # check atomic anticipations
-        self.slots[self.present].check_anticipation(self)  # looks strange?
+        A = time.time()
+        self.slots[self.present].check_anticipation(self)
+        B = time.time()
 
         # concurrent compounds generation
         compounds = []
         for i in range(len(self.slots[self.present].events)):
-            self.combination(self.slots[self.present].events, 0, i + 1, [], compounds)
+            self.combination(self.slots[self.present].events[:, 1], 0, i + 1, [], compounds)
+        C = time.time()
         for each_compound in compounds:
             if len(each_compound) > 1:
                 # term generation
@@ -261,10 +271,12 @@ class InputBufferMC(object):
 
             else:
                 self.slots[self.present].update_events(each_compound[0])
+        D = time.time()
         # check concurrent compound anticipations
         self.slots[self.present].check_anticipation(self)
 
         # historical compounds generation
+        E = time.time()
         for i in range(self.present):
 
             previous_event_concurrent = self.slots[i].highest_compound
@@ -272,13 +284,13 @@ class InputBufferMC(object):
                 for each_event in self.slots[self.present].events:
                     # term generation
                     term = Compound.SequentialEvents(previous_event_concurrent.term, Interval(abs(self.present - i)),
-                                                     each_event.term)
+                                                     each_event[1].term)
                     # truth, using truth-induction function (TODO, may subject to change)
-                    truth = Truth_induction(previous_event_concurrent.truth, each_event.truth)
+                    truth = Truth_induction(previous_event_concurrent.truth, each_event[1].truth)
                     # stamp, using stamp-merge function (TODO, may subject to change)
-                    stamp = Stamp_merge(previous_event_concurrent.stamp, each_event.stamp)
+                    stamp = Stamp_merge(previous_event_concurrent.stamp, each_event[1].stamp)
                     # budget, using budget-merge function (TODO, may subject to change)
-                    budget = Budget_merge(previous_event_concurrent.budget, each_event.budget)
+                    budget = Budget_merge(previous_event_concurrent.budget, each_event[1].budget)
                     # sentence composition
                     sentence = Judgement(term, stamp, truth)
                     # task generation
@@ -290,13 +302,13 @@ class InputBufferMC(object):
                 for each_event in self.slots[self.present].events:
                     # term generation
                     term = Compound.SequentialEvents(previous_compound_historical.term, Interval(abs(self.present - i)),
-                                                     each_event.term)
+                                                     each_event[1].term)
                     # truth, using truth-induction function (TODO, may subject to change)
-                    truth = Truth_induction(previous_compound_historical.truth, each_event.truth)
+                    truth = Truth_induction(previous_compound_historical.truth, each_event[1].truth)
                     # stamp, using stamp-merge function (TODO, may subject to change)
-                    stamp = Stamp_merge(previous_compound_historical.stamp, each_event.stamp)
+                    stamp = Stamp_merge(previous_compound_historical.stamp, each_event[1].stamp)
                     # budget, using budget-merge function (TODO, may subject to change)
-                    budget = Budget_merge(previous_compound_historical.budget, each_event.budget)
+                    budget = Budget_merge(previous_compound_historical.budget, each_event[1].budget)
                     # sentence composition
                     sentence = Judgement(term, stamp, truth)
                     # task generation
@@ -304,8 +316,16 @@ class InputBufferMC(object):
                     self.slots[self.present].update_events_historical(task)
 
         # check historical compound anticipations
+        F = time.time()
+        if origin == "X":
+            print(origin + "1: {:.2f} second".format(B - A))
+            print(origin + "2: {:.2f} second".format(C - B))
+            print(origin + "3: {:.2f} second".format(D - C))
+            print(origin + "4: {:.2f} second".format(E - D))
+            print(origin + "5: {:.2f} second".format(F - E))
+            print("==")
+
         self.slots[self.present].check_anticipation(self)
-        # TODO, I've checked anticipations four times, can I be more efficient?
 
     def local_evaluation(self):
         # generate anticipation
@@ -319,15 +339,15 @@ class InputBufferMC(object):
                 subject = each_prediction.term.subject
 
             for each_event in self.slots[self.present].events:
-                if subject.equal(each_event.term):
+                if subject.equal(each_event[1].term):
                     # term generation
                     term = each_prediction.term.predicate
                     # truth, using truth-deduction function (TODO, may subject to change)
-                    truth = Truth_deduction(each_prediction.truth, each_event.truth)
+                    truth = Truth_deduction(each_prediction.truth, each_event[1].truth)
                     # stamp, using stamp-merge function (TODO, may subject to change)
-                    stamp = Stamp_merge(each_prediction.stamp, each_event.stamp)
+                    stamp = Stamp_merge(each_prediction.stamp, each_event[1].stamp)
                     # budget, using budget-merge function (TODO, may subject to change)
-                    budget = Budget_merge(each_prediction.budget, each_event.budget)
+                    budget = Budget_merge(each_prediction.budget, each_event[1].budget)
                     # sentence composition
                     sentence = Judgement(term, stamp, truth)
                     # task generation
@@ -338,15 +358,15 @@ class InputBufferMC(object):
                         self.slots[self.present + interval].update_anticipation(anticipation)
 
             for each_event_historical in self.slots[self.present].events_historical:
-                if subject.equal(each_event_historical.term):
+                if subject.equal(each_event_historical[1].term):
                     # term generation
                     term = each_prediction.term.predicate
                     # truth, using truth-deduction function (TODO, may subject to change)
-                    truth = Truth_deduction(each_prediction.truth, each_event_historical.truth)
+                    truth = Truth_deduction(each_prediction.truth, each_event_historical[1].truth)
                     # stamp, using stamp-merge function (TODO, may subject to change)
-                    stamp = Stamp_merge(each_prediction.stamp, each_event_historical.stamp)
+                    stamp = Stamp_merge(each_prediction.stamp, each_event_historical[1].stamp)
                     # budget, using budget-merge function (TODO, may subject to change)
-                    budget = Budget_merge(each_prediction.budget, each_event_historical.budget)
+                    budget = Budget_merge(each_prediction.budget, each_event_historical[1].budget)
                     # sentence composition
                     sentence = Judgement(term, stamp, truth)
                     # task generation
@@ -361,27 +381,30 @@ class InputBufferMC(object):
 
         # unsatisfied anticipation handling
         for each_anticipation in self.slots[self.present].anticipations:
-            if not each_anticipation.solved:
-                each_anticipation.unsatisfied(self)
+            if not self.slots[self.present].anticipations[each_anticipation].solved:
+                self.slots[self.present].anticipations[each_anticipation].unsatisfied(self)
+            # if not each_anticipation.solved:
+            #     each_anticipation.unsatisfied(self)
 
     """
     Find whether a concept is already in the main memory. If so, merger the budget.
     """
+
     def memory_based_evaluations(self):
         events_updates = []
         events_historical_updates = []
 
         for each_event in self.slots[self.present].events:
-            tmp = self.memory.concepts.take_by_key(each_event.term, remove=False)
+            tmp = self.memory.concepts.take_by_key(each_event[1].term, remove=False)
             if tmp is not None:
-                budget = Budget_merge(each_event.budget, tmp.budget)
-                task = Task(each_event.sentence, budget)
+                budget = Budget_merge(each_event[1].budget, tmp.budget)
+                task = Task(each_event[1].sentence, budget)
                 events_updates.append(task)
         for each_event_historical in self.slots[self.present].events_historical:
-            tmp = self.memory.concepts.take_by_key(each_event_historical.term, remove=False)
+            tmp = self.memory.concepts.take_by_key(each_event_historical[1].term, remove=False)
             if tmp is not None:
-                budget = Budget_merge(each_event_historical.budget, tmp.budget)
-                task = Task(each_event_historical.sentence, budget)
+                budget = Budget_merge(each_event_historical[1].budget, tmp.budget)
+                task = Task(each_event_historical[1].sentence, budget)
                 events_historical_updates.append(task)
         for each_event in events_updates:
             self.slots[self.present].update_events(each_event)
@@ -390,9 +413,13 @@ class InputBufferMC(object):
 
         # find the highest concurrent/historical compound
         if len(self.slots[self.present].events) != 0:
-            self.slots[self.present].highest_compound = self.slots[self.present].events[0]
+            self.slots[self.present].events = self.slots[self.present].events[
+                np.argsort(self.slots[self.present].events[:, 2])]
+            self.slots[self.present].highest_compound = self.slots[self.present].events[-1][1]
         if len(self.slots[self.present].events_historical) != 0:
-            self.slots[self.present].highest_compound_historical = self.slots[self.present].events_historical[0]
+            self.slots[self.present].events_historical = self.slots[self.present].events_historical[
+                np.argsort(self.slots[self.present].events_historical[:, 2])]
+            self.slots[self.present].highest_compound_historical = self.slots[self.present].events_historical[-1][1]
         if len(self.slots[self.present].events) != 0 and len(self.slots[self.present].events_historical) != 0:
             if p_value_events(self.slots[self.present].highest_compound) > \
                     p_value_events(self.slots[self.present].highest_compound_historical):
@@ -430,22 +457,37 @@ class InputBufferMC(object):
                     self.update_prediction(prediction)
         return self.slots[self.present].candidate
 
-    def step(self, new_contents):
+    def step(self, new_contents, origin = ""):
         # remove the oldest slot and create a new one
         self.slots = self.slots[1:]
         self.slots.append(SlotMC(self.num_event, self.num_anticipation))
 
-        self.compound_generation(new_contents)  # 1st step
+        A = time.time()
+        self.compound_generation(new_contents, origin)  # 1st step
+        B = time.time()
         self.local_evaluation()  # 2nd step
+        C = time.time()
         self.memory_based_evaluations()  # 3rd step
+        D = time.time()
         task_forward = self.prediction_generation()  # 4th step
+        E = time.time()
 
         # GUI
         # ==============================================================================================================
         self.UI_roll()
         self.UI_content_update()
         self.UI_show()
+        F = time.time()
         # ==============================================================================================================
+
+        if origin == "X":
+            print(origin + "1: {:.2f} second".format(B - A))
+            print(origin + "2: {:.2f} second".format(C - B))
+            print(origin + "3: {:.2f} second".format(D - C))
+            print(origin + "4: {:.2f} second".format(E - D))
+            print(origin + "5: {:.2f} second".format(F - E))
+            print("==")
+
         return task_forward
 
     def reset(self):

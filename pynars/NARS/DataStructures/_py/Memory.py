@@ -35,28 +35,30 @@ class Memory:
         elif task.is_goal:
             task_revised, belief_selected = self._accept_goal(task, concept)
             # TODO, ugly!
-            exist = False
-            for i in range(len(self.output_buffer.active_goals)):
-                if self.output_buffer.active_goals[i][0].term.equal(task.term):
-                    self.output_buffer.active_goals = self.output_buffer.active_goals[:i] + [
-                        [task, "updated"]] + self.output_buffer.active_goals[i:]
-                    exist = True
-                    break
-            if not exist:
-                self.output_buffer.active_goals.append([task, "initialized"])
+            if self.output_buffer is not None:
+                exist = False
+                for i in range(len(self.output_buffer.active_goals)):
+                    if self.output_buffer.active_goals[i][0].term.equal(task.term):
+                        self.output_buffer.active_goals = self.output_buffer.active_goals[:i] + [
+                            [task, "updated"]] + self.output_buffer.active_goals[i:]
+                        exist = True
+                        break
+                if not exist:
+                    self.output_buffer.active_goals.append([task, "initialized"])
         elif task.is_question:
             # add the question to the question-table of the concept, and try to find a solution.
             answers_question = self._accept_question(task, concept)
             # TODO, ugly!
-            exist = False
-            for i in range(len(self.output_buffer.active_questions)):
-                if self.output_buffer.active_questions[i][0].term.equal(task.term):
-                    self.output_buffer.active_questions = self.output_buffer.active_questions[:i] + [
-                        [task, "updated"]] + self.output_buffer.active_questions[i:]
-                    exist = True
-                    break
-            if not exist:
-                self.output_buffer.active_questions.append([task, "initialized"])
+            if self.output_buffer is not None:
+                exist = False
+                for i in range(len(self.output_buffer.active_questions)):
+                    if self.output_buffer.active_questions[i][0].term.equal(task.term):
+                        self.output_buffer.active_questions = self.output_buffer.active_questions[:i] + [
+                            [task, "updated"]] + self.output_buffer.active_questions[i:]
+                        exist = True
+                        break
+                if not exist:
+                    self.output_buffer.active_questions.append([task, "initialized"])
         elif task.is_quest:
             answer_quest = self._accept_quest(task, concept)
         else:

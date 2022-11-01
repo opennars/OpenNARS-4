@@ -46,19 +46,19 @@ class GlobalBufferMC(InputBufferMC):
             # from concurrent events
             predicate = self.slots[self.present].candidate.term
             for i in range(len(self.slots[self.present].events)):
-                if self.slots[self.present].events[0].term.equal(self.slots[self.present].candidate.term):
+                if self.slots[self.present].events[-1][1].term.equal(self.slots[self.present].candidate.term):
                     continue
-                subject = self.slots[self.present].events[i].term
+                subject = self.slots[self.present].events[i][1].term
                 copula = Copula.ConcurrentImplication  # =|>
                 term = Statement(subject, copula, predicate)
                 # truth, using truth-induction function (TODO, may subject to change)
-                truth = Truth_induction(self.slots[self.present].events[i].truth,
+                truth = Truth_induction(self.slots[self.present].events[i][1].truth,
                                         self.slots[self.present].candidate.truth)
                 # stamp, using stamp-merge function (TODO, may subject to change)
-                stamp = Stamp_merge(self.slots[self.present].events[i].stamp,
+                stamp = Stamp_merge(self.slots[self.present].events[i][1].stamp,
                                     self.slots[self.present].candidate.stamp)
                 # budget, using budget-merge function (TODO, may subject to change)
-                budget = Budget_merge(self.slots[self.present].events[i].budget,
+                budget = Budget_merge(self.slots[self.present].events[i][1].budget,
                                       self.slots[self.present].candidate.budget)
                 # sentence composition
                 sentence = Judgement(term, stamp, truth)
@@ -67,19 +67,19 @@ class GlobalBufferMC(InputBufferMC):
                 self.update_prediction(prediction)
             # from historical events
             for i in range(len(self.slots[self.present].events_historical)):
-                if self.slots[self.present].events_historical[0].term.equal(self.slots[self.present].candidate.term):
+                if self.slots[self.present].events_historical[-1][1].term.equal(self.slots[self.present].candidate.term):
                     continue
-                subject = self.slots[self.present].events_historical[i].term
+                subject = self.slots[self.present].events_historical[i][1].term
                 copula = Copula.ConcurrentImplication  # =|>
                 term = Statement(subject, copula, predicate)
                 # truth, using truth-induction function (TODO, may subject to change)
-                truth = Truth_induction(self.slots[self.present].events_historical[i].truth,
+                truth = Truth_induction(self.slots[self.present].events_historical[i][1].truth,
                                         self.slots[self.present].candidate.truth)
                 # stamp, using stamp-merge function (TODO, may subject to change)
-                stamp = Stamp_merge(self.slots[self.present].events_historical[i].stamp,
+                stamp = Stamp_merge(self.slots[self.present].events_historical[i][1].stamp,
                                     self.slots[self.present].candidate.stamp)
                 # budget, using budget-merge function (TODO, may subject to change)
-                budget = Budget_merge(self.slots[self.present].events_historical[i].budget,
+                budget = Budget_merge(self.slots[self.present].events_historical[i][1].budget,
                                       self.slots[self.present].candidate.budget)
                 # sentence composition
                 sentence = Judgement(term, stamp, truth)

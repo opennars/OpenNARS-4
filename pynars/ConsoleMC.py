@@ -17,7 +17,7 @@ def info(title):
 
 def run_nars_MC():
     info('Console')
-    seed = 523
+    seed = 1024
     rand_seed(seed)
     out_print(PrintType.COMMENT, f'rand_seed={seed}', comment_title='Setup')
     nars = ReasonerMC(100)
