@@ -1,27 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="cd6c8da9-d934-4bfa-bbe2-1d4b695e912a" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/pynars/NARS/DataStructures/MC/SampleChannels/WumpusWorld.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pynars/NARS/DataStructures/MC/SampleChannels/WumpusWorldBodySenseChannel.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pynars/NARS/DataStructures/MC/SampleChannels/WumpusWorldGoldChannel.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pynars/NARS/DataStructures/MC/SampleChannels/WumpusWorldPitChannel.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pynars/NARS/DataStructures/MC/SampleChannels/WumpusWorldWumpusChannel.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/PyNARS-0_0_2_pre_alpha.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/PyNARS-0_0_2_pre_alpha.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.vscode/launch.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.vscode/settings.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pynars/Console.py" beforeDir="false" afterPath="$PROJECT_DIR$/pynars/Console.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pynars/ConsoleMC.py" beforeDir="false" afterPath="$PROJECT_DIR$/pynars/ConsoleMC.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pynars/NAL/Functions/ExtendedBooleanFunctions.py" beforeDir="false" afterPath="$PROJECT_DIR$/pynars/NAL/Functions/ExtendedBooleanFunctions.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pynars/NAL/Functions/TruthValueFunctions.py" beforeDir="false" afterPath="$PROJECT_DIR$/pynars/NAL/Functions/TruthValueFunctions.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pynars/NARS/Control/ReasonerMC.py" beforeDir="false" afterPath="$PROJECT_DIR$/pynars/NARS/Control/ReasonerMC.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pynars/NARS/DataStructures/MC/InputBufferMC.py" beforeDir="false" afterPath="$PROJECT_DIR$/pynars/NARS/DataStructures/MC/InputBufferMC.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pynars/NARS/DataStructures/MC/OutputBufferMC.py" beforeDir="false" afterPath="$PROJECT_DIR$/pynars/NARS/DataStructures/MC/OutputBufferMC.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pynars/NARS/DataStructures/MC/SlotMC.py" beforeDir="false" afterPath="$PROJECT_DIR$/pynars/NARS/DataStructures/MC/SlotMC.py" afterDir="false" />
-    </list>
+    <list default="true" id="cd6c8da9-d934-4bfa-bbe2-1d4b695e912a" name="Changes" comment="Large update on efficiency! 10x faster, or even faster. But it is still slow. Looks like there is a big tail increasing while the system is running. Going to fix it soon.&#10;&#10;I have also created a new experiment environment, on Wumpus world, and 4 corresponding channels.&#10;&#10;I have also provided a &quot;tutoring schema&quot;, which is using a &quot;malfunctioning&quot; tutor to make NARS learns better. Much like &quot;watching someone else working on the environment&quot;. Will make it better in the future." />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -144,8 +124,23 @@
       <option name="presentableId" value="Default" />
       <updated>1667401405829</updated>
       <workItem from="1667401407164" duration="6113000" />
-      <workItem from="1668084636412" duration="27660000" />
+      <workItem from="1668084636412" duration="27981000" />
     </task>
+    <task id="LOCAL-00001" summary="Large update on efficiency! 10x faster, or even faster. But it is still slow. Looks like there is a big tail increasing while the system is running. Going to fix it soon.&#10;&#10;I have also created a new experiment environment, on Wumpus world, and 4 corresponding channels.&#10;&#10;I have also provided a &quot;tutoring schema&quot;, which is using a &quot;malfunctioning&quot; tutor to make NARS learns better. Much like &quot;watching someone else working on the environment&quot;. Will make it better in the future.">
+      <created>1668129845938</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1668129845938</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Large update on efficiency! 10x faster, or even faster. But it is still slow. Looks like there is a big tail increasing while the system is running. Going to fix it soon.&#10;&#10;I have also created a new experiment environment, on Wumpus world, and 4 corresponding channels.&#10;&#10;I have also provided a &quot;tutoring schema&quot;, which is using a &quot;malfunctioning&quot; tutor to make NARS learns better. Much like &quot;watching someone else working on the environment&quot;. Will make it better in the future.">
+      <created>1668129853806</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1668129853806</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -161,6 +156,10 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Large update on efficiency! 10x faster, or even faster. But it is still slow. Looks like there is a big tail increasing while the system is running. Going to fix it soon.&#10;&#10;I have also created a new experiment environment, on Wumpus world, and 4 corresponding channels.&#10;&#10;I have also provided a &quot;tutoring schema&quot;, which is using a &quot;malfunctioning&quot; tutor to make NARS learns better. Much like &quot;watching someone else working on the environment&quot;. Will make it better in the future." />
+    <option name="LAST_COMMIT_MESSAGE" value="Large update on efficiency! 10x faster, or even faster. But it is still slow. Looks like there is a big tail increasing while the system is running. Going to fix it soon.&#10;&#10;I have also created a new experiment environment, on Wumpus world, and 4 corresponding channels.&#10;&#10;I have also provided a &quot;tutoring schema&quot;, which is using a &quot;malfunctioning&quot; tutor to make NARS learns better. Much like &quot;watching someone else working on the environment&quot;. Will make it better in the future." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
