@@ -18,7 +18,7 @@ from pynars.NAL.Functions import Stamp_merge, Budget_merge, Truth_induction, Tru
 
 # the priority value of predictions
 def p_value(t: Task):
-    return t.budget.summary * t.truth.e / t.term.complexity ** 2
+    return t.budget.priority * t.truth.f / t.term.complexity + np.random.rand() / 20
 
 
 def UI_better_content(task: Task):
@@ -29,8 +29,9 @@ def UI_better_content(task: Task):
     word.replace("-->", "->")
     word.replace("==>", "=>")
     if task.truth is not None:
-        truth = "% " + str(task.truth.f)[:4] + ";" + str(task.truth.c)[:4] + "%\n"
-        return [budget + truth, word, end]
+        truth = "% " + str(task.truth.f)[:4] + ";" + str(task.truth.c)[:4] + "%"
+        P = p_value(task)
+        return [budget + truth + " | " + str(P)[:4] + "\n", word, end]
     else:
         return [budget + "\n", word, end]
 
@@ -317,13 +318,13 @@ class InputBufferMC(object):
 
         # check historical compound anticipations
         F = time.time()
-        if origin == "X":
-            print(origin + "1: {:.2f} second".format(B - A))
-            print(origin + "2: {:.2f} second".format(C - B))
-            print(origin + "3: {:.2f} second".format(D - C))
-            print(origin + "4: {:.2f} second".format(E - D))
-            print(origin + "5: {:.2f} second".format(F - E))
-            print("==")
+        # if origin == "X":
+        #     print(origin + "1: {:.2f} second".format(B - A))
+        #     print(origin + "2: {:.2f} second".format(C - B))
+        #     print(origin + "3: {:.2f} second".format(D - C))
+        #     print(origin + "4: {:.2f} second".format(E - D))
+        #     print(origin + "5: {:.2f} second".format(F - E))
+        #     print("==")
 
         self.slots[self.present].check_anticipation(self)
 
@@ -480,40 +481,41 @@ class InputBufferMC(object):
         F = time.time()
         # ==============================================================================================================
 
-        if origin == "X":
-            print(origin + "1: {:.2f} second".format(B - A))
-            print(origin + "2: {:.2f} second".format(C - B))
-            print(origin + "3: {:.2f} second".format(D - C))
-            print(origin + "4: {:.2f} second".format(E - D))
-            print(origin + "5: {:.2f} second".format(F - E))
-            print("==")
+        # if origin == "internal":
+        #     print(origin + "1: {:.2f} second".format(B - A))
+        #     print(origin + "2: {:.2f} second".format(C - B))
+        #     print(origin + "3: {:.2f} second".format(D - C))
+        #     print(origin + "4: {:.2f} second".format(E - D))
+        #     print(origin + "5: {:.2f} second".format(F - E))
+        #     print("==")
 
         return task_forward
 
     def reset(self):
         self.slots = [SlotMC(self.num_event, self.num_anticipation) for _ in range(self.num_slot)]
-        self.prediction_table = []
         self.contents_UI = []
         for i in range(self.num_slot):
             self.contents_UI.append({"historical_compound": [],
                                      "concurrent_compound": [],
                                      "anticipation": [],
                                      "prediction": []})
-        for each in self.P:
-            T_1, T_2, T_3, T_4 = self.P[each]
-            T_1.configure(state="normal")
-            T_2.configure(state="normal")
-            T_3.configure(state="normal")
-            T_4.configure(state="normal")
-            T_1.delete("1.0", "end")
-            T_2.delete("1.0", "end")
-            T_3.delete("1.0", "end")
-            T_4.delete("1.0", "end")
-            T_1.insert(tk.END, "=" * 18 + "READY" + "=" * 18)  # initialization reminder
-            T_2.insert(tk.END, "=" * 18 + "READY" + "=" * 18)
-            T_3.insert(tk.END, "=" * 18 + "READY" + "=" * 18)
-            T_4.insert(tk.END, "=" * 18 + "READY" + "=" * 18)
-            T_1.configure(state="disabled")  # disable user input
-            T_2.configure(state="disabled")
-            T_3.configure(state="disabled")
-            T_4.configure(state="disabled")
+        self.UI_content_update()
+        self.UI_show()
+        # for each in self.P:
+        #     T_1, T_2, T_3, T_4 = self.P[each]
+        #     T_1.configure(state="normal")
+        #     T_2.configure(state="normal")
+        #     T_3.configure(state="normal")
+        #     T_4.configure(state="normal")
+        #     T_1.delete("1.0", "end")
+        #     T_2.delete("1.0", "end")
+        #     T_3.delete("1.0", "end")
+        #     T_4.delete("1.0", "end")
+        #     T_1.insert(tk.END, "=" * 18 + "READY" + "=" * 18)  # initialization reminder
+        #     T_2.insert(tk.END, "=" * 18 + "READY" + "=" * 18)
+        #     T_3.insert(tk.END, "=" * 18 + "READY" + "=" * 18)
+        #     T_4.insert(tk.END, "=" * 18 + "READY" + "=" * 18)
+        #     T_1.configure(state="disabled")  # disable user input
+        #     T_2.configure(state="disabled")
+        #     T_3.configure(state="disabled")
+        #     T_4.configure(state="disabled")

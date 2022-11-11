@@ -1,3 +1,4 @@
+import numpy as np
 import ctypes
 import tkinter as tk
 from typing import List
@@ -5,6 +6,11 @@ import time
 
 from ..DataStructures.MC.SampleChannels.SampleChannel3 import SampleChannel3
 from ..DataStructures.MC.SampleChannels.SampleEnvironment1_1 import SampleEnvironment1_1
+from ..DataStructures.MC.SampleChannels.WumpusWorld import WumpusWorld
+from ..DataStructures.MC.SampleChannels.WumpusWorldBodySenseChannel import WumpusWorldBodySenseChannel
+from ..DataStructures.MC.SampleChannels.WumpusWorldGoldChannel import WumpusWorldGoldChannel
+from ..DataStructures.MC.SampleChannels.WumpusWorldPitChannel import WumpusWorldPitChannel
+from ..DataStructures.MC.SampleChannels.WumpusWorldWumpusChannel import WumpusWorldWumpusChannel
 from ...Narsese import parser
 import tkinter.font as tkFont
 from pynars import Config, Global
@@ -25,6 +31,13 @@ class ReasonerMC:
     def __init__(self, n_memory, config = './config.json') -> None:
         Config.load(config)
         self.inference = GeneralEngine()
+
+        # special marks
+        # ==============================================================================================================
+        self.C = 0
+        self.time_consumption = []
+        self.learning_mode = False
+        # ==============================================================================================================
 
         # GUI
         # ==============================================================================================================
@@ -60,16 +73,21 @@ class ReasonerMC:
         self.E = tk.Text(self.F_21, width=75, height=10, font=Font)
         # initial inputs
         # ==============================================================================================================
-        self.E.insert(tk.END, "Play!\n")
-        self.E.insert(tk.END, "<^up =/> Play>.\n")
-        self.E.insert(tk.END, "<^down =/> Play>.\n")
-        self.E.insert(tk.END, "<^left =/> Play>.\n")
-        self.E.insert(tk.END, "<^right =/> Play>.\n")
+        # eternal goal, high priority
+        self.E.insert(tk.END, "<(*, {SELF}, Gold) --> see>! \n")
+        # self.E.insert(tk.END, "Play! \n")
+        # possible actions, low priority
+        # self.E.insert(tk.END, "<^up =/> Play>. \n")
+        # self.E.insert(tk.END, "<^down =/> Play>. \n")
+        # self.E.insert(tk.END, "<^right =/> Play>. \n")
+        # self.E.insert(tk.END, "<^left =/> Play>. \n")
         # ==============================================================================================================
         self.B_1 = tk.Button(self.F_22, text="Step", height=1, width=5, command=self.cycle, font=Font)
         self.B_2 = tk.Button(self.F_22, text="Enter", height=1, width=5, command=self.input_lines, font=Font)
         self.B_3 = tk.Button(self.F_22, text="Reset", height=1, width=5, command=self.reset, font=Font)
         self.B_4 = tk.Button(self.F_22, text="Clear", height=1, width=5, command=self.clear, font=Font)
+        self.B_5 = tk.Button(self.F_22, text="LM: on", height=1, width=5, command=self.learning_mode_on, font=Font)
+        self.B_6 = tk.Button(self.F_22, text="LM: off", height=1, width=5, command=self.learning_mode_off, font=Font)
 
         self.T.pack(side=tk.BOTTOM)
         self.E.pack(side=tk.LEFT, padx=1)
@@ -77,23 +95,36 @@ class ReasonerMC:
         self.B_2.pack(side=tk.TOP)
         self.B_3.pack(side=tk.TOP)
         self.B_4.pack(side=tk.TOP)
+        self.B_5.pack(side=tk.TOP)
+        self.B_6.pack(side=tk.TOP)
 
         self.root.title("PyNARS 0.0.2.MC Console")
         # ==============================================================================================================
 
         self.output_buffer = OutputBufferMC(self.T)
         self.memory = Memory(n_memory, output_buffer=self.output_buffer)
-        env = SampleEnvironment1()
+        self.env = WumpusWorld(4, 1, 1, 2)
+        # env = SampleEnvironment1()
         # env = SampleEnvironment1_1()
         self.channels: List[ChannelMC] = [
+            WumpusWorldBodySenseChannel(3, 10, 10, 10, self.memory, self.env, self.root, "Body Sense"),
+            WumpusWorldGoldChannel(3, 10, 10, 10, self.memory, self.env, self.root, "Gold"),
+            WumpusWorldWumpusChannel(3, 10, 10, 10, self.memory, self.env, self.root, "Wumpus"),
+            WumpusWorldPitChannel(3, 10, 10, 10, self.memory, self.env, self.root, "Pit"),
             # SampleChannel1("SC1", 3, 10, 10, 10, self.memory)
-            SampleChannel2(3, 5, 10, 10, self.memory, env, self.root, "SC2"),
+            # SampleChannel2(3, 10, 10, 10, self.memory, env, self.root, "SC2"),
             # SampleChannel3(3, 10, 10, 10, self.memory, env, self.root, "SC3")
         ]
-        self.internal_buffer = InternalBufferMC(3, 5, 10, 10, self.memory, self.root, "Internal Buffer")
-        self.global_buffer = GlobalBufferMC(3, 5, 10, 10, self.memory, self.root, "Global Buffer")
+        self.internal_buffer = InternalBufferMC(3, 10, 10, 10, self.memory, self.root, "Internal Buffer")
+        self.global_buffer = GlobalBufferMC(3, 10, 10, 10, self.memory, self.root, "Global Buffer")
         for each_channel in self.channels:
             self.output_buffer.register_channel(each_channel)
+
+    def learning_mode_on(self):
+        self.learning_mode = True
+
+    def learning_mode_off(self):
+        self.learning_mode = False
 
     """
     collect the content in the input window; parse them into Narsese and process
@@ -187,11 +218,28 @@ class ReasonerMC:
 
     def cycle(self):
 
+        S = time.time()
+
+        self.C += 1
+
         # step 1, take out a task from the internal buffer, and put it into the global buffer
-        task_from_internal_buffer = self.internal_buffer.step(self.internal_buffer.previous_inference_result, "internal")
+        task_from_internal_buffer = self.internal_buffer.step(self.internal_buffer.previous_inference_result,
+                                                              "internal")
+        if self.learning_mode:
+            task_from_internal_buffer = parser.parse("$0.1;0.3;0.05$ ^" + self.env.shortest_path() + "!")
+
+        if self.learning_mode:
+            print(self.learning_mode)
+            print(task_from_internal_buffer)
+
+        # if task_from_internal_buffer and task_from_internal_buffer.term.word == "up":
+        #     print(1)
 
         # step 1.5, execute the task if executable
         self.output_buffer.step(task_from_internal_buffer)
+
+        if self.learning_mode:
+            print(self.env.position)
 
         # step 2, Take out a task from each channel, and put it into the global buffer
         tasks_from_channels = []
@@ -247,6 +295,7 @@ class ReasonerMC:
             #             break
 
             # update inference results (by accepting one task into the main memory)
+            self.internal_buffer.previous_inference_result = []
             if judgement_revised is not None:
                 self.internal_buffer.update_inference_result(judgement_revised)
             if goal_revised is not None:
@@ -264,14 +313,20 @@ class ReasonerMC:
         # step 4, apply general inference step
 
         concept: Concept = self.memory.take(remove=True)
+        # print(concept)
         tasks_derived: List[Task] = []
         if concept is not None:
 
             tasks_inference_derived = self.inference.step(concept)
             tasks_derived.extend(tasks_inference_derived)
+            # print(tasks_derived)
             is_concept_valid = True
             if is_concept_valid:
                 self.memory.put_back(concept)
+        for each in tasks_derived:
+            self.internal_buffer.update_inference_result(each)
+
+        # print("=" * 10)
 
         # mental operation
         task_operation_return, task_executed = None, None
@@ -298,5 +353,38 @@ class ReasonerMC:
 
         # self.output_buffer.UI_show()
 
-        return tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest, (
-            task_operation_return, task_executed)
+        # self.env.visualization()
+
+        """
+        Only works when the maximum "life-point" of the agent is 1. (Dead or alive)
+        """
+        # if dead, "brain-wash" and keep going, but "correct knowledge" will be accumulated
+        if self.env.world_pit[self.env.position[0], self.env.position[1]] == 2 \
+                or self.env.world_wumpus[self.env.position[0], self.env.position[1]] == 2:
+            self.reset()
+            while True:
+                pos = tuple(np.random.randint(0, self.env.size - 1, (1, 2)).squeeze())
+                if self.env.world_pit[pos[0], pos[1]] != 2 and self.env.world_wumpus[pos[0], pos[1]] != 2:
+                    self.env.position = list(pos)
+                    break
+            print("Again!", self.env.position)
+            print("=" * 10)
+
+        # if success, generate a new world, and try to solve the same problem again
+        if self.env.world_gold[self.env.position[0], self.env.position[1]] == 2:
+            print("GOAL ACHIEVED!, total cycles: ", self.C)
+            print("=" * 10)
+            self.C = 0
+            self.env.generate_world()
+            self.reset()
+
+        E = time.time()
+        # print(E - S)
+        self.time_consumption.append(E - S)
+
+        """
+        previously, in the console window, the return of this function is used for displaying, but now it is
+        not necessary
+        """
+        # return tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest, \
+        #        (task_operation_return, task_executed)

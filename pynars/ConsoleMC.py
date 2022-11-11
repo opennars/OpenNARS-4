@@ -1,5 +1,6 @@
 import os
 import argparse
+import matplotlib.pyplot as plt
 from pynars.utils.tools import rand_seed
 from pynars.utils.Print import out_print, PrintType
 from pynars.NARS.Control.ReasonerMC import ReasonerMC
@@ -26,6 +27,10 @@ def run_nars_MC():
     # console
     out_print(PrintType.COMMENT, 'Console.', comment_title='NARS')
     nars.root.mainloop()
+    plt.figure()
+    plt.plot(nars.time_consumption)
+    plt.show()
+
     print("Finished")
 
 

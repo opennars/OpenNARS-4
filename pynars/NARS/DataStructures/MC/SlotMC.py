@@ -5,7 +5,7 @@ from pynars.NARS.DataStructures.MC import AnticipationMC, InputBufferMC
 
 # the priority value of events
 def p_value(t: Task):
-    return t.budget.summary * t.truth.e / t.term.complexity ** 2
+    return t.budget.priority * t.truth.f / t.term.complexity + np.random.rand() / 20
 
 
 class SlotMC:

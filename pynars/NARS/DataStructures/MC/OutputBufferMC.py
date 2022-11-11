@@ -57,9 +57,11 @@ class OutputBufferMC:
             self.agenda[ap].append(term)
 
     def distribute_execute(self):  # distribute the decomposed operations into corresponding channels
+        # TODO, specific one!
         for each_operation in self.agenda[0]:
-            corresponding_channel = self.operation_of_channel[Term("^" + each_operation.word)]
-            corresponding_channel.execute(Term("^" + each_operation.word))
+            if each_operation.word in ["up", "down", "right", "left"]:
+                corresponding_channel = self.operation_of_channel[Term("^" + each_operation.word)]
+                corresponding_channel.execute(Term("^" + each_operation.word))
         self.agenda = {i: self.agenda[i + 1] for i in range(self.agenda_length - 1)}
         self.agenda.update({self.agenda_length - 1: []})
 
@@ -113,6 +115,7 @@ class OutputBufferMC:
     This function mainly has two functions, 1) handling the operation goals, 2) showing these goals and questions.
     """
     def step(self, task: Task):
+        # print(task)
         # operation goal
         if task and task.is_goal:
             self.decompose(task.term, 0)

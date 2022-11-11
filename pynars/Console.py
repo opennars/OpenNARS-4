@@ -15,14 +15,16 @@ from typing import List
 from pynars.utils.tools import rand_seed
 import argparse
 
+
 def info(title):
     print(f'''
 ============= {title} =============
 module name: {__name__}
 parent process: {os.getppid()}
 process id: {os.getpid()}
-============={'='*(len(title)+2)}=============
+============={'=' * (len(title) + 2)}=============
     ''')
+
 
 def run_line(nars: Reasoner, line: str):
     ''''''
@@ -39,7 +41,7 @@ def run_line(nars: Reasoner, line: str):
             except:
                 out_print(PrintType.ERROR, f'Invalid input! Failed to parse: {line}')
                 # out_print(PrintType.ERROR, f'{file}, line {i}, {line}')
-        return 
+        return
     elif line.startswith("'"):
         return None
     elif line.isdigit():
@@ -56,8 +58,10 @@ def run_line(nars: Reasoner, line: str):
             return None
         try:
             success, task, _ = nars.input_narsese(line, go_cycle=False)
-            if success: out_print(PrintType.IN, task.sentence.repr(), *task.budget)
-            else: out_print(PrintType.ERROR, f'Invalid input! Failed to parse: {line}')
+            if success:
+                out_print(PrintType.IN, task.sentence.repr(), *task.budget)
+            else:
+                out_print(PrintType.ERROR, f'Invalid input! Failed to parse: {line}')
 
             tasks_all = nars.cycle()
             return [deepcopy(tasks_all)]
@@ -75,21 +79,25 @@ def handle_lines(nars: Reasoner, lines: str):
             tasks_lines.extend(tasks_line)
 
     tasks_lines: List[Tuple[List[Task], Task, Task, List[Task], Task, Tuple[Task, Task]]]
-    for tasks_line in tasks_lines: 
-        tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest, (task_operation_return, task_executed) = tasks_line
+    for tasks_line in tasks_lines:
+        tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest, (
+        task_operation_return, task_executed) = tasks_line
         for task in tasks_derived: out_print(PrintType.OUT, task.sentence.repr(), *task.budget)
-        
-        if judgement_revised is not None: out_print(PrintType.OUT, judgement_revised.sentence.repr(), *judgement_revised.budget)
+
+        if judgement_revised is not None: out_print(PrintType.OUT, judgement_revised.sentence.repr(),
+                                                    *judgement_revised.budget)
         if goal_revised is not None: out_print(PrintType.OUT, goal_revised.sentence.repr(), *goal_revised.budget)
-        if answers_question is not None: 
+        if answers_question is not None:
             for answer in answers_question: out_print(PrintType.ANSWER, answer.sentence.repr(), *answer.budget)
-        if answers_quest is not None: 
-            for answer in answers_quest: out_print(PrintType.ANSWER, answers_quest.sentence.repr(), *answers_quest.budget)
+        if answers_quest is not None:
+            for answer in answers_quest: out_print(PrintType.ANSWER, answers_quest.sentence.repr(),
+                                                   *answers_quest.budget)
         if task_executed is not None:
-            out_print(PrintType.EXE, f'{task_executed.term.repr()} = {str(task_operation_return) if task_operation_return is not None else None}')
+            out_print(PrintType.EXE,
+                      f'{task_executed.term.repr()} = {str(task_operation_return) if task_operation_return is not None else None}')
 
 
-def run_file(nars: Reasoner, filepath: str=None):
+def run_file(nars: Reasoner, filepath: str = None):
     # handle the file
     if filepath is not None:
         filepath: Path = Path(filepath)
@@ -99,7 +107,6 @@ def run_file(nars: Reasoner, filepath: str=None):
             lines = f.read()
             handle_lines(nars, lines)
 
-    
 
 def run_nars(filepath: str):
     ''''''
@@ -122,7 +129,7 @@ def run_nars(filepath: str):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Parse NAL files.')
     parser.add_argument('filepath', metavar='Path', type=str, nargs='*',
-        help='file path of an *.nal file.')
+                        help='file path of an *.nal file.')
     args = parser.parse_args()
     filepath: Union[list, None] = args.filepath
     filepath = filepath[0] if (filepath is not None and len(filepath) > 0) else None
