@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="cd6c8da9-d934-4bfa-bbe2-1d4b695e912a" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/pynars/NARS/DataStructures/MC/SampleChannels/WumpusWorld.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pynars/NARS/DataStructures/MC/SampleChannels/WumpusWorldBodySenseChannel.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pynars/NARS/DataStructures/MC/SampleChannels/WumpusWorldGoldChannel.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pynars/NARS/DataStructures/MC/SampleChannels/WumpusWorldPitChannel.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pynars/NARS/DataStructures/MC/SampleChannels/WumpusWorldWumpusChannel.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/PyNARS-0_0_2_pre_alpha.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/PyNARS-0_0_2_pre_alpha.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.vscode/launch.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.vscode/settings.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pynars/Console.py" beforeDir="false" afterPath="$PROJECT_DIR$/pynars/Console.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pynars/ConsoleMC.py" beforeDir="false" afterPath="$PROJECT_DIR$/pynars/ConsoleMC.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pynars/NAL/Functions/ExtendedBooleanFunctions.py" beforeDir="false" afterPath="$PROJECT_DIR$/pynars/NAL/Functions/ExtendedBooleanFunctions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pynars/NAL/Functions/TruthValueFunctions.py" beforeDir="false" afterPath="$PROJECT_DIR$/pynars/NAL/Functions/TruthValueFunctions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pynars/NARS/Control/ReasonerMC.py" beforeDir="false" afterPath="$PROJECT_DIR$/pynars/NARS/Control/ReasonerMC.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pynars/NARS/DataStructures/MC/InputBufferMC.py" beforeDir="false" afterPath="$PROJECT_DIR$/pynars/NARS/DataStructures/MC/InputBufferMC.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pynars/NARS/DataStructures/MC/OutputBufferMC.py" beforeDir="false" afterPath="$PROJECT_DIR$/pynars/NARS/DataStructures/MC/OutputBufferMC.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pynars/NARS/DataStructures/MC/SlotMC.py" beforeDir="false" afterPath="$PROJECT_DIR$/pynars/NARS/DataStructures/MC/SlotMC.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectId" id="2GzpjqBZkgeZkjS5XeITyjpDAZC" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.selected.package.eslint" value="(autodetect)" />
+  </component>
+  <component name="RunManager" selected="Python.ConsoleMC">
+    <configuration name="Console" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="PyNARS-0_0_2_pre_alpha" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/pynars" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/pynars/Console.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="ConsoleMC" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="PyNARS-0_0_2_pre_alpha" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/pynars" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/pynars/ConsoleMC.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Unnamed" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="PyNARS-0_0_2_pre_alpha" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="C:\Users\TORY\anaconda3\envs\python37\python.exe" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Python.Unnamed" />
+      <item itemvalue="Python.ConsoleMC" />
+      <item itemvalue="Python.Console" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.ConsoleMC" />
+        <item itemvalue="Python.Console" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="cd6c8da9-d934-4bfa-bbe2-1d4b695e912a" name="Changes" comment="" />
+      <created>1667401405829</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1667401405829</updated>
+      <workItem from="1667401407164" duration="6113000" />
+      <workItem from="1668084636412" duration="27660000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/pynars/NARS/Control/ReasonerMC.py</url>
+          <line>345</line>
+          <option name="timeStamp" value="17" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/pynars/NARS/DataStructures/MC/SlotMC.py</url>
+          <line>7</line>
+          <option name="timeStamp" value="18" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/PyNARS_0_0_2_pre_alpha$ConsoleMC.coverage" NAME="ConsoleMC Coverage Results" MODIFIED="1668118995402" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/pynars" />
+    <SUITE FILE_PATH="coverage/PyNARS_0_0_2_pre_alpha$Console.coverage" NAME="Console Coverage Results" MODIFIED="1668099576279" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/pynars" />
+    <SUITE FILE_PATH="coverage/PyNARS_0_0_2_pre_alpha$Unnamed.coverage" NAME="Unnamed Coverage Results" MODIFIED="1667401482739" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+  </component>
+</project>
