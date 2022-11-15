@@ -34,10 +34,6 @@ class Variable(Term):
         return self.word + self.name
 
 
-    # @property
-    # def repr(self):
-    #     return self.word + self.name
-
     def repr_with_var(self, index_var: IndexVar, pos: list):
         ''''''
         if not self.is_var: raise "Invalide case."

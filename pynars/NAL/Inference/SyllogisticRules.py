@@ -44,7 +44,6 @@ def deduction(task: Task, belief: Belief, budget_tasklink: Budget=None, budget_t
     '''
     premise1, premise2 = (task.sentence, belief.sentence) if not inverse_premise else (belief.sentence, task.sentence)
 
-    punct_task: Punctuation = task.sentence.punct
     stamp_task: Stamp = task.stamp
     stamp_belief: Stamp = belief.stamp
     truth_belief: Truth = belief.truth
@@ -55,22 +54,20 @@ def deduction(task: Task, belief: Belief, budget_tasklink: Budget=None, budget_t
 
     statement = Statement(stat2.subject, stat1.copula, stat1.predicate)
 
-    if punct_task.is_judgement:
+    if task.is_judgement:
         truth = Truth_deduction(premise1.truth, premise2.truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgement(statement, stamp, truth)
-    elif punct_task.is_goal:
+    elif task.is_goal:
         truth = Desire_weak(premise1.truth, premise2.truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
         sentence_derived = Goal(statement, stamp, truth)
-    elif punct_task.is_question:
-        curiosity = None # TODO
+    elif task.is_question:
         budget = Budget_backward_weak(truth_belief, budget_tasklink, budget_termlink)
-        sentence_derived = Question(statement, stamp, curiosity)
-    elif punct_task.is_quest:
-        curiosity = None # TODO
+        sentence_derived = Question(statement, stamp)
+    elif task.is_quest:
         budget = Budget_backward(truth_belief, budget_tasklink, budget_termlink)
-        sentence_derived = Quest(statement, stamp, curiosity)
+        sentence_derived = Quest(statement, stamp)
     else: raise "Invalid case."
 
     return Task(sentence_derived, budget)

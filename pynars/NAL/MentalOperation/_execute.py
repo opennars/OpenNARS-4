@@ -29,7 +29,7 @@ def believe(statement: Term, term_truth: Term):
     ''''''
     truth = truth_from_term(term_truth)
     budget = Budget(Config.p_judgement, Config.d_judgement, truth_to_quality(truth))
-    stamp = Stamp(Global.time, Global.time, None, Base((Global.get_input_id(),)), is_eternal=False)
+    stamp = Stamp(Global.time, Global.time, None, Base((Global.get_input_id(),)), is_external=False)
     sentence = Judgement(statement, stamp=stamp, truth=truth)
     return Task(sentence, budget)
 
