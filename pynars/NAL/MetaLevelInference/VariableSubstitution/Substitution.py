@@ -4,6 +4,7 @@ from typing import List
 from bidict import bidict
 from pynars.Narsese import Term
 from pynars.utils.IndexVar import IntVar
+from pynars.utils.tools import find_pos_with_pos, find_var_with_pos
 
 
 class Substitution:
@@ -67,7 +68,7 @@ class Substitution:
         dvar = [int(var) for var in term_src.index_var.var_dependent]
         qvar = [int(var) for var in term_src.index_var.var_query]
 
-        # TODO: replace var with var
+        # replace var with var
         term = deepcopy(term_src)
         term.index_var.var_independent = [var(mapping_ivar.get(var_int, None)) for var, var_int in zip(term._index_var.var_independent, ivar)]
         term.index_var.var_dependent = [var(mapping_dvar.get(var_int, None)) for var, var_int in zip(term._index_var.var_dependent, dvar)]
@@ -89,3 +90,20 @@ class Substitution:
         else:
             mapping = bidict()
         return mapping
+
+
+def get_substitution__var_var(term1: Term, term2: Term, pos_common1: List[IntVar], pos_common2: List[IntVar]) -> Substitution:
+    '''
+    It should be ensured that `term1[pos_common1].equal(term2[pos_common2]) == True`.
+    '''
+    # 1. find the variables in the first common position
+    ivar1 = find_var_with_pos(pos_common1, term1._index_var.var_independent, term1._index_var.positions_ivar)
+    dvar1 = find_var_with_pos(pos_common1, term1._index_var.var_dependent, term1._index_var.positions_dvar)
+    qvar1 = find_var_with_pos(pos_common1, term1._index_var.var_query, term1._index_var.positions_qvar)
+
+    # 2. find the variables in the second common position
+    ivar2 = find_var_with_pos(pos_common2, term2._index_var.var_independent, term2._index_var.positions_ivar)
+    dvar2 = find_var_with_pos(pos_common2, term2._index_var.var_dependent, term2._index_var.positions_dvar)
+    qvar2 = find_var_with_pos(pos_common2, term2._index_var.var_query, term2._index_var.positions_qvar)
+
+    return Substitution(term1, term2, ivar1, ivar2, dvar1, dvar2, qvar1, qvar2)

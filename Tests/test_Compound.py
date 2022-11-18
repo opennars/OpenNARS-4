@@ -83,6 +83,12 @@ class TEST_Compound(unittest.TestCase):
         '''
         term = Narsese.parse("<(&&, <$x-->A>, <$y-->A>) ==> (&&, <$x-->B>, <$y-->C>)>.").term
         self.assertEqual(len(term[0].terms), 2)
+
+    
+    def test_compound_variable_1(self):
+        line = '(&&, <(&&, <#x-->bird>, <#x-->swimer>)-->#y>, <swan-->#y>).'
+        term = Narsese.parse(line).term
+        pass
         
 
 if __name__ == '__main__':

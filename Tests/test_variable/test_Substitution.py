@@ -1,14 +1,13 @@
-import NARS
+from pynars import Narsese, NARS
 import unittest
 
 from pynars.NARS.DataStructures import Bag, Task, Concept, Table
 from pynars.Narsese import Judgement, Term, Statement, Copula, Truth   
 
 from pathlib import Path
-import Narsese
 from pynars.Narsese import Compound, Connector
 from pynars.NAL.MetaLevelInference.VariableSubstitution import *
-from pynars.Narsese import Terms
+from pynars.Narsese import Terms, VarPrefix
 
 class TEST_Substitution(unittest.TestCase):
 
@@ -21,12 +20,65 @@ class TEST_Substitution(unittest.TestCase):
         '''
         term1 = Narsese.parse("<(&&, <#x-->A>, <#x-->B>, <<$y-->C>==><$y-->D>>, <$z-->E>) ==> <$z-->F>>.").term
         term2 = Narsese.parse("<<$x-->F>==><$x-->H>>.").term
-        subst_var = unification__var_var(term1, term2, [1], [0]) # to find possible replacement.
+        subst_var = get_substitution__var_var(term1, term2, [1], [0]) # to find possible replacement.
         term2 = subst_var.apply(inverse=True)
         term3 = Statement.Implication(term1[0], term2[1])
         # term_substitution = substitution(compound, Term("A"), Term("D"))
         # self.assertEqual(term_substitution, term_new)
         pass
+    def test_introduction_const_to_var_0(self):
+        '''
+        <swan-->bird>.
+        <swan-->animal>.
+        |-
+        <<$x-->bird>==><$x-->animal>>.
+        '''
+        term1 = Narsese.parse("<swan-->bird>.").term
+        term2 = Narsese.parse("<swan-->animal>.").term
+        term_common = Term('swan')
+        intro_var: Introduction = get_introduction__const_var(term1, term2, term_common)
+        term1, term2 = intro_var.apply(var_type=VarPrefix.Independent)
+        term3 = Statement.Implication(term1, term2)
+        print(term1)
+        print(term2)
+        print(term3)
+
+
+    def test_introduction_const_to_var_1(self):
+        '''
+        Valid Syntax, Invalid Semantic
+        <swan-->(&&, <#x-->bird>, <#x-->swimer>)>.
+        <swan-->animal>.
+        '''
+        term1 = Narsese.parse("<swan-->(&&, <#x-->bird>, <#x-->swimer>)>.").term
+        term2 = Narsese.parse("<swan-->animal>.").term
+        term_common = Term('swan')
+        intro_var: Introduction = get_introduction__const_var(term1, term2, term_common)
+        term1, term2 = intro_var.apply(var_type=VarPrefix.Dependent)
+        term3 = Compound.Conjunction(term1, term2)
+        print(term1)
+        print(term2)
+        print(term3)
+
+    
+    def test_introduction_const_to_var_2(self):
+        '''
+        Valid Syntax, Invalid Semantic
+        <(&&, <#x-->bird>, <#x-->swimer>)-->animal>.
+        <swan-->animal>.
+        '''
+        term1 = Narsese.parse("<(&&, <#x-->bird>, <#x-->swimer>)-->animal>.").term
+        term2 = Narsese.parse("<swan-->animal>.").term
+        term_common = Term('animal')
+        intro_var: Introduction = get_introduction__const_var(term1, term2, term_common)
+        term1, term2 = intro_var.apply(var_type=VarPrefix.Dependent)
+        term3 = Compound.Conjunction(term1, term2)
+        print(term1)
+        print(term2)
+        print(term3)
+        term4 = Narsese.parse("(&&, <(&&, <#x-->bird>, <#x-->swimer>)-->#y>, <swan-->#y>).").term
+        self.assertTrue(term3 == term4)
+
 
     def test_substition_var_to_const_0(self):
         '''
@@ -38,7 +90,7 @@ class TEST_Substitution(unittest.TestCase):
         term1 = Narsese.parse("<<$x-->A>==><$x-->B>>.").term
         term2 = Narsese.parse("<<C-->B>==><C-->D>>.").term
         self.assertTrue(term1[1].equal(term2[0]))
-        subst_var = unification__var_const(term1, term2, [1], [0]) # to find possible replacement.
+        subst_var = get_elimination__var_const(term1, term2, [1], [0]) # to find possible replacement.
         term2 = subst_var.apply(inverse=True)
         term3 = Statement.Implication(term1[0], term2[1])
         # term_substitution = substitution(compound, Term("A"), Term("D"))
@@ -56,7 +108,7 @@ class TEST_Substitution(unittest.TestCase):
         term1 = Narsese.parse("<(&&, <$x-->A>, <$y-->A>) ==> (&&, <$x-->B>, <$y-->C>)>.").term
         term2 = Narsese.parse("<<D-->E> ==> (&&, <F-->A>, <G-->A>)>.").term
         self.assertTrue(term1[0].equal(term2[1]))
-        subst_var = unification__var_const(term1, term2, [0], [1]) # to find possible replacement.
+        subst_var = get_elimination__var_const(term1, term2, [0], [1]) # to find possible replacement.
         term2 = subst_var.apply()
         term3 = Statement.Implication(term1[0], term2[1])
         # term_substitution = substitution(compound, Term("A"), Term("D"))

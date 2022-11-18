@@ -165,7 +165,7 @@ class TEST_NAL6(unittest.TestCase):
         )
         self.assertNotEqual(rules, None)
 
-        subst_var = unification__var_var(task.term, belief.term, [0], [1]) # to find possible replacement.
+        subst_var = get_substitution__var_var(task.term, belief.term, [0], [1]) # to find possible replacement.
         subst_var.apply(task.term, belief.term)
         tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
 
@@ -218,7 +218,7 @@ class TEST_NAL6(unittest.TestCase):
         )
         self.assertNotEqual(rules, None)
 
-        subst_var = unification__var_var(task.term, belief.term, [0], [0]) # to find possible replacement.
+        subst_var = get_substitution__var_var(task.term, belief.term, [0], [0]) # to find possible replacement.
         subst_var.apply(task.term, belief.term)
         tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
 
@@ -275,7 +275,7 @@ class TEST_NAL6(unittest.TestCase):
         )
         self.assertNotEqual(rules, None)
 
-        subst_var = unification__var_var(task.term, belief.term, [1], [1]) # to find possible replacement.
+        subst_var = get_substitution__var_var(task.term, belief.term, [1], [1]) # to find possible replacement.
         subst_var.apply(task.term, belief.term)
         tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
 
@@ -318,7 +318,7 @@ class TEST_NAL6(unittest.TestCase):
         )
         self.assertNotEqual(rules, None)
 
-        subst_var = unification__var_var(task.term, belief.term, [0,0], [1]) # to find possible replacement.
+        subst_var = get_substitution__var_var(task.term, belief.term, [0,0], [1]) # to find possible replacement.
         subst_var.apply(task.term, belief.term)
         tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
 
@@ -401,7 +401,7 @@ class TEST_NAL6(unittest.TestCase):
         )
         self.assertNotEqual(rules, None)
 
-        subst_var = unification__var_var(task.term, belief.term, [0], [0]) # to find possible replacement.
+        subst_var = get_substitution__var_var(task.term, belief.term, [0], [0]) # to find possible replacement.
         subst_var.apply(task.term, belief.term)
         tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
 
@@ -917,7 +917,7 @@ class TEST_NAL6(unittest.TestCase):
         )
         self.assertNotEqual(rules, None)
 
-        subst_var = unification__var_var(task.term, belief.term, [1], [0]) # to find possible replacement.
+        subst_var = get_substitution__var_var(task.term, belief.term, [1], [0]) # to find possible replacement.
         subst_var.apply(task.term, belief.term)
         tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
 

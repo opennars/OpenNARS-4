@@ -1,6 +1,5 @@
 from copy import copy
 import enum
-from lib2to3.pgen2.tokenize import StopTokenizing
 from pynars.Config import Enable
 from pynars.utils.IndexVar import IndexVar
 from .Term import Term, TermType

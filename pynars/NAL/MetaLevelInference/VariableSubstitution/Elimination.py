@@ -5,6 +5,7 @@ from pynars.Narsese import Term
 from pynars.utils.IndexVar import IntVar
 
 from .Substitution import Substitution
+from pynars.utils.tools import find_pos_with_pos, find_var_with_pos
 
 
 class Elimination(Substitution):
@@ -81,3 +82,35 @@ class Elimination(Substitution):
         # TODO: replace var with const
 
         pass
+
+
+
+def get_elimination__var_const(term1: Term, term2: Term, pos_common1: List[IntVar], pos_common2: List[IntVar]) -> Elimination:
+    '''
+    It should be ensured that `term1[pos_common1].equal(term2[pos_common2]) == True`.
+    e.g. 
+    term1: <<$0-->A>==><$0-->B>>>
+    term2: <<C-->B>==><C-->D>>>
+    pos_common1: [1]
+    pos_common1: [0]
+    '''
+    ivar = find_var_with_pos(pos_common1, term1.index_var.var_independent, term1.index_var.positions_ivar)
+    dvar = find_var_with_pos(pos_common1, term1.index_var.var_dependent, term1.index_var.positions_dvar)
+    qvar = find_var_with_pos(pos_common1, term1.index_var.var_query, term1.index_var.positions_qvar)
+
+    iconst = [term2[pos_common2][pos[len(pos_common2):]] for pos in find_pos_with_pos(pos_common1, term1.index_var.positions_ivar)]
+    dconst = [term2[pos_common2][pos[len(pos_common2):]] for pos in find_pos_with_pos(pos_common1, term1.index_var.positions_dvar)]
+    qconst = [term2[pos_common2][pos[len(pos_common2):]] for pos in find_pos_with_pos(pos_common1, term1.index_var.positions_qvar)]
+
+    # 1. To find an option: there might be multiple options, and choose one of them randomly, e.g., [$x, $y] might be [A, B] or [B, A].
+    
+    # 2. Check conflicts: there should be no conflicts, e.g., $x cannot be A and B simultaneously.
+
+    # BUG: 
+    # when the compound is commutative, the positions of const-terms and variables are not in correspondance.
+    # testcase: 
+    #   (&&, <a-->b>, <c-->d>).
+    #   (&&, <?x-->b>, <c-->d>)?
+    #   1
+    #   ''outputMustContain('(&&, <a-->b>, <c-->d>).')
+    return Elimination(term1, term2, ivar, iconst, dvar, dconst, qvar, qconst)
