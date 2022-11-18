@@ -6,6 +6,7 @@ Tests/*.png
 *.pkl
 !pynars/utils/SparseLUT/*.pyd
 lab.ipynb
+.DS_Store
 
 # C extensions
 *.so
