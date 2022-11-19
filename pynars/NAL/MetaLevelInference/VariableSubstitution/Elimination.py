@@ -1,21 +1,21 @@
 from typing import Dict, List, Tuple
 
 from bidict import bidict
-from pynars.Narsese import Term
+from pynars.Narsese import Term, Statement, Compound, VarPrefix
 from pynars.utils.IndexVar import IntVar
 
 from .Substitution import Substitution
-from pynars.utils.tools import find_pos_with_pos, find_var_with_pos
+from pynars.utils.tools import find_pos_with_pos, find_var_with_pos, find_pos_with_var
 
 
 class Elimination(Substitution):
     '''
     the substitution of var-to-const
     '''
-    def __init__(self, term_src: Term, term_tgt: Term, ivar_src: List[IntVar]=None, iconst_tgt: List[Term]=None, dvar_src: List[IntVar]=None, dconst_tgt: List[Term]=None, qvar_src: List[IntVar]=None, qconst_tgt: List[Term]=None) -> None:
+    def __init__(self, term_var: Term, term_con: Term, ivar_src: List[IntVar]=None, iconst_tgt: List[Term]=None, dvar_src: List[IntVar]=None, dconst_tgt: List[Term]=None, qvar_src: List[IntVar]=None, qconst_tgt: List[Term]=None) -> None:
         # super().__init__(term_src, term_tgt) #, ivar_src, iconst_tgt, dvar_src, dconst_tgt, qvar_src, qconst_tgt)
-        self.term_src = term_src
-        self.term_tgt = term_tgt
+        self.term_var = term_var
+        self.term_con = term_con
 
         # is_conflict_ivar = is_conflict_dvar = is_conflict_qvar = False
         if (ivar_src is not None and iconst_tgt is not None):
@@ -72,16 +72,74 @@ class Elimination(Substitution):
         return is_conflict, mapping_ret
 
 
-    def apply(self, term_src: Term=None, term_tgt: Term=None):
+    def apply(self, term_var: Term=None, term_con: Term=None):
         ''''''
-        term_src = term_src if term_src is not None else self.term_src
-        term_tgt = term_tgt if term_tgt is not None else self.term_tgt
+        term_var = term_var if term_var is not None else self.term_var
+        term_con = term_con if term_con is not None else self.term_con
         mapping_ivar = self.mapping_ivar
         mapping_dvar = self.mapping_dvar
         mapping_qvar = self.mapping_qvar
-        mapping_const = self.mapping_const
+        
+        # replace const with var
+        def replace(term: 'Term|Statement|Compound',  pos_tree: dict, current_node: dict, var_type: VarPrefix) -> Term:
+            '''
+            replace a variable term with a constant term
+            
+            term_r should be a constant
+            '''
+            if not term.has_var: 
+                return
+            elif var_type is VarPrefix.Independent and not term.has_ivar:
+                return
+            elif var_type is VarPrefix.Dependent and not term.has_dvar:
+                return
+            elif var_type is VarPrefix.Query and not term.has_dvar:
+                return
+            
+            if term.is_statement:
+                stat: Statement = term
+                subject = stat.subject
+                predicate = stat.predicate
+                for is_leaf, content in current_node.values():
+                    if not is_leaf:
+                        if content == 0:
+                            subject = replace(stat.predicate, pos_tree, )
+
+                predicate = replace(stat.predicate, term_r)
+                subject = replace(stat.subject, term_r)
+                return Statement(subject, term.copula, predicate, is_input=True)
+            elif term.is_compound:
+                if term_r not in term.components: # term.components is not None
+                    return term
+                cpmd: Compound = term
+                terms = (component for component in cpmd.terms)
+                return Compound(cpmd.connector, *terms, is_input=True)
+            elif term.is_atom:
+                return term
+
+        
 
         # TODO: replace var with const
+        if not self.is_conflict_ivar:
+            ''''''
+            
+            mapping_pos = {}
+            for var, const in mapping_ivar.items():
+                pos = tuple(find_pos_with_var(var, term_var.index_var.var_independent, term_var.index_var.positions_ivar))
+                mapping_pos[pos] = const
+            
+            tree = {}
+            for pos, const in mapping_pos.items():
+                p1=None
+                node = tree
+                for p2 in pos[:-1]:
+                    if p1 not in node:
+                        node[p1] = (False, {p2: {}})
+                    p1 = p2
+                tree[pos[-1]] = (True, const)
+
+            if len(mapping_pos) > 0:
+                term_result = replace(term_var, tree, tree[None], VarPrefix.Independent)
 
         pass
 

@@ -53,26 +53,30 @@ class Introduction(Substitution):
             nonlocal var
             if term.identical(term_r):
                 ''''''
-                return var
+                return var, True
             
             if term.is_statement:
                 if term_r not in term.components: # term.components is not None
-                    return term
+                    return term, False
                 stat: Statement = term
-                predicate = replace(stat.predicate, term_r)
-                subject = replace(stat.subject, term_r)
-                return Statement(subject, term.copula, predicate, is_input=True)
+                index_var = stat.index_var
+                predicate, flag1 = replace(stat.predicate, term_r)
+                subject, flag2 = replace(stat.subject, term_r)
+                stat = Statement(subject, term.copula, predicate)
+                index_var # TODO 
+                return stat, False
             elif term.is_compound:
                 if term_r not in term.components: # term.components is not None
-                    return term
+                    return term, False
                 cpmd: Compound = term
                 terms = (component for component in cpmd.terms)
-                return Compound(cpmd.connector, *terms, is_input=True)
+                cpmd = Compound(cpmd.connector, *terms)
+                return cpmd, False
             elif term.is_atom:
-                return term
+                return term, False
 
-        term1 = replace(term_src, self.term_common)
-        term2 = replace(term_tgt, self.term_common)
+        term1, _ = replace(term_src, self.term_common)
+        term2, _ = replace(term_tgt, self.term_common)
         return term1, term2
         
 
