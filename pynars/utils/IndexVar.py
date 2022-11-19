@@ -142,7 +142,7 @@ class IndexVar:
         # if index_var_component is not None:
         #     pass
         
-    def merge(self, *indices_var: Type['IndexVar'], is_input: bool, substitution=None):
+    def merge(self, *indices_var: 'IndexVar', is_input: bool, substitution=None):
         if isinstance(indices_var, IndexVar): indices_var: Tuple[IndexVar] = (indices_var,)
         if len(indices_var) == 0: return
 
@@ -154,10 +154,12 @@ class IndexVar:
         qvar_new = self.var_query
 
         set_names = OrderedSet(name for index_var in indices_var for name in index_var.names_var.keys())
-
         names_var_new = bidict({name_var: i for i, name_var in enumerate(set_names-set(self.names_var.keys()), start=len(self.names_var))})
         # self.names_var = names_var_new
         self.names_var.update(names_var_new)
+
+
+
         if is_input:
 
             # mapping: Callable[[int, IndexVar], Int] = lambda var, index_var:  names_var_new[index_var.names_var.inverse[int(var)]]

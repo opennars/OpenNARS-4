@@ -8,6 +8,9 @@ from numpy import prod
 from ordered_set import OrderedSet
 # from pynars.utils.tools import find_pos_with_pos, find_var_with_pos
 from copy import copy, deepcopy
+from bidict import bidict
+from pynars.utils.IndexVar import IntVar
+from typing import Callable
 
 class TermType(Enum):
     ATOM = 0
@@ -177,10 +180,27 @@ class Term:
         self.has_qvar = bool(sum(tuple(term.has_qvar for term in terms)))
 
     def handle_index_var(self, terms: Iterable['Term'], is_input: bool):
+        '''
+        TODO: refactor
+        The code is too dirty and unreadable.
+        '''
         if self.index_var is None: self._index_var = IndexVar()
         self.handle_variables(terms)
         
-        indices_var_to_merge = []
+        # get name dict
+        indices_var: List['IndexVar'] = []
+        for i, component in enumerate(terms):
+            if not (component.is_atom and component.is_var) and component.has_var: # component has varriable(s), but component itself is not variable
+                indices_var.append(component.index_var)
+        set_names = OrderedSet(name for index_var in indices_var for name in index_var.names_var.keys())
+        names_var_new = bidict({name_var: i for i, name_var in enumerate(set_names-set(self.index_var.names_var.keys()), start=len(self.index_var.names_var))})
+        self.index_var.names_var.update(names_var_new)
+
+        # merge
+        mapping: Callable[[int, IndexVar], IntVar] = lambda var, index_var: var(names_var_new[index_var.names_var.inverse[int(var)]])
+        ivar_new = self.index_var.var_independent
+        dvar_new = self.index_var.var_dependent
+        qvar_new = self.index_var.var_query
         for i, component in enumerate(terms):
             if component.is_atom and component.is_var: 
                 if component.is_ivar: self.index_var.add_ivar([i], name=repr(component))
@@ -196,8 +216,22 @@ class Term:
                 if component.has_qvar:
                     for index in component.index_var.positions_qvar:
                         self.index_var.add_qvar([i]+index)
-                indices_var_to_merge.append(component.index_var)
-        self.index_var.merge(*indices_var_to_merge, is_input=is_input)
+                        
+                index_var = component.index_var
+                if is_input:
+                        ivar_new.extend([mapping(var, index_var) for var in index_var.var_independent])
+                        dvar_new.extend([mapping(var, index_var) for var in index_var.var_dependent])
+                        qvar_new.extend([mapping(var, index_var) for var in index_var.var_query])
+                        index_var.names_var.update({key:value for key, value in names_var_new.items() if key in index_var.names_var})
+                else:
+                        ivar_new.extend(index_var.var_independent)
+                        dvar_new.extend(index_var.var_dependent)
+                        qvar_new.extend(index_var.var_query)          
+        self.var_independent = ivar_new
+        self.var_dependent = dvar_new
+        self.var_query = qvar_new
+
+        # normalize
         self.index_var.normalize()
 
     def clone(self):

@@ -277,6 +277,10 @@ class TEST_Parser(unittest.TestCase):
         
         pass
 
+    def test_error_case_2(self):
+        ''''''
+        term = Narsese.parse("(&&, <(&&, <#x-->bird>, <#x-->swimer>)-->#y>, <swan-->#y>).").term
+        pass
     
     def test_chinese(self):
         line = '<(&, 会飞, 会游泳) <-> 会飞且会游泳>.'
