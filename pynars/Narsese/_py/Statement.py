@@ -31,7 +31,9 @@ class Statement(Term):
         self.is_operation = self.predicate.is_operation
 
         if Enable.variable:
-            self.handle_index_var((self.subject, self.predicate), is_input)
+            terms = (self.subject, self.predicate)
+            self.handle_variables(terms)
+            self._index_var = self.handle_index_var(terms, is_input, self._index_var)
 
         pass
         

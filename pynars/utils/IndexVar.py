@@ -142,53 +142,6 @@ class IndexVar:
         # if index_var_component is not None:
         #     pass
         
-    def merge(self, *indices_var: 'IndexVar', is_input: bool, substitution=None):
-        if isinstance(indices_var, IndexVar): indices_var: Tuple[IndexVar] = (indices_var,)
-        if len(indices_var) == 0: return
-
-        # ivar_new = []
-        # dvar_new = []
-        # qvar_new = []
-        ivar_new = self.var_independent
-        dvar_new = self.var_dependent
-        qvar_new = self.var_query
-
-        set_names = OrderedSet(name for index_var in indices_var for name in index_var.names_var.keys())
-        names_var_new = bidict({name_var: i for i, name_var in enumerate(set_names-set(self.names_var.keys()), start=len(self.names_var))})
-        # self.names_var = names_var_new
-        self.names_var.update(names_var_new)
-
-
-
-        if is_input:
-
-            # mapping: Callable[[int, IndexVar], Int] = lambda var, index_var:  names_var_new[index_var.names_var.inverse[int(var)]]
-            mapping: Callable[[int, IndexVar], IntVar] = lambda var, index_var: var(names_var_new[index_var.names_var.inverse[int(var)]])
-
-            for index_var in indices_var:
-                ivar_new.extend([mapping(var, index_var) for var in index_var.var_independent])
-                dvar_new.extend([mapping(var, index_var) for var in index_var.var_dependent])
-                qvar_new.extend([mapping(var, index_var) for var in index_var.var_query])
-                index_var.names_var.update({key:value for key, value in names_var_new.items() if key in index_var.names_var})
-
-                
-                
-        elif substitution is not None:
-            raise # TODO
-        else:
-            for index_var in indices_var:
-                ivar_new.extend(index_var.var_independent)
-                dvar_new.extend(index_var.var_dependent)
-                qvar_new.extend(index_var.var_query)
-
-        
-        
-        self.var_independent = ivar_new
-        self.var_dependent = dvar_new
-        self.var_query = qvar_new
-
-
-        # for index_var in indices_var: index_var.names_var = None # the names of variables are discarded.
 
 
     def normalize(self):

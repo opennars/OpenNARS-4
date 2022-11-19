@@ -77,26 +77,7 @@ class Terms:
     @staticmethod
     def handle_index_var(terms: List['Term'], is_input: bool):
         index_var = IndexVar()
-        
-        indices_var_to_merge = []
-        for i, term in enumerate(terms):
-            if term.is_atom and term.is_var: 
-                if term.is_ivar: index_var.add_ivar([i], name=repr(term))
-                elif term.is_dvar: index_var.add_dvar([i], name=repr(term))
-                elif term.is_qvar: index_var.add_qvar([i], name=repr(term))
-            elif term.has_var: # but component itself is not variable
-                if term.has_ivar:
-                    for index in term.index_var.positions_ivar:
-                        index_var.add_ivar([i]+index)
-                if term.has_dvar:
-                    for index in term.index_var.positions_dvar:
-                        index_var.add_dvar([i]+index)
-                if term.has_qvar:
-                    for index in term.index_var.positions_qvar:
-                        index_var.add_qvar([i]+index)
-                indices_var_to_merge.append(term.index_var)
-        index_var.merge(*indices_var_to_merge, is_input=is_input)
-        index_var.normalize()
+        Term.handle_index_var(terms, is_input, index_var)
         return index_var
 
 

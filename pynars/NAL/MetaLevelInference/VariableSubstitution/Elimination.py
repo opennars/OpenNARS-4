@@ -13,7 +13,9 @@ class Elimination(Substitution):
     the substitution of var-to-const
     '''
     def __init__(self, term_src: Term, term_tgt: Term, ivar_src: List[IntVar]=None, iconst_tgt: List[Term]=None, dvar_src: List[IntVar]=None, dconst_tgt: List[Term]=None, qvar_src: List[IntVar]=None, qconst_tgt: List[Term]=None) -> None:
-        super().__init__(term_src, term_tgt) #, ivar_src, iconst_tgt, dvar_src, dconst_tgt, qvar_src, qconst_tgt)
+        # super().__init__(term_src, term_tgt) #, ivar_src, iconst_tgt, dvar_src, dconst_tgt, qvar_src, qconst_tgt)
+        self.term_src = term_src
+        self.term_tgt = term_tgt
 
         # is_conflict_ivar = is_conflict_dvar = is_conflict_qvar = False
         if (ivar_src is not None and iconst_tgt is not None):

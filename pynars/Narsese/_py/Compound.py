@@ -337,104 +337,104 @@ class Compound(Term): #, OrderedSet):
         return compound
 
     @classmethod
-    def ExtensionalSet(cls, *terms: Term) -> Type['Compound']:
-        return cls._convert(Compound(Connector.ExtensionalSet, *terms))
+    def ExtensionalSet(cls, *terms: Term, is_input=False) -> Type['Compound']:
+        return cls._convert(Compound(Connector.ExtensionalSet, *terms, is_input=is_input))
 
     @classmethod
-    def IntensionalSet(cls, *terms: Term) -> Type['Compound']:
-        return cls._convert(Compound(Connector.IntensionalSet, *terms))
+    def IntensionalSet(cls, *terms: Term, is_input=False) -> Type['Compound']:
+        return cls._convert(Compound(Connector.IntensionalSet, *terms, is_input=is_input))
     
     @classmethod
-    def Instance(cls, term: Term) -> Type['Compound']:
-        return cls._convert(Compound.ExtensionalSet(term))
+    def Instance(cls, term: Term, is_input=False) -> Type['Compound']:
+        return cls._convert(Compound.ExtensionalSet(term, is_input=is_input))
 
     @classmethod
-    def Property(cls, term: Term) -> Type['Compound']:
-        return cls._convert(Compound.IntensionalSet(term))
+    def Property(cls, term: Term, is_input=False) -> Type['Compound']:
+        return cls._convert(Compound.IntensionalSet(term, is_input=is_input))
 
     @classmethod
-    def ExtensionalImage(cls, term_relation: Term, *terms: Term, idx: int=None, compound_product: Type['Compound']=None) -> Type['Compound']:
+    def ExtensionalImage(cls, term_relation: Term, *terms: Term, idx: int=None, compound_product: Type['Compound']=None, is_input=False) -> Type['Compound']:
         if compound_product is not None:
             # if idx is None:
             terms = compound_product.terms
             idx = terms.index(term_relation) if idx is None else idx
-            compound = Compound.ExtensionalImage(term_relation, *(tm if i != idx else place_holder for i, tm in enumerate(compound_product)))
+            compound = Compound.ExtensionalImage(term_relation, *(tm if i != idx else place_holder for i, tm in enumerate(compound_product)), is_input=is_input)
         elif terms is not None:
             if idx is not None:
                 terms: list = [*terms[:idx], place_holder, *terms[idx:]]
-            compound = Compound(Connector.ExtensionalImage, term_relation, *terms)
+            compound = Compound(Connector.ExtensionalImage, term_relation, *terms, is_input=is_input)
         return cls._convert(compound)
 
     @classmethod
-    def IntensionalImage(cls, term_relation: Term, *terms: Term, idx: int=None, compound_product: Type['Compound']=None, compound_image: Type['Compound']=None) -> Type['Compound']:
+    def IntensionalImage(cls, term_relation: Term, *terms: Term, idx: int=None, compound_product: Type['Compound']=None, compound_image: Type['Compound']=None, is_input=False) -> Type['Compound']:
         if compound_product is not None:
             # if idx is None:
             idx = compound_product.terms.index(term_relation) if idx is None else idx
-            compound = Compound.IntensionalImage(term_relation, *(tm if i != idx else place_holder for i, tm in enumerate(compound_product)))
+            compound = Compound.IntensionalImage(term_relation, *(tm if i != idx else place_holder for i, tm in enumerate(compound_product)), is_input=is_input)
         elif terms is not None:
             if idx is not None:
                 terms: list = [*terms[:idx], place_holder, *terms[idx:]]
-            compound = Compound(Connector.IntensionalImage, term_relation, *terms)
+            compound = Compound(Connector.IntensionalImage, term_relation, *terms, is_input=is_input)
         return cls._convert(compound)
 
     @classmethod
-    def Image(cls, replaced_term: Term, compound_image: Type['Compound'], idx_replaced: int=None) -> Type['Compound']:
+    def Image(cls, replaced_term: Term, compound_image: Type['Compound'], idx_replaced: int=None, is_input=False) -> Type['Compound']:
         '''Convert Image to Image'''
         idx_replaced = compound_image.terms.index(replaced_term) if idx_replaced is None else idx_replaced
         
-        compound = Compound(compound_image.connector, *((place_holder if i == idx_replaced else tm if tm != place_holder else replaced_term) for i, tm in enumerate(compound_image)))
+        compound = Compound(compound_image.connector, *((place_holder if i == idx_replaced else tm if tm != place_holder else replaced_term) for i, tm in enumerate(compound_image)), is_input=is_input)
         
         return cls._convert(compound)
 
     @classmethod
-    def Product(cls, term: Term, *terms: Term, idx: int=None, compound_image: Type['Compound']=None):
+    def Product(cls, term: Term, *terms: Term, idx: int=None, compound_image: Type['Compound']=None, is_input=False):
         if compound_image is not None:
             idx = compound_image.terms.index(place_holder)-1 if idx is None else idx
-            compound = Compound.Product(*((tm if i != idx else term) for i, tm in enumerate(compound_image.terms[1:])))
-        else: compound = Compound(Connector.Product, term, *terms)
+            compound = Compound.Product(*((tm if i != idx else term) for i, tm in enumerate(compound_image.terms[1:])), is_input=is_input)
+        else: compound = Compound(Connector.Product, term, *terms, is_input=is_input)
         return cls._convert(compound)
 
     @classmethod
-    def Negation(cls, term: Type['Compound']) -> Union[Type['Compound'], Term]:
+    def Negation(cls, term: Type['Compound'], is_input=False) -> Union[Type['Compound'], Term]:
         if term.is_compound and term.connector == Connector.Negation: compound = term[0]
-        else: compound = Compound(Connector.Negation, term)
+        else: compound = Compound(Connector.Negation, term, is_input=is_input)
         return cls._convert(compound)
 
     @classmethod
-    def Conjunction(cls, *terms: Union[Term, Type['Compound']]) -> Type['Compound']:
+    def Conjunction(cls, *terms: Union[Term, Type['Compound']], is_input=False) -> Type['Compound']:
         terms = (term for compound in terms for term in (compound if compound.is_compound and compound.connector==Connector.Conjunction else (compound,)))        
-        return cls._convert(Compound(Connector.Conjunction, *terms))
+        return cls._convert(Compound(Connector.Conjunction, *terms, is_input=is_input))
 
     @classmethod
-    def Disjunction(cls, *terms: Union[Term, Type['Compound']]) -> Type['Compound']:
+    def Disjunction(cls, *terms: Union[Term, Type['Compound']], is_input=False) -> Type['Compound']:
         terms = (term for compound in terms for term in (compound if compound.is_compound and compound.connector==Connector.Disjunction else (compound,)))  
-        return cls._convert(Compound(Connector.Disjunction, *terms))
+        return cls._convert(Compound(Connector.Disjunction, *terms, is_input=is_input))
 
     @classmethod
-    def IntensionalIntersection(cls, *terms: Union[Term, Type['Compound']]) -> Type['Compound']:
+    def IntensionalIntersection(cls, *terms: Union[Term, Type['Compound']], is_input=False) -> Type['Compound']:
         terms = (term for compound in terms for term in (compound if compound.is_compound and compound.connector==Connector.IntensionalIntersection else (compound,)))        
-        return cls._convert(Compound(Connector.IntensionalIntersection, *terms))
+        return cls._convert(Compound(Connector.IntensionalIntersection, *terms, is_input=is_input))
 
     @classmethod
-    def ExtensionalIntersection(cls, *terms: Union[Term, Type['Compound']]) -> Type['Compound']:
+    def ExtensionalIntersection(cls, *terms: Union[Term, Type['Compound']], is_input=False) -> Type['Compound']:
         terms = (term for compound in terms for term in (compound if compound.is_compound and compound.connector==Connector.ExtensionalIntersection else (compound,)))        
-        return cls._convert(Compound(Connector.ExtensionalIntersection, *terms))
+        return cls._convert(Compound(Connector.ExtensionalIntersection, *terms, is_input=is_input))
 
     @classmethod
-    def ExtensionalDifference(cls, term1: Term, term2: Term) -> Type['Compound']:
-        return cls._convert(Compound(Connector.ExtensionalDifference, term1, term2))
+    def ExtensionalDifference(cls, term1: Term, term2: Term, is_input=False) -> Type['Compound']:
+        return cls._convert(Compound(Connector.ExtensionalDifference, term1, term2, is_input=is_input))
 
     @classmethod
-    def IntensionalDifference(cls, term1: Term, term2: Term) -> Type['Compound']:
-        return cls._convert(Compound(Connector.IntensionalDifference, term1, term2))
+    def IntensionalDifference(cls, term1: Term, term2: Term, is_input=False) -> Type['Compound']:
+        return cls._convert(Compound(Connector.IntensionalDifference, term1, term2, is_input=is_input))
     
     @classmethod
-    def SequentialEvents(cls, *terms: Union[Term, Interval]) -> Type['Compound']:
-        return cls._convert(Compound(Connector.SequentialEvents, *terms))
+    def SequentialEvents(cls, *terms: Union[Term, Interval], is_input=False) -> Type['Compound']:
+        return cls._convert(Compound(Connector.SequentialEvents, *terms, is_input=is_input))
 
     @classmethod
-    def ParallelEvents(cls, *terms: Term) -> Type['Compound']:
-        return cls._convert(Compound(Connector.ParallelEvents, *terms))
+    def ParallelEvents(cls, *terms: Term, is_input=False) -> Type['Compound']:
+        return cls._convert(Compound(Connector.ParallelEvents, *terms, is_input=is_input))
 
 
     def clone(self):

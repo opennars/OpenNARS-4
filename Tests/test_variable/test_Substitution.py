@@ -72,7 +72,7 @@ class TEST_Substitution(unittest.TestCase):
         term_common = Term('animal')
         intro_var: Introduction = get_introduction__const_var(term1, term2, term_common)
         term1, term2 = intro_var.apply(var_type=VarPrefix.Dependent)
-        term3 = Compound.Conjunction(term1, term2)
+        term3 = Compound.Conjunction(term1, term2, is_input=True)
         print(term1)
         print(term2)
         print(term3)
@@ -80,7 +80,7 @@ class TEST_Substitution(unittest.TestCase):
         self.assertTrue(term3 == term4)
 
 
-    def test_substition_var_to_const_0(self):
+    def test_elimination_var_to_const_0_0(self):
         '''
         <<$x-->A>==><$x-->B>>.
         <<C-->B>==><C-->D>>.
@@ -97,7 +97,25 @@ class TEST_Substitution(unittest.TestCase):
         # self.assertEqual(term_substitution, term_new)
         pass
 
-    def test_substition_var_to_const_1(self):
+    def test_elimination_var_to_const_0_1(self):
+        '''
+        <<$x-->A>==><$x-->B>>.
+        <<C-->B>==><D-->A>>.
+        |-
+        <<C-->A>==><D-->A>>
+        <<C-->B>==><D-->B>>
+        '''
+        term1 = Narsese.parse("<<$x-->A>==><$x-->B>>.").term
+        term2 = Narsese.parse("<<C-->B>==><D-->A>>.").term
+        self.assertTrue(term1[1].equal(term2[0]))
+        subst_var = get_elimination__var_const(term1, term2, [1], [0]) # to find possible replacement.
+        term2 = subst_var.apply(inverse=True)
+        term3 = Statement.Implication(term1[0], term2[1])
+        # term_substitution = substitution(compound, Term("A"), Term("D"))
+        # self.assertEqual(term_substitution, term_new)
+        pass
+
+    def test_elimination_var_to_const_1(self):
         '''
         <(&&, <$x-->A>, <$y-->A>) ==> (&&, <$x-->B>, <$y-->C>)>.
         <<D-->E> ==> (&&, <F-->A>, <G-->A>)>.
