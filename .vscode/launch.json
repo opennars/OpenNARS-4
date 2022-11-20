@@ -5,6 +5,12 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python: test_indexvar",
+            "type": "python",
+            "request": "launch",
+            "module": "Tests.test_IndexVar"
+        },
+        {
             "name": "Python: Pong",
             "type": "python",
             "request": "launch",

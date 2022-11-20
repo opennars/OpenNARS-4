@@ -10,6 +10,8 @@ from numpy import prod
 class IntVar:
     def __init__(self, num: int) -> None:
         self.num = int(num)
+        self.parent: IntVar = None
+        self.son: IntVar = None
     
     def __eq__(self, o: Type['IntVar']) -> bool:
         if isinstance(o, IntVar): return self.num == o.num  
@@ -22,7 +24,7 @@ class IntVar:
         return hash(self.num)
 
     def __repr__(self) -> str:
-        return str(self.num)
+        return f'_{self.num}'
 
     def __call__(self, num: Union[int, None]):
         if num is not None: self.num = int(num)
@@ -76,6 +78,31 @@ class IntVar:
 
     def __neg__(self, o: Type['IntVar']):
         return IntVar(-self.num)
+    
+    def connect(self, son: 'IntVar'):
+        ''''''
+        self.son = son
+        son.parent = self
+    
+    def propagate_down(self):
+        ''''''
+        num = self.num
+        iv = self.son
+        while iv is not None:
+            iv.num = num
+            iv = iv.son
+    
+    def propagate_up(self):
+        ''''''
+        num = self.num
+        iv = self.parent
+        while iv is not None:
+            iv.num = num
+            iv = iv.parent
+    
+    # def clone(self):
+    #     return IntVar(self.num)
+
 
 class IndexVar:
     '''
@@ -96,62 +123,17 @@ class IndexVar:
     _hash_value = None
 
     def __init__(self) -> None:
-        self.positions_dvar = [] # the positions of each dependent variable
-        self.positions_ivar = [] # the positions of each independent variable
-        self.positions_qvar = [] # the positions of each query variable
-        
-        self.var_dependent = [] # the dependent variable in each position.
-        self.var_independent = [] # the independent variable in each position.
-        self.var_query = [] # the query variable in each position.
+        self.positions = [] # the positions of each dependent variable
+        self.indices = [] # the dependent variable in each position.
 
-        self.dependents: List[tuple] = []
-
-        self.names_var: bidict = bidict()
-
-
-    # def add_position_ivar(self, index: int):
-    #     self.positions_ivar.append(index)
-
-
-    # def add_position_dvar(self, index: int):
-    #     self.positions_dvar.append(index)
-
-
-    # def add_position_qvar(self, index: int):
-    #     self.positions_qvar.append(index)
-
-
-    def add_ivar(self, index: int, name: str=None, index_var_component: Type['IndexVar']=None):
-        self._add_var(self.positions_ivar, self.var_independent, index, name, index_var_component)
-
-
-    def add_dvar(self, index: int, name: str=None, index_var_component: Type['IndexVar']=None):
-        self._add_var(self.positions_dvar, self.var_dependent, index, name, index_var_component)
-
-
-    def add_qvar(self, index: int, name: str=None, index_var_component: Type['IndexVar']=None):
-        self._add_var(self.positions_qvar, self.var_query, index, name, index_var_component)
-
-
-    def _add_var(self, positions: list, variables: list, index, name: str=None, index_var_component: Type['IndexVar']=None):
-        positions.append(index)
-        if name is not None:
-            if name not in self.names_var: 
-                self.names_var[name] = len(self.names_var)
-            variables.append(IntVar(self.names_var[name]))
-        # if index_var_component is not None:
-        #     pass
-        
+        self.predecessor: IndexVar = None
+        self.successors: List[IndexVar] = []
 
 
     def normalize(self):
         '''normalize the index, so that the index is unique in terms of one statement which has variable(s).'''
         if self._positions_normalized is None:
-            self._positions_normalized = (
-                _normalize([int(var) for var in self.var_independent]), 
-                _normalize([int(var) for var in self.var_dependent]), 
-                _normalize([int(var) for var in self.var_query])
-            )
+            self._positions_normalized = _normalize([int(var) for var in self.indices])
         return self._positions_normalized
 
     @property
@@ -172,8 +154,69 @@ class IndexVar:
     def __eq__(self, o: Type['IndexVar']) -> bool:
         return hash(self) == hash(o)
 
+    
+    def __repr__(self) -> str:
+        return f'<IndexVar: {repr(self.indices)}, {self.positions}, {self.postions_normalized}>'
+
     def clone(self):
         return deepcopy(self)
+
+    
+    def connect(self, successor: 'IndexVar', generate_pos=False):
+        ''''''
+        self.successors.append(successor)
+        successor.predecessor = self
+
+        if not generate_pos: return
+
+        bias_pos = len(self.successors)-1
+        indices = [idx for idx in successor.indices]
+        positions = [[bias_pos]+pos for pos in successor.positions]
+        self.indices.extend(indices)
+        self.positions.extend(positions)
+    
+    def rebuild(self):
+        ''''''
+        if len(self.successors) > 0:
+            self.indices.clear()
+            self.positions.clear()
+        for bias_pos, successor in enumerate(self.successors):
+            successor.rebuild()
+            indices = [idx for idx in successor.indices]
+            positions = [[bias_pos]+pos for pos in successor.positions]
+            self.indices.extend(indices)
+            self.positions.extend(positions)
+
+    
+    def add(self, idx, position):
+        iv = IntVar(idx)
+
+        if len(position) == 0:
+            self.positions.clear()
+            self.indices.clear()
+
+        idxvar = self
+        for pos in position:
+            idxvar = idxvar.successors[pos]
+        idxvar.positions.append([])
+        idxvar.indices.append(iv)
+
+        return iv
+
+
+    def remove(self, position: List[int]):
+        ''''''
+        index = self
+        for pos in position:
+            index = index.successors[pos]
+        index.indices.clear()
+        index.positions.clear()
+
+
+    
+
+
+
 
 
 def _normalize(variables):

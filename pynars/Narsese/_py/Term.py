@@ -187,49 +187,49 @@ class Term:
         '''       
         if index_var is None: index_var = IndexVar()
         
-        # get name dict
-        indices_var: List['IndexVar'] = []
-        for i, component in enumerate(terms):
-            if not (component.is_atom and component.is_var) and component.has_var: # component has varriable(s), but component itself is not variable
-                indices_var.append(component.index_var)
-        set_names = OrderedSet(name for idx_var in indices_var for name in idx_var.names_var.keys())
-        names_var_new = bidict({name_var: i for i, name_var in enumerate(set_names-set(index_var.names_var.keys()), start=len(index_var.names_var))})
-        index_var.names_var.update(names_var_new)
+        # # get name dict
+        # indices_var: List['IndexVar'] = []
+        # for i, component in enumerate(terms):
+        #     if not (component.is_atom and component.is_var) and component.has_var: # component has varriable(s), but component itself is not variable
+        #         indices_var.append(component.index_var)
+        # set_names = OrderedSet(name for idx_var in indices_var for name in idx_var.names_var.keys())
+        # names_var_new = bidict({name_var: i for i, name_var in enumerate(set_names-set(index_var.names_var.keys()), start=len(index_var.names_var))})
+        # index_var.names_var.update(names_var_new)
 
-        # merge
-        mapping: Callable[[int, IndexVar], IntVar] = lambda var, index_var: var(names_var_new[index_var.names_var.inverse[int(var)]])
-        ivar_new = index_var.var_independent
-        dvar_new = index_var.var_dependent
-        qvar_new = index_var.var_query
-        for i, component in enumerate(terms):
-            if component.is_atom and component.is_var: 
-                if component.is_ivar: index_var.add_ivar([i], name=repr(component))
-                elif component.is_dvar: index_var.add_dvar([i], name=repr(component))
-                elif component.is_qvar: index_var.add_qvar([i], name=repr(component))
-            elif component.has_var: # but component itself is not variable
-                if component.has_ivar:
-                    for index in component.index_var.positions_ivar:
-                        index_var.add_ivar([i]+index)
-                if component.has_dvar:
-                    for index in component.index_var.positions_dvar:
-                        index_var.add_dvar([i]+index)
-                if component.has_qvar:
-                    for index in component.index_var.positions_qvar:
-                        index_var.add_qvar([i]+index)
+        # # merge
+        # mapping: Callable[[int, IndexVar], IntVar] = lambda var, index_var: var(names_var_new[index_var.names_var.inverse[int(var)]])
+        # ivar_new = index_var.var_independent
+        # dvar_new = index_var.var_dependent
+        # qvar_new = index_var.var_query
+        # for i, component in enumerate(terms):
+        #     if component.is_atom and component.is_var: 
+        #         if component.is_ivar: index_var.add_ivar([i], name=repr(component))
+        #         elif component.is_dvar: index_var.add_dvar([i], name=repr(component))
+        #         elif component.is_qvar: index_var.add_qvar([i], name=repr(component))
+        #     elif component.has_var: # but component itself is not variable
+        #         if component.has_ivar:
+        #             for index in component.index_var.positions_ivar:
+        #                 index_var.add_ivar([i]+index)
+        #         if component.has_dvar:
+        #             for index in component.index_var.positions_dvar:
+        #                 index_var.add_dvar([i]+index)
+        #         if component.has_qvar:
+        #             for index in component.index_var.positions_qvar:
+        #                 index_var.add_qvar([i]+index)
                         
-                idx_var = component.index_var
-                if is_input:
-                        ivar_new.extend([mapping(var, idx_var) for var in idx_var.var_independent])
-                        dvar_new.extend([mapping(var, idx_var) for var in idx_var.var_dependent])
-                        qvar_new.extend([mapping(var, idx_var) for var in idx_var.var_query])
-                        idx_var.names_var.update({key:value for key, value in names_var_new.items() if key in idx_var.names_var})
-                else:
-                        ivar_new.extend(idx_var.var_independent)
-                        dvar_new.extend(idx_var.var_dependent)
-                        qvar_new.extend(idx_var.var_query)          
-        index_var.var_independent = ivar_new
-        index_var.var_dependent = dvar_new
-        index_var.var_query = qvar_new
+        #         idx_var = component.index_var
+        #         if is_input:
+        #                 ivar_new.extend([mapping(var, idx_var) for var in idx_var.var_independent])
+        #                 dvar_new.extend([mapping(var, idx_var) for var in idx_var.var_dependent])
+        #                 qvar_new.extend([mapping(var, idx_var) for var in idx_var.var_query])
+        #                 idx_var.names_var.update({key:value for key, value in names_var_new.items() if key in idx_var.names_var})
+        #         else:
+        #                 ivar_new.extend(idx_var.var_independent)
+        #                 dvar_new.extend(idx_var.var_dependent)
+        #                 qvar_new.extend(idx_var.var_query)          
+        # index_var.var_independent = ivar_new
+        # index_var.var_dependent = dvar_new
+        # index_var.var_query = qvar_new
 
         # normalize
         index_var.normalize()
