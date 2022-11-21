@@ -129,6 +129,8 @@ class IndexVar:
         self.predecessor: IndexVar = None
         self.successors: List[IndexVar] = []
 
+        self._is_built = False
+
 
     def normalize(self):
         '''normalize the index, so that the index is unique in terms of one statement which has variable(s).'''
@@ -174,18 +176,27 @@ class IndexVar:
         positions = [[bias_pos]+pos for pos in successor.positions]
         self.indices.extend(indices)
         self.positions.extend(positions)
-    
-    def rebuild(self):
+
+    def build(self, rebuild=False):
         ''''''
+        if not rebuild and self._is_built: return
+
         if len(self.successors) > 0:
             self.indices.clear()
             self.positions.clear()
         for bias_pos, successor in enumerate(self.successors):
-            successor.rebuild()
+            successor.build(rebuild)
             indices = [idx for idx in successor.indices]
             positions = [[bias_pos]+pos for pos in successor.positions]
             self.indices.extend(indices)
             self.positions.extend(positions)
+
+        self._is_built = True
+
+
+    def rebuild(self):
+        ''''''
+        self.build(rebuild=True)
 
     
     def add(self, idx, position):

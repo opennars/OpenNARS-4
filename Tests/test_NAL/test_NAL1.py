@@ -15,7 +15,7 @@ from pynars.NARS import Reasoner as Reasoner
 import Tests.utils_for_test as utils_for_test
 from Tests.utils_for_test import *
 
-utils_for_test.engine = RuleMap()
+# utils_for_test.engine = RuleMap()
 
 class TEST_NAL1(unittest.TestCase):
 

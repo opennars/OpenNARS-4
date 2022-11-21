@@ -11,6 +11,7 @@ from copy import copy, deepcopy
 from bidict import bidict
 from pynars.utils.IndexVar import IntVar
 from typing import Callable
+from typing import Tuple
 
 class TermType(Enum):
     ATOM = 0
@@ -36,16 +37,22 @@ class Term:
     is_interval: bool = False
 
     is_operation = False 
-    _index_var: IndexVar = None
+    # _index_var: IndexVar = None
+    _vars_independent: IndexVar = None
+    _vars_dependent: IndexVar = None
+    _vars_query: IndexVar = None
     
     def __init__(self, word, do_hashing=False, word_sorted=None, is_input=False) -> None:
         self.word = word
         self.word_sorted = word_sorted if word_sorted is not None else word
         self._components: Set[Term] = None
 
-        if Enable.variable:
-            if self._index_var is None: self._index_var = IndexVar()
+        # Variables related initialization
+        if self._vars_independent is None: self._vars_independent = IndexVar()
+        if self._vars_dependent is None: self._vars_dependent = IndexVar()
+        if self._vars_query is None: self._vars_query = IndexVar()
 
+        # id initialization
         if do_hashing:
             self.do_hashing()
         else:
@@ -65,9 +72,6 @@ class Term:
         '''the number of sub-terms (including this term itself)'''
         return len(self._components)+1 if self._components is not None else 1
 
-    # @property
-    # def temporal_order(self):
-    #     return TemporalOrder.NONE
 
     @property
     def complexity(self):
@@ -104,8 +108,8 @@ class Term:
         return (self, )
 
     @property
-    def index_var(self):
-        return self._index_var
+    def variables(self) -> Tuple[IndexVar, IndexVar, IndexVar]:
+        return (self._vars_independent, self._vars_dependent, self._vars_query)
     
     @property
     def is_mental_operation(self):
@@ -138,8 +142,8 @@ class Term:
         if not term.is_atom: return False
         return self == term
 
-    def do_hashing(self):
-        self._hash_value = hash(self.word_sorted+str(self.index_var.postions_normalized))
+    def do_hashing(self):        
+        self._hash_value = hash(self.word_sorted+str(tuple(vars.postions_normalized for vars in self.variables)))
         return self._hash_value
 
     def __hash__(self) -> int:
@@ -165,14 +169,14 @@ class Term:
         return self
 
     def repr(self, is_input=False):
-        return str(self) if not self.has_var else self.repr_with_var(self.index_var, [])
+        return str(self) # if not self.has_var else self.repr_with_var(self._vars_independent, [])
 
-    def repr_with_var(self, index_var: IndexVar, pos: list):
-        ''''''
-        # raise "Invalid case."
-        return str(self)
+    # def repr_with_var(self, index_var: IndexVar, pos: list):
+    #     ''''''
+    #     # raise "Invalid case."
+    #     return str(self)
 
-    def handle_variables(self, terms: Iterable['Term']):
+    def _handle_variables(self, terms: Iterable['Term']):
         ''''''
         self.has_var = bool(sum(tuple(term.has_var for term in terms)))
         self.has_ivar = bool(sum(tuple(term.has_ivar for term in terms)))
@@ -180,64 +184,30 @@ class Term:
         self.has_qvar = bool(sum(tuple(term.has_qvar for term in terms)))
     
     @staticmethod
-    def handle_index_var(terms: Iterable['Term'], is_input: bool, index_var=None):
-        '''
-        TODO: refactor
-        The code is too dirty and unreadable.
-        '''       
-        if index_var is None: index_var = IndexVar()
-        
-        # # get name dict
-        # indices_var: List['IndexVar'] = []
-        # for i, component in enumerate(terms):
-        #     if not (component.is_atom and component.is_var) and component.has_var: # component has varriable(s), but component itself is not variable
-        #         indices_var.append(component.index_var)
-        # set_names = OrderedSet(name for idx_var in indices_var for name in idx_var.names_var.keys())
-        # names_var_new = bidict({name_var: i for i, name_var in enumerate(set_names-set(index_var.names_var.keys()), start=len(index_var.names_var))})
-        # index_var.names_var.update(names_var_new)
+    def _init_variables(variables: Tuple[IndexVar, IndexVar, IndexVar], terms: Iterable['Term']):
+        ''''''
+        for term in terms:
+            for idxvar1, idxvar2 in zip(variables, term.variables):
+                idxvar1.connect(idxvar2)
 
-        # # merge
-        # mapping: Callable[[int, IndexVar], IntVar] = lambda var, index_var: var(names_var_new[index_var.names_var.inverse[int(var)]])
-        # ivar_new = index_var.var_independent
-        # dvar_new = index_var.var_dependent
-        # qvar_new = index_var.var_query
-        # for i, component in enumerate(terms):
-        #     if component.is_atom and component.is_var: 
-        #         if component.is_ivar: index_var.add_ivar([i], name=repr(component))
-        #         elif component.is_dvar: index_var.add_dvar([i], name=repr(component))
-        #         elif component.is_qvar: index_var.add_qvar([i], name=repr(component))
-        #     elif component.has_var: # but component itself is not variable
-        #         if component.has_ivar:
-        #             for index in component.index_var.positions_ivar:
-        #                 index_var.add_ivar([i]+index)
-        #         if component.has_dvar:
-        #             for index in component.index_var.positions_dvar:
-        #                 index_var.add_dvar([i]+index)
-        #         if component.has_qvar:
-        #             for index in component.index_var.positions_qvar:
-        #                 index_var.add_qvar([i]+index)
-                        
-        #         idx_var = component.index_var
-        #         if is_input:
-        #                 ivar_new.extend([mapping(var, idx_var) for var in idx_var.var_independent])
-        #                 dvar_new.extend([mapping(var, idx_var) for var in idx_var.var_dependent])
-        #                 qvar_new.extend([mapping(var, idx_var) for var in idx_var.var_query])
-        #                 idx_var.names_var.update({key:value for key, value in names_var_new.items() if key in idx_var.names_var})
-        #         else:
-        #                 ivar_new.extend(idx_var.var_independent)
-        #                 dvar_new.extend(idx_var.var_dependent)
-        #                 qvar_new.extend(idx_var.var_query)          
-        # index_var.var_independent = ivar_new
-        # index_var.var_dependent = dvar_new
-        # index_var.var_query = qvar_new
 
-        # normalize
-        index_var.normalize()
-        return index_var
+    def _rebuild_vars(self):
+        ''''''
+        if self.has_ivar: self._vars_independent.rebuild()
+        if self.has_dvar: self._vars_dependent.rebuild()
+        if self.has_qvar: self._vars_query.rebuild()
+
+    def _build_vars(self):
+        ''''''
+        if self.has_ivar: self._vars_independent.build()
+        if self.has_dvar: self._vars_dependent.build()
+        if self.has_qvar: self._vars_query.build()
+
+
 
     def clone(self):
         # clone = copy(self)
         return self
-        
+
 
 place_holder = Term('_', True)

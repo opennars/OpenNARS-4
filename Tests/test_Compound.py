@@ -82,6 +82,7 @@ class TEST_Compound(unittest.TestCase):
         <(&&, <$x-->A>, <$y-->A>) ==> (&&, <$x-->B>, <$y-->C>)>.
         '''
         term = Narsese.parse("<(&&, <$x-->A>, <$y-->A>) ==> (&&, <$x-->B>, <$y-->C>)>.").term
+        repr(term[0])
         self.assertEqual(len(term[0].terms), 2)
 
     

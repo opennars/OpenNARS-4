@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Type
 from pynars.Config import Config
 
-from pynars.utils.IndexVar import IndexVar
+from pynars.utils.IndexVar import IndexVar, IntVar
 from .Term import Term
 
 class VarPrefix(Enum):
@@ -16,7 +16,7 @@ class Variable(Term):
     is_var: bool = True
     has_var: bool = True
     
-    def __init__(self, prefix: VarPrefix, word: str, do_hashing=False, is_input=False) -> None:
+    def __init__(self, prefix: VarPrefix, word: str, do_hashing=False, is_input=False, idx: int=None) -> None:
         self.prefix = prefix
         self.name = str(word)
         word = prefix.value
@@ -27,6 +27,11 @@ class Variable(Term):
         self.is_ivar = self.has_ivar = self.prefix == VarPrefix.Independent
         self.is_dvar = self.has_dvar = self.prefix == VarPrefix.Dependent
         self.is_qvar = self.has_qvar = self.prefix == VarPrefix.Query
+
+        if idx is not None:
+            if self.is_ivar: self._vars_independent.add(IntVar(int(idx)), [])
+            if self.is_dvar: self._vars_dependent.add(IntVar(int(idx)), [])
+            if self.is_qvar: self._vars_query.add(IntVar(int(idx)), [])
     
 
     def __repr__(self) -> str:
@@ -34,43 +39,53 @@ class Variable(Term):
         return self.word + self.name
 
 
-    def repr_with_var(self, index_var: IndexVar, pos: list):
+    def repr(self):
         ''''''
         if not self.is_var: raise "Invalide case."
         if self.is_ivar:
-            try: idx = index_var.positions_ivar.index(pos)
-            except: raise "Invalid case: The `pos` is not in `index_var.positions_ivar`"
-            var = index_var.postions_normalized[0][idx] if Config.variable_repr_normalized else index_var.var_independent[idx]
+            var = self._vars_independent.indices[0]
         elif self.is_dvar:
-            try: idx = index_var.positions_dvar.index(pos)
-            except: raise "Invalid case: The `pos` is not in `index_var.positions_dvar`"
-            var = index_var.postions_normalized[1][idx] if Config.variable_repr_normalized else index_var.var_dependent[idx]
+            var = self._vars_dependent.indices[0]
         elif self.is_qvar:
-            try: idx = index_var.positions_qvar.index(pos)
-            except: raise "Invalid case: The `pos` is not in `index_var.positions_qvar`"
-            var = index_var.postions_normalized[2][idx] if Config.variable_repr_normalized else index_var.var_query[idx]
+            var = self._vars_query.indices[0]
         else: raise "Invalide case."
+        
+        # if self.is_ivar:
+        #     try: idx = index_var.positions.index(pos)
+        #     except: raise "Invalid case: The `pos` is not in `index_var.positions_ivar`"
+        #     var = index_var.postions_normalized[0][idx] if Config.variable_repr_normalized else index_var.var_independent[idx]
+        # elif self.is_dvar:
+        #     try: idx = index_var.positions.index(pos)
+        #     except: raise "Invalid case: The `pos` is not in `index_var.positions_dvar`"
+        #     var = index_var.postions_normalized[1][idx] if Config.variable_repr_normalized else index_var.var_dependent[idx]
+        # elif self.is_qvar:
+        #     try: idx = index_var.positions.index(pos)
+        #     except: raise "Invalid case: The `pos` is not in `index_var.positions_qvar`"
+        #     var = index_var.postions_normalized[2][idx] if Config.variable_repr_normalized else index_var.var_query[idx]
+        # else: raise "Invalide case."
         prefix = self.prefix.value
             
-        return prefix + str(var)
+        return prefix + str(int(var))
 
 
     @classmethod
-    def Independent(cls, word: str, do_hashing=False, is_input=False):
-        return Variable(VarPrefix.Independent, word, do_hashing, is_input)
+    def Independent(cls, word: str, do_hashing=False, is_input=False, idx=None):
+        return Variable(VarPrefix.Independent, word, do_hashing, is_input, idx=idx)
 
 
     @classmethod
-    def Dependent(cls, word: str, do_hashing=False, is_input=False):
-        return Variable(VarPrefix.Dependent, word, do_hashing, is_input)
+    def Dependent(cls, word: str, do_hashing=False, is_input=False, idx=None):
+        return Variable(VarPrefix.Dependent, word, do_hashing, is_input, idx=idx)
 
 
     @classmethod
-    def Query(cls, word: str, do_hashing=False, is_input=False):
-        return Variable(VarPrefix.Query, word, do_hashing, is_input)
+    def Query(cls, word: str, do_hashing=False, is_input=False, idx=None):
+        return Variable(VarPrefix.Query, word, do_hashing, is_input, idx=idx)
 
     
     def clone(self) -> Type['Variable']:
         clone = copy(self)
-        clone._index_var = deepcopy(self._index_var)
+        clone._vars_independent = clone._vars_independent.clone()
+        clone._vars_dependent = clone._vars_dependent.clone()
+        clone._vars_query = clone._vars_query.clone()
         return clone

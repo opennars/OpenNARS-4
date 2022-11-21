@@ -1,8 +1,5 @@
 # from pynars.NAL.Functions.ExtendedBooleanFunctions import Or
 from copy import copy
-import enum
-
-from matplotlib.pyplot import axis
 from pynars.Config import Enable
 from pynars.Narsese._py.Interval import Interval 
 from pynars.utils.IndexVar import IndexVar
@@ -12,7 +9,6 @@ from .Connector import Connector
 from typing import Iterable, List, Type, Union
 from ordered_set import OrderedSet
 from typing import Set
-from numpy import prod
 from pynars.utils.tools import list_contains
 import numpy as np
 
@@ -23,7 +19,7 @@ class Compound(Term): #, OrderedSet):
     def __init__(self, connector: Connector, *terms: Term, is_input=False) -> None:
         ''''''
         self._is_commutative = connector.is_commutative
-        terms = Terms(terms, self._is_commutative, is_input)
+        terms = Terms(terms, self._is_commutative)
         self.connector, self._terms = self.prepocess_terms(connector, terms, is_input) # the connector may be changed, for example, (|, {A}, {B}) is changed into {A, B}. 
 
 
@@ -46,7 +42,7 @@ class Compound(Term): #, OrderedSet):
         self._is_multiple_only = self.connector.is_multiple_only
         
         if Enable.variable:
-            self.handle_variables(compound)
+            self._handle_variables(compound)
             # self.handle_index_var(compound, is_input)
     
     @property
@@ -77,9 +73,13 @@ class Compound(Term): #, OrderedSet):
     def terms(self) -> Terms: # Union[Set[Term], List[Term]]:
         return self._terms
 
+    # @property
+    # def index_var(self):
+    #     return self._terms._index_var
+    
     @property
-    def index_var(self):
-        return self._terms._index_var
+    def variables(self):
+        return self._terms.variables
 
     def _merge_compounds(self, connector_parent: Connector, connector: Connector, compounds: List[Type['Compound']], is_input: bool):
         '''
@@ -120,7 +120,7 @@ class Compound(Term): #, OrderedSet):
             return Terms.intersection(compounds[0].terms, *(compound.terms for compound in compounds[1:]), is_input=is_input)
 
         elif connector_parent is connector:
-            return Terms((t for ts in compounds for t in ts), connector.is_commutative, is_input)
+            return Terms((t for ts in compounds for t in ts), connector.is_commutative, is_input=is_input)
         else:
             return None
 
@@ -235,7 +235,7 @@ class Compound(Term): #, OrderedSet):
         
         if self.is_commutative: 
             if s.is_compound and s.connector: s = s.terms # s should be a type of `Term`
-            else: s = Terms((s,), False, False)
+            else: s = Terms((s,), False, is_input=False)
             terms = self.terms - s
         else: 
             if s.is_compound and s.connector: 
@@ -314,9 +314,9 @@ class Compound(Term): #, OrderedSet):
         return word
 
 
-    def repr_with_var(self, index_var: IndexVar, pos: list):
+    def repr(self):
         compound: Set[Term] = self
-        word_terms = (str(component) if not component.has_var else component.repr_with_var(index_var, pos+[i]) for i, component in enumerate(compound))
+        word_terms = (str(component) if not component.has_var else component.repr() for component in compound)
 
         return self._terms_to_word(*word_terms)
 
