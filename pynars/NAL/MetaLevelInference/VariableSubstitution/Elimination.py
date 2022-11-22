@@ -1,7 +1,7 @@
 from typing import Dict, List, Tuple
 
 from bidict import bidict
-from pynars.Narsese import Term, Statement, Compound, VarPrefix
+from pynars.Narsese import Term, Statement, Compound, VarPrefix, Variable
 from pynars.utils.IndexVar import IntVar
 
 from .Substitution import Substitution
@@ -58,10 +58,10 @@ class Elimination(Substitution):
         '''
         mapping_ret = bidict()
         if len(vars) != len(consts): return True, mapping_ret
-        mapping = {key: set() for key in set(vars)}
+        mapping = {int(key): set() for key in set(vars)}
         is_conflict = False
         for var, const in zip(vars, consts):
-            var_list = mapping[var]
+            var_list = mapping[int(var)]
             var_list.add(const)
             if len(var_list) > 1: 
                 is_conflict = True
@@ -72,6 +72,77 @@ class Elimination(Substitution):
         return is_conflict, mapping_ret
 
 
+    # def apply(self, term_var: Term=None, term_con: Term=None):
+    #     ''''''
+    #     term_var = term_var if term_var is not None else self.term_var
+    #     term_con = term_con if term_con is not None else self.term_con
+    #     mapping_ivar = self.mapping_ivar
+    #     mapping_dvar = self.mapping_dvar
+    #     mapping_qvar = self.mapping_qvar
+        
+    #     # replace const with var
+    #     def replace(term: 'Term|Statement|Compound',  pos_tree: dict, current_node: dict, var_type: VarPrefix) -> Term:
+    #         '''
+    #         replace a variable term with a constant term
+            
+    #         term_r should be a constant
+    #         '''
+    #         if not term.has_var: 
+    #             return
+    #         elif var_type is VarPrefix.Independent and not term.has_ivar:
+    #             return
+    #         elif var_type is VarPrefix.Dependent and not term.has_dvar:
+    #             return
+    #         elif var_type is VarPrefix.Query and not term.has_dvar:
+    #             return
+            
+    #         if term.is_statement:
+    #             stat: Statement = term
+    #             subject = stat.subject
+    #             predicate = stat.predicate
+    #             for is_leaf, content in current_node.values():
+    #                 if not is_leaf:
+    #                     if content == 0:
+    #                         subject = replace(stat.predicate, pos_tree, )
+
+    #             predicate = replace(stat.predicate, term_r)
+    #             subject = replace(stat.subject, term_r)
+    #             return Statement(subject, term.copula, predicate, is_input=True)
+    #         elif term.is_compound:
+    #             if term_r not in term.components: # term.components is not None
+    #                 return term
+    #             cpmd: Compound = term
+    #             terms = (component for component in cpmd.terms)
+    #             return Compound(cpmd.connector, *terms, is_input=True)
+    #         elif term.is_atom:
+    #             return term
+
+        
+
+    #     # TODO: replace var with const
+    #     if not self.is_conflict_ivar:
+    #         ''''''
+            
+    #         mapping_pos = {}
+    #         for var, const in mapping_ivar.items():
+    #             pos = tuple(tuple(p) for p in find_pos_with_var(var, term_var._vars_independent.indices, term_var._vars_independent.positions))
+    #             mapping_pos[pos] = const
+            
+    #         tree = {}
+    #         for pos, const in mapping_pos.items():
+    #             p1=None
+    #             node = tree
+    #             for p2 in pos[:-1]:
+    #                 if p1 not in node:
+    #                     node[p1] = (False, {p2: {}})
+    #                 p1 = p2
+    #             tree[pos[-1]] = (True, const)
+
+    #         if len(mapping_pos) > 0:
+    #             term_result = replace(term_var, tree, tree[None], VarPrefix.Independent)
+
+    #     pass
+
     def apply(self, term_var: Term=None, term_con: Term=None):
         ''''''
         term_var = term_var if term_var is not None else self.term_var
@@ -79,71 +150,77 @@ class Elimination(Substitution):
         mapping_ivar = self.mapping_ivar
         mapping_dvar = self.mapping_dvar
         mapping_qvar = self.mapping_qvar
-        
-        # replace const with var
-        def replace(term: 'Term|Statement|Compound',  pos_tree: dict, current_node: dict, var_type: VarPrefix) -> Term:
+
+        # replace var with const
+        def replace(term: 'Term|Statement|Compound', mapping: dict, var_type: VarPrefix) -> Term:
             '''
             replace a variable term with a constant term
             
             term_r should be a constant
             '''
             if not term.has_var: 
-                return
+                return term, False
             elif var_type is VarPrefix.Independent and not term.has_ivar:
-                return
+                return term, False
             elif var_type is VarPrefix.Dependent and not term.has_dvar:
-                return
+                return term, False
             elif var_type is VarPrefix.Query and not term.has_dvar:
-                return
+                return term, False
+            
+            if term.is_atom and term.is_var:
+                if var_type is VarPrefix.Independent:
+                    idx = term._vars_independent.indices[0]
+                elif var_type is VarPrefix.Dependent:
+                    idx = term._vars_dependent.indices[0]
+                elif var_type is VarPrefix.Query:
+                    idx = term._vars_query.indices[0]
+                else: raise TypeError("Invalide case")
+                idx = int(idx)
+                if idx in mapping:
+                    const = mapping[idx]
+                    return const, True
+                else:
+                    return term, False
+
             
             if term.is_statement:
                 stat: Statement = term
-                subject = stat.subject
-                predicate = stat.predicate
-                for is_leaf, content in current_node.values():
-                    if not is_leaf:
-                        if content == 0:
-                            subject = replace(stat.predicate, pos_tree, )
-
-                predicate = replace(stat.predicate, term_r)
-                subject = replace(stat.subject, term_r)
-                return Statement(subject, term.copula, predicate, is_input=True)
+                predicate, flag1 = replace(stat.predicate, mapping, var_type)
+                subject, flag2 = replace(stat.subject, mapping, var_type)
+                flag = max(flag1, flag2)
+                if flag:
+                    stat = Statement(subject, term.copula, predicate)
+                return stat, flag
             elif term.is_compound:
-                if term_r not in term.components: # term.components is not None
-                    return term
                 cpmd: Compound = term
-                terms = (component for component in cpmd.terms)
-                return Compound(cpmd.connector, *terms, is_input=True)
+                terms, flags = zip(*(replace(component, mapping, var_type) for component in cpmd.terms))
+                flag = max(flags)
+                if flag:
+                    cpmd = Compound(cpmd.connector, *terms)
+                return cpmd, flag
             elif term.is_atom:
-                return term
+                return term, False
 
-        
+        term_result = term_var
+        if not self.is_conflict_ivar and len(mapping_ivar) > 0:
+            term_result, _ = replace(term_result, mapping_ivar, VarPrefix.Independent)
+        if not self.is_conflict_dvar and len(mapping_dvar) > 0:
+            term_result, _ = replace(term_result, mapping_dvar, VarPrefix.Dependent)
+        if not self.is_conflict_qvar and len(mapping_qvar) > 0:
+            term_result, _ = replace(term_result, mapping_qvar, VarPrefix.Query)
+        return term_result
 
-        # TODO: replace var with const
-        if not self.is_conflict_ivar:
-            ''''''
-            
-            mapping_pos = {}
-            for var, const in mapping_ivar.items():
-                pos = tuple(find_pos_with_var(var, term_var.index_var.var_independent, term_var.index_var.positions_ivar))
-                mapping_pos[pos] = const
-            
-            tree = {}
-            for pos, const in mapping_pos.items():
-                p1=None
-                node = tree
-                for p2 in pos[:-1]:
-                    if p1 not in node:
-                        node[p1] = (False, {p2: {}})
-                    p1 = p2
-                tree[pos[-1]] = (True, const)
-
-            if len(mapping_pos) > 0:
-                term_result = replace(term_var, tree, tree[None], VarPrefix.Independent)
-
-        pass
-
-
+    def __repr__(self):
+        mappings = []
+        if not self.is_conflict_ivar: mappings.append({f'${int(key)}': val for key, val in self.mapping_ivar.items()})
+        if not self.is_conflict_dvar: mappings.append({f'${int(key)}': val for key, val in self.mapping_dvar.items()})
+        if not self.is_conflict_qvar: mappings.append({f'${int(key)}': val for key, val in self.mapping_qvar.items()})
+        mappings = [str(m) for m in mappings if len(m) > 0]
+        if len(mappings) == 0:
+            mappings = 'None'
+        else:
+            mappings = ', '.join(mappings)
+        return f'<Elimination: {mappings}>'
 
 def get_elimination__var_const(term1: Term, term2: Term, pos_common1: List[IntVar], pos_common2: List[IntVar]) -> Elimination:
     '''
@@ -152,15 +229,15 @@ def get_elimination__var_const(term1: Term, term2: Term, pos_common1: List[IntVa
     term1: <<$0-->A>==><$0-->B>>>
     term2: <<C-->B>==><C-->D>>>
     pos_common1: [1]
-    pos_common1: [0]
+    pos_common2: [0]
     '''
-    ivar = find_var_with_pos(pos_common1, term1.index_var.var_independent, term1.index_var.positions_ivar)
-    dvar = find_var_with_pos(pos_common1, term1.index_var.var_dependent, term1.index_var.positions_dvar)
-    qvar = find_var_with_pos(pos_common1, term1.index_var.var_query, term1.index_var.positions_qvar)
+    ivar = find_var_with_pos(pos_common1, term1._vars_independent.indices, term1._vars_independent.positions)
+    dvar = find_var_with_pos(pos_common1, term1._vars_dependent.indices, term1._vars_dependent.positions)
+    qvar = find_var_with_pos(pos_common1, term1._vars_query.indices, term1._vars_query.positions)
 
-    iconst = [term2[pos_common2][pos[len(pos_common2):]] for pos in find_pos_with_pos(pos_common1, term1.index_var.positions_ivar)]
-    dconst = [term2[pos_common2][pos[len(pos_common2):]] for pos in find_pos_with_pos(pos_common1, term1.index_var.positions_dvar)]
-    qconst = [term2[pos_common2][pos[len(pos_common2):]] for pos in find_pos_with_pos(pos_common1, term1.index_var.positions_qvar)]
+    iconst = [term2[pos_common2][pos[len(pos_common1):]] for pos in find_pos_with_pos(pos_common1, term1._vars_independent.positions)]
+    dconst = [term2[pos_common2][pos[len(pos_common1):]] for pos in find_pos_with_pos(pos_common1, term1._vars_dependent.positions)]
+    qconst = [term2[pos_common2][pos[len(pos_common1):]] for pos in find_pos_with_pos(pos_common1, term1._vars_query.positions)]
 
     # 1. To find an option: there might be multiple options, and choose one of them randomly, e.g., [$x, $y] might be [A, B] or [B, A].
     
@@ -174,3 +251,6 @@ def get_elimination__var_const(term1: Term, term2: Term, pos_common1: List[IntVa
     #   1
     #   ''outputMustContain('(&&, <a-->b>, <c-->d>).')
     return Elimination(term1, term2, ivar, iconst, dvar, dconst, qvar, qconst)
+
+
+    

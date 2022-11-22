@@ -31,17 +31,17 @@ class Introduction(Substitution):
         term_tgt = term_tgt if term_tgt is not None else self.term_tgt
 
         if var_type is VarPrefix.Independent:
-            variables1 = term_src.index_var.var_independent
-            variables2 = term_tgt.index_var.var_independent
+            variables1 = term_src._vars_independent.indices
+            variables2 = term_tgt._vars_independent.indices
         elif var_type is VarPrefix.Dependent:
-            variables1 = term_src.index_var.var_dependent
-            variables2 = term_tgt.index_var.var_dependent
+            variables1 = term_src._vars_dependent.indices
+            variables2 = term_tgt._vars_dependent.indices
         elif var_type is VarPrefix.Query:
-            variables1 = term_src.index_var.var_query
-            variables2 = term_tgt.index_var.var_query
+            variables1 = term_src._vars_query.indices
+            variables2 = term_tgt._vars_query.indices
         else: raise TypeError("Inalid type")
         id_var = max((*variables1, *variables2, -1)) + 1
-        var = Variable(var_type, str(id_var))
+        var = Variable(var_type, str(id_var), id_var)
 
         # replace const with var
         def replace(term: 'Term|Statement|Compound', term_r: Term) -> Term:
@@ -59,19 +59,21 @@ class Introduction(Substitution):
                 if term_r not in term.components: # term.components is not None
                     return term, False
                 stat: Statement = term
-                index_var = stat.index_var
                 predicate, flag1 = replace(stat.predicate, term_r)
                 subject, flag2 = replace(stat.subject, term_r)
-                stat = Statement(subject, term.copula, predicate)
-                index_var # TODO 
-                return stat, False
+                flag = max(flag1, flag2)
+                if flag:
+                    stat = Statement(subject, term.copula, predicate)
+                return stat, flag
             elif term.is_compound:
                 if term_r not in term.components: # term.components is not None
                     return term, False
                 cpmd: Compound = term
-                terms = (component for component in cpmd.terms)
-                cpmd = Compound(cpmd.connector, *terms)
-                return cpmd, False
+                terms, flags = zip(*(replace(component, term_r) for component in cpmd.terms))
+                flag = max(flags)
+                if flag:
+                    cpmd = Compound(cpmd.connector, *terms)
+                return cpmd, flag
             elif term.is_atom:
                 return term, False
 

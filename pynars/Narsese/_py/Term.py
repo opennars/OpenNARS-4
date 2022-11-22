@@ -53,10 +53,8 @@ class Term:
         if self._vars_query is None: self._vars_query = IndexVar()
 
         # id initialization
-        if do_hashing:
-            self.do_hashing()
-        else:
-            self._hash_value = None
+        if do_hashing: self.do_hashing()
+        else: self._hash_value = None
         
 
     @property
@@ -131,7 +129,7 @@ class Term:
                 if (self.is_ivar and o.is_ivar) or (self.is_dvar and o.is_dvar) or (self.is_qvar and o.is_qvar): # the two, to be equal, should be the same type of variable 
                     return True
                 else: 
-                    return False, False
+                    return False
             elif not self.is_var and not o.is_var: # the two are neither variables:
                 return self.identical(o)
         elif (o.is_compound or o.is_statement) and self.is_var:
@@ -194,14 +192,20 @@ class Term:
     def _rebuild_vars(self):
         ''''''
         if self.has_ivar: self._vars_independent.rebuild()
+        else: self._vars_independent._is_built = True
         if self.has_dvar: self._vars_dependent.rebuild()
+        else: self._vars_dependent._is_built = True
         if self.has_qvar: self._vars_query.rebuild()
+        else: self._vars_query._is_built = True
 
     def _build_vars(self):
         ''''''
-        if self.has_ivar: self._vars_independent.build()
+        if self.has_ivar: self._vars_independent.build(); 
+        else: self._vars_independent._is_built = True
         if self.has_dvar: self._vars_dependent.build()
+        else: self._vars_dependent._is_built = True
         if self.has_qvar: self._vars_query.build()
+        else: self._vars_query._is_built = True
 
 
 

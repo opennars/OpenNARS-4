@@ -347,6 +347,23 @@ class TEST_NAL6(unittest.TestCase):
         'I guess if something has wings, then it can fly and eats worms.
         ''outputMustContain('<<$1 --> [with_wings]> ==> (&&,<$1 --> flyer>,<(*,$1,worms) --> food>)>. %1.00;0.45%')
         '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '<(&&,<$x --> flyer>,<$x --> [chirping]>, <(*, $x, worms) --> food>) ==> <$x --> bird>>.  %1.00;0.90%',
+            '<(&&,<$x --> [chirping]>,<$x --> [with_wings]>) ==> <$x --> bird>>. %1.00;0.90%',
+            'chirping.'
+        )
+        self.assertNotEqual(rules, None)
+
+        subst_var = get_substitution__var_var(task.term, belief.term, [1], [1]) # to find possible replacement.
+        subst_var.apply(task.term, belief.term)
+        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+
+        self.assertTrue(
+            output_contains(tasks_derived, '<(&&,<$1 --> flyer>,<(*,$1,worms) --> food>) ==> <$1 --> [with_wings]>>. %1.00;0.45%')
+        )
+        self.assertTrue(
+            output_contains(tasks_derived, '<<$1 --> [with_wings]> ==> (&&,<$1 --> flyer>,<(*,$1,worms) --> food>)>. %1.00;0.45%')
+        )
         pass
 
     def test_unification_5_1(self):
@@ -394,6 +411,10 @@ class TEST_NAL6(unittest.TestCase):
         'A robin is an animal.
         ''outputMustContain('<robin --> animal>. %1.00;0.81%')
         '''
+        task = Narsese.parse('<<$x --> bird> ==> <$x --> animal>>. %1.00;0.90%')
+        belief = Narsese.parse('<robin --> bird>. %1.00;0.90%')
+        elimn_var = get_elimination__var_const(task.term, belief.term, [0], []) # to find possible replacement.
+
         rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
             '<<$x --> bird> ==> <$x --> animal>>. %1.00;0.90%',
             '<robin --> bird>. %1.00;0.90%',
@@ -401,8 +422,8 @@ class TEST_NAL6(unittest.TestCase):
         )
         self.assertNotEqual(rules, None)
 
-        subst_var = get_substitution__var_var(task.term, belief.term, [0], [0]) # to find possible replacement.
-        subst_var.apply(task.term, belief.term)
+        elimn_var = get_elimination__var_const(task.term, belief.term, [0], []) # to find possible replacement.
+        elimn_var.apply(task.term, belief.term)
         tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
 
 

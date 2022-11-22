@@ -3,8 +3,11 @@ import unittest
 
 class TEST_Term(unittest.TestCase):
     def test_0(self):
-        from pynars.Narsese import Term
-        t = Term("0")
+        from pynars.Narsese import Term, parse
+        t1 = parse("A.").term
+        t2 = Term("B")
+        print(t1)
+        print(t2)
         pass
 
         

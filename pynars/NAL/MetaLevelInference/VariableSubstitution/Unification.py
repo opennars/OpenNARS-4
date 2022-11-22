@@ -20,7 +20,7 @@ from .Elimination import get_elimination__var_const
 
 
 
-def unification() -> Substitution:
+def unification(term1: Term, term2: Term) -> Substitution:
     '''
     "The procedure of finding a possible substitution is called “unification”, which has been specified in the study of reasoning systems [Russell and Norvig (2010)]. "[Ref: NAL Book, Page 133]
     '''

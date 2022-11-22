@@ -41,9 +41,8 @@ class Compound(Term): #, OrderedSet):
         self._is_double_only = self.connector.is_double_only
         self._is_multiple_only = self.connector.is_multiple_only
         
-        if Enable.variable:
-            self._handle_variables(compound)
-            # self.handle_index_var(compound, is_input)
+        self._handle_variables(compound)
+        # self.handle_index_var(compound, is_input)
     
     @property
     def copula(self):
@@ -80,6 +79,20 @@ class Compound(Term): #, OrderedSet):
     @property
     def variables(self):
         return self._terms.variables
+    
+    @property
+    def _vars_independent(self):
+        return self._terms._vars_independent
+
+    
+    @property
+    def _vars_dependent(self):
+        return self._terms._vars_dependent
+    
+
+    @property
+    def _vars_query(self):
+        return self._terms._vars_query
 
     def _merge_compounds(self, connector_parent: Connector, connector: Connector, compounds: List[Type['Compound']], is_input: bool):
         '''

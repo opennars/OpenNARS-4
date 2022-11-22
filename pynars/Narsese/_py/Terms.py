@@ -25,11 +25,14 @@ class Terms:
         if self._vars_query is None: self._vars_query = IndexVar()
 
         # convert terms's form <Term> into (<Term>, (ivars), (dvars), (qvars)), so that the terms, which have variables, with the same hash-value can be distinguished.
-        Term._init_variables(self.variables, terms_var) # self.handle_index_var(terms_var, is_input=is_input)
+        Term._init_variables(self.variables, terms) # self.handle_index_var(terms_var, is_input=is_input)
         self._build_vars()
-        ivars = tuple(tuple(find_var_with_pos([i], self._vars_independent.indices, self._vars_independent.positions)) for i in range(len(terms_var)))
-        dvars = tuple(tuple(find_var_with_pos([i], self._vars_dependent.indices, self._vars_independent.positions)) for i in range(len(terms_var)))
-        qvars = tuple(tuple(find_var_with_pos([i], self._vars_query.indices, self._vars_query.positions)) for i in range(len(terms_var)))
+        # ivars = tuple(tuple(find_var_with_pos([i], self._vars_independent.indices, self._vars_independent.positions)) for i in range(len(terms_var)))
+        # dvars = tuple(tuple(find_var_with_pos([i], self._vars_dependent.indices, self._vars_independent.positions)) for i in range(len(terms_var)))
+        # qvars = tuple(tuple(find_var_with_pos([i], self._vars_query.indices, self._vars_query.positions)) for i in range(len(terms_var)))
+        ivars = tuple(tuple(idxvar.indices) for idxvar in self._vars_independent.successors)
+        dvars = tuple(tuple(idxvar.indices) for idxvar in self._vars_dependent.successors)
+        qvars = tuple(tuple(idxvar.indices) for idxvar in self._vars_query.successors)
         terms_var = tuple(term for term in zip(terms_var, ivars, dvars, qvars))
 
         # store the terms

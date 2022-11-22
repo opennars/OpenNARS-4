@@ -16,7 +16,7 @@ class Variable(Term):
     is_var: bool = True
     has_var: bool = True
     
-    def __init__(self, prefix: VarPrefix, word: str, do_hashing=False, is_input=False, idx: int=None) -> None:
+    def __init__(self, prefix: VarPrefix, word: str, idx: int=0, do_hashing=False) -> None:
         self.prefix = prefix
         self.name = str(word)
         word = prefix.value
@@ -28,15 +28,16 @@ class Variable(Term):
         self.is_dvar = self.has_dvar = self.prefix == VarPrefix.Dependent
         self.is_qvar = self.has_qvar = self.prefix == VarPrefix.Query
 
-        if idx is not None:
-            if self.is_ivar: self._vars_independent.add(IntVar(int(idx)), [])
-            if self.is_dvar: self._vars_dependent.add(IntVar(int(idx)), [])
-            if self.is_qvar: self._vars_query.add(IntVar(int(idx)), [])
+        # if idx is not None:
+        if self.is_ivar: self._vars_independent.add(IntVar(int(idx)), [])
+        if self.is_dvar: self._vars_dependent.add(IntVar(int(idx)), [])
+        if self.is_qvar: self._vars_query.add(IntVar(int(idx)), [])
     
 
     def __repr__(self) -> str:
         # return f'<Variable: {self.repr}>'
-        return self.word + self.name
+        # return self.word + self.name
+        return f'<Variable: {self.repr()}>'
 
 
     def repr(self):
@@ -69,18 +70,18 @@ class Variable(Term):
 
 
     @classmethod
-    def Independent(cls, word: str, do_hashing=False, is_input=False, idx=None):
-        return Variable(VarPrefix.Independent, word, do_hashing, is_input, idx=idx)
+    def Independent(cls, word: str, idx=None, do_hashing=False):
+        return Variable(VarPrefix.Independent, word, idx=idx, do_hashing=do_hashing)
 
 
     @classmethod
-    def Dependent(cls, word: str, do_hashing=False, is_input=False, idx=None):
-        return Variable(VarPrefix.Dependent, word, do_hashing, is_input, idx=idx)
+    def Dependent(cls, word: str, idx=None, do_hashing=False):
+        return Variable(VarPrefix.Dependent, word, idx=idx, do_hashing=do_hashing)
 
 
     @classmethod
-    def Query(cls, word: str, do_hashing=False, is_input=False, idx=None):
-        return Variable(VarPrefix.Query, word, do_hashing, is_input, idx=idx)
+    def Query(cls, word: str, idx=None, do_hashing=False):
+        return Variable(VarPrefix.Query, word, idx=idx, do_hashing=do_hashing)
 
     
     def clone(self) -> Type['Variable']:
