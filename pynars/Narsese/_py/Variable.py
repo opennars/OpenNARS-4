@@ -70,17 +70,17 @@ class Variable(Term):
 
 
     @classmethod
-    def Independent(cls, word: str, idx=None, do_hashing=False):
+    def Independent(cls, word: str, idx=0, do_hashing=False):
         return Variable(VarPrefix.Independent, word, idx=idx, do_hashing=do_hashing)
 
 
     @classmethod
-    def Dependent(cls, word: str, idx=None, do_hashing=False):
+    def Dependent(cls, word: str, idx=0, do_hashing=False):
         return Variable(VarPrefix.Dependent, word, idx=idx, do_hashing=do_hashing)
 
 
     @classmethod
-    def Query(cls, word: str, idx=None, do_hashing=False):
+    def Query(cls, word: str, idx=0, do_hashing=False):
         return Variable(VarPrefix.Query, word, idx=idx, do_hashing=do_hashing)
 
     

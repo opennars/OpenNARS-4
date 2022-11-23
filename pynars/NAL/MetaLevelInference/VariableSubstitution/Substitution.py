@@ -69,11 +69,11 @@ class Substitution:
         qvar = [int(var) for var in term_src._vars_query.indices]
 
         # replace var with var
-        term = deepcopy(term_src)
-        term._vars_independent.indices = [var(mapping_ivar.get(var_int, None)) for var, var_int in zip(term._vars_independent.indices, ivar)]
-        term._vars_dependent.indices = [var(mapping_dvar.get(var_int, None)) for var, var_int in zip(term._vars_dependent.indices, dvar)]
-        term._vars_query.indices = [var(mapping_qvar.get(var_int, None)) for var, var_int in zip(term._vars_query.indices, qvar)]
-
+        # term = term_src.clone() # deepcopy(term_src)
+        term =  deepcopy(term_src)
+        for var, var_int in zip(term._vars_independent.indices, ivar): var(mapping_ivar.get(var_int, None))
+        for var, var_int in zip(term._vars_dependent.indices, dvar): var(mapping_dvar.get(var_int, None))
+        for var, var_int in zip(term._vars_query.indices, qvar): var(mapping_qvar.get(var_int, None))
         return term
     
     @staticmethod

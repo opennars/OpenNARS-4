@@ -21,11 +21,13 @@ class TEST_Substitution(unittest.TestCase):
         term1 = Narsese.parse("<(&&, <#x-->A>, <#x-->B>, <<$y-->C>==><$y-->D>>, <$z-->E>) ==> <$z-->F>>.").term
         term2 = Narsese.parse("<<$x-->F>==><$x-->H>>.").term
         subst_var = get_substitution__var_var(term1, term2, [1], [0]) # to find possible replacement.
-        term2 = subst_var.apply(inverse=True)
-        term3 = Statement.Implication(term1[0], term2[1])
-        # term_substitution = substitution(compound, Term("A"), Term("D"))
-        # self.assertEqual(term_substitution, term_new)
+        term3 = subst_var.apply()
+        term4 = Statement.Implication(term3[0], term2[1])
+        term5 = Narsese.parse("<(&&, <#x-->A>, <#x-->B>, <<$y-->C>==><$y-->D>>, <$z-->E>) ==> <$z-->H>>.").term
+        self.assertTrue(term4.identical(term5))
         pass
+
+    
     def test_introduction_const_to_var_0(self):
         '''
         <swan-->bird>.
@@ -123,8 +125,8 @@ class TEST_Substitution(unittest.TestCase):
         term2 = Narsese.parse("<<C-->B>==><C-->D>>.").term
         self.assertTrue(term1[1].equal(term2[0]))
         subst_var = get_elimination__var_const(term1, term2, [1], [0]) # to find possible replacement.
-        term2 = subst_var.apply(inverse=True)
-        term3 = Statement.Implication(term1[0], term2[1])
+        term3 = subst_var.apply()
+        term4 = Statement.Implication(term3[0], term2[1])
         # term_substitution = substitution(compound, Term("A"), Term("D"))
         # self.assertEqual(term_substitution, term_new)
         pass
@@ -167,10 +169,6 @@ class TEST_Substitution(unittest.TestCase):
 
     def test_check_conflict(self):
         '''
-        <<$x-->A>==><$x-->B>>.
-        <<C-->B>==><C-->D>>.
-        |-
-        <<C-->A>==><C-->D>>
         '''
         
         is_conflict, mapping = Elimination.check_conflict([0,0], [Term("C"), Term("D")])

@@ -173,7 +173,8 @@ class Compound(Term): #, OrderedSet):
                 
                 terms_merged = self._merge_compounds(connector_parent, connector, compounds, is_input=is_input)
                 if terms_merged is None: # they don't need to be merged to be a whole
-                    terms_norm.append((connector, compounds))
+                    # terms_norm.append((connector, compounds))
+                    terms_norm.extend([(connector, compound) for compound in compounds])
                     continue 
                 
                 # Now, `terms_merged` is not `None`. 
@@ -455,4 +456,5 @@ class Compound(Term): #, OrderedSet):
         # now, not self.has_var
         clone = copy(self)
         clone._terms = self._terms.clone()
+        
         return clone

@@ -1,4 +1,4 @@
-from copy import copy
+from copy import copy, deepcopy
 from typing import Iterable, List, Set, Type
 from pynars.utils.IndexVar import IndexVar
 from ordered_set import OrderedSet
@@ -94,12 +94,14 @@ class Terms:
 
     def clone(self):
         ''''''
-        clone = copy(self)
-
-        clone._vars_independent = self._vars_independent.clone()
-        clone._vars_dependent = self._vars_dependent.clone()
-        clone._vars_query = self._vars_query.clone()
-        # clone._index_var = clone._index_var.clone()   
+        clone = deepcopy(self)
+        # clone = copy(self)
+        # clone._vars_independent = IndexVar() # self._vars_independent.clone()
+        # clone._vars_dependent = IndexVar() # self._vars_dependent.clone()
+        # clone._vars_query = IndexVar() # self._vars_query.clone()
+        # for term in clone.terms: clone._vars_independent.connect(term._vars_independent, True)
+        # for term in clone.terms: clone._vars_dependent.connect(term._vars_dependent, True)
+        # for term in clone.terms: clone._vars_query.connect(term._vars_query, True) 
         return clone
 
 

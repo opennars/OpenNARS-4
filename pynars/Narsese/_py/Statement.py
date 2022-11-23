@@ -148,8 +148,12 @@ class Statement(Term):
         clone.subject = self.subject.clone()
         clone.predicate = self.predicate.clone()
 
-        clone._vars_independent = self._vars_independent.clone()
-        clone._vars_dependent = self._vars_dependent.clone()
-        clone._vars_query = self._vars_query.clone()
+        clone._vars_independent = IndexVar() # self._vars_independent.clone()
+        clone._vars_dependent = IndexVar() # self._vars_dependent.clone()
+        clone._vars_query = IndexVar() # self._vars_query.clone()
+        for idx in (clone.subject._vars_independent, clone.predicate._vars_independent): clone._vars_independent.connect(idx, True)
+        for idx in (clone.subject._vars_dependent, clone.predicate._vars_dependent): clone._vars_dependent.connect(idx, True)
+        for idx in (clone.subject._vars_query, clone.predicate._vars_query): clone._vars_query.connect(idx, True)
+        
         
         return clone

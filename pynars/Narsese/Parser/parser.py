@@ -47,7 +47,9 @@ class TreeToNarsese(Transformer):
     
     temporal_window: int
 
-    names_var: defaultdict
+    names_ivar: defaultdict
+    names_dvar: defaultdict
+    names_qvar: defaultdict
 
     @inline_args
     def task(self, *args):
@@ -419,7 +421,7 @@ class TreeToNarsese(Transformer):
     def independent_var(self, term: Token):
         var = Variable(VarPrefix.Independent, term.value)
         name = var.prefix.value+var.name
-        idx = self.names_var[name]
+        idx = self.names_ivar[name]
         var._vars_independent.add(idx, [])
         return var
     
@@ -427,7 +429,7 @@ class TreeToNarsese(Transformer):
     def dependent_var(self, term: Token):
         var = Variable(VarPrefix.Dependent, term.value)
         name = var.prefix.value+var.name
-        idx = self.names_var[name]
+        idx = self.names_dvar[name]
         var._vars_dependent.add(idx, [])
         return var
         
@@ -435,7 +437,7 @@ class TreeToNarsese(Transformer):
     def query_var(self, term: Token):
         var = Variable(VarPrefix.Query, term.value)
         name = var.prefix.value+var.name
-        idx = self.names_var[name]
+        idx = self.names_qvar[name]
         var._vars_query.add(idx, [])
         return var
 
@@ -461,7 +463,9 @@ class LarkParser:
     def __init__(self) -> None:
         self.config()
         tree = TreeToNarsese()
-        tree.names_var = defaultdict(lambda: len(tree.names_var)) # for variables
+        tree.names_ivar = defaultdict(lambda: len(tree.names_ivar)) # for variables
+        tree.names_dvar = defaultdict(lambda: len(tree.names_dvar)) # for variables
+        tree.names_qvar = defaultdict(lambda: len(tree.names_qvar)) # for variables
         self._parser = Lark_StandAlone(transformer=tree)
         self._tree = tree
 
@@ -489,7 +493,9 @@ class LarkParser:
 
 
     def parse(self, text: str) -> Task:
-        self._tree.names_var.clear()
+        self._tree.names_ivar.clear()
+        self._tree.names_dvar.clear()
+        self._tree.names_qvar.clear()
         return self._parser.parse(text)
 
 parser = LarkParser()
