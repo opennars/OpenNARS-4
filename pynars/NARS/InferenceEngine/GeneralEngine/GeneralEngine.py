@@ -16,7 +16,9 @@ from pynars import Global
 from ..Engine import Engine
 from .extract_feature import extract_feature
 from pathlib import Path
-
+from ....NAL.MetaLevelInference.VariableSubstitution.Unification import unify__substitution, unify__introduction, unify__elimination, Substitution, Introduction, Elimination
+from ...DataStructures._py.Link import Link
+from pynars.Narsese import VarPrefix
 
 class GeneralEngine(Engine):
     
@@ -100,7 +102,6 @@ class GeneralEngine(Engine):
     @classmethod
     def match(cls, task: Task, belief: Belief, term_belief: Term, task_link, term_link):
         '''To verify whether the task and the belief can interact with each other'''
-
         is_valid = False
         is_revision = False
         rules = []
@@ -348,7 +349,7 @@ class GeneralEngine(Engine):
         term_link_valid = None
         is_valid = False
         for _ in range(len(concept.term_links)):
-            #To find a belief, which is valid to interact with the task, by iterating over the term-links.
+            # To find a belief, which is valid to interact with the task, by iterating over the term-links.
             term_link: TaskLink = concept.term_links.take(remove=True)
             term_links.append(term_link)
             
@@ -356,6 +357,12 @@ class GeneralEngine(Engine):
             belief = concept_target.get_belief() # TODO: consider all beliefs.
             term_belief = concept_target.term
             # if belief is None: continue
+
+            # before matching and applying the rules, do variable-related processes (i.e. unification, and substitution/introduction/elimination)
+            subst, elimn, intro = GeneralEngine.unify(task.term, belief.term if belief is not None else None, concept.term, task_link_valid, term_link)
+            task_subst, task_elimn, task_intro = GeneralEngine.substitute(subst, elimn, intro, task)
+            task = task_subst or task_elimn or task_intro or task
+
             # Verify the validity of the interaction, and find a pair which is valid for inference.
             is_valid, is_revision, rules = GeneralEngine.match(task, belief, term_belief, task_link_valid, term_link)
             if is_revision: tasks_derived.append(local__revision(task, belief, task_link_valid.budget, term_link.budget))
@@ -394,5 +401,69 @@ class GeneralEngine(Engine):
         belief = belief if belief is not None else term_belief
         tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules]
 
+        # normalize the variable indices
+        for task in tasks_derived:
+            task.term._normalize_variables()
+
         return tasks_derived
 
+    @staticmethod
+    def unify(term1: Term, term2: Term, term_common: Term, task_link: Link, term_link: Link) -> Tuple[Substitution, Elimination, Introduction]:
+        ''''''
+        subst: Substitution
+        elimn: Elimination
+        intro: Introduction
+        subst, elimn, intro = None, None, None
+        
+        # find a possible (var-to-var) substitution
+        if term2 is not None and term_link is not None:
+            # +: term_common is a component of task.term/belief.term
+            # -: task.term/belief.term is a component of term_common
+            # four possible cases: 1. ++ 2. +- 3. -+ 4. -- 
+            if task_link.source_is_component and term_link.source_is_component: # ++
+                pos1 = list(task_link.component_index)
+                pos2 = list(term_link.component_index)
+                if term_common.is_atom:
+                    pos1, pos2 = pos1[:-1], pos2[:-1]
+                subst = unify__substitution(term1, term2, pos1, pos2)
+                # elimn = unify__elimination(term1, term2, pos1, pos2)
+            elif task_link.source_is_component and not term_link.source_is_component: # +-
+                pos1 = list(task_link.component_index) + list(term_link.component_index)
+                pos2 = []
+                subst = unify__substitution(term1, term2, pos1, pos2)
+            elif not task_link.source_is_component and term_link.source_is_component: # -+
+                pos1 = [] 
+                pos2 = list(term_link.component_index) + list(task_link.component_index)
+                subst = unify__substitution(term1, term2, pos1, pos2)
+            elif not task_link.source_is_component and not term_link.source_is_component: # --
+                pass # TODO
+        
+        # find a possible elimination
+        if term2 is not None and term_link is not None:
+            if task_link.source_is_component and term_link.source_is_component: # ++
+                pos1 = list(task_link.component_index)
+                pos2 = list(term_link.component_index)
+                pos1, pos2 = pos1[:-1], pos2[:-1]
+                elimn = unify__elimination(term1, term2, pos1, pos2)
+            
+        return subst, elimn, intro
+
+    @staticmethod
+    def substitute(subst: Substitution, elimn: Elimination, intro: Introduction, task: Task):
+        ''''''
+        task_subst, task_elimn, task_intro = None, None, None
+        if subst is not None and subst.is_valid:
+            term_task = subst.apply()
+            if task.is_judgement: sentence = Judgement(term_task, task.stamp, task.truth)
+            elif task.is_goal: sentence = Goal(term_task, task.stamp, task.truth)
+            elif task.is_question: sentence = Question(term_task, task.stamp)
+            elif task.is_quest: sentence = Quest(term_task, task.stamp)
+            task = Task(sentence, task.budget)
+        if elimn is not None and elimn.is_ivar_valid:
+            term_task = elimn.apply(type_var={VarPrefix.Independent})
+            if task.is_judgement: sentence = Judgement(term_task, task.stamp, task.truth)
+            elif task.is_goal: sentence = Goal(term_task, task.stamp, task.truth)
+            elif task.is_question: sentence = Question(term_task, task.stamp)
+            elif task.is_quest: sentence = Quest(term_task, task.stamp)
+            task_elimn = Task(sentence, task.budget)
+        return task_subst, task_elimn, task_intro

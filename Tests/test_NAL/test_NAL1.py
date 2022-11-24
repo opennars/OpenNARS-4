@@ -242,10 +242,10 @@ class TEST_NAL1(unittest.TestCase):
             '<?x --> swimmer>?', 
             'swimmer.', 
             True)
-        _, _, _, answers_quest = result2
+        _, _, answers_quest, _ = result2
         # tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
         self.assertTrue(
-            output_contains(answers_quest, '<bird --> swimmer>. %1.00;0.90%')
+            output_contains(answers_quest, '<bird --> swimmer>. %1.00;0.80%')
         )
         
         pass    
@@ -272,7 +272,7 @@ class TEST_NAL1(unittest.TestCase):
             '<?x --> swimmer>?', 
             'swimmer.', 
             True)
-        _, _, _, answers_quest = result2
+        _, _, answers_quest, _ = result2
         # tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
         self.assertTrue(
             output_contains(answers_quest, '<bird --> swimmer>. %1.00;0.90%')

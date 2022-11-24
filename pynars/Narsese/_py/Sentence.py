@@ -116,7 +116,7 @@ class Sentence:
 
     # @property
     def repr(self, is_input=True):
-        return self.term.repr(is_input)
+        return self.term.repr()
     
     @property
     def is_judgement(self) -> bool:

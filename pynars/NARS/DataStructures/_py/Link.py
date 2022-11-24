@@ -34,7 +34,7 @@ class Link(Item):
     link_id = 0
     type: LinkType = None
     component_index: List[List[int]] # TODO: refer to OpenNARS 3.0.4, TermLink.java line 75 and TaskLink.java line 85. But why use it?
-    def __init__(self, source: Type['Concept'], target: Task, budget: Budget, source_is_component: bool=None, copy_budget=True, index: list=None) -> None:
+    def __init__(self, source: 'Concept', target: Task, budget: Budget, source_is_component: bool=None, copy_budget=True, index: list=None) -> None:
         self.link_id = Link.link_id
         self.component_index = tuple(index)
 
@@ -42,7 +42,7 @@ class Link(Item):
         super().__init__(hash_value, budget=budget,copy_budget=copy_budget)
         Link.link_id += 1
         
-        self.source: Type['Concept'] = source
+        self.source: 'Concept' = source
         self.target: Task = target
 
         
@@ -63,7 +63,7 @@ class Link(Item):
         
         # Identify the link-type according to the term-types of the source-term and the target-term.
         if source_is_component: 
-            if term_target == term_source: self.type = LinkType.SELF
+            if term_target.identical(term_source): self.type = LinkType.SELF
             elif term_target.is_statement:
                 statement: Statement = term_target
                 is_product_or_image = False
@@ -80,7 +80,7 @@ class Link(Item):
                 else:
                     if term_target.is_statement and term_target.copula.is_higher_order:
                         #  in (Copula.Implication, Copula.Equivalence, Copula.PredictiveImplication, Copula.ConcurrentImplication, Copula.RetrospectiveImplication, Copula.PredictiveEquivalence, Copula.ConcurrentEquivalence):
-                        if term_source == statement.subject or term_source == statement.predicate: self.type = LinkType.COMPOUND_CONDITION
+                        if term_source.identical(statement.subject) or term_source.identical(statement.predicate): self.type = LinkType.COMPOUND_CONDITION
                         else: self.type = LinkType.COMPOUND_STATEMENT
                     elif term_target.copula in (Copula.Inheritance, Copula.Similarity): self.type = LinkType.COMPOUND_STATEMENT
                     else: self.type = None
@@ -91,7 +91,7 @@ class Link(Item):
             if term_source.is_statement:
                 if term_source.copula in (Copula.Implication, Copula.Equivalence, Copula.PredictiveImplication, Copula.ConcurrentImplication, Copula.RetrospectiveImplication, Copula.PredictiveEquivalence, Copula.ConcurrentEquivalence):
                     statement: Statement = term_source
-                    if term_target == statement.subject: self.type = LinkType.COMPONENT_STATEMENT
+                    if term_target.identical(statement.subject): self.type = LinkType.COMPONENT_STATEMENT
                     else: self.type = LinkType.COMPONENT_CONDITION
                 elif term_source.copula in (Copula.Inheritance, Copula.Similarity): self.type = LinkType.COMPONENT_STATEMENT
                 else: self.type = None
@@ -201,7 +201,7 @@ class Link(Item):
 
 
 class TermLink(Link):
-    def __init__(self, source: Type['Concept'], target: Task, budget: Budget, source_is_component: bool=None, copy_budget=True, index: list=None) -> None:
+    def __init__(self, source: 'Concept', target: Task, budget: Budget, source_is_component: bool=None, copy_budget=True, index: list=None) -> None:
         super().__init__(source, target, budget, source_is_component, copy_budget=copy_budget, index=index)
 
     def set_type(self, source_is_component=True, type: LinkType=None):
@@ -224,7 +224,7 @@ class TermLink(Link):
         return f'{self.budget} {self.source.term} --- {self.target.term}, {"+" if self.source_is_component else "-"}{self.component_index}'
 
 class TaskLink(Link):
-    def __init__(self, source: Type['Concept'], target: Type['Concept'], budget: Budget, copy_budget=True, index: list=None) -> None:
+    def __init__(self, source: 'Concept', target: 'Concept', budget: Budget, copy_budget=True, index: list=None) -> None:
         super().__init__(source, target, budget, True, copy_budget=copy_budget, index=index)
 
     def set_type(self, source_is_component=True, type: LinkType=None):

@@ -6,7 +6,7 @@ from pynars.utils.IndexVar import IntVar
 
 from .Substitution import Substitution
 from pynars.utils.tools import find_pos_with_pos, find_var_with_pos, find_pos_with_var
-
+from typing import Set
 
 class Elimination(Substitution):
     '''
@@ -143,7 +143,7 @@ class Elimination(Substitution):
 
     #     pass
 
-    def apply(self, term_var: Term=None, term_con: Term=None):
+    def apply(self, term_var: Term=None, term_con: Term=None, type_var: Set[VarPrefix]={VarPrefix.Independent, VarPrefix.Dependent, VarPrefix.Query}):
         ''''''
         term_var = term_var if term_var is not None else self.term_var
         term_con = term_con if term_con is not None else self.term_con
@@ -182,7 +182,6 @@ class Elimination(Substitution):
                 else:
                     return term, False
 
-            
             if term.is_statement:
                 stat: Statement = term
                 predicate, flag1 = replace(stat.predicate, mapping, var_type)
@@ -202,19 +201,19 @@ class Elimination(Substitution):
                 return term, False
 
         term_result = term_var
-        if not self.is_conflict_ivar and len(mapping_ivar) > 0:
+        if VarPrefix.Independent in type_var and not self.is_conflict_ivar and len(mapping_ivar) > 0:
             term_result, _ = replace(term_result, mapping_ivar, VarPrefix.Independent)
-        if not self.is_conflict_dvar and len(mapping_dvar) > 0:
+        if VarPrefix.Dependent in type_var and not self.is_conflict_dvar and len(mapping_dvar) > 0:
             term_result, _ = replace(term_result, mapping_dvar, VarPrefix.Dependent)
-        if not self.is_conflict_qvar and len(mapping_qvar) > 0:
+        if VarPrefix.Query in type_var and not self.is_conflict_qvar and len(mapping_qvar) > 0:
             term_result, _ = replace(term_result, mapping_qvar, VarPrefix.Query)
         return term_result
 
     def __repr__(self):
         mappings = []
         if not self.is_conflict_ivar: mappings.append({f'${int(key)}': val for key, val in self.mapping_ivar.items()})
-        if not self.is_conflict_dvar: mappings.append({f'${int(key)}': val for key, val in self.mapping_dvar.items()})
-        if not self.is_conflict_qvar: mappings.append({f'${int(key)}': val for key, val in self.mapping_qvar.items()})
+        if not self.is_conflict_dvar: mappings.append({f'#{int(key)}': val for key, val in self.mapping_dvar.items()})
+        if not self.is_conflict_qvar: mappings.append({f'?{int(key)}': val for key, val in self.mapping_qvar.items()})
         mappings = [str(m) for m in mappings if len(m) > 0]
         if len(mappings) == 0:
             mappings = 'None'

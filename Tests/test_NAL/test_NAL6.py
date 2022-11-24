@@ -366,15 +366,6 @@ class TEST_NAL6(unittest.TestCase):
         )
         pass
 
-    def test_unification_5_1(self):
-        '''
-        'Variable unification 
-        <(&&,<$x --> A>,<$x --> B>, <$y --> C>) ==> <$y --> D>>. 
-        <(&&,<$x --> C>, <$x --> E>) ==> <$x --> D>>.
-
-        ''outputMustContain('<(&&,<$x --> A>,<$x --> B>) ==> <$y --> D>>.  %1.00;0.45%')
-        '''
-        pass
 
 
     def test_unification_6(self):
@@ -411,10 +402,6 @@ class TEST_NAL6(unittest.TestCase):
         'A robin is an animal.
         ''outputMustContain('<robin --> animal>. %1.00;0.81%')
         '''
-        task = Narsese.parse('<<$x --> bird> ==> <$x --> animal>>. %1.00;0.90%')
-        belief = Narsese.parse('<robin --> bird>. %1.00;0.90%')
-        elimn_var = get_elimination__var_const(task.term, belief.term, [0], []) # to find possible replacement.
-
         rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
             '<<$x --> bird> ==> <$x --> animal>>. %1.00;0.90%',
             '<robin --> bird>. %1.00;0.90%',
@@ -422,8 +409,6 @@ class TEST_NAL6(unittest.TestCase):
         )
         self.assertNotEqual(rules, None)
 
-        elimn_var = get_elimination__var_const(task.term, belief.term, [0], []) # to find possible replacement.
-        elimn_var.apply(task.term, belief.term)
         tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
 
 
@@ -448,6 +433,19 @@ class TEST_NAL6(unittest.TestCase):
         'I guess that a tiger is a bird.
         ''outputMustContain('<tiger --> bird>. %1.00;0.45%')
         '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '<<$x --> bird> ==> <$x --> animal>>. %1.00;0.90%',
+            '<tiger --> animal>. %1.00;0.90%',
+            'animal.'
+        )
+        self.assertNotEqual(rules, None)
+
+        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+
+
+        self.assertTrue(
+            output_contains(tasks_derived, '<tiger --> bird>. %1.00;0.45%')
+        )
         pass
 
 
@@ -466,6 +464,19 @@ class TEST_NAL6(unittest.TestCase):
         'A robin is a animal.
         ''outputMustContain('<robin --> animal>. %1.00;0.81%')
         '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '<<$x --> animal> <=> <$x --> bird>>. %1.00;0.90%',
+            '<robin --> bird>. %1.00;0.90%',
+            'bird.'
+        )
+        self.assertNotEqual(rules, None)
+
+        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+
+
+        self.assertTrue(
+            output_contains(tasks_derived, '<robin --> animal>. %1.00;0.81%')
+        )
         pass
 
 
@@ -484,6 +495,19 @@ class TEST_NAL6(unittest.TestCase):
         'I guess swan can swim.
         ''outputMustContain('<swan --> swimmer>. %0.90;0.43%')
         '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '(&&,<#x --> bird>,<#x --> swimmer>).  %1.00;0.90%',
+            '<swan --> bird>. %0.90;0.90%',
+            'bird.'
+        )
+        self.assertNotEqual(rules, None)
+
+        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+
+
+        self.assertTrue(
+            output_contains(tasks_derived, '<swan --> swimmer>. %0.90;0.43%')
+        )
         pass
 
 
@@ -502,6 +526,19 @@ class TEST_NAL6(unittest.TestCase):
         'If Tweety can chirp, then it is a bird.
         ''outputMustContain('<<{Tweety} --> [chirping]> ==> <{Tweety} --> bird>>. %1.00;0.81%')
         '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '<(&&,<$x --> [chirping]>,<$x --> [with_wings]>) ==> <$x --> bird>>. %1.00;0.90%',
+            '<{Tweety} --> [with_wings]>.  %1.00;0.90%',
+            '[with_wings].'
+        )
+        self.assertNotEqual(rules, None)
+
+        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+
+
+        self.assertTrue(
+            output_contains(tasks_derived, '<<{Tweety} --> [chirping]> ==> <{Tweety} --> bird>>. %1.00;0.81%')
+        )
         pass
 
 
@@ -520,6 +557,19 @@ class TEST_NAL6(unittest.TestCase):
         'If Tweety can chirp and eats worms, then it is a bird.
         ''outputMustContain('<(&&,<(*,{Tweety},worms) --> food>,<{Tweety} --> [chirping]>) ==> <{Tweety} --> bird>>. %1.00;0.81%')
         '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '<(&&,<$x --> flyer>,<$x --> [chirping]>, <(*, $x, worms) --> food>) ==> <$x --> bird>>.%1.00;0.90%',
+            '<{Tweety} --> flyer>.  %1.00;0.90%',
+            'flyer.'
+        )
+        self.assertNotEqual(rules, None)
+
+        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+
+
+        self.assertTrue(
+            output_contains(tasks_derived, '<(&&,<(*,{Tweety},worms) --> food>,<{Tweety} --> [chirping]>) ==> <{Tweety} --> bird>>. %1.00;0.81%')
+        )
         pass
 
 
@@ -538,6 +588,19 @@ class TEST_NAL6(unittest.TestCase):
         'Lock-1 can be opened by every key.
         ''outputMustContain('<<$1 --> key> ==> <{lock1} --> (/,open,$1,_)>>. %1.00;0.81%')
         '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '<(&&,<$x --> key>,<$y --> lock>) ==> <$y --> (/,open,$x,_)>>. %1.00;0.90%',
+            '<{lock1} --> lock>. %1.00;0.90%',
+            'lock.'
+        )
+        self.assertNotEqual(rules, None)
+
+        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+
+
+        self.assertTrue(
+            output_contains(tasks_derived, '<<$1 --> key> ==> <{lock1} --> (/,open,$1,_)>>. %1.00;0.81%')
+        )
         pass
 
 
@@ -587,6 +650,19 @@ class TEST_NAL6(unittest.TestCase):
         'I guess Lock-1 can be opened by every key.
         ''outputMustContain('<<$1 --> key> ==> <{lock1} --> (/,open,$1,_)>>. %1.00;0.43%')
         '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '(&&,<#x --> lock>,<<$y --> key> ==> <#x --> (/,open,$y,_)>>). %1.00;0.90%',
+            '<{lock1} --> lock>. %1.00;0.90%',
+            'lock.'
+        )
+        self.assertNotEqual(rules, None)
+        
+        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+
+        self.assertTrue(
+            output_contains(tasks_derived, '<<$1 --> key> ==> <{lock1} --> (/,open,$1,_)>>. %1.00;0.43%')
+        )
+
         pass
 
 
@@ -934,12 +1010,12 @@ class TEST_NAL6(unittest.TestCase):
         rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
             '<<#x-->A> ==> (&&, <#y-->B>, <#x-->C>)>. %1.00;0.90%',
             '<(&&, <#x-->B>, <#y-->C>) ==> <#x --> D>>. %1.00;0.90% ',
-            '(&&, <#y-->B>, <#x-->C>).'
+            '(&&, <#y-->B>, <#x-->C>).', index_task=(1,), index_belief=(0,)
         )
         self.assertNotEqual(rules, None)
 
-        subst_var = get_substitution__var_var(task.term, belief.term, [1], [0]) # to find possible replacement.
-        subst_var.apply(task.term, belief.term)
+        # subst_var = get_substitution__var_var(task.term, belief.term, [1], [0]) # to find possible replacement.
+        # subst_var.apply(task.term, belief.term)
         tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
 
         self.assertTrue(
@@ -952,12 +1028,50 @@ class TEST_NAL6(unittest.TestCase):
         self.assertTrue(
             not output_contains(tasks_derived, '<<$1 --> D> ==> <$1 --> A>>. %1.00;0.45%')
         )
-        print("")
-        out_print(PrintType.IN, task.sentence.repr, *task.budget)
-        out_print(PrintType.IN, belief.sentence.repr, *belief.budget)
-        for task in tasks_derived:
-            task: Task
-            out_print(PrintType.OUT, task.sentence.repr, *task.budget)
+
+    def test_0(self):
+        '''
+        <(&&, <#x-->A>, <#x-->B>, <<$y-->C>==><$y-->D>>, <$z-->E>) ==> (&&, <$z-->F>, <#p-->G>, <#p-->H>)>.
+        <<(&&, <$x-->F>, <#p-->G>, <#p-->H>)==><$x-->H>>.
+        |-
+        <(&&, <#x-->A>, <#x-->B>, <<$y-->C>==><$y-->D>>, <$z-->E>) ==> <$x-->H>>.
+        '''
+
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            "<(&&, <#x-->A>, <#x-->B>, <<$y-->C>==><$y-->D>>, <$z-->E>) ==> (&&, <$z-->F>, <#p-->G>, <#p-->H>)>. %1.00;0.90%", 
+            "<(&&, <$x-->F>, <#p-->G>, <#p-->H>)==><$x-->H>>. %1.00;0.90%", 
+            '(&&, <$z-->F>, <#p-->G>, <#p-->H>).', index_task=(1,), index_belief=(0,))
+        self.assertIsNotNone(rules)
+        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+        self.assertTrue(
+            output_contains(tasks_derived, "<(&&, <#x-->A>, <#x-->B>, <<$y-->C>==><$y-->D>>, <$z-->E>) ==> <$z-->H>>. %1.00;0.81%")
+        )
+        pass
+
+
+    def test_1(self):
+        '''
+        (&&, <#x-->A>, <#x-->B>, <<$y-->C>==><$y-->D>>).
+        <$x-->D>.
+        |-
+        <(&&, <#x-->A>, <#x-->B>, <<$y-->C>==><$y-->D>>, <$z-->E>) ==> <$x-->H>>.
+        '''
+        from pynars.Narsese import Budget
+        task = Narsese.parse("(&&, <#x-->A>, <#x-->B>, <<$y-->C>==><$y-->D>>).")
+        belief = Narsese.parse("<$x-->D>.")
+        term_common = Narsese.parse("<<$y-->C>==><$y-->D>>.").term
+        nars.memory.accept(task)
+        nars.memory.accept(belief)
+        concept = nars.memory.take_by_key(term_common)
+        task_link = concept.task_links.take_by_key(TaskLink(concept, task, None, index=(2, )))
+        term_link = concept.term_links.take_by_key(TermLink(concept, belief, None, index=(1, )))
+        belief.term[0]._vars_independent.indices[0](1)
+        
+        subst, _, _ = GeneralEngine.unify(task.term, belief.term, term_common, task_link, term_link)
+        self.assertIsNotNone(subst)
+        term = subst.apply()
+        self.assertEqual(term._vars_independent.indices[0], 1)
+        self.assertEqual(term._vars_independent.indices[1], 1)
         pass
 
 

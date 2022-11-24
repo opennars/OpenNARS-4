@@ -11,7 +11,7 @@ from pynars.Narsese import Terms, VarPrefix
 
 class TEST_Substitution(unittest.TestCase):
 
-    def test_substition_var_to_var(self):
+    def test_substition_var_to_var_0(self):
         '''
         <(&&, <#x-->A>, <#x-->B>, <<$y-->C>==><$y-->D>>, <$z-->E>) ==> <$z-->F>>.
         <<$x-->F>==><$x-->H>>.
@@ -26,8 +26,25 @@ class TEST_Substitution(unittest.TestCase):
         term5 = Narsese.parse("<(&&, <#x-->A>, <#x-->B>, <<$y-->C>==><$y-->D>>, <$z-->E>) ==> <$z-->H>>.").term
         self.assertTrue(term4.identical(term5))
         pass
-
     
+    def test_substition_var_to_var_1(self):
+        '''
+        <(&&, <#x-->A>, <#x-->B>, <<$y-->C>==><$y-->D>>, <$z-->E>) ==> (&&, <$z-->F>, <#p-->G>, <#p-->H>)>.
+        <<(&&, <$x-->F>, <#p-->G>, <#p-->H>)==><$x-->H>>.
+        |-
+        <(&&, <#x-->A>, <#x-->B>, <<$y-->C>==><$y-->D>>, <$z-->E>) ==> <$x-->H>>.
+        '''
+        term1 = Narsese.parse("<(&&, <#x-->A>, <#x-->B>, <<$y-->C>==><$y-->D>>, <$z-->E>) ==> (&&, <$z-->F>, <#p-->G>, <#p-->H>)>.").term
+        term2 = Narsese.parse("<(&&, <$x-->F>, <#p-->G>, <#p-->H>)==><$x-->H>>.").term
+        subst_var = get_substitution__var_var(term1, term2, [1], [0]) # to find possible replacement.
+        term3 = subst_var.apply()
+        term4 = Statement.Implication(term3[0], term2[1])
+        term5 = Narsese.parse("<(&&, <#x-->A>, <#x-->B>, <<$y-->C>==><$y-->D>>, <$z-->E>) ==> <$z-->H>>.").term
+        self.assertTrue(term4.identical(term5))
+        pass
+
+
+
     def test_introduction_const_to_var_0(self):
         '''
         <swan-->bird>.

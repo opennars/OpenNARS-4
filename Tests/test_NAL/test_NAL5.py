@@ -213,7 +213,33 @@ class TEST_NAL5(unittest.TestCase):
         rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
             '<<robin --> bird> ==> <robin --> animal>>. %0.70;0.90%', 
             '<robin --> animal>. %1.00;0.90%', 
-            '<robin --> animal>.', index_task=(1,), index_belief=())
+            '<robin --> animal>.', True, index_task=(), index_belief=(1, ))
+        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+        self.assertTrue(
+            output_contains(tasks_derived, '<robin --> bird>. %1.00;0.36%')
+        )
+        pass
+
+
+    def test_conditional_abduction_0(self):
+        '''
+        'Detachment
+
+        'Usually if robin is a type of bird then robin is a type of animal. 
+        <<robin --> bird> ==> <robin --> animal>>. %0.70;0.90% 
+
+        'Robin is a type of animal. 
+        <robin --> animal>. %1.00;0.90%
+
+        1
+
+        'I guess robin is a type of bird. 
+        ''outputMustContain('<robin --> bird>. %1.00;0.36%')
+        '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '<<robin --> bird> ==> <robin --> animal>>. %0.70;0.90%', 
+            '<robin --> animal>. %1.00;0.90%', 
+            'animal.', index_task=(1,1), index_belief=(1, ))
         tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
         self.assertTrue(
             output_contains(tasks_derived, '<robin --> bird>. %1.00;0.36%')

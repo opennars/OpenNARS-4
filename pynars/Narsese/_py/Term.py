@@ -141,16 +141,18 @@ class Term:
         return self == term
 
     def do_hashing(self):        
-        self._hash_value = hash(self.word_sorted+str(tuple(vars.postions_normalized for vars in self.variables)))
+        self._hash_value = hash(self.word_sorted+str(tuple(vars.indices_normalized for vars in self.variables)))
         return self._hash_value
 
     def __hash__(self) -> int:
         return self._hash_value if self._hash_value is not None else self.do_hashing()
     
     def __eq__(self, o: Type['Term']) -> bool:
-        return self.identical(o)
+        return self.identical(o) and self._vars_independent.indices == o._vars_independent.indices and self._vars_dependent.indices == o._vars_dependent.indices and self._vars_query.indices == o._vars_query.indices
 
     def __contains__(self, term: Type['Term']) -> bool:
+        # for sub_term in self.sub_terms:
+        #     if term.identical()
         return term in self.sub_terms
 
     def __str__(self) -> str:
@@ -212,6 +214,19 @@ class Term:
     def clone(self):
         # clone = copy(self)
         return self
+
+    def _normalize_variables(self):
+        ''''''
+        if self.has_var:
+            if self.has_ivar:
+                for idx, idx_norm in zip(self._vars_independent.indices, self._vars_independent.indices_normalized):
+                    idx(int(idx_norm))
+            if self.has_dvar:
+                for idx, idx_norm in zip(self._vars_dependent.indices, self._vars_dependent.indices_normalized):
+                    idx(int(idx_norm))
+            if self.has_qvar:
+                for idx, idx_norm in zip(self._vars_query.indices, self._vars_query.indices_normalized):
+                    idx(int(idx_norm))
 
 
 place_holder = Term('_', True)

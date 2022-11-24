@@ -91,6 +91,18 @@ class Substitution:
             mapping = bidict()
         return mapping
 
+    def __repr__(self):
+        mappings = []
+        if self.is_ivar_valid: mappings.append({f'${int(key)}': val for key, val in self.mapping_ivar.items()})
+        if self.is_dvar_valid: mappings.append({f'#{int(key)}': val for key, val in self.mapping_dvar.items()})
+        if self.is_qvar_valid: mappings.append({f'?{int(key)}': val for key, val in self.mapping_qvar.items()})
+        mappings = [str(m) for m in mappings if len(m) > 0]
+        if len(mappings) == 0:
+            mappings = 'None'
+        else:
+            mappings = ', '.join(mappings)
+        return f'<Substitution: {mappings}>'
+
 
 def get_substitution__var_var(term1: Term, term2: Term, pos_common1: List[IntVar], pos_common2: List[IntVar]) -> Substitution:
     '''

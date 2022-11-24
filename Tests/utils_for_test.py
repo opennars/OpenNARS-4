@@ -11,6 +11,7 @@ from pynars.Narsese._py.Statement import Statement
 from pynars.Narsese._py.Task import Belief
 from pynars.Narsese._py.Term import Term
 from pynars.NAL.MentalOperation import execute
+from pynars.Narsese import Sentence, Judgement, Quest, Question, Goal
 
 nars = Reasoner(100, 100)
 engine: GeneralEngine = nars.inference
@@ -29,6 +30,7 @@ def rule_map_two_premises(premise1: str, premise2: str, term_common: str, invers
     term_common: Term = Narsese.parse(term_common).term
     concept = nars.memory.take_by_key(term_common)
 
+
     if index_task is None:
         if task.term == concept.term: index_task = ()
         else: 
@@ -44,10 +46,13 @@ def rule_map_two_premises(premise1: str, premise2: str, term_common: str, invers
             else: indices_belief = Link.get_index(concept.term, belief.term)
             if indices_belief is not None: index_belief = indices_belief[0]
 
-
     task_link = concept.task_links.take_by_key(TaskLink(concept, task, None, index=index_task))
     term_link = concept.term_links.take_by_key(TermLink(concept, belief, None, index=index_belief))
     
+    subst, elimn, intro = GeneralEngine.unify(task.term, belief.term, term_common, task_link, term_link)
+    task_subst, task_elimn, task_intro = GeneralEngine.substitute(subst, elimn, intro, task)
+    task = task_subst or task_elimn or task_intro or task
+
     belief: Belief
     _, _, rules = engine.match(task, (belief if not is_belief_term else None), belief.term, task_link, term_link)
     return rules, task, belief, concept, task_link, term_link, result1, result2
@@ -86,7 +91,7 @@ def execute_one_premise(premise: Task):
 def output_contains(outputs: List[Task], target: str):
     target: Task = Narsese.parse(target)
     for output in outputs:
-        flag_contain = output.term == target.term
+        flag_contain = output.term.identical(target.term)
         if output.truth is None:
             flag_contain &= target.truth is None
         else:

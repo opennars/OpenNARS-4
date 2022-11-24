@@ -101,8 +101,7 @@ class Reasoner:
             tasks_inference_derived = self.inference.step(concept)
             tasks_derived.extend(tasks_inference_derived)
             
-            # TODO: relevant process
-            is_concept_valid = True
+            is_concept_valid = True # TODO
             if is_concept_valid:
                 self.memory.put_back(concept)
         

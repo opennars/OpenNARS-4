@@ -13,7 +13,7 @@ class IntVar:
         self.parent: IntVar = None
         self.son: IntVar = None
     
-    def __eq__(self, o: Type['IntVar']) -> bool:
+    def __eq__(self, o: 'IntVar') -> bool:
         if isinstance(o, IntVar): return self.num == o.num  
         else: return self.num == o
     
@@ -139,13 +139,13 @@ class IndexVar:
         return self._positions_normalized
 
     @property
-    def postions_normalized(self):
+    def indices_normalized(self):
         return self.normalize() if self._positions_normalized is None else self._positions_normalized
 
 
     def do_hashing(self):
         # if self._positions_normalized is None: self._normalize()
-        self._hash_value = hash(self.postions_normalized)
+        self._hash_value = hash(self.indices_normalized)
         return self._hash_value
 
 
@@ -158,7 +158,7 @@ class IndexVar:
 
     
     def __repr__(self) -> str:
-        return f'<IndexVar: {repr(self.indices)}, {self.positions}, {self.postions_normalized}>'
+        return f'<IndexVar: {repr(self.indices)}, {self.positions}, {self.indices_normalized}>'
 
     def clone(self):
         return deepcopy(self)
