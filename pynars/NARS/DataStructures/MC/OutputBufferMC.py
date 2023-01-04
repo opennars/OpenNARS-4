@@ -109,10 +109,20 @@ class OutputBufferMC:
             self.shown_content = False
         self.T.configure(state="disabled")  # disable user input
 
-    """
-    This function mainly has two functions, 1) handling the operation goals, 2) showing these goals and questions.
-    """
     def step(self, task: Task):
+        """
+        This function is used to distribute "operations" from the internal buffer to the event buffer.
+        One operation goal is firstly generated in the inference engine. After that, it will be forwarded to the
+        internal buffer, and if this task is further forwarded to the global buffer, this task will be viewed as
+        "executed". And it is also really executed, which might be reflected in the information gathered by the
+        corresponding event buffer. And it is possible for the global buffer to generate "procedural knowledge".
+
+        Since such operation is executed by the event buffer, it also needs to be "percepted" by the event buffer.
+        And so in event buffers, it is also possible to generate such "procedural knowledge".
+
+        In short, this function will execute the operation goal selected from the internal buffer and let the
+        corresponding event buffer know.
+        """
         # operation goal
         if task and task.is_goal:
             self.decompose(task.term, 0)

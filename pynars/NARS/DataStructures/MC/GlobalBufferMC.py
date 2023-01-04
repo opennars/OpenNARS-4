@@ -1,6 +1,9 @@
+import numpy as np
+
 from pynars.NARS.DataStructures import Memory
 from pynars.NARS.DataStructures.MC.InputBufferMC import InputBufferMC
 from pynars.NAL.Functions import Truth_induction, Stamp_merge, Budget_merge
+from pynars.NARS.DataStructures.MC.SlotMC import SlotMC
 from pynars.Narsese import Judgement, Task, Copula, Statement, Compound, Interval
 
 
@@ -87,3 +90,35 @@ class GlobalBufferMC(InputBufferMC):
                 prediction = Task(sentence, budget)
                 self.update_prediction(prediction)
         return self.slots[self.present].candidate
+
+    def step(self, new_contents, origin = ""):
+        """
+        Internal buffer and global buffer can have multiple inputs at the same time. And so they have contemporary and
+        historical compound generations successively. But the input of the historical compound generation will be the
+        highest concurrent input.
+        """
+        # remove the oldest slot and create a new one
+        self.slots = self.slots[1:]
+        self.slots.append(SlotMC(self.num_event, self.num_anticipation))
+
+        self.contemporary_compound_generation(new_contents, origin)  # 1st step
+        # find the highest concurrent compound first
+        if len(self.slots[self.present].events) != 0:
+            # when this happens, the same process in memory_based_evaluations() will be skipped
+            self.slots[self.present].events = self.slots[self.present].events[
+                np.argsort(self.slots[self.present].events[:, 2])]
+            self.slots[self.present].highest_compound = self.slots[self.present].events[-1][1]
+            if self.slots[self.present].highest_compound is not None:
+                self.historical_compound_generation(self.slots[self.present].highest_compound, origin)  # 1st step
+        self.local_evaluation()  # 2nd step
+        self.memory_based_evaluations()  # 3rd step
+        task_forward = self.prediction_generation()  # 4th step
+
+        # GUI
+        # ==============================================================================================================
+        self.UI_roll()
+        self.UI_content_update()
+        self.UI_show()
+        # ==============================================================================================================
+
+        return task_forward

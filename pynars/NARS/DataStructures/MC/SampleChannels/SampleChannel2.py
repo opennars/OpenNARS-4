@@ -85,4 +85,5 @@ class SampleChannel2(ChannelMC):
         # ret.append(parser.parse("<X3 --> X4>."))
         # ret.append(parser.parse("<X5 --> X6>."))
         # ret.append(parser.parse("<X7 --> X8>."))
-        return ret
+
+        return ret[0]

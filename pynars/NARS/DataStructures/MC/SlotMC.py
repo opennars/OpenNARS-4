@@ -9,6 +9,12 @@ def p_value(t: Task):
 
 
 class SlotMC:
+    """
+    Each slot shall contain 3 parts:
+    1) events, including input events and generated compounds;
+    2) anticipations, events (including compounds) expected;
+    3) to-do operations, these operations will be executed AT THE END of each cycle.
+    """
 
     def __init__(self, num_event, num_anticipation):
         self.num_event = num_event

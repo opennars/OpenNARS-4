@@ -16,12 +16,17 @@ from pynars.Narsese import Compound, Task, Judgement, Interval, Statement, Copul
 from pynars.NAL.Functions import Stamp_merge, Budget_merge, Truth_induction, Truth_deduction
 
 
-# the priority value of predictions
+# the priority value of predictions (predictive implications)
 def p_value(t: Task):
     return t.budget.summary * t.truth.e / t.term.complexity ** 2
 
 
 def UI_better_content(task: Task):
+    """
+    A function to help generate UI output.
+    Make it not just plain texts.
+    Since each buffer (event buffer, internal buffer, global buffer) will have an independent UI page.
+    """
     budget = "$" + str(task.budget.priority)[:4] + ";" + str(task.budget.durability)[:4] + ";" + str(
         task.budget.quality)[:4] + "$ | "
     word = "".join(task.sentence.word.split(" ")) + "\n"
@@ -199,11 +204,10 @@ class InputBufferMC(object):
         if len(self.prediction_table) > self.num_prediction:
             self.prediction_table = self.prediction_table[:-1]
 
-    """
-    Compound utility function.
-    """
-
     def combination(self, lst, start, num, tmp, cpds):
+        """
+        Compound utility function.
+        """
         if num == 0:
             cpds.append(deepcopy(tmp))
             return
@@ -214,21 +218,28 @@ class InputBufferMC(object):
             self.combination(lst, start + 1, num - 1, tmp, cpds)
             self.combination(lst[:-1], start + 1, num, tmp, cpds)
 
-    def compound_generation(self, new_contents, origin = ""):
+    def contemporary_compound_generation(self, new_contents, origin = ""):
+        """
+        Each buffer will have a compound generation process, and the process in the internal buffer and global buffer
+        are the same. But it is different in event buffers.
+        Since in event buffers, there are no contemporary compound generations, only historical compound generations.
+
+        It happens among all "concurrent inputs". If there are no or only one input content, there are no compounds.
+        """
         if new_contents is None:
             return
         for new_content in new_contents:
             self.slots[self.present].update_events(new_content)
         # check atomic anticipations
-        A = time.time()
+        # A = time.time()
         self.slots[self.present].check_anticipation(self)
-        B = time.time()
+        # B = time.time()
 
         # concurrent compounds generation
         compounds = []
         for i in range(len(self.slots[self.present].events)):
             self.combination(self.slots[self.present].events[:, 1], 0, i + 1, [], compounds)
-        C = time.time()
+        # C = time.time()
         for each_compound in compounds:
             if len(each_compound) > 1:
                 # term generation
@@ -271,12 +282,12 @@ class InputBufferMC(object):
 
             else:
                 self.slots[self.present].update_events(each_compound[0])
-        D = time.time()
+        # D = time.time()
         # check concurrent compound anticipations
         self.slots[self.present].check_anticipation(self)
 
         # historical compounds generation
-        E = time.time()
+        # E = time.time()
         for i in range(self.present):
 
             previous_event_concurrent = self.slots[i].highest_compound
@@ -316,15 +327,90 @@ class InputBufferMC(object):
                     self.slots[self.present].update_events_historical(task)
 
         # check historical compound anticipations
-        F = time.time()
-        if origin == "X":
-            print(origin + "1: {:.2f} second".format(B - A))
-            print(origin + "2: {:.2f} second".format(C - B))
-            print(origin + "3: {:.2f} second".format(D - C))
-            print(origin + "4: {:.2f} second".format(E - D))
-            print(origin + "5: {:.2f} second".format(F - E))
-            print("==")
+        # F = time.time()
+        # if origin == "X":
+        #     print(origin + "1: {:.2f} second".format(B - A))
+        #     print(origin + "2: {:.2f} second".format(C - B))
+        #     print(origin + "3: {:.2f} second".format(D - C))
+        #     print(origin + "4: {:.2f} second".format(E - D))
+        #     print(origin + "5: {:.2f} second".format(F - E))
+        #     print("==")
 
+        self.slots[self.present].check_anticipation(self)
+
+    def historical_compound_generation(self, new_content, origin = ""):
+        """
+        Historical compound generation process. Previously, this is achieved by a DP-like process, but currently it is
+        achieved by exhaustion.
+
+        It happens among all the current highest concurrent compound and all "previous candidates".
+        """
+        if new_content is None:  # no input events at all
+            return
+        tmp_list = [self.slots[i].candidate for i in range(self.present)] + [new_content]  # may include "None"
+        for i in range(1, 2 ** (self.present + 1)):  # enumeration
+            i_binary_str = list(("{:0" + str(self.present + 1) + "b}").format(i))
+            i_binary_boolean = [False if each == "0" else True for each in i_binary_str]
+            cpd = []
+            for j, each in enumerate(i_binary_boolean):
+                if not each:
+                    cpd.append(1)
+                elif tmp_list[j] is not None:
+                    cpd.append(tmp_list[j])
+                else:
+                    cpd.append(1)
+            # for example
+            # tmp_list: [None, None, A, None, None, B, C]
+            # i_binary_boolean: [False, False, True, True, True, True, False]
+            # cpd: [1, 1, A, 1, 1, B, 1], remove the 1's at the beginning and ending
+            while True:
+                if len(cpd) != 0 and cpd[0] == 1:
+                    cpd = cpd[1:]
+                else:
+                    break
+            # cpd: [A, 1, 1, B, 1], or []
+            if len(cpd) != 0:
+                while True:
+                    if cpd[-1] == 1:
+                        cpd = cpd[:-1]
+                    else:
+                        break
+            # cpd: [A, 1, 1, B], cpd is a list of tasks, merge adjacent intervals next
+            cpd_term = []
+            if len(cpd) != 0:
+                for j, each in enumerate(cpd):
+                    if each != 1:
+                        cpd_term.append(each.term)  # each isType Task
+                    else:
+                        interval = 1
+                        k = j + 1
+                        while True:
+                            if cpd[k] == 1:
+                                interval += 1
+                                k += 1
+                            else:
+                                break
+                        cpd_term.append(Interval(interval))
+            # cpd_term: [A.term, Interval(2), B.term] or [] TODO: ugly, but work :\
+
+            if len(cpd_term) != 0:
+                term = Compound.SequentialEvents(*cpd_term)
+                truth = cpd[0].truth
+                stamp = cpd[0].stamp
+                budget = cpd[0].budget
+                for each in cpd[1:]:
+                    if each != 1:
+                        # truth, using truth-induction function (TODO, may subject to change)
+                        truth = Truth_induction(truth, each.truth)
+                        # stamp, using stamp-merge function (TODO, may subject to change)
+                        stamp = Stamp_merge(stamp, each.stamp)
+                        # budget, using budget-merge function (TODO, may subject to change)
+                        budget = Budget_merge(budget, each.budget)
+                # sentence composition
+                sentence = Judgement(term, stamp, truth)
+                # task generation
+                task = Task(sentence, budget)
+                self.slots[self.present].update_events_historical(task)
         self.slots[self.present].check_anticipation(self)
 
     def local_evaluation(self):
@@ -412,7 +498,7 @@ class InputBufferMC(object):
             self.slots[self.present].update_events_historical(each_event_historical)
 
         # find the highest concurrent/historical compound
-        if len(self.slots[self.present].events) != 0:
+        if self.slots[self.present].highest_compound is None and len(self.slots[self.present].events) != 0:
             self.slots[self.present].events = self.slots[self.present].events[
                 np.argsort(self.slots[self.present].events[:, 2])]
             self.slots[self.present].highest_compound = self.slots[self.present].events[-1][1]
@@ -456,39 +542,6 @@ class InputBufferMC(object):
                     prediction = Task(sentence, budget)
                     self.update_prediction(prediction)
         return self.slots[self.present].candidate
-
-    def step(self, new_contents, origin = ""):
-        # remove the oldest slot and create a new one
-        self.slots = self.slots[1:]
-        self.slots.append(SlotMC(self.num_event, self.num_anticipation))
-
-        A = time.time()
-        self.compound_generation(new_contents, origin)  # 1st step
-        B = time.time()
-        self.local_evaluation()  # 2nd step
-        C = time.time()
-        self.memory_based_evaluations()  # 3rd step
-        D = time.time()
-        task_forward = self.prediction_generation()  # 4th step
-        E = time.time()
-
-        # GUI
-        # ==============================================================================================================
-        self.UI_roll()
-        self.UI_content_update()
-        self.UI_show()
-        F = time.time()
-        # ==============================================================================================================
-
-        if origin == "X":
-            print(origin + "1: {:.2f} second".format(B - A))
-            print(origin + "2: {:.2f} second".format(C - B))
-            print(origin + "3: {:.2f} second".format(D - C))
-            print(origin + "4: {:.2f} second".format(E - D))
-            print(origin + "5: {:.2f} second".format(F - E))
-            print("==")
-
-        return task_forward
 
     def reset(self):
         self.slots = [SlotMC(self.num_event, self.num_anticipation) for _ in range(self.num_slot)]
