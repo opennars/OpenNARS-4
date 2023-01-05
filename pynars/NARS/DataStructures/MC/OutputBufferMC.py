@@ -33,14 +33,15 @@ class OutputBufferMC:
         self.shown_content = False
         # ==============================================================================================================
 
-    def register_channel(self, channel):  # register operations
+    def register_channel(self, channel):  # register channels' operations
         tmp = set()
         for each_operation in channel.operations:
             tmp.add(each_operation)
             self.operation_of_channel.update({each_operation: channel})
         self.channel_of_operation.update({channel: tmp})
 
-    def decompose(self, term: Term, agenda_pointer):  # decompose complicated compound operations, including intervals
+    def decompose(self, term: Term, agenda_pointer):
+        # decompose complicated compound operations, including intervals
         ap = agenda_pointer
         if isinstance(term, Compound):
             for each_component in term.terms:
@@ -50,7 +51,7 @@ class OutputBufferMC:
                     self.decompose(each_component, ap)
                 else:
                     for each_operation in self.operation_of_channel:
-                        if each_component.equal(each_operation) and ap < self.agenda_length:  # only append operations
+                        if each_component.equal(each_operation) and ap < self.agenda_length:  # only store operations
                             self.agenda[ap].append(each_component)
                             break
         else:
@@ -59,7 +60,9 @@ class OutputBufferMC:
     def distribute_execute(self):  # distribute the decomposed operations into corresponding channels
         for each_operation in self.agenda[0]:
             corresponding_channel = self.operation_of_channel[Term("^" + each_operation.word)]
-            corresponding_channel.execute(Term("^" + each_operation.word))
+            corresponding_channel.execute(Term("^" + each_operation.word))  # operation execution
+            corresponding_channel.event_buffer.slots[corresponding_channel.event_buffer.present].update_operations(
+                Term("^" + each_operation.word))  # operation execution record added
         self.agenda = {i: self.agenda[i + 1] for i in range(self.agenda_length - 1)}
         self.agenda.update({self.agenda_length - 1: []})
 

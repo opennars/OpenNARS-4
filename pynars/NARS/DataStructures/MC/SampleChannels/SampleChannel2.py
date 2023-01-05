@@ -12,9 +12,10 @@ def task_generation_util(v, ID):
 
 class SampleChannel2(ChannelMC):
 
-    def __init__(self, num_slot, num_event, num_anticipation, num_prediction, memory, env, root_UI, UI_name):
-        super(SampleChannel2, self).__init__(num_slot, num_event, num_anticipation, num_prediction, memory, root_UI,
-                                             UI_name)
+    def __init__(self, num_slot, num_event, num_anticipation, num_operation, num_prediction,
+                 memory, env, root_UI, UI_name):
+        super(SampleChannel2, self).__init__(num_slot, num_event, num_anticipation, num_operation, num_prediction,
+                                             memory, root_UI, UI_name)
         # self.operations = [Term("^rotate"), Term("^zoom"), Term("^up"), Term("^down"), Term("^right"), Term("^left")]
         # rotation, zoom temporally disabled
         self.operations = [Term("^up"), Term("^down"), Term("^right"), Term("^left")]
@@ -86,4 +87,4 @@ class SampleChannel2(ChannelMC):
         # ret.append(parser.parse("<X5 --> X6>."))
         # ret.append(parser.parse("<X7 --> X8>."))
 
-        return ret[0]
+        return ret

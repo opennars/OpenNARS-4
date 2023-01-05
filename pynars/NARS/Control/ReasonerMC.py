@@ -1,23 +1,20 @@
 import ctypes
 import tkinter as tk
-from typing import List
-import time
-
-from ..DataStructures.MC.SampleChannels.SampleChannel3 import SampleChannel3
-from ..DataStructures.MC.SampleChannels.SampleEnvironment1_1 import SampleEnvironment1_1
-from ...Narsese import parser
 import tkinter.font as tkFont
-from pynars import Config, Global
-import pynars.NARS.Operation as Operation
-from ..InferenceEngine import GeneralEngine
 from tkinter.scrolledtext import ScrolledText
+from typing import List
+
+import pynars.NARS.Operation as Operation
+from pynars import Config, Global
 from ..DataStructures import Memory, Task, Concept
 from ..DataStructures.MC.ChannelMC import ChannelMC
 from ..DataStructures.MC.GlobalBufferMC import GlobalBufferMC
-from ..DataStructures.MC.OutputBufferMC import OutputBufferMC
 from ..DataStructures.MC.InternalBufferMC import InternalBufferMC
+from ..DataStructures.MC.OutputBufferMC import OutputBufferMC
 from ..DataStructures.MC.SampleChannels.SampleChannel2 import SampleChannel2
 from ..DataStructures.MC.SampleChannels.SampleEnvironment1 import SampleEnvironment1
+from ..InferenceEngine import GeneralEngine
+from ...Narsese import parser
 
 
 class ReasonerMC:
@@ -25,6 +22,7 @@ class ReasonerMC:
     def __init__(self, n_memory, config = './config.json') -> None:
         Config.load(config)
         self.inference = GeneralEngine()
+        self.previous_inference_result = []
 
         # GUI
         # ==============================================================================================================
@@ -87,20 +85,19 @@ class ReasonerMC:
         # env = SampleEnvironment1_1()
         self.channels: List[ChannelMC] = [
             # SampleChannel1("SC1", 3, 10, 10, 10, self.memory)
-            SampleChannel2(3, 5, 10, 10, self.memory, env, self.root, "SC2"),
+            SampleChannel2(3, 5, 10, 10, 10, self.memory, env, self.root, "SC2"),
             # SampleChannel3(3, 10, 10, 10, self.memory, env, self.root, "SC3")
         ]
-        self.internal_buffer = InternalBufferMC(3, 5, 10, 10, self.memory, self.root, "Internal Buffer")
-        self.global_buffer = GlobalBufferMC(3, 5, 10, 10, self.memory, self.root, "Global Buffer")
+        self.internal_buffer = InternalBufferMC(3, 5, 10, 10, 10, self.memory, self.root, "Internal Buffer")
+        self.global_buffer = GlobalBufferMC(3, 5, 10, 10, 10, self.memory, self.root, "Global Buffer")
         for each_channel in self.channels:
             self.output_buffer.register_channel(each_channel)
 
-    """
-    collect the content in the input window; parse them into Narsese and process
-    a task will be directly accept() by the main memory
-    """
-
     def input_lines(self):
+        """
+        collect the content in the input window; parse them into Narsese and process
+        a task will be directly accept() by the main memory
+        """
         t = self.E.get("1.0", "end")  # get content
         sentences = t.split("\n")
         sentences = list(filter(None, sentences))
@@ -131,11 +128,10 @@ class ReasonerMC:
             self.T.insert(tk.END, "=" * 79)
             self.T.configure(state="disabled")
 
-    """
-    Everything in the buffers should be cleared: 1) slots, 2) prediction table, 3) operation agenda.
-    """
-
     def reset(self):
+        """
+        Everything in the buffers should be cleared: 1) slots, 2) prediction table, 3) operation agenda.
+        """
         self.output_buffer.reset()
         self.internal_buffer.reset()
         self.global_buffer.reset()
@@ -143,6 +139,9 @@ class ReasonerMC:
             each.event_buffer.reset()
 
     def clear(self):
+        """
+        UI clear
+        """
         self.T.configure(state="normal")
         self.T.delete("1.0", "end")  # clear window
         self.T.configure(state="disabled")
@@ -153,7 +152,8 @@ class ReasonerMC:
         self.output_buffer.UI_show()
 
     """
-    Copied from Reasoner.py, all returns should be forwarded to InternalBufferMC.previous_inference_result
+    The below one is copied from Reasoner.py, all returns should be forwarded to 
+    InternalBufferMC.previous_inference_result
     """
 
     def mental_operation(self, task: Task, concept: Concept, answers_question: Task, answers_quest: Task):
@@ -188,33 +188,30 @@ class ReasonerMC:
     def cycle(self):
 
         # step 1, take out a task from the internal buffer, and put it into the global buffer
-        task_from_internal_buffer = self.internal_buffer.step(self.internal_buffer.previous_inference_result, "internal")
-
-        # step 1.5, execute the task if executable
-        self.output_buffer.step(task_from_internal_buffer)
+        task_from_internal_buffer = self.internal_buffer.step(self.previous_inference_result, "internal")
 
         # step 2, Take out a task from each channel, and put it into the global buffer
         tasks_from_channels = []
         for each_channel in self.channels:
             tasks_from_channels.append(each_channel.step())
 
-        # debugging information
-        # print(tasks_from_channels)
-        # print("==>")
+        # step 3, execute the task from the internal buffer if (mentally) executable
+        # only mental operations will be executed after the selection of the internal buffer
+        # but here, we don't have mental operations yet TODO
+        # so this function is currently skipped
+        pass
 
-        # step 2.5, merge the task from the internal buffer and the tasks from channels
+        # step 4, merge the task from the internal buffer and the tasks from channels
         tasks_for_global_buffer = tasks_from_channels + [task_from_internal_buffer]
         tasks_for_global_buffer = list(filter(None, tasks_for_global_buffer))
 
-        # step 3, feed these tasks to the global buffer and send the one from the global buffer to the main memory
+        # step 5, feed these tasks to the global buffer and send the one from the global buffer to the main memory
+        # this will let us know the "direct process" of processing "THIS" task
         task_from_global_buffer = self.global_buffer.step(tasks_for_global_buffer)
         if task_from_global_buffer is not None:
-
             judgement_revised, goal_revised, answers_question, answers_quest = \
                 self.memory.accept(task_from_global_buffer)
-
             if goal_revised is not None:
-
                 exist = False
                 for i in range(len(self.output_buffer.active_goals)):
                     if self.output_buffer.active_goals[i][0].term.equal(goal_revised.term):
@@ -222,11 +219,9 @@ class ReasonerMC:
                             [goal_revised, "updated"]] + self.output_buffer.active_goals[i:]
                         exist = True
                         break
-
                 if not exist:
                     self.output_buffer.active_goals.append([goal_revised, "initialized"])
             if answers_question is not None and len(answers_question) != 0:
-
                 for each in answers_question:
                     exist = False
                     for i in range(len(self.output_buffer.active_questions)):
@@ -237,55 +232,43 @@ class ReasonerMC:
                             break
                     if not exist:
                         self.output_buffer.active_questions.append([each, "initialized"])
-
-            # temporally disabled
-            # if answers_quest is not None:
-            #     for i in range(len(self.output_buffer.active_quests)):
-            #         if self.output_buffer.active_quests[i][0].term.equal(answers_quest.term):
-            #             self.output_buffer.active_quests = self.output_buffer.active_quests[:i] + [
-            #                 [answers_quest, "updated"]] + self.output_buffer.active_quests[i:]
-            #             break
-
-            # update inference results (by accepting one task into the main memory)
-            if judgement_revised is not None:
-                self.internal_buffer.update_inference_result(judgement_revised)
-            if goal_revised is not None:
-                self.internal_buffer.update_inference_result(goal_revised)
-            if answers_question is not None:
-                for answer in answers_question:
-                    self.internal_buffer.update_inference_result(answer)
-            # temporally disabled
-            # if answers_quest is not None:
-            #     for answer in answers_quest:
-            #         self.internal_buffer.update_inference_result(answer)
         else:
             judgement_revised, goal_revised, answers_question, answers_quest = None, None, None, None
+        if judgement_revised is not None:
+            self.previous_inference_result.append(judgement_revised)
+        if goal_revised is not None:
+            self.previous_inference_result.append(goal_revised)
+        if answers_question is not None:
+            for answer in answers_question:
+                self.previous_inference_result.append(answer)
+        if answers_quest is not None:
+            pass  # TODO
 
-        # step 4, apply general inference step
-
+        # step 6, apply general inference step
+        # This will include the tasks generated by processing "A NEW (different from the previous)" task.
         concept: Concept = self.memory.take(remove=True)
         tasks_derived: List[Task] = []
         if concept is not None:
 
             tasks_inference_derived = self.inference.step(concept)
             tasks_derived.extend(tasks_inference_derived)
-            is_concept_valid = True
-            if is_concept_valid:
-                self.memory.put_back(concept)
+            for each in tasks_derived:
+                self.previous_inference_result.append(each)
+                self.output_buffer.step(each)
+            self.memory.put_back(concept)
 
-        # mental operation
-        task_operation_return, task_executed = None, None
-
-        task_operation_return, task_executed, belief_aware = self.mental_operation(task_from_global_buffer,
-                                                                                   concept,
-                                                                                   answers_question,
-                                                                                   answers_quest)
-        if task_operation_return is not None:
-            self.internal_buffer.update_inference_result(task_operation_return)
-        if task_executed is not None:
-            self.internal_buffer.update_inference_result(task_executed)
-        if belief_aware is not None:
-            self.internal_buffer.update_inference_result(belief_aware)
+        # mental operation, TODO, all about mental operation are temporarily disabled
+        # task_operation_return, task_executed = None, None
+        # task_operation_return, task_executed, belief_aware = self.mental_operation(task_from_global_buffer,
+        #                                                                            concept,
+        #                                                                            answers_question,
+        #                                                                            answers_quest)
+        # if task_operation_return is not None:
+        #     self.internal_buffer.update_inference_result(task_operation_return)
+        # if task_executed is not None:
+        #     self.internal_buffer.update_inference_result(task_executed)
+        # if belief_aware is not None:
+        #     self.internal_buffer.update_inference_result(belief_aware)
 
         # handle the sense of time
         Global.time += 1
@@ -298,5 +281,6 @@ class ReasonerMC:
 
         # self.output_buffer.UI_show()
 
-        return tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest, (
-            task_operation_return, task_executed)
+        # return tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest, (
+        #     task_operation_return, task_executed)
+        return tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest, (None, None)

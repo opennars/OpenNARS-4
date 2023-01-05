@@ -1,8 +1,6 @@
-import numpy as np
-
+from pynars.NAL.Functions import Truth_induction, Stamp_merge, Budget_merge
 from pynars.NARS.DataStructures import Memory
 from pynars.NARS.DataStructures.MC.InputBufferMC import InputBufferMC
-from pynars.NAL.Functions import Truth_induction, Stamp_merge, Budget_merge
 from pynars.NARS.DataStructures.MC.SlotMC import SlotMC
 from pynars.Narsese import Judgement, Task, Copula, Statement, Compound, Interval
 
@@ -13,9 +11,14 @@ class GlobalBufferMC(InputBufferMC):
     Currently, this is the only difference.
     """
 
-    def __init__(self, num_slot, num_event, num_anticipation, num_prediction, memory: Memory, root_UI, UI_name):
-        super(GlobalBufferMC, self).__init__(num_slot, num_event, num_anticipation, num_prediction, memory, root_UI,
-                                             UI_name)
+    def __init__(self, num_slot, num_event, num_anticipation, num_operation, num_prediction,
+                 memory: Memory, root_UI, UI_name):
+        """
+        Though the global buffer has an input variable "num_operation", but a global buffer will never process any
+        operations, so this variable should always be 0.
+        """
+        super(GlobalBufferMC, self).__init__(num_slot, num_event, num_anticipation, num_operation, num_prediction,
+                                             memory, root_UI, UI_name)
 
     def prediction_generation(self):
         """
@@ -68,27 +71,7 @@ class GlobalBufferMC(InputBufferMC):
                 # task generation
                 prediction = Task(sentence, budget)
                 self.update_prediction(prediction)
-            # from historical events
-            for i in range(len(self.slots[self.present].events_historical)):
-                if self.slots[self.present].events_historical[-1][1].term.equal(self.slots[self.present].candidate.term):
-                    continue
-                subject = self.slots[self.present].events_historical[i][1].term
-                copula = Copula.ConcurrentImplication  # =|>
-                term = Statement(subject, copula, predicate)
-                # truth, using truth-induction function (TODO, may subject to change)
-                truth = Truth_induction(self.slots[self.present].events_historical[i][1].truth,
-                                        self.slots[self.present].candidate.truth)
-                # stamp, using stamp-merge function (TODO, may subject to change)
-                stamp = Stamp_merge(self.slots[self.present].events_historical[i][1].stamp,
-                                    self.slots[self.present].candidate.stamp)
-                # budget, using budget-merge function (TODO, may subject to change)
-                budget = Budget_merge(self.slots[self.present].events_historical[i][1].budget,
-                                      self.slots[self.present].candidate.budget)
-                # sentence composition
-                sentence = Judgement(term, stamp, truth)
-                # task generation
-                prediction = Task(sentence, budget)
-                self.update_prediction(prediction)
+
         return self.slots[self.present].candidate
 
     def step(self, new_contents, origin = ""):
@@ -99,17 +82,10 @@ class GlobalBufferMC(InputBufferMC):
         """
         # remove the oldest slot and create a new one
         self.slots = self.slots[1:]
-        self.slots.append(SlotMC(self.num_event, self.num_anticipation))
+        self.slots.append(SlotMC(self.num_event, self.num_anticipation, self.num_operation))
 
-        self.contemporary_compound_generation(new_contents, origin)  # 1st step
-        # find the highest concurrent compound first
-        if len(self.slots[self.present].events) != 0:
-            # when this happens, the same process in memory_based_evaluations() will be skipped
-            self.slots[self.present].events = self.slots[self.present].events[
-                np.argsort(self.slots[self.present].events[:, 2])]
-            self.slots[self.present].highest_compound = self.slots[self.present].events[-1][1]
-            if self.slots[self.present].highest_compound is not None:
-                self.historical_compound_generation(self.slots[self.present].highest_compound, origin)  # 1st step
+        self.concurrent_compound_generation(new_contents, origin)  # 1st step
+        self.historical_compound_generation(origin)  # 1st step
         self.local_evaluation()  # 2nd step
         self.memory_based_evaluations()  # 3rd step
         task_forward = self.prediction_generation()  # 4th step
