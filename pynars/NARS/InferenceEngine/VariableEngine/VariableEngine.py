@@ -62,6 +62,21 @@ def has_common(cpmd1: Compound, stat2: Statement):
                 break
     return common, common1, common2
 
+def is_dvar_eliminable(stat1: Statement, stat2: Statement):
+    ''''''
+    if not (stat1.is_statement and stat2.is_statement):
+        return False
+    
+    if not stat1.equal(stat2): 
+        return False
+    
+    if stat1.subject == stat2.subject and stat1.predicate.is_dvar:
+        return True
+    
+    if stat1.predicate == stat2.predicate and stat1.subject.is_dvar:
+        return True
+    
+    return False
 
 class VariableEngine(Engine):
     ''''''
@@ -109,8 +124,8 @@ class VariableEngine(Engine):
             ("L1_Connector2", Connector, n_copula),
             ('L1_common1', int, 2),
             ('L1_common2', int, 2),
-
             ('L1_has_common', int, 2),
+            ('L1_eliminable', bool, 2),
 
             ("L2_Copula1", Copula, n_copula),
             ("L2_Connector1", Connector, n_copula),
@@ -119,12 +134,14 @@ class VariableEngine(Engine):
             ('L2_common1', int, 2),
             ('L2_common2', int, 2),
             ('L2_has_common', int, 2),
+            ('L2_eliminable', bool, 2),
 
             ("L3_Copula", Copula, n_copula),
             ("L3_Connector", Connector, n_copula),
             ('L3_common1', int, 2),
             ('L3_common2', int, 2),
-            ('L3_has_common', int, 2)
+            ('L3_has_common', int, 2),
+            ('L3_eliminable', bool, 2),
         )
 
         map = self.rule_map.map
@@ -168,6 +185,7 @@ class VariableEngine(Engine):
         L1_common1 = None
         L1_common2 = None
         L1_has_common = None
+        L1_eliminable = False
 
         L2_Copula1 = None
         L2_Connector1 = None
@@ -176,12 +194,15 @@ class VariableEngine(Engine):
         L2_common1 = None
         L2_common2 = None
         L2_has_common = None
+        L2_eliminable = False
 
         L3_Copula = None
         L3_Connector = None
         L3_common1 = None
         L3_common2 = None
         L3_has_common = None
+        L3_eliminable = False
+
         if term1.is_statement and term2.is_statement:
             stat1: Statement = term1
             stat2: Statement = term2
@@ -213,6 +234,7 @@ class VariableEngine(Engine):
                                 if L3_common1 is not None:
                                     L3_Copula = cpnt.copula
                                     L1_common1 = 0
+                                    L3_eliminable = is_dvar_eliminable(cpnt, stat2)
                                     break
                 elif stat2.is_statement and stat2.copula is Copula.Implication:
                     L2_Connector1 = stat1[0].connector
@@ -228,6 +250,7 @@ class VariableEngine(Engine):
                                         L3_Copula = cpnt.copula
                                         L1_common1 = 0
                                         L1_common2 = 0
+                                        L3_eliminable = is_dvar_eliminable(cpnt, stat2[0])
                                         break
 
 
@@ -249,9 +272,9 @@ class VariableEngine(Engine):
                             L3_common1, L1_common2 = get_common(cpnt, stat2)
                             if L3_common1 is not None:
                                 L3_Copula = cpnt.copula
+                                L3_eliminable = is_dvar_eliminable(cpnt, stat2)
                                 L1_common1 = 1
                                 break
-                
 
         elif term1.is_compound:  # &&
             cpnd1: Compound = term1
@@ -264,22 +287,19 @@ class VariableEngine(Engine):
                         L3_common1, L3_common2 = get_common(cpnt, stat2)
                         if L3_common1 is not None:
                             L2_Copula1 = cpnt.copula
+                            L3_eliminable = is_dvar_eliminable(cpnt, stat2)
 
                             L1_has_common = True
                             break
             else:
                 for cpnt in cpnd1:
+                    cpnt: Statement
                     if cpnt.is_statement and cpnt.copula is Copula.Inheritance:
                         L2_common1, L1_common2 = get_common(cpnt, stat2)
                         if L2_common1 is not None:
                             L2_Copula1 = cpnt.copula
+                            L2_eliminable = is_dvar_eliminable(cpnt, stat2)
                             break
-                
-                    
-                    
-        # L1_common_id = CommonId.get(L1_common1, L1_common2)
-        # L2_common_id = CommonId.get(L2_common1, L2_common2)
-        # L3_common_id = CommonId.get(L3_common1, L3_common2)
 
         indices = (
             int(False) if belief is None else int(True),
@@ -297,6 +317,7 @@ class VariableEngine(Engine):
             L1_common1,
             L1_common2,
             L1_has_common,
+            L1_eliminable,
 
             L2_Copula1,
             L2_Connector1,
@@ -305,12 +326,14 @@ class VariableEngine(Engine):
             L2_common1,
             L2_common2,
             L2_has_common,
+            L2_eliminable,
 
             L3_Copula,
             L3_Connector,
             L3_common1,
             L3_common2,
-            L3_has_common
+            L3_has_common,
+            L3_eliminable,
         )
         indices = tuple(int(idx) if idx is not None else None for idx in indices)
         rules: RuleCallable = cls.rule_map[indices]

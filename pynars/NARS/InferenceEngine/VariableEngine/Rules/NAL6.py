@@ -204,6 +204,7 @@ def add_rules__NAL6(sparse_lut: SparseLUT, structure: OrderedDict):
         L1_common1 = [None],
         L1_common2 = 1,
         L2_common1 = 1,
+        L2_eliminable = True,
         sentence_type = class_sentence_to_list(Judgement),
     )
 
@@ -221,6 +222,7 @@ def add_rules__NAL6(sparse_lut: SparseLUT, structure: OrderedDict):
         L2_common1 = [None],
         L3_Copula = Copula.Inheritance,
         L3_common1 = 1,
+        L3_eliminable = True,
         sentence_type = class_sentence_to_list(Judgement),
     )
 
@@ -239,6 +241,7 @@ def add_rules__NAL6(sparse_lut: SparseLUT, structure: OrderedDict):
         L2_common1 = [None],
         L3_Copula = Copula.Inheritance,
         L3_common1 = 1,
+        L3_eliminable = True,
         sentence_type = class_sentence_to_list(Judgement),
     )
 
@@ -258,5 +261,6 @@ def add_rules__NAL6(sparse_lut: SparseLUT, structure: OrderedDict):
         L2_common2 = 1,
         L3_Copula = Copula.Inheritance,
         L3_common1 = 1,
+        L3_eliminable = True,
         sentence_type = class_sentence_to_list(Judgement),
     )

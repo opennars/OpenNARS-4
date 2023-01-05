@@ -7,7 +7,7 @@ from pynars.NAL.MetaLevelInference.VariableSubstitution import *
 # import Tests.utils_for_test as utils_for_test
 from Tests.utils_for_test import *
 from pynars.utils.Print import PrintType, out_print
-
+from pynars.NARS.InferenceEngine.VariableEngine.VariableEngine import VariableEngine
 
 class TEST_NAL6(unittest.TestCase):
     ''''''
@@ -270,10 +270,10 @@ class TEST_NAL6(unittest.TestCase):
         'Variable unification
 
         'If something can fly and eats worms, then it is a bird.
-        <(&&,<$x --> flyer>,<(*,$x,worms) --> food>) ==> <$x --> bird>>.
+        <(&&,<$x --> flyer>,<(*,$x,worms) --> food>) ==> <$x --> bird>>. %1.00;0.90%
 
         'If something can fly, then it has wings.
-        <<$y --> flyer> ==> <$y --> [with_wings]>>.
+        <<$y --> flyer> ==> <$y --> [with_wings]>>. %1.00;0.90%
 
         // 4 originally
         13 
@@ -281,6 +281,18 @@ class TEST_NAL6(unittest.TestCase):
         'If something has wings and eats worms, then I guess it is a bird.
         ''outputMustContain('<(&&,<$1 --> [with_wings]>,<(*,$1,worms) --> food>) ==> <$1 --> bird>>. %1.00;0.45%')
         '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '<(&&,<$x --> flyer>,<(*,$x,worms) --> food>) ==> <$x --> bird>>. %1.00;0.90%',
+            '<<$y --> flyer> ==> <$y --> [with_wings]>>. %1.00;0.90%',
+            'flyer.'
+        )
+        self.assertNotEqual(rules, None)
+
+        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+
+        self.assertTrue(
+            output_contains(tasks_derived, '<(&&,<$1 --> [with_wings]>,<(*,$1,worms) --> food>) ==> <$1 --> bird>>. %1.00;0.45%')
+        )
         pass
 
 
@@ -407,6 +419,23 @@ class TEST_NAL6(unittest.TestCase):
         )
         pass
 
+
+    def test_elimination_3_1(self):
+        '''
+        (&&,<C --> A>,<D --> B>). %1.00;0.90%
+        <M --> A>. %0.90;0.90%
+
+        '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '(&&,<C --> A>,<D --> B>). %1.00;0.90%',
+            '<M --> A>. %0.90;0.90%',
+            'A.'
+        )
+        rules = [] if rules is None else rules
+        rules_var = {rule for _, rule in VariableEngine.rule_map.map.data}
+        self.assertTrue(len(set(rules) & rules_var) == 0)
+
+        pass
 
     def test_elimination_4(self):
         '''
@@ -894,6 +923,46 @@ class TEST_NAL6(unittest.TestCase):
         )
         pass
 
+    def test_second_level_variable_unification_1_0(self):
+        '''
+        <A ==> (&&,<#2 --> B>,C)>. %1.00;0.90% 
+
+        <M --> B>. %1.00;0.90% 
+
+        ''outputMustContain('<A ==> C>. %1.00;0.43%')       
+        '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '<A ==> (&&,<#2 --> B>,C)>. %1.00;0.90%',
+            '<M --> B>. %1.00;0.90%',
+            'B.'
+        )
+        self.assertNotEqual(rules, None)
+
+        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+
+
+        self.assertTrue(
+            output_contains(tasks_derived, '<A ==> C>. %1.00;0.43%')
+        )
+        pass
+    
+    def test_second_level_variable_unification_1_1(self):
+        '''
+        <A ==> (&&,<D --> B>,C)>. %1.00;0.90% 
+
+        <M --> B>. %1.00;0.90% 
+
+        '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '<A ==> (&&,<D --> B>,C)>. %1.00;0.90%',
+            '<M --> B>. %1.00;0.90%',
+            'B.'
+        )
+        rules = [] if rules is None else rules
+        rules_var = {rule for _, rule in VariableEngine.rule_map.map.data}
+        self.assertTrue(len(set(rules) & rules_var) == 0)
+
+
 
     def test_variable_elimination_deduction(self):
         '''
@@ -926,6 +995,45 @@ class TEST_NAL6(unittest.TestCase):
         pass
 
 
+    def test_variable_elimination_deduction_0(self):
+        '''
+        <M --> A>. %1.00;0.90%
+        <(&&,<#1 --> A>,<#1 --> B) ==> C>. %1.00;0.90% 
+
+        ''outputMustContain('<<M --> B> ==> C>. %1.00;0.81%')
+        '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '<(&&,<#1 --> A>, <#1 --> B>) ==> C>. %1.00;0.90%',
+            '<M --> A>. %1.00;0.90%',
+            'A.'
+        )
+        self.assertNotEqual(rules, None)
+
+        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+
+
+        self.assertTrue(
+            output_contains(tasks_derived, '<<M --> B> ==> C>. %1.00;0.81%')
+        )
+        pass
+
+    def test_variable_elimination_deduction_1(self):
+        '''
+        <M --> A>. %1.00;0.90%
+        <(&&,<C --> A>,<D --> B>) ==> C>. %1.00;0.90% 
+        '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '<(&&,<C --> A>,<D --> B>) ==> C>. %1.00;0.90%',
+            '<M --> A>. %1.00;0.90%',
+            'A.'
+        )
+        rules = [] if rules is None else rules
+        rules_var = {rule for _, rule in VariableEngine.rule_map.map.data}
+        self.assertTrue(len(set(rules) & rules_var) == 0)
+
+        pass
+
+
     def test_abduction_with_variable_elimination_abduction(self):
         '''
         'Abduction with variable elimination (abduction)
@@ -954,6 +1062,43 @@ class TEST_NAL6(unittest.TestCase):
         self.assertTrue(
             output_contains(tasks_derived, '<lock1 --> lock>. %1.00;0.45%')
         )
+
+    def test_abduction_with_variable_elimination_abduction_0(self):
+        '''
+        <<M --> A> ==> C>. %1.00;0.90%
+        <(&&,<#1 --> A>,<#1 --> B>) ==> C>. %1.00;0.90%
+
+        ''outputMustContain('<M --> B>. %1.00;0.45%')
+        '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '<(&&,<#1 --> A>,<#1 --> B>) ==> C>. %1.00;0.90%',
+            '<<M --> A> ==> C>. %1.00;0.90%',
+            'A.'
+        )
+        self.assertNotEqual(rules, None)
+
+        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+
+
+        self.assertTrue(
+            output_contains(tasks_derived, '<M --> B>. %1.00;0.45%')
+        )
+
+    def test_abduction_with_variable_elimination_abduction_1(self):
+        '''
+        <<M --> A> ==> C>. %1.00;0.90%
+        <(&&,<D --> A>,<E --> B>) ==> C>. %1.00;0.90%
+
+        ''outputMustContain('<M --> B>. %1.00;0.45%')
+        '''
+        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+            '<(&&,<D --> A>,<E --> B>) ==> C>. %1.00;0.90%',
+            '<<M --> A> ==> C>. %1.00;0.90%',
+            'A.'
+        )
+        rules = [] if rules is None else rules
+        rules_var = {rule for _, rule in VariableEngine.rule_map.map.data}
+        self.assertTrue(len(set(rules) & rules_var) == 0)
 
 
     def test_birdClaimedByBob(self):
