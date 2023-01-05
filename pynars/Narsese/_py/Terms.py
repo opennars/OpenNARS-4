@@ -18,7 +18,7 @@ class Terms:
 
         terms = tuple(term.clone() for term in terms)
         terms_const: Iterable[Term] = tuple(term for term in terms if not term.has_var)
-        terms_var: Iterable[Term] = tuple(term for term in terms if term.has_var)
+        # terms_var: Iterable[Term] = tuple(term for term in terms if term.has_var)
 
         if self._vars_independent is None: self._vars_independent = IndexVar()
         if self._vars_dependent is None: self._vars_dependent = IndexVar()
@@ -33,7 +33,7 @@ class Terms:
         ivars = tuple(tuple(idxvar.indices) for idxvar in self._vars_independent.successors)
         dvars = tuple(tuple(idxvar.indices) for idxvar in self._vars_dependent.successors)
         qvars = tuple(tuple(idxvar.indices) for idxvar in self._vars_query.successors)
-        terms_var = tuple(term for term in zip(terms_var, ivars, dvars, qvars))
+        terms_var = tuple((term, ivar, dvar, qvar) for term, ivar, dvar, qvar in zip(terms, ivars, dvars, qvars) if term.has_var)
 
         # store the terms
         if is_commutative: 
