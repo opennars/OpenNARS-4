@@ -20,10 +20,16 @@ class Elimination(Substitution):
         # is_conflict_ivar = is_conflict_dvar = is_conflict_qvar = False
         if (ivar_src is not None and iconst_tgt is not None):
             self.is_conflict_ivar, self.mapping_ivar = self.check_conflict(ivar_src, iconst_tgt)
+        else:
+            self.mapping_ivar = bidict()
         if (dvar_src is not None and dconst_tgt is not None):
             self.is_conflict_dvar, self.mapping_dvar = self.check_conflict(dvar_src, dconst_tgt)
+        else:
+            self.mapping_dvar = bidict()
         if (qvar_src is not None and qconst_tgt is not None):
             self.is_conflict_qvar, self.mapping_qvar = self.check_conflict(qvar_src, qconst_tgt)
+        else:
+            self.mapping_qvar = bidict()
 
         # self._is_conflict = is_conflict_ivar or is_conflict_dvar or is_conflict_qvar
 
@@ -145,6 +151,8 @@ class Elimination(Substitution):
 
     def apply(self, term_var: Term=None, term_con: Term=None, type_var: Set[VarPrefix]={VarPrefix.Independent, VarPrefix.Dependent, VarPrefix.Query}):
         ''''''
+        if isinstance(type_var, VarPrefix):
+            type_var = {type_var}
         term_var = term_var if term_var is not None else self.term_var
         term_con = term_con if term_con is not None else self.term_con
         mapping_ivar = self.mapping_ivar
@@ -230,11 +238,23 @@ def get_elimination__var_const(term1: Term, term2: Term, pos_common1: List[IntVa
     pos_common1: [1]
     pos_common2: [0]
     '''
-    ivar = find_var_with_pos(pos_common1, term1._vars_independent.indices, term1._vars_independent.positions)
+    if not term1[pos_common1].equal(term2[pos_common2]):
+        return None
+        
+    # ivar = find_var_with_pos(pos_common1, term1._vars_independent.indices, term1._vars_independent.positions)
     dvar = find_var_with_pos(pos_common1, term1._vars_dependent.indices, term1._vars_dependent.positions)
     qvar = find_var_with_pos(pos_common1, term1._vars_query.indices, term1._vars_query.positions)
 
-    iconst = [term2[pos_common2][pos[len(pos_common1):]] for pos in find_pos_with_pos(pos_common1, term1._vars_independent.positions)]
+    # iconst = [term2[pos_common2][pos[len(pos_common1):]] for pos in find_pos_with_pos(pos_common1, term1._vars_independent.positions)]
+    iconst = []
+    ivar = []
+    for pos, var in zip(find_pos_with_pos(pos_common1, term1._vars_independent.positions), find_var_with_pos(pos_common1, term1._vars_independent.indices, term1._vars_independent.positions)):
+        pos = pos[len(pos_common1):]
+        term = term2[pos_common2]
+        if len(pos) <= term._height:
+            const = term[pos]
+            iconst.append(const)
+            ivar.append(var)
     dconst = [term2[pos_common2][pos[len(pos_common1):]] for pos in find_pos_with_pos(pos_common1, term1._vars_dependent.positions)]
     qconst = [term2[pos_common2][pos[len(pos_common1):]] for pos in find_pos_with_pos(pos_common1, term1._vars_query.positions)]
 

@@ -56,7 +56,7 @@ class TEST_Substitution(unittest.TestCase):
         term2 = Narsese.parse("<swan-->animal>.").term
         term_common = Term('swan')
         intro_var: Introduction = get_introduction__const_var(term1, term2, term_common)
-        term1, term2 = intro_var.apply(var_type=VarPrefix.Independent)
+        term1, term2 = intro_var.apply(type_var=VarPrefix.Independent)
         term3 = Statement.Implication(term1, term2)
         print(term1)
         print(term2)
@@ -69,7 +69,7 @@ class TEST_Substitution(unittest.TestCase):
         term2 = Narsese.parse("(&&, A, B, C).").term
         term_common = Term('A')
         intro_var: Introduction = get_introduction__const_var(term1, term2, term_common)
-        term1, term2 = intro_var.apply(var_type=VarPrefix.Independent)
+        term1, term2 = intro_var.apply(type_var=VarPrefix.Independent)
         term3 = Statement.Implication(term1, term2)
         print(term1.repr())
         print(term2.repr())
@@ -86,7 +86,7 @@ class TEST_Substitution(unittest.TestCase):
         term2 = Narsese.parse("<swan-->animal>.").term
         term_common = Term('swan')
         intro_var: Introduction = get_introduction__const_var(term1, term2, term_common)
-        term1, term2 = intro_var.apply(var_type=VarPrefix.Dependent)
+        term1, term2 = intro_var.apply(type_var=VarPrefix.Dependent)
         term3 = Compound.Conjunction(term1, term2)
         print(term1.repr())
         print(term2.repr())
@@ -103,7 +103,7 @@ class TEST_Substitution(unittest.TestCase):
         term2 = Narsese.parse("<swan-->animal>.").term
         term_common = Term('animal')
         intro_var: Introduction = get_introduction__const_var(term1, term2, term_common)
-        term1, term2 = intro_var.apply(var_type=VarPrefix.Dependent)
+        term1, term2 = intro_var.apply(type_var=VarPrefix.Dependent)
         term3 = Compound.Conjunction(term1, term2)
         print(term1.repr())
         print(term2.repr())
@@ -122,7 +122,7 @@ class TEST_Substitution(unittest.TestCase):
         term2 = Narsese.parse("<swan-->animal>.").term
         term_common = Term('swan')
         intro_var: Introduction = get_introduction__const_var(term1, term2, term_common)
-        term1, term2 = intro_var.apply(var_type=VarPrefix.Dependent)
+        term1, term2 = intro_var.apply(type_var=VarPrefix.Dependent)
         term3 = Compound.Conjunction(term1, term2)
         print(term1.repr())
         print(term2.repr())

@@ -6,5 +6,5 @@ from ....RuleMap.add_rule import *
 
 
 def add_rules__NAL6(sparse_lut: SparseLUT, structure: OrderedDict):
-        ''''''
-
+    ''''''
+    

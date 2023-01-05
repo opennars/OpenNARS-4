@@ -20,6 +20,9 @@ from ....NAL.MetaLevelInference.VariableSubstitution.Unification import unify__s
 from ...DataStructures._py.Link import Link
 from pynars.Narsese import VarPrefix
 
+from ..VariableEngine.VariableEngine import VariableEngine
+from ordered_set import OrderedSet
+
 class GeneralEngine(Engine):
     
     rule_map = RuleMap(name='LUT', root_rules=Path(__file__).parent/'Rules')
@@ -115,6 +118,11 @@ class GeneralEngine(Engine):
             elif not belief.evidential_base.is_overlaped(task.evidential_base):
                 # Engine.rule_map.verify(task_link, term_link)
                 rules = GeneralEngine.match_rule(task, belief, term_belief, task_link, term_link)
+
+                rules_var = VariableEngine.match_rule(task, belief, term_belief, task_link, term_link)
+                if rules_var is not None:
+                    rules = rules | rules_var if rules is not None else rules_var
+
                 if rules is not None and len(rules) > 0:
                     is_valid = True
         elif term_belief is not None: # belief is None
@@ -132,7 +140,7 @@ class GeneralEngine(Engine):
         return is_valid, is_revision, rules
 
     @classmethod
-    def match_rule(cls, task: Task, belief: Union[Belief, None], belief_term: Union[Term, Compound, Statement, None], task_link: TaskLink, term_link: TermLink):
+    def match_rule(cls, task: Task, belief: Union[Belief, None], belief_term: Union[Term, Compound, Statement, None], task_link: TaskLink, term_link: TermLink) -> OrderedSet:
         '''
         Given a task and a belief, find the matched rules for one step inference.
         ''' 
@@ -150,15 +158,15 @@ class GeneralEngine(Engine):
         p2_at_p1 = feature.p2_at_p1
         p1_at_p2 = feature.p1_at_p2
 
-        if belief_term is None:
-            if link1 is LinkType.TRANSFORM:
-                compound_transform: Compound = task.term[task_link.component_index[:-1]]
-                if compound_transform.is_compound:
-                    connector1 = compound_transform.connector
-                    if connector1 in (Connector.ExtensionalImage, Connector.IntensionalImage) and task_link.component_index[-1] == 0:
-                        connector1 = None
+        # if belief_term is None:
+        if link1 is LinkType.TRANSFORM:
+            compound_transform: Compound = task.term[task_link.component_index[:-1]]
+            if compound_transform.is_compound:
+                connector1 = compound_transform.connector
+                if connector1 in (Connector.ExtensionalImage, Connector.IntensionalImage) and task_link.component_index[-1] == 0:
+                    connector1 = None
 
-        else:
+        elif belief_term is not None:
             if feature.match_reverse is True:
                 pass
             elif feature.has_common_id:
@@ -355,6 +363,7 @@ class GeneralEngine(Engine):
             
             concept_target: Concept = term_link.target
             belief = concept_target.get_belief() # TODO: consider all beliefs.
+            if belief is None: continue
             term_belief = concept_target.term
             # if belief is None: continue
 
@@ -363,7 +372,7 @@ class GeneralEngine(Engine):
             task_subst, task_elimn, task_intro = GeneralEngine.substitute(subst, elimn, intro, task)
             task = task_subst or task_elimn or task_intro or task
 
-            # Verify the validity of the interaction, and find a pair which is valid for inference.
+            # Verify the interaction, and find a pair which is valid for inference.
             is_valid, is_revision, rules = GeneralEngine.match(task, belief, term_belief, task_link_valid, term_link)
             if is_revision: tasks_derived.append(local__revision(task, belief, task_link_valid.budget, term_link.budget))
             if is_valid: 

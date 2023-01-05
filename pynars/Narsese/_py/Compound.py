@@ -24,6 +24,9 @@ class Compound(Term): #, OrderedSet):
 
 
         terms = self._terms
+
+        self._height = max((term._height for term in terms))+1
+
         word = self._terms_to_word(*terms)
         if self.is_commutative:
             terms_sorted = sorted(terms, key=hash)
@@ -153,6 +156,13 @@ class Compound(Term): #, OrderedSet):
         Returns:
             connector, terms
         '''
+        if connector_parent is Connector.Product:
+            '''
+            For example, in the test-case `nal6.22.nal`, there is a statement
+                `<(*,(*,(*,0))) --> num>`
+            '''
+            return connector_parent, terms
+
         # TODO: The `ExtensionalDifference` and `IntensionalDifference` cases.
         if self.is_commutative:
             # terms with the commutative connetors are also unduplicatable
@@ -316,7 +326,7 @@ class Compound(Term): #, OrderedSet):
         else: return False
 
 
-    def __repr__(self) -> str:
+    def __repr__(self, *args) -> str:
         return f'<Compound: {self.repr()}>'
 
 

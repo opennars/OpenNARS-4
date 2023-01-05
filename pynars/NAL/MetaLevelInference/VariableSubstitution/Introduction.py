@@ -16,7 +16,7 @@ class Introduction(Substitution):
         self.term_tgt = term_tgt
 
 
-    def apply(self, term_src: Term=None, term_tgt: Term=None, var_type=VarPrefix.Independent):
+    def apply(self, term_src: Term=None, term_tgt: Term=None, type_var=VarPrefix.Independent):
         '''
         e.g.
         Input:
@@ -30,18 +30,18 @@ class Introduction(Substitution):
         term_src = term_src if term_src is not None else self.term_src
         term_tgt = term_tgt if term_tgt is not None else self.term_tgt
 
-        if var_type is VarPrefix.Independent:
+        if type_var is VarPrefix.Independent:
             variables1 = term_src._vars_independent.indices
             variables2 = term_tgt._vars_independent.indices
-        elif var_type is VarPrefix.Dependent:
+        elif type_var is VarPrefix.Dependent:
             variables1 = term_src._vars_dependent.indices
             variables2 = term_tgt._vars_dependent.indices
-        elif var_type is VarPrefix.Query:
+        elif type_var is VarPrefix.Query:
             variables1 = term_src._vars_query.indices
             variables2 = term_tgt._vars_query.indices
         else: raise TypeError("Inalid type")
         id_var = max((*variables1, *variables2, -1)) + 1
-        var = Variable(var_type, str(id_var), id_var)
+        var = Variable(type_var, str(id_var), id_var)
 
         # replace const with var
         def replace(term: 'Term|Statement|Compound', term_r: Term) -> Term:

@@ -30,6 +30,8 @@ class Statement(Term):
 
         self.is_operation = self.predicate.is_operation
 
+        self._height = max((self.subject._height, self.predicate._height))+1
+
         # Variables related initialization
         terms = (self.subject, self.predicate)
         self._handle_variables(terms)
@@ -87,7 +89,7 @@ class Statement(Term):
     def __repr__(self) -> str:
         return  f'<Statement: {self.repr()}>'
     
-    def repr(self):
+    def repr(self, *args):
         '''
         index_var (IndexVar): the `index_var` of the root/topmost term.
         pos (list): the position of the current term within the root/topmost term.

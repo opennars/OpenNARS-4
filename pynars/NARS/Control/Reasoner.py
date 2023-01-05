@@ -3,13 +3,12 @@ from pynars.NAL.Functions.Tools import truth_to_quality
 from pynars.NARS.DataStructures._py.Channel import Channel
 
 from pynars.NARS.DataStructures._py.Link import TaskLink
-from pynars.NARS.InferenceEngine import TemporalEngine
 # from pynars.NARS.Operation import Interface_Awareness
 from pynars.Narsese._py.Budget import Budget
 from pynars.Narsese._py.Statement import Statement
 from pynars.Narsese._py.Task import Belief
 from ..DataStructures import Bag, Memory, NarseseChannel, Buffer, Task, Concept
-from ..InferenceEngine import GeneralEngine
+from ..InferenceEngine import GeneralEngine, TemporalEngine, VariableEngine
 from pynars import Config
 from pynars.Config import Enable
 from typing import Callable, List, Tuple, Union
@@ -23,6 +22,7 @@ class Reasoner:
         Config.load(config)
         
         self.inference = GeneralEngine()
+        self.variable_inference = VariableEngine()
         self.temporal_inference = TemporalEngine() # for temporal causal reasoning 
 
         self.memory = Memory(n_memory)

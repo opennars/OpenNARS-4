@@ -41,6 +41,8 @@ class Term:
     _vars_independent: IndexVar = None
     _vars_dependent: IndexVar = None
     _vars_query: IndexVar = None
+
+    _height = 0
     
     def __init__(self, word, do_hashing=False, word_sorted=None, is_input=False) -> None:
         self.word = word
@@ -165,7 +167,7 @@ class Term:
         return len(self._components)
 
     def __getitem__(self, index: List[int]) -> Type['Term']:
-        if len(index) > 0 or not (len(index)==0 or index[0]== 0 or index[0] == -1): raise "Out of bounds."
+        if len(index) > 0 or not (len(index)==0 or index[0]== 0 or index[0] == -1): raise Exception("Out of bounds.")
         return self
 
     def repr(self, is_input=False):

@@ -48,7 +48,7 @@ class Connector(IdEnum):
         return self in (
             Connector.Conjunction, 
             Connector.Disjunction, 
-            Connector.Product, 
+            # Connector.Product, 
             Connector.ParallelEvents,
             Connector.SequentialEvents,
             Connector.IntensionalIntersection,
