@@ -202,6 +202,9 @@
             "request": "launch",
             "module": "pynars.Console",
             "console": "integratedTerminal",
+            "env":{
+                "CODON_PATH": "/Users/bowenxu/.codon/lib/codon/stdlib"
+            },
             "args": [
                 // "Tests/examples/single_step/nal7/nal7.revrev.nal"
                 // "Tests/examples/single_step/nal5.query.nal"
@@ -224,7 +227,10 @@
             "type": "python",
             "request": "launch",
             "program": "${file}",
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "env":{
+                "CODON_PATH": "/Users/bowenxu/.codon/lib/codon/stdlib"
+            }
         }
     ]
 }
