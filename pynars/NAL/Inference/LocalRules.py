@@ -22,8 +22,8 @@ def revision(task: Task, belief: Task, budget_tasklink: Budget=None, budget_term
     |-
     S. %F_rev%
     '''
-    premise1: Judgement = task.sentence
-    premise2: Judgement = belief.sentence
+    premise1: Union[Judgement, Goal] = task.sentence
+    premise2: Union[Judgement, Goal] = belief.sentence
     truth1 = premise1.truth
     truth2 = premise2.truth
     if Enable.temporal_rasoning:
@@ -32,6 +32,7 @@ def revision(task: Task, belief: Task, budget_tasklink: Budget=None, budget_term
     truth = Truth_revision(truth1, truth2)
     budget, *_ = Budget_revision(task.budget, truth1, truth2, truth, budget_tasklink=budget_tasklink, budget_termlink=budget_termlink)
     term = premise1.term
+
     # stamp: Stamp = deepcopy(task.sentence.stamp) # Stamp(Global.time, task.sentence.stamp.t_occurrence, None, (j1.stamp.evidential_base | j2.stamp.evidential_base))
     # stamp.evidential_base.extend(premise2.evidential_base)
     stamp: Stamp = Stamp_merge(premise1.stamp, premise2.stamp)
