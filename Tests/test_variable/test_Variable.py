@@ -1,11 +1,10 @@
-import NARS
+from pynars import Narsese, NARS
 import unittest
 
 from pynars.NARS.DataStructures import Bag, Task, Concept, Table
 from pynars.Narsese import Judgement, Term, Statement, Copula, Truth   
 
 from pathlib import Path
-import Narsese
 from pynars.Narsese import Compound, Connector
 from pynars.NAL.MetaLevelInference.VariableSubstitution import *
 from pynars.Narsese._py.Variable import VarPrefix, Variable
@@ -13,56 +12,63 @@ from pynars.utils.IndexVar import IndexVar
 
 class TEST_Variable(unittest.TestCase):
 
+    def test_craete_var(self):
+        ''''''
+        var1 = Variable(VarPrefix.Independent, "x", 0)
+        var2 = Variable.Dependent("x", 0)
+        print(var1)
+        print(var2)
+
     def test_index_var_0(self):
         ''''''
         index1 = IndexVar()
-        index1.var_independent = [0, 1]
+        index1.indices = [0, 1]
         index2 = IndexVar()
-        index2.var_independent = [1, 0]
+        index2.indices = [1, 0]
         self.assertEqual(index1, index2)
         pass
 
     def test_index_var_1(self):
         ''''''
         index1 = IndexVar()
-        index1.var_independent = [0, 1, 0]
+        index1.indices = [0, 1, 0]
         index2 = IndexVar()
-        index2.var_independent = [0, 1, 1]
+        index2.indices = [0, 1, 1]
         self.assertNotEqual(index1, index2)
         pass
 
     def test_index_var_2(self):
         ''''''
         term1 = Narsese.parse("<#x-->bird>.").term
-        self.assertEqual(term1._index_var.positions_dvar, [[0]])
+        self.assertEqual(term1._vars_dependent.positions, [[0]])
         term2 = Narsese.parse("<bird-->#x>.").term
-        self.assertEqual(term2._index_var.positions_dvar, [[1]])
+        self.assertEqual(term2._vars_dependent.positions, [[1]])
         term = Narsese.parse("<<$x-->bird> ==> <$x-->animal>>.").term
-        self.assertEqual(term._index_var.positions_ivar, [[0,0], [1,0]])
+        self.assertEqual(term._vars_independent.positions, [[0,0], [1,0]])
         term = Narsese.parse("<<animal-->$x> ==> <bird-->$x>>.").term
-        self.assertEqual(term._index_var.positions_ivar, [[0,1], [1,1]])
+        self.assertEqual(term._vars_independent.positions, [[0,1], [1,1]])
         pass
 
 
     def test_index_var_3(self):
         ''''''
         term = Narsese.parse("<<animal-->$x> ==> <bird-->$x>>.").term
-        self.assertEqual(term._index_var.var_independent, [0, 0])
+        self.assertEqual(term._vars_independent.indices, [0, 0])
 
         term = Narsese.parse("(&&, <$x-->A>, <#y-->B>, <<$z-->C>==><$x-->A>>).").term
-        self.assertEqual(term._index_var.var_independent, [0, 2, 0])
-        self.assertEqual(term._index_var.var_dependent, [1])
+        self.assertEqual(term._vars_independent.indices, [0, 2, 0])
+        self.assertEqual(term._vars_dependent.indices, [1])
 
         term = Narsese.parse("(&&, <$x-->A>, <#y-->B>, <$z==><$x-->A>>).").term
-        # self.assertEqual(term.index_var.var_independent, [0, 2, 0])
+        # self.assertEqual(term.index_var.indices, [0, 2, 0])
         pass
 
 
     def test_index_var_4(self):
         ''''''
         term1 = Narsese.parse("(&&,<#y --> key>,<$x --> (/,open,#y,_)>).").term
-        self.assertEqual(term1._index_var.positions_dvar, [[0,0],[1,1,1]])
-        self.assertEqual(term1._index_var.positions_ivar, [[1,0]])
+        self.assertEqual(term1._vars_dependent.positions, [[0,0],[1,1,1]])
+        self.assertEqual(term1._vars_independent.positions, [[1,0]])
         pass
 
 
@@ -73,7 +79,12 @@ class TEST_Variable(unittest.TestCase):
         
         self.assertEqual(stat1.predicate, stat2.subject)
         stat1[1,0]
-        R = unification(stat1, stat2, stat1.predicate, stat2.subject)
+        subst = get_substitution__var_var(stat1, stat2, [1], [0])
+        stat3 = subst.apply()
+        stat4 = Statement.Implication(stat3[0], stat2[1])
+        stat5 = Narsese.parse("<<$1-->A>==><$0-->D>>.").term
+        self.assertTrue(stat4.identical(stat5))
+        # R = unification(stat1, stat2, stat1.predicate, stat2.subject)
 
         pass
 
@@ -85,14 +96,14 @@ class TEST_Variable(unittest.TestCase):
         term1 = Narsese.parse('(&&, <#x-->A>, <B-->C>).').term
         term2 = Narsese.parse('(&&, <B-->C>, <{A1}-->A>).').term
         self.assertFalse(term1.identical(term2))
-        self.assertTrue(term1.equal(term2)[0])
+        self.assertTrue(term1.equal(term2))
         pass
 
     def test_unification_2(self):
         term1: Statement = Narsese.parse("<<$x-->A> ==> <$x-->B>>.").term
         term2 = Narsese.parse("<(&&, <#x-->C>, <#x-->D>)-->A>.").term
-        self.assertTrue(term1.subject.equal(term2)[0])
-        self.assertTrue(term2.equal(term1.subject)[0])
+        self.assertTrue(term1.subject.equal(term2))
+        self.assertTrue(term2.equal(term1.subject))
         # 1. to find the substitution
         term1.subject.equal(term2)
         term1[0,0]
@@ -143,9 +154,10 @@ class TEST_Variable(unittest.TestCase):
         (&&, <$1-->A>, <$1-->B>)
         the two should be unequal.
         '''
-        compound1 = Compound(Connector.Conjunction, Statement(Variable(VarPrefix.Independent, "x"), Copula.Inheritance, Term("A")), Statement(Variable(VarPrefix.Independent, "y"), Copula.Inheritance, Term("B")))
-        compound2 = Compound(Connector.Conjunction, Statement(Variable(VarPrefix.Independent, "x"), Copula.Inheritance, Term("A")), Statement(Variable(VarPrefix.Independent, "x"), Copula.Inheritance, Term("B")))
+        compound1 = Compound(Connector.Conjunction, Statement(Variable(VarPrefix.Independent, "x", 0), Copula.Inheritance, Term("A")), Statement(Variable(VarPrefix.Independent, "y", 1), Copula.Inheritance, Term("B")))
+        compound2 = Compound(Connector.Conjunction, Statement(Variable(VarPrefix.Independent, "x", 0), Copula.Inheritance, Term("A")), Statement(Variable(VarPrefix.Independent, "x", 0), Copula.Inheritance, Term("B")))
         self.assertNotEqual(compound1, compound2)
+        self.assertTrue(compound1[1].identical(compound2[1]))
         pass
 
 

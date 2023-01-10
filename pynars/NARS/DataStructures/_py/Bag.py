@@ -132,9 +132,11 @@ class Bag:
         if len(self.item_lut) >= self.capacity:
             pointer = self._get_min_nonempty_level()
             if pointer_new >= pointer:
-                item_lowest = self.levels[self.pointer].pop(0)
-                self.item_lut.pop(item_lowest)
-                item_popped = item_lowest
+                bucket = self.levels[self.pointer]
+                if len(bucket) > 0:
+                    item_lowest = bucket.pop(0)
+                    self.item_lut.pop(item_lowest)
+                    item_popped = item_lowest
             else:
                 item_popped = item
                 return item_popped

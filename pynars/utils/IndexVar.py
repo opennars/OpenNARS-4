@@ -10,8 +10,10 @@ from numpy import prod
 class IntVar:
     def __init__(self, num: int) -> None:
         self.num = int(num)
+        self.parent: IntVar = None
+        self.son: IntVar = None
     
-    def __eq__(self, o: Type['IntVar']) -> bool:
+    def __eq__(self, o: 'IntVar') -> bool:
         if isinstance(o, IntVar): return self.num == o.num  
         else: return self.num == o
     
@@ -22,7 +24,7 @@ class IntVar:
         return hash(self.num)
 
     def __repr__(self) -> str:
-        return str(self.num)
+        return f'_{self.num}'
 
     def __call__(self, num: Union[int, None]):
         if num is not None: self.num = int(num)
@@ -76,6 +78,31 @@ class IntVar:
 
     def __neg__(self, o: Type['IntVar']):
         return IntVar(-self.num)
+    
+    def connect(self, son: 'IntVar'):
+        ''''''
+        self.son = son
+        son.parent = self
+    
+    def propagate_down(self):
+        ''''''
+        num = self.num
+        iv = self.son
+        while iv is not None:
+            iv.num = num
+            iv = iv.son
+    
+    def propagate_up(self):
+        ''''''
+        num = self.num
+        iv = self.parent
+        while iv is not None:
+            iv.num = num
+            iv = iv.parent
+    
+    # def clone(self):
+    #     return IntVar(self.num)
+
 
 class IndexVar:
     '''
@@ -96,117 +123,29 @@ class IndexVar:
     _hash_value = None
 
     def __init__(self) -> None:
-        self.positions_dvar = [] # the positions of each dependent variable
-        self.positions_ivar = [] # the positions of each independent variable
-        self.positions_qvar = [] # the positions of each query variable
-        
-        self.var_dependent = [] # the dependent variable in each position.
-        self.var_independent = [] # the independent variable in each position.
-        self.var_query = [] # the query variable in each position.
+        self.positions = [] # the positions of each dependent variable
+        self.indices = [] # the dependent variable in each position.
 
-        self.dependents: List[tuple] = []
+        self.predecessor: IndexVar = None
+        self.successors: List[IndexVar] = []
 
-        self.names_var: bidict = bidict()
-
-
-    # def add_position_ivar(self, index: int):
-    #     self.positions_ivar.append(index)
-
-
-    # def add_position_dvar(self, index: int):
-    #     self.positions_dvar.append(index)
-
-
-    # def add_position_qvar(self, index: int):
-    #     self.positions_qvar.append(index)
-
-
-    def add_ivar(self, index: int, name: str=None, index_var_component: Type['IndexVar']=None):
-        self._add_var(self.positions_ivar, self.var_independent, index, name, index_var_component)
-
-
-    def add_dvar(self, index: int, name: str=None, index_var_component: Type['IndexVar']=None):
-        self._add_var(self.positions_dvar, self.var_dependent, index, name, index_var_component)
-
-
-    def add_qvar(self, index: int, name: str=None, index_var_component: Type['IndexVar']=None):
-        self._add_var(self.positions_qvar, self.var_query, index, name, index_var_component)
-
-
-    def _add_var(self, positions: list, variables: list, index, name: str=None, index_var_component: Type['IndexVar']=None):
-        positions.append(index)
-        if name is not None:
-            if name not in self.names_var: 
-                self.names_var[name] = len(self.names_var)
-            variables.append(IntVar(self.names_var[name]))
-        # if index_var_component is not None:
-        #     pass
-        
-    def merge(self, *indices_var: Type['IndexVar'], is_input: bool, substitution=None):
-        if isinstance(indices_var, IndexVar): indices_var: Tuple[IndexVar] = (indices_var,)
-        if len(indices_var) == 0: return
-
-        # ivar_new = []
-        # dvar_new = []
-        # qvar_new = []
-        ivar_new = self.var_independent
-        dvar_new = self.var_dependent
-        qvar_new = self.var_query
-
-        set_names = OrderedSet(name for index_var in indices_var for name in index_var.names_var.keys())
-
-        names_var_new = bidict({name_var: i for i, name_var in enumerate(set_names-set(self.names_var.keys()), start=len(self.names_var))})
-        # self.names_var = names_var_new
-        self.names_var.update(names_var_new)
-        if is_input:
-
-            # mapping: Callable[[int, IndexVar], Int] = lambda var, index_var:  names_var_new[index_var.names_var.inverse[int(var)]]
-            mapping: Callable[[int, IndexVar], IntVar] = lambda var, index_var: var(names_var_new[index_var.names_var.inverse[int(var)]])
-
-            for index_var in indices_var:
-                ivar_new.extend([mapping(var, index_var) for var in index_var.var_independent])
-                dvar_new.extend([mapping(var, index_var) for var in index_var.var_dependent])
-                qvar_new.extend([mapping(var, index_var) for var in index_var.var_query])
-                index_var.names_var.update({key:value for key, value in names_var_new.items() if key in index_var.names_var})
-
-                
-                
-        elif substitution is not None:
-            raise # TODO
-        else:
-            for index_var in indices_var:
-                ivar_new.extend(index_var.var_independent)
-                dvar_new.extend(index_var.var_dependent)
-                qvar_new.extend(index_var.var_query)
-
-        
-        
-        self.var_independent = ivar_new
-        self.var_dependent = dvar_new
-        self.var_query = qvar_new
-
-
-        # for index_var in indices_var: index_var.names_var = None # the names of variables are discarded.
+        self._is_built = False
 
 
     def normalize(self):
         '''normalize the index, so that the index is unique in terms of one statement which has variable(s).'''
         if self._positions_normalized is None:
-            self._positions_normalized = (
-                _normalize([int(var) for var in self.var_independent]), 
-                _normalize([int(var) for var in self.var_dependent]), 
-                _normalize([int(var) for var in self.var_query])
-            )
+            self._positions_normalized = _normalize([int(var) for var in self.indices])
         return self._positions_normalized
 
     @property
-    def postions_normalized(self):
+    def indices_normalized(self):
         return self.normalize() if self._positions_normalized is None else self._positions_normalized
 
 
     def do_hashing(self):
         # if self._positions_normalized is None: self._normalize()
-        self._hash_value = hash(self.postions_normalized)
+        self._hash_value = hash(self.indices_normalized)
         return self._hash_value
 
 
@@ -217,8 +156,78 @@ class IndexVar:
     def __eq__(self, o: Type['IndexVar']) -> bool:
         return hash(self) == hash(o)
 
+    
+    def __repr__(self) -> str:
+        return f'<IndexVar: {repr(self.indices)}, {self.positions}, {self.indices_normalized}>'
+
     def clone(self):
         return deepcopy(self)
+
+    
+    def connect(self, successor: 'IndexVar', generate_pos=False):
+        ''''''
+        self.successors.append(successor)
+        successor.predecessor = self
+
+        if not generate_pos: return
+
+        bias_pos = len(self.successors)-1
+        indices = [idx for idx in successor.indices]
+        positions = [[bias_pos]+pos for pos in successor.positions]
+        self.indices.extend(indices)
+        self.positions.extend(positions)
+
+    def build(self, rebuild=False):
+        ''''''
+        if not rebuild and self._is_built: return
+
+        if len(self.successors) > 0:
+            self.indices.clear()
+            self.positions.clear()
+        for bias_pos, successor in enumerate(self.successors):
+            successor.build(rebuild)
+            indices = [idx for idx in successor.indices]
+            positions = [[bias_pos]+pos for pos in successor.positions]
+            self.indices.extend(indices)
+            self.positions.extend(positions)
+
+        self._is_built = True
+
+
+    def rebuild(self):
+        ''''''
+        self.build(rebuild=True)
+
+    
+    def add(self, idx, position):
+        iv = IntVar(idx)
+
+        if len(position) == 0:
+            self.positions.clear()
+            self.indices.clear()
+
+        idxvar = self
+        for pos in position:
+            idxvar = idxvar.successors[pos]
+        idxvar.positions.append([])
+        idxvar.indices.append(iv)
+
+        return iv
+
+
+    def remove(self, position: List[int]):
+        ''''''
+        index = self
+        for pos in position:
+            index = index.successors[pos]
+        index.indices.clear()
+        index.positions.clear()
+
+
+    
+
+
+
 
 
 def _normalize(variables):

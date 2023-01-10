@@ -1,11 +1,11 @@
-import NARS
+from pynars import NARS
 import unittest
 
 from pynars.NARS.DataStructures import Bag, Task, Concept, Table
 from pynars.Narsese import Judgement, Term, Statement, Copula, Truth   
 
 from pathlib import Path
-import Narsese
+from pynars import Narsese
 from pynars.Narsese import Compound, Connector
 from pynars.NAL.MetaLevelInference.VariableSubstitution import *
 from pynars.Narsese._py.Variable import VarPrefix, Variable
@@ -82,7 +82,14 @@ class TEST_Compound(unittest.TestCase):
         <(&&, <$x-->A>, <$y-->A>) ==> (&&, <$x-->B>, <$y-->C>)>.
         '''
         term = Narsese.parse("<(&&, <$x-->A>, <$y-->A>) ==> (&&, <$x-->B>, <$y-->C>)>.").term
+        repr(term[0])
         self.assertEqual(len(term[0].terms), 2)
+
+    
+    def test_compound_variable_1(self):
+        line = '(&&, <(&&, <#x-->bird>, <#x-->swimer>)-->#y>, <swan-->#y>).'
+        term = Narsese.parse(line).term
+        pass
         
 
 if __name__ == '__main__':

@@ -11,7 +11,7 @@ from collections import OrderedDict
 from numpy import product
 
 from pynars.Config import Enable
-from pynars.NARS.RuleMap.Interface import Interface_CompositionalRules, Interface_SyllogisticRules, Interface_DecompositionalRules, Interface_TransformRules, Interface_ConditionalRules, Interface_TemporalRules
+from pynars.NARS.RuleMap.Interface import Interface_CompositionalRules, Interface_SyllogisticRules, Interface_DecompositionalRules, Interface_TransformRules, Interface_ConditionalRules, Interface_TemporalRules, Interface_VariableRules
 from pynars.Narsese import Copula, Task
 from pynars.Narsese._py.Connector import Connector
 from pynars.Narsese._py.Sentence import Goal, Judgement, Quest, Question
@@ -20,7 +20,7 @@ from pynars.Narsese._py.Term import Term
 from pynars.Narsese import Belief, Term, Truth, Compound, Budget
 from ..DataStructures import LinkType, TaskLink, TermLink
 from pynars.NAL.Inference import *
-from pynars.utils.SparseLUT import SparseLUT
+from sparse_lut import SparseLUT
 from pynars.utils.tools import get_size
 
 from pynars.utils.Print import out_print, PrintType
@@ -75,6 +75,10 @@ class CommonId:
 
     def __int__(self):
         return self.first*2 + self.second if self.second is not None else self.first
+    
+    @staticmethod
+    def get(first, second):
+        return None if first is None and second is None else int(CommonId(first, second))
 
 
 def _compound_has_common(term1: Union[Term, Compound, Statement], term2: Union[Term, Compound, Statement]):

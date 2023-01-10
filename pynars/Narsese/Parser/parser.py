@@ -3,6 +3,7 @@ from pynars.Narsese import Base, Operation, Budget, Task, Goal, Punctuation, Que
 from pathlib import Path
 from datetime import datetime
 from pynars import Config, Global
+from collections import defaultdict
 
 root_path = Path(__file__).parent
 narsese_path = root_path/Path('./narsese.lark')
@@ -46,6 +47,10 @@ class TreeToNarsese(Transformer):
     
     temporal_window: int
 
+    names_ivar: defaultdict
+    names_dvar: defaultdict
+    names_qvar: defaultdict
+
     @inline_args
     def task(self, *args):
         kwargs = dict(args)
@@ -82,7 +87,8 @@ class TreeToNarsese(Transformer):
         return Task(**kwargs)
 
     @inline_args
-    def judgement(self, statement, *args):
+    def judgement(self, statement: 'Term|Statement|Compound', *args):
+        statement._rebuild_vars()
         kwargs = dict(args)
         truth = kwargs.pop('truth', None)
         tense = kwargs.pop('tense', None)
@@ -100,7 +106,8 @@ class TreeToNarsese(Transformer):
         return ('sentence', Judgement(statement, **kwargs))
 
     @inline_args
-    def question(self, statement, *args):
+    def question(self, statement: 'Term|Statement|Compound', *args):
+        statement._rebuild_vars()
         kwargs = dict(args)
         tense = kwargs.pop('tense', None)
         tense = Global.time + tense if tense is not None else tense
@@ -109,7 +116,8 @@ class TreeToNarsese(Transformer):
         return ('sentence', Question(statement, **kwargs))
 
     @inline_args
-    def quest(self, statement, *args):
+    def quest(self, statement: 'Term|Statement|Compound', *args):
+        statement._rebuild_vars()
         kwargs = dict(args)
         tense = kwargs.pop('tense', None)
         tense = Global.time + tense if tense is not None else tense
@@ -118,7 +126,8 @@ class TreeToNarsese(Transformer):
         return ('sentence', Quest(statement, **kwargs))
 
     @inline_args
-    def goal(self, statement, *args):
+    def goal(self, statement: 'Term|Statement|Compound', *args):
+        statement._rebuild_vars()
         kwargs = dict(args)
         desire = kwargs.pop('truth', None)
         tense = kwargs.pop('tense', None)
@@ -185,7 +194,14 @@ class TreeToNarsese(Transformer):
         return Interval(num)
 
     @inline_args
-    def variable_term(self, var):
+    def variable_term(self, var: Variable):
+        # name = var.prefix.value+var.name
+        # if not name in self.names_var:
+        #     idx = len(self.names_var)
+        #     self.names_var[name] = idx
+        # else:
+        #     idx = self.names_var[name]
+        # var.variables
         return var
 
     @inline_args
@@ -403,15 +419,27 @@ class TreeToNarsese(Transformer):
 
     @inline_args
     def independent_var(self, term: Token):
-        return Variable(VarPrefix.Independent, term.value)
+        var = Variable(VarPrefix.Independent, term.value)
+        name = var.prefix.value+var.name
+        idx = self.names_ivar[name]
+        var._vars_independent.add(idx, [])
+        return var
     
     @inline_args
     def dependent_var(self, term: Token):
-        return Variable(VarPrefix.Dependent, term.value)
+        var = Variable(VarPrefix.Dependent, term.value)
+        name = var.prefix.value+var.name
+        idx = self.names_dvar[name]
+        var._vars_dependent.add(idx, [])
+        return var
         
     @inline_args
     def query_var(self, term: Token):
-        return Variable(VarPrefix.Query, term.value)
+        var = Variable(VarPrefix.Query, term.value)
+        name = var.prefix.value+var.name
+        idx = self.names_qvar[name]
+        var._vars_query.add(idx, [])
+        return var
 
     '''set'''
     @inline_args
@@ -434,7 +462,12 @@ class TreeToNarsese(Transformer):
 class LarkParser:
     def __init__(self) -> None:
         self.config()
-        self._parser = Lark_StandAlone(transformer=TreeToNarsese())
+        tree = TreeToNarsese()
+        tree.names_ivar = defaultdict(lambda: len(tree.names_ivar)) # for variables
+        tree.names_dvar = defaultdict(lambda: len(tree.names_dvar)) # for variables
+        tree.names_qvar = defaultdict(lambda: len(tree.names_qvar)) # for variables
+        self._parser = Lark_StandAlone(transformer=tree)
+        self._tree = tree
 
     def config(self, config_path='./config.json'):
         Config.load(config_path)
@@ -460,6 +493,9 @@ class LarkParser:
 
 
     def parse(self, text: str) -> Task:
+        self._tree.names_ivar.clear()
+        self._tree.names_dvar.clear()
+        self._tree.names_qvar.clear()
         return self._parser.parse(text)
 
 parser = LarkParser()

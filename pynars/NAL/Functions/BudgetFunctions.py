@@ -1,4 +1,5 @@
 # from pynars.NARS.DataStructures._py.Link import TermLink
+from math import log2
 from pynars.Narsese import Budget, Truth, Term
 from pynars.Config import Config
 from .ExtendedBooleanFunctions import *
@@ -58,6 +59,7 @@ def Budget_inference(quality: float, budget_tasklink: Budget, budget_termlink: B
     '''
     Ref. OpenNARS 3.1.0 BudgetFunctions.java line 292~317.
     '''
+    complexity = 1 + log2(complexity)
     p = budget_tasklink.priority
     d = budget_tasklink.durability/complexity
     q = quality/complexity
@@ -66,7 +68,8 @@ def Budget_inference(quality: float, budget_tasklink: Budget, budget_termlink: B
         d = And(d, budget_termlink.durability)
         # budget_termlink.priority = min(1.0, Or(budget_termlink.priority, Or(q, budget_belief.priority)))
         # budget_termlink.durability = min(1.0-Config.budget_epsilon, Or(budget_termlink.durability, q))
-
+    # d = Scalar(d)
+    # q = Scalar(q)
     return Budget(p, d, q) # , budget_termlink
 
 

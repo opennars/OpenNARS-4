@@ -1,27 +1,39 @@
-from copy import copy
+from copy import copy, deepcopy
 from typing import Iterable, List, Set, Type
 from pynars.utils.IndexVar import IndexVar
 from ordered_set import OrderedSet
 from pynars.utils.tools import find_pos_with_pos, find_var_with_pos
 from .Term import Term
 from pynars import Global
+from typing import Tuple
 
 class Terms:
     ''''''
     # index_var: IndexVar = None
-    def __init__(self, terms: Iterable[Term], is_commutative: bool, is_input: bool=False) -> None:
+    _vars_independent: IndexVar = None
+    _vars_dependent: IndexVar = None
+    _vars_query: IndexVar = None
+    def __init__(self, terms: Iterable[Term], is_commutative: bool, **kwargs) -> None:
         self._is_commutative = is_commutative
 
         terms = tuple(term.clone() for term in terms)
         terms_const: Iterable[Term] = tuple(term for term in terms if not term.has_var)
-        terms_var: Iterable[Term] = tuple(term for term in terms if term.has_var)
+        # terms_var: Iterable[Term] = tuple(term for term in terms if term.has_var)
 
-        # convert terms's form <Term> into (<Terms>, (ivars), (dvars), (qvars)), so that the terms, which have variables, with the same hash-value can be distinguished.
-        index_var = self.handle_index_var(terms_var, is_input=is_input)
-        ivars = tuple(tuple(find_var_with_pos([i], index_var.var_independent, index_var.positions_ivar)) for i in range(len(terms_var)))
-        dvars = tuple(tuple(find_var_with_pos([i], index_var.var_dependent, index_var.positions_dvar)) for i in range(len(terms_var)))
-        qvars = tuple(tuple(find_var_with_pos([i], index_var.var_query, index_var.positions_qvar)) for i in range(len(terms_var)))
-        terms_var = tuple(term for term in zip(terms_var, ivars, dvars, qvars))
+        if self._vars_independent is None: self._vars_independent = IndexVar()
+        if self._vars_dependent is None: self._vars_dependent = IndexVar()
+        if self._vars_query is None: self._vars_query = IndexVar()
+
+        # convert terms's form <Term> into (<Term>, (ivars), (dvars), (qvars)), so that the terms, which have variables, with the same hash-value can be distinguished.
+        Term._init_variables(self.variables, terms) # self.handle_index_var(terms_var, is_input=is_input)
+        self._build_vars()
+        # ivars = tuple(tuple(find_var_with_pos([i], self._vars_independent.indices, self._vars_independent.positions)) for i in range(len(terms_var)))
+        # dvars = tuple(tuple(find_var_with_pos([i], self._vars_dependent.indices, self._vars_independent.positions)) for i in range(len(terms_var)))
+        # qvars = tuple(tuple(find_var_with_pos([i], self._vars_query.indices, self._vars_query.positions)) for i in range(len(terms_var)))
+        ivars = tuple(tuple(idxvar.indices) for idxvar in self._vars_independent.successors)
+        dvars = tuple(tuple(idxvar.indices) for idxvar in self._vars_dependent.successors)
+        qvars = tuple(tuple(idxvar.indices) for idxvar in self._vars_query.successors)
+        terms_var = tuple((term, ivar, dvar, qvar) for term, ivar, dvar, qvar in zip(terms, ivars, dvars, qvars) if term.has_var)
 
         # store the terms
         if is_commutative: 
@@ -34,7 +46,8 @@ class Terms:
             self._terms = terms
 
         # set index_var
-        self._index_var = self.handle_index_var(self._terms, is_input=False)
+        # TODO
+        # self._index_var = self.handle_index_var(self._terms, is_input=False)
         pass
 
     @property
@@ -47,8 +60,11 @@ class Terms:
         return self._terms
 
     def __repr__(self) -> str:
-        word_terms = (str(component) if not component.has_var else component.repr_with_var(self._index_var, [i]) for i, component in enumerate(self.terms))
-        return f"<Terms: ({', '.join(word_terms)})>"
+        word_terms = (str(component) if not component.has_var else component.repr() for i, component in enumerate(self.terms))
+        if self.is_commutative:
+            return f"<Terms: {{{', '.join(word_terms)}}}>"
+        else:
+            return f"<Terms: ({', '.join(word_terms)})>"
 
     def __iter__(self):
         return iter(self._terms)
@@ -63,47 +79,29 @@ class Terms:
     def __sub__(self, o: Type['Terms']):
         ''''''
         return self.difference(o)
+    
+    @property
+    def variables(self) -> Tuple[IndexVar, IndexVar, IndexVar]:
+        return (self._vars_independent, self._vars_dependent, self._vars_query)
 
-    # def convert(self):
-    #     if self._is_commutative:
-    #         terms = tuple((*(term for term in self._terms_const), *(term for term in self._terms_var)))
-    #     else:
-    #         bias = len(self._terms_const)
-    #         order = ((bias + i if term.has_var else i) for i, term in enumerate(self._terms))
-    #         terms = (self._terms_var[i-bias] if term.has_var else self._terms_const[i] for term, i in zip(self._terms, order))
             
-    #     return terms
-            
-    @staticmethod
-    def handle_index_var(terms: List['Term'], is_input: bool):
-        index_var = IndexVar()
-        
-        indices_var_to_merge = []
-        for i, term in enumerate(terms):
-            if term.is_atom and term.is_var: 
-                if term.is_ivar: index_var.add_ivar([i], name=repr(term))
-                elif term.is_dvar: index_var.add_dvar([i], name=repr(term))
-                elif term.is_qvar: index_var.add_qvar([i], name=repr(term))
-            elif term.has_var: # but component itself is not variable
-                if term.has_ivar:
-                    for index in term.index_var.positions_ivar:
-                        index_var.add_ivar([i]+index)
-                if term.has_dvar:
-                    for index in term.index_var.positions_dvar:
-                        index_var.add_dvar([i]+index)
-                if term.has_qvar:
-                    for index in term.index_var.positions_qvar:
-                        index_var.add_qvar([i]+index)
-                indices_var_to_merge.append(term.index_var)
-        index_var.merge(*indices_var_to_merge, is_input=is_input)
-        index_var.normalize()
-        return index_var
+    # @staticmethod
+    # def init_variables(terms: List['Term'], is_input: bool):
+    #     index_var = IndexVar()
+    #     # Term.init_variables(terms, is_input, index_var) # TODO
+    #     return index_var
 
 
     def clone(self):
         ''''''
-        clone = copy(self)
-        clone._index_var = clone._index_var.clone()
+        clone = deepcopy(self)
+        # clone = copy(self)
+        # clone._vars_independent = IndexVar() # self._vars_independent.clone()
+        # clone._vars_dependent = IndexVar() # self._vars_dependent.clone()
+        # clone._vars_query = IndexVar() # self._vars_query.clone()
+        # for term in clone.terms: clone._vars_independent.connect(term._vars_independent, True)
+        # for term in clone.terms: clone._vars_dependent.connect(term._vars_dependent, True)
+        # for term in clone.terms: clone._vars_query.connect(term._vars_query, True) 
         return clone
 
 
@@ -112,13 +110,13 @@ class Terms:
         it make sense only when self.is_commutative is True
         '''
         if self.is_commutative:
-            if is_input: Terms.handle_index_var((*(self), *(term for terms in tuple_terms for term in terms)), True)
-
-
+            # if is_input: Terms.handle_index_var((*(self), *(term for terms in tuple_terms for term in terms)), True)
             terms_const = OrderedSet.intersection(self._terms_const, *(terms._terms_const for terms in tuple_terms))
             terms_var = OrderedSet.intersection(self._terms_var, *(terms._terms_var for terms in tuple_terms))
             terms = tuple((*terms_const, *(term[0] for term in terms_var)))
             terms_intersection = Terms(terms, is_commutative=True, is_input=False)
+            # Term._init_variables(terms_intersection.variables, terms)
+            # terms_intersection._build_vars()
         else: terms_intersection = None
         return terms_intersection
 
@@ -128,7 +126,7 @@ class Terms:
         it make sense only when self.is_commutative is True
         '''
         if self.is_commutative:
-            if is_input: self.handle_index_var((*(self), *(term for terms in tuple_terms for term in terms)), True)
+            # if is_input: self.handle_index_var((*(self), *(term for terms in tuple_terms for term in terms)), True)
             terms_const = OrderedSet.union(self._terms_const, *(terms._terms_const for terms in tuple_terms))
             terms_var = OrderedSet.union(self._terms_var, *(terms._terms_var for terms in tuple_terms))
             terms = tuple((*terms_const, *(term[0] for term in terms_var)))
@@ -142,7 +140,7 @@ class Terms:
         it make sense only when self.is_commutative is True
         '''
         # if self.is_commutative:
-        if is_input: self.handle_index_var((*(self), *(term for terms in tuple_terms for term in terms)), True)
+        # if is_input: self.handle_index_var((*(self), *(term for terms in tuple_terms for term in terms)), True)
         terms_const = OrderedSet.difference(self._terms_const, *(terms._terms_const for terms in tuple_terms))
         terms_var = OrderedSet.difference(self._terms_var, *(terms._terms_var for terms in tuple_terms))
         terms = tuple((*terms_const, *(term[0] for term in terms_var)))
@@ -177,3 +175,16 @@ class Terms:
     def index(self, term: Term):
         ''''''
         return self._terms.index(term)
+
+    
+    def _rebuild_vars(self):
+        ''''''
+        self._vars_independent.rebuild()
+        self._vars_dependent.rebuild()
+        self._vars_query.rebuild()
+
+    def _build_vars(self):
+        ''''''
+        self._vars_independent.build()
+        self._vars_dependent.build()
+        self._vars_query.build()

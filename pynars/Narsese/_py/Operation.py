@@ -23,7 +23,7 @@ class Operation(Term):
         return self._hash_value
 
 
-Anticipate = Operation('Anticipate', True, is_mental_operation=True)
+Anticipate = Operation('anticipate', True, is_mental_operation=True)
 Believe    = Operation('believe',    True, is_mental_operation=True)
 Doubt      = Operation('doubt',      True, is_mental_operation=True)
 Evaluate   = Operation('evaluate',   True, is_mental_operation=True)

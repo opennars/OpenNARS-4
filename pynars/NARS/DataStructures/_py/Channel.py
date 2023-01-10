@@ -7,6 +7,12 @@ from pynars.utils.Print import out_print, PrintType
 
 class Channel(Buffer):
     ''''''
+    def put(self, task: Task):
+        task_overflow = Buffer.put(self, task)
+        return task_overflow
+    
+    def take(self) -> Sentence:
+        return Buffer.take_max(self, remove=True)
 
 class NarseseChannel(Channel):
     ''''''
@@ -19,9 +25,6 @@ class NarseseChannel(Channel):
         
         task_overflow = Buffer.put(self, task)
         return True, task, task_overflow
-    
-    def take(self) -> Sentence:
-        return Buffer.take_max(self, remove=True)
             
             
     

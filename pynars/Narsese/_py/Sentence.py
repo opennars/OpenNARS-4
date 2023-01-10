@@ -116,7 +116,7 @@ class Sentence:
 
     # @property
     def repr(self, is_input=True):
-        return self.term.repr(is_input)
+        return self.term.repr()
     
     @property
     def is_judgement(self) -> bool:
@@ -160,7 +160,7 @@ class Judgement(Sentence):
 
 
     def repr(self,is_input=False):
-        return f'{self.term.repr(is_input)}{self.punct.value}{(" " + str(self.tense.value)) if self.tense != Tense.Eternal else ""} {self.truth}'
+        return f'{self.term.repr()}{self.punct.value}{(" " + str(self.tense.value)) if self.tense != Tense.Eternal else ""} {self.truth}'
 
 class Goal(Sentence):
     def __init__(self, term: Term, stamp: Stamp=None, desire: Truth=None) -> None:

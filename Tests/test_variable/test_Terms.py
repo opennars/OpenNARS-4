@@ -1,11 +1,10 @@
-import NARS
+from pynars import NARS, Narsese
 import unittest
 
 from pynars.NARS.DataStructures import Bag, Task, Concept, Table
 from pynars.Narsese import Judgement, Term, Statement, Copula, Truth   
 
 from pathlib import Path
-import Narsese
 from pynars.Narsese import Compound, Connector
 from pynars.NAL.MetaLevelInference.VariableSubstitution import *
 from pynars.Narsese import Terms
@@ -18,14 +17,29 @@ class TEST_Terms(unittest.TestCase):
         term2 = Narsese.parse("<#x-->B>.").term
         term3 = Narsese.parse("<#y-->A>.").term
         term4 = Narsese.parse("<#y-->C>.").term
-        terms1 = Terms((term1, term2), True, True)
-        terms2 = Terms((term3, term4), True, True)
-        terms3 = Terms((term1, term2, term3, term4), True, True)
+        term3._vars_dependent.indices[0](1)
+        term4._vars_dependent.indices[0](1)
+        terms1 = Terms((term1, term2), True)
+        terms2 = Terms((term3, term4), True)
+        terms3 = Terms((term1, term2, term3, term4), True)
+        terms4 = Terms((term4, ), True)
+        terms4[0]._vars_dependent.indices[0](0)
 
+        terms4[0] == term4
+        
         terms_union_1_2 = Terms.union(terms1, terms2)
         terms_inter_1_3 = Terms.intersection(terms1, terms3)
         terms_difference_3_2 = Terms.difference(terms3, terms2)
         
+        terms3.issuperset(terms4)
+        term1 = Narsese.parse("<$x-->A>.").term
+        term2 = Narsese.parse("<$x-->A>.").term
+        term2._vars_independent.indices[0](1)
+        term2[0]._hash_value = None
+        term2[1]._hash_value = None
+        term2._hash_value = None
+        print(hash(term1))
+        print(hash(term2))
         pass
 
     def test_terms_1(self):

@@ -61,3 +61,5 @@ def rand_seed(x: int):
 
 find_var_with_pos: Callable[[list, list, List[list]], list] = lambda pos_search, variables, positions: [var for var, pos in zip(variables, positions) if pos[:len(pos_search)] == pos_search] # find those variables with a common head of position. e.g. pos_search=[0], variables=[1, 1, 2, 2], and positions=[[0, 2, 0, 0], [0, 2, 1, 0], [0, 3, 0], [1, 0]], then return [1, 1, 2]
 find_pos_with_pos: Callable[[list, List[list]], list] = lambda pos_search, positions: [pos for pos in positions if pos[:len(pos_search)] == pos_search]
+
+find_pos_with_var: Callable[[int, list, List[list]], list] = lambda var_search, variables, positions: [pos for var, pos in zip(variables, positions) if var == var_search]

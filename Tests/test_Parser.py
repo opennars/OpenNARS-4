@@ -1,7 +1,7 @@
 
 from pynars.Narsese._py.Variable import VarPrefix, Variable
 from pynars.Narsese._py.Sentence import Sentence, Tense
-import Narsese
+from pynars import Narsese
 from pynars.Narsese import Budget
 from pynars.Narsese import Compound, Connector
 import unittest
@@ -275,6 +275,11 @@ class TEST_Parser(unittest.TestCase):
         content = Narsese.parser.parse(line)
 
         
+        pass
+
+    def test_error_case_2(self):
+        ''''''
+        term = Narsese.parse("(&&, <(&&, <#x-->bird>, <#x-->swimer>)-->#y>, <swan-->#y>).").term
         pass
     
     def test_chinese(self):

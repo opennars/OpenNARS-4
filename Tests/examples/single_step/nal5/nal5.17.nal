@@ -6,7 +6,7 @@
 'Robin cannot swim.
 <robin --> swimmer>. %0% 
 
-3
+4
 
  'Robin can fly. 
 ''outputMustContain('<robin --> [flying]>. %1.00;0.81%')

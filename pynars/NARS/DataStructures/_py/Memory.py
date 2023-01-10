@@ -1,6 +1,6 @@
 from pynars.Config import Enable
 from pynars.NAL.Inference.LocalRules import solve_query, solution_query, solution_question
-from pynars.NAL.MetaLevelInference.VariableSubstitution import unification__var_const
+from pynars.NAL.MetaLevelInference.VariableSubstitution import get_elimination__var_const
 
 from pynars.NARS.DataStructures._py.Link import TaskLink
 from pynars.Narsese._py.Sentence import Goal, Judgement, Question
@@ -10,6 +10,7 @@ from .Concept import Concept
 from .Bag import Bag
 from pynars.NAL.Functions.Tools import revisible
 from pynars.NAL.Inference import local__revision
+# from pynars.NARS import Operation
 
 class Memory:
     def __init__(self, capacity: int, n_buckets: int = None, take_in_order: bool = False) -> None:
@@ -123,7 +124,7 @@ class Memory:
                 # TODO: Temporal projection
                 desire_revised = local__revision(task, desire) # TODO: handling the stamps
                 # reduce priority by achieving level
-                task.reduce_budget_by_achieving_level(desire)
+                task.reduce_budget_by_achieving_level(desire)                
                 
         if task.budget.is_above_thresh:
             '''
@@ -223,7 +224,7 @@ class Memory:
                     concept_target: Concept = self.concepts.take_by_key(task_link.target.term, False)
                     if concept_target is None: continue
                     if not query.term.equal(concept_target.term): continue
-                    subst = unification__var_const(query.term, concept_target.term, [], [])
+                    subst = get_elimination__var_const(query.term, concept_target.term, [], [])
                     if not subst.is_qvar_valid: continue
                     # if not (concept_target.term.equal(query.term) and subst is not None): continue
                     for belief in concept_target.belief_table:

@@ -15,7 +15,7 @@ from pynars.NARS import Reasoner as Reasoner
 import Tests.utils_for_test as utils_for_test
 from Tests.utils_for_test import *
 
-utils_for_test.engine = RuleMap()
+# utils_for_test.engine = RuleMap()
 
 class TEST_NAL1(unittest.TestCase):
 
@@ -242,10 +242,10 @@ class TEST_NAL1(unittest.TestCase):
             '<?x --> swimmer>?', 
             'swimmer.', 
             True)
-        _, _, _, answers_quest = result2
+        _, _, answers_quest, _ = result2
         # tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
         self.assertTrue(
-            output_contains(answers_quest, '<bird --> swimmer>. %1.00;0.90%')
+            output_contains(answers_quest, '<bird --> swimmer>. %1.00;0.80%')
         )
         
         pass    
@@ -272,7 +272,7 @@ class TEST_NAL1(unittest.TestCase):
             '<?x --> swimmer>?', 
             'swimmer.', 
             True)
-        _, _, _, answers_quest = result2
+        _, _, answers_quest, _ = result2
         # tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
         self.assertTrue(
             output_contains(answers_quest, '<bird --> swimmer>. %1.00;0.90%')

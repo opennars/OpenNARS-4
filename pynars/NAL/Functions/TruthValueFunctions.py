@@ -98,3 +98,6 @@ Truth_deconjuntion: TruthFunction = lambda truth1, truth2: Truth_negation(Truth_
 
 # F_ddj     {(||, A, B).; B.} |- A.
 Truth_dedisjunction: TruthFunction = lambda truth1, truth2: Truth_deduction(Truth_intersection(truth1, Truth_negation(truth2)), truth_analytic)
+
+'''variable'''
+Truth_anonymous_analogy: TruthFunction = lambda truth1, truth2: Truth_analogy(truth2, Truth(truth1.f, w_to_c(truth1.c, truth1.k), truth1.k))

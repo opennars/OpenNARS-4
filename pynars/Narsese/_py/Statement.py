@@ -1,6 +1,5 @@
 from copy import copy
 import enum
-from lib2to3.pgen2.tokenize import StopTokenizing
 from pynars.Config import Enable
 from pynars.utils.IndexVar import IndexVar
 from .Term import Term, TermType
@@ -12,7 +11,7 @@ from ordered_set import OrderedSet
 class Statement(Term):
     type = TermType.STATEMENT
     
-    def __init__(self, subject: Term, copula: Copula, predicate: Term, is_input: bool=False) -> None:
+    def __init__(self, subject: Term, copula: Copula, predicate: Term, is_input: bool=False, is_subterm=True) -> None:
         self._is_commutative = copula.is_commutative
         word = "<"+str(subject)+str(copula.value)+str(predicate)+">"
         if self.is_commutative:
@@ -31,8 +30,13 @@ class Statement(Term):
 
         self.is_operation = self.predicate.is_operation
 
-        if Enable.variable:
-            self.handle_index_var((self.subject, self.predicate), is_input)
+        self._height = max((self.subject._height, self.predicate._height))+1
+
+        # Variables related initialization
+        terms = (self.subject, self.predicate)
+        self._handle_variables(terms)
+        self._init_variables(self.variables, terms)
+        self._build_vars()
 
         pass
         
@@ -85,59 +89,59 @@ class Statement(Term):
     def __repr__(self) -> str:
         return  f'<Statement: {self.repr()}>'
     
-    def repr_with_var(self, index_var: IndexVar, pos: list):
+    def repr(self, *args):
         '''
         index_var (IndexVar): the `index_var` of the root/topmost term.
         pos (list): the position of the current term within the root/topmost term.
         '''
-        word_subject = str(self.subject) if not self.subject.has_var else self.subject.repr_with_var(index_var, pos+[0])
-        word_predicate = str(self.predicate) if not self.predicate.has_var else self.predicate.repr_with_var(index_var, pos+[1])
+        word_subject = str(self.subject) if not self.subject.has_var else self.subject.repr()
+        word_predicate = str(self.predicate) if not self.predicate.has_var else self.predicate.repr()
         
         return f'<{word_subject+str(self.copula.value)+word_predicate}>'
 
     @classmethod
-    def Inheritance(cls, subject: Term, predicate: Term, is_input: bool=False):
-        return cls(subject, Copula.Inheritance, predicate, is_input)
+    def Inheritance(cls, subject: Term, predicate: Term, is_input: bool=False, is_subterm=True):
+        return cls(subject, Copula.Inheritance, predicate, is_input, is_subterm)
     
     
     @classmethod
-    def Implication(cls, subject: Term, predicate: Term, is_input: bool=False):
-        return cls(subject, Copula.Implication, predicate, is_input)
+    def Implication(cls, subject: Term, predicate: Term, is_input: bool=False, is_subterm=True):
+        return cls(subject, Copula.Implication, predicate, is_input, is_subterm)
 
 
     @classmethod
-    def Similarity(cls, subject: Term, predicate: Term, is_input: bool=False):
-        return cls(subject, Copula.Similarity, predicate, is_input)
+    def Similarity(cls, subject: Term, predicate: Term, is_input: bool=False, is_subterm=True):
+        return cls(subject, Copula.Similarity, predicate, is_input, is_subterm)
 
     
     @classmethod
-    def Equivalence(cls, subject: Term, predicate: Term, is_input: bool=False):
-        return cls(subject, Copula.Equivalence, predicate, is_input)
+    def Equivalence(cls, subject: Term, predicate: Term, is_input: bool=False, is_subterm=True):
+        return cls(subject, Copula.Equivalence, predicate, is_input, is_subterm)
 
 
     @classmethod
-    def PredictiveImplication(cls, subject: Term, predicate: Term, is_input: bool=False):
-        return cls(subject, Copula.PredictiveImplication, predicate, is_input)
+    def PredictiveImplication(cls, subject: Term, predicate: Term, is_input: bool=False, is_subterm=True):
+        return cls(subject, Copula.PredictiveImplication, predicate, is_input, is_subterm)
 
 
     @classmethod
-    def ConcurrentImplication(cls, subject: Term, predicate: Term, is_input: bool=False):
-        return cls(subject, Copula.ConcurrentImplication, predicate, is_input)
+    def ConcurrentImplication(cls, subject: Term, predicate: Term, is_input: bool=False, is_subterm=True):
+        return cls(subject, Copula.ConcurrentImplication, predicate, is_input, is_subterm)
 
 
     @classmethod
-    def RetrospectiveImplication(cls, subject: Term, predicate: Term, is_input: bool=False):
-        return cls(subject, Copula.RetrospectiveImplication, predicate, is_input)
+    def RetrospectiveImplication(cls, subject: Term, predicate: Term, is_input: bool=False, is_subterm=True):
+        return cls(subject, Copula.RetrospectiveImplication, predicate, is_input, is_subterm)
 
 
     @classmethod
-    def PredictiveEquivalence(cls, subject: Term, predicate: Term, is_input: bool=False):
-        return cls(subject, Copula.PredictiveEquivalence, predicate, is_input)
+    def PredictiveEquivalence(cls, subject: Term, predicate: Term, is_input: bool=False, is_subterm=True):
+        return cls(subject, Copula.PredictiveEquivalence, predicate, is_input, is_subterm)
 
 
     @classmethod
-    def ConcurrentEquivalence(cls, subject: Term, predicate: Term, is_input: bool=False):
-        return cls(subject, Copula.ConcurrentEquivalence, predicate, is_input)
+    def ConcurrentEquivalence(cls, subject: Term, predicate: Term, is_input: bool=False, is_subterm=True):
+        return cls(subject, Copula.ConcurrentEquivalence, predicate, is_input, is_subterm)
 
     def clone(self):
         if not self.has_var: return self
@@ -145,6 +149,13 @@ class Statement(Term):
         clone = copy(self)
         clone.subject = self.subject.clone()
         clone.predicate = self.predicate.clone()
-        clone._index_var = self._index_var.clone()
+
+        clone._vars_independent = IndexVar() # self._vars_independent.clone()
+        clone._vars_dependent = IndexVar() # self._vars_dependent.clone()
+        clone._vars_query = IndexVar() # self._vars_query.clone()
+        for idx in (clone.subject._vars_independent, clone.predicate._vars_independent): clone._vars_independent.connect(idx, True)
+        for idx in (clone.subject._vars_dependent, clone.predicate._vars_dependent): clone._vars_dependent.connect(idx, True)
+        for idx in (clone.subject._vars_query, clone.predicate._vars_query): clone._vars_query.connect(idx, True)
+        
         
         return clone

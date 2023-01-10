@@ -4,6 +4,7 @@ from typing import List
 from bidict import bidict
 from pynars.Narsese import Term
 from pynars.utils.IndexVar import IntVar
+from pynars.utils.tools import find_pos_with_pos, find_var_with_pos
 
 
 class Substitution:
@@ -22,11 +23,11 @@ class Substitution:
         self.mapping_const = None
 
         if (ivar_src is not None and ivar_tgt is not None):
-            self.mapping_ivar = self._build_mapping(term_src._index_var.var_independent, term_tgt._index_var.var_independent, ivar_src, ivar_tgt)
+            self.mapping_ivar = self._build_mapping(term_src._vars_independent.indices, term_tgt._vars_independent.indices, ivar_src, ivar_tgt)
         if (dvar_src is not None and dvar_tgt is not None):
-            self.mapping_dvar = self._build_mapping(term_src._index_var.var_dependent, term_tgt._index_var.var_dependent, dvar_src, dvar_tgt)
+            self.mapping_dvar = self._build_mapping(term_src._vars_dependent.indices, term_tgt._vars_dependent.indices, dvar_src, dvar_tgt)
         if (qvar_src is not None and qvar_tgt is not None):
-            self.mapping_qvar = self._build_mapping(term_src._index_var.var_query, term_tgt._index_var.var_query, qvar_src, qvar_tgt)
+            self.mapping_qvar = self._build_mapping(term_src._vars_query.indices, term_tgt._vars_query.indices, qvar_src, qvar_tgt)
         if (const_src is not None and const_tgt is not None):
             self.mapping_const = bidict(zip(const_src, const_tgt))
 
@@ -63,16 +64,16 @@ class Substitution:
             mapping_const = self.mapping_const.inverse  if mapping_const is not None else None
 
 
-        ivar = [int(var) for var in term_src.index_var.var_independent]
-        dvar = [int(var) for var in term_src.index_var.var_dependent]
-        qvar = [int(var) for var in term_src.index_var.var_query]
+        ivar = [int(var) for var in term_src._vars_independent.indices]
+        dvar = [int(var) for var in term_src._vars_dependent.indices]
+        qvar = [int(var) for var in term_src._vars_query.indices]
 
-        # TODO: replace var with var
-        term = deepcopy(term_src)
-        term.index_var.var_independent = [var(mapping_ivar.get(var_int, None)) for var, var_int in zip(term._index_var.var_independent, ivar)]
-        term.index_var.var_dependent = [var(mapping_dvar.get(var_int, None)) for var, var_int in zip(term._index_var.var_dependent, dvar)]
-        term.index_var.var_query = [var(mapping_qvar.get(var_int, None)) for var, var_int in zip(term._index_var.var_query, qvar)]
-
+        # replace var with var
+        # term = term_src.clone() # deepcopy(term_src)
+        term =  deepcopy(term_src)
+        for var, var_int in zip(term._vars_independent.indices, ivar): var(mapping_ivar.get(var_int, None))
+        for var, var_int in zip(term._vars_dependent.indices, dvar): var(mapping_dvar.get(var_int, None))
+        for var, var_int in zip(term._vars_query.indices, qvar): var(mapping_qvar.get(var_int, None))
         return term
     
     @staticmethod
@@ -89,3 +90,32 @@ class Substitution:
         else:
             mapping = bidict()
         return mapping
+
+    def __repr__(self):
+        mappings = []
+        if self.is_ivar_valid: mappings.append({f'${int(key)}': val for key, val in self.mapping_ivar.items()})
+        if self.is_dvar_valid: mappings.append({f'#{int(key)}': val for key, val in self.mapping_dvar.items()})
+        if self.is_qvar_valid: mappings.append({f'?{int(key)}': val for key, val in self.mapping_qvar.items()})
+        mappings = [str(m) for m in mappings if len(m) > 0]
+        if len(mappings) == 0:
+            mappings = 'None'
+        else:
+            mappings = ', '.join(mappings)
+        return f'<Substitution: {mappings}>'
+
+
+def get_substitution__var_var(term1: Term, term2: Term, pos_common1: List[IntVar], pos_common2: List[IntVar]) -> Substitution:
+    '''
+    It should be ensured that `term1[pos_common1].equal(term2[pos_common2]) == True`.
+    '''
+    # 1. find the variables with the first common position
+    ivar1 = find_var_with_pos(pos_common1, term1._vars_independent.indices, term1._vars_independent.positions)
+    dvar1 = find_var_with_pos(pos_common1, term1._vars_dependent.indices, term1._vars_dependent.positions)
+    qvar1 = find_var_with_pos(pos_common1, term1._vars_query.indices, term1._vars_dependent.positions)
+
+    # 2. find the variables with the second common position
+    ivar2 = find_var_with_pos(pos_common2, term2._vars_independent.indices, term2._vars_independent.positions)
+    dvar2 = find_var_with_pos(pos_common2, term2._vars_dependent.indices, term2._vars_dependent.positions)
+    qvar2 = find_var_with_pos(pos_common2, term2._vars_query.indices, term2._vars_query.positions)
+
+    return Substitution(term1, term2, ivar1, ivar2, dvar1, dvar2, qvar1, qvar2)

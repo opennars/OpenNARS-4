@@ -1,0 +1,4 @@
+' parser mistake
+(&&, <(&&, <#x-->bird>, <#x-->swimer>)-->#y>, <swan-->#y>).
+' Correct output: (&&, <(&&, <#0-->bird>, <#0-->swimer>)-->#1>, <swan-->#1>).
+' However, it will get: (&&, <(&&, <#0-->bird>, <#1-->swimer>)-->#1>, <swan-->#0>).

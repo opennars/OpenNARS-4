@@ -5,10 +5,16 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python: test_indexvar",
+            "type": "python",
+            "request": "launch",
+            "module": "Tests.test_IndexVar"
+        },
+        {
             "name": "Python: Pong",
             "type": "python",
             "request": "launch",
-            "module": "RL.Pong.main"
+            "module": "pynars.RL.Pong.main"
         },
         {
             "name": "Python: test_nal9",
@@ -196,8 +202,11 @@
             "request": "launch",
             "module": "pynars.Console",
             "console": "integratedTerminal",
+            "env":{
+                "CODON_PATH": "/Users/bowenxu/.codon/lib/codon/stdlib"
+            },
             "args": [
-                "Tests/examples/single_step/nal7/nal7.revrev.nal"
+                // "Tests/examples/single_step/nal7/nal7.revrev.nal"
                 // "Tests/examples/single_step/nal5.query.nal"
             ]
         },
@@ -218,7 +227,10 @@
             "type": "python",
             "request": "launch",
             "program": "${file}",
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "env":{
+                "CODON_PATH": "/Users/bowenxu/.codon/lib/codon/stdlib"
+            }
         }
     ]
 }

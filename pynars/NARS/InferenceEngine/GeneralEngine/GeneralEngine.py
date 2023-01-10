@@ -16,7 +16,12 @@ from pynars import Global
 from ..Engine import Engine
 from .extract_feature import extract_feature
 from pathlib import Path
+from ....NAL.MetaLevelInference.VariableSubstitution.Unification import unify__substitution, unify__introduction, unify__elimination, Substitution, Introduction, Elimination
+from ...DataStructures._py.Link import Link
+from pynars.Narsese import VarPrefix
 
+from ..VariableEngine.VariableEngine import VariableEngine
+from ordered_set import OrderedSet
 
 class GeneralEngine(Engine):
     
@@ -98,9 +103,8 @@ class GeneralEngine(Engine):
 
 
     @classmethod
-    def match(cls, task: Task, belief: Belief, belief_term: Term, task_link, term_link):
+    def match(cls, task: Task, belief: Belief, term_belief: Term, task_link, term_link):
         '''To verify whether the task and the belief can interact with each other'''
-
         is_valid = False
         is_revision = False
         rules = []
@@ -113,25 +117,30 @@ class GeneralEngine(Engine):
                 pass
             elif not belief.evidential_base.is_overlaped(task.evidential_base):
                 # Engine.rule_map.verify(task_link, term_link)
-                rules = GeneralEngine.match_rule(task, belief, belief_term, task_link, term_link)
+                rules = GeneralEngine.match_rule(task, belief, term_belief, task_link, term_link)
+
+                rules_var = VariableEngine.match_rule(task, belief, term_belief, task_link, term_link)
+                if rules_var is not None:
+                    rules = rules | rules_var if rules is not None else rules_var
+
                 if rules is not None and len(rules) > 0:
                     is_valid = True
-        elif belief_term is not None: # belief is None
-            if task.term == belief_term:pass
-            elif task.term.equal(belief_term): pass
+        elif term_belief is not None: # belief is None
+            if task.term == term_belief:pass
+            elif task.term.equal(term_belief): pass
             else:
-                rules = GeneralEngine.match_rule(task, belief, belief_term, task_link, term_link)
+                rules = GeneralEngine.match_rule(task, belief, term_belief, task_link, term_link)
                 if rules is not None and len(rules) > 0:
                     is_valid = True
         else: # belief is None and belief_term is None
-            rules = GeneralEngine.match_rule(task, belief, belief_term, task_link, term_link)
+            rules = GeneralEngine.match_rule(task, belief, term_belief, task_link, term_link)
             if rules is not None and len(rules) > 0:
                 is_valid = True
 
         return is_valid, is_revision, rules
 
     @classmethod
-    def match_rule(cls, task: Task, belief: Union[Belief, None], belief_term: Union[Term, Compound, Statement, None], task_link: TaskLink, term_link: TermLink):
+    def match_rule(cls, task: Task, belief: Union[Belief, None], belief_term: Union[Term, Compound, Statement, None], task_link: TaskLink, term_link: TermLink) -> OrderedSet:
         '''
         Given a task and a belief, find the matched rules for one step inference.
         ''' 
@@ -146,15 +155,18 @@ class GeneralEngine(Engine):
         compound_common_id = None
 
         feature = extract_feature(task.term, (belief.term if belief is not None else belief_term))
-        if belief_term is None:
-            if link1 is LinkType.TRANSFORM:
-                compound_transform: Compound = task.term[task_link.component_index[:-1]]
-                if compound_transform.is_compound:
-                    connector1 = compound_transform.connector
-                    if connector1 in (Connector.ExtensionalImage, Connector.IntensionalImage) and task_link.component_index[-1] == 0:
-                        connector1 = None
+        p2_at_p1 = feature.p2_at_p1
+        p1_at_p2 = feature.p1_at_p2
 
-        else:
+        # if belief_term is None:
+        if link1 is LinkType.TRANSFORM:
+            compound_transform: Compound = task.term[task_link.component_index[:-1]]
+            if compound_transform.is_compound:
+                connector1 = compound_transform.connector
+                if connector1 in (Connector.ExtensionalImage, Connector.IntensionalImage) and task_link.component_index[-1] == 0:
+                    connector1 = None
+
+        elif belief_term is not None:
             if feature.match_reverse is True:
                 pass
             elif feature.has_common_id:
@@ -220,25 +232,15 @@ class GeneralEngine(Engine):
                         task_term: Compound = task.term
                         if task_term.is_compound: 
                             connector1 = task_term.connector
-                        #     # raise "Is this case valid?"
-
-
-                        # compound_common_id = feature.compound_common_id_belief
-                        # connector1 = task_term.connector
-
-                        # common_term = belief.term[compound_common_id]
-                        # if task_term.is_double_only:
-                        #     if common_term == task_term[0]: 
-                        #         at_compound_pos = 0 
-                        #     elif common_term == task_term[1]:
-                        #         at_compound_pos = 1
-                        #     else: raise "Invalid case."
-                        # elif task_term.is_multiple_only:
-                        #     if common_term == task_term[0]: 
-                        #         at_compound_pos = 0 
-                        #     else:
-                        #         at_compound_pos = 1
-                        #     pass
+                        #     compound_belief = belief_term[compound_common_id]
+                        #     if compound_belief.is_compound:
+                        #         connector2 = compound_belief.connector
+                        # elif belief_term.is_compound:
+                        #     connector2 = belief_term.connector
+                        #     compound_task = task_term[compound_common_id]
+                        #     if compound_task.is_compound:
+                        #         connector1 = compound_task.connector
+                        
 
                 elif feature.common_id_task is not None and feature.common_id_belief is not None:
                     common_id = feature.common_id_task*2 + feature.common_id_belief
@@ -284,7 +286,19 @@ class GeneralEngine(Engine):
                         #     if term2 == term1[0]: at_compound_pos = 0 
                         #     elif term2 == term1[1]: at_compound_pos = 1
                         #     else: raise "Invalid case."
-        
+        if connector1 is not None and connector1 is Connector.SequentialEvents:
+            # if connector1 is &/, then judge whether p1 is the first component of p1
+            if p2_at_p1 and belief_term is not None:
+                # (&/, A, B, C)! A.
+                if not belief_term.equal(task.term.terms[0]):
+                    p2_at_p1 = False
+        elif connector2 is not None and connector2 is Connector.SequentialEvents:
+            # if connector1 is &/, then judge whether p1 is the first component of p1
+            if p1_at_p2 and belief_term is not None:
+                # C! (&/, A, B, C).
+                if not task.term.equal(belief_term.terms[-1]):
+                    p1_at_p2 = False
+
 
 
         indices = (
@@ -295,8 +309,8 @@ class GeneralEngine(Engine):
             link1.value,
             link2.value if link2 is not None else None,
 
-            int(task.term.copula) if not task.term.is_atom else None, 
-            int(belief.term.copula) if (belief is not None and belief_term.is_statement) else (int(belief_term.connector) if (belief_term is not None and belief_term.is_compound) else None),
+            int(task.term.copula) if task.term.is_statement else None, 
+            int(belief.term.copula) if (belief is not None and belief_term.is_statement) else None, # (int(belief_term.connector) if (belief_term is not None and belief_term.is_compound) else None),
 
             int(connector1) if connector1 is not None else None, 
             int(connector2) if connector2 is not None else None,
@@ -312,8 +326,8 @@ class GeneralEngine(Engine):
             int(feature.has_common_id), 
             int(feature.has_compound_common_id), 
             int(feature.has_at), 
-            int(feature.p1_at_p2) if feature.p1_at_p2 is not None else None,
-            int(feature.p2_at_p1) if feature.p2_at_p1 is not None else None,
+            int(p1_at_p2) if p1_at_p2 is not None else None,
+            int(p2_at_p1) if p2_at_p1 is not None else None,
             common_id, 
             
             
@@ -343,15 +357,22 @@ class GeneralEngine(Engine):
         term_link_valid = None
         is_valid = False
         for _ in range(len(concept.term_links)):
-            #To find a belief, which is valid to interact with the task, by iterating over the term-links.
+            # To find a belief, which is valid to interact with the task, by iterating over the term-links.
             term_link: TaskLink = concept.term_links.take(remove=True)
             term_links.append(term_link)
             
             concept_target: Concept = term_link.target
             belief = concept_target.get_belief() # TODO: consider all beliefs.
+            if belief is None: continue
             term_belief = concept_target.term
             # if belief is None: continue
-            # Verify the validity of the interaction, and find a pair which is valid for inference.
+
+            # before matching and applying the rules, do variable-related processes (i.e. unification, and substitution/introduction/elimination)
+            subst, elimn, intro = GeneralEngine.unify(task.term, belief.term if belief is not None else None, concept.term, task_link_valid, term_link)
+            task_subst, task_elimn, task_intro = GeneralEngine.substitute(subst, elimn, intro, task)
+            task = task_subst or task_elimn or task_intro or task
+
+            # Verify the interaction, and find a pair which is valid for inference.
             is_valid, is_revision, rules = GeneralEngine.match(task, belief, term_belief, task_link_valid, term_link)
             if is_revision: tasks_derived.append(local__revision(task, belief, task_link_valid.budget, term_link.budget))
             if is_valid: 
@@ -389,5 +410,69 @@ class GeneralEngine(Engine):
         belief = belief if belief is not None else term_belief
         tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules]
 
+        # normalize the variable indices
+        for task in tasks_derived:
+            task.term._normalize_variables()
+
         return tasks_derived
 
+    @staticmethod
+    def unify(term1: Term, term2: Term, term_common: Term, task_link: Link, term_link: Link) -> Tuple[Substitution, Elimination, Introduction]:
+        ''''''
+        subst: Substitution
+        elimn: Elimination
+        intro: Introduction
+        subst, elimn, intro = None, None, None
+        
+        # find a possible (var-to-var) substitution
+        if term2 is not None and term_link is not None:
+            # +: term_common is a component of task.term/belief.term
+            # -: task.term/belief.term is a component of term_common
+            # four possible cases: 1. ++ 2. +- 3. -+ 4. -- 
+            if task_link.source_is_component and term_link.source_is_component: # ++
+                pos1 = list(task_link.component_index)
+                pos2 = list(term_link.component_index)
+                if term_common.is_atom:
+                    pos1, pos2 = pos1[:-1], pos2[:-1]
+                subst = unify__substitution(term1, term2, pos1, pos2)
+                # elimn = unify__elimination(term1, term2, pos1, pos2)
+            elif task_link.source_is_component and not term_link.source_is_component: # +-
+                pos1 = list(task_link.component_index) + list(term_link.component_index)
+                pos2 = []
+                subst = unify__substitution(term1, term2, pos1, pos2)
+            elif not task_link.source_is_component and term_link.source_is_component: # -+
+                pos1 = [] 
+                pos2 = list(term_link.component_index) + list(task_link.component_index)
+                subst = unify__substitution(term1, term2, pos1, pos2)
+            elif not task_link.source_is_component and not term_link.source_is_component: # --
+                pass # TODO
+        
+        # find a possible elimination
+        if term2 is not None and term_link is not None:
+            if task_link.source_is_component and term_link.source_is_component: # ++
+                pos1 = list(task_link.component_index)
+                pos2 = list(term_link.component_index)
+                pos1, pos2 = pos1[:-1], pos2[:-1]
+                elimn = unify__elimination(term1, term2, pos1, pos2)
+            
+        return subst, elimn, intro
+
+    @staticmethod
+    def substitute(subst: Substitution, elimn: Elimination, intro: Introduction, task: Task):
+        ''''''
+        task_subst, task_elimn, task_intro = None, None, None
+        if subst is not None and subst.is_valid:
+            term_task = subst.apply()
+            if task.is_judgement: sentence = Judgement(term_task, task.stamp, task.truth)
+            elif task.is_goal: sentence = Goal(term_task, task.stamp, task.truth)
+            elif task.is_question: sentence = Question(term_task, task.stamp)
+            elif task.is_quest: sentence = Quest(term_task, task.stamp)
+            task = Task(sentence, task.budget)
+        if elimn is not None and elimn.is_ivar_valid:
+            term_task = elimn.apply(type_var={VarPrefix.Independent})
+            if task.is_judgement: sentence = Judgement(term_task, task.stamp, task.truth)
+            elif task.is_goal: sentence = Goal(term_task, task.stamp, task.truth)
+            elif task.is_question: sentence = Question(term_task, task.stamp)
+            elif task.is_quest: sentence = Quest(term_task, task.stamp)
+            task_elimn = Task(sentence, task.budget)
+        return task_subst, task_elimn, task_intro
