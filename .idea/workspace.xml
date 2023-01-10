@@ -1,7 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="cd6c8da9-d934-4bfa-bbe2-1d4b695e912a" name="Changes" comment="Large update on efficiency! 10x faster, or even faster. But it is still slow. Looks like there is a big tail increasing while the system is running. Going to fix it soon.&#10;&#10;I have also created a new experiment environment, on Wumpus world, and 4 corresponding channels.&#10;&#10;I have also provided a &quot;tutoring schema&quot;, which is using a &quot;malfunctioning&quot; tutor to make NARS learns better. Much like &quot;watching someone else working on the environment&quot;. Will make it better in the future." />
+    <list default="true" id="911ba051-6b9b-452b-9974-bdcc93e36626" name="Changes" comment="One more update on efficiency. Previously, updating events or checking anticipation is implemented in am ugly way. Now the algorithm is much better, but the running results is not as wished. I don't know why. I will deal with this efficiency problem later.">
+      <change beforePath="$PROJECT_DIR$/(2).idea/PyNARS-0_0_2_pre_alpha.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/(2).idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/(2).idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/(2).idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/(2).idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/(2).idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/draft.py" beforeDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -17,11 +27,19 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitSEFilterConfiguration">
+    <file-type-list>
+      <filtered-out-file-type name="LOCAL_BRANCH" />
+      <filtered-out-file-type name="REMOTE_BRANCH" />
+      <filtered-out-file-type name="TAG" />
+      <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
+    </file-type-list>
+  </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
-  <component name="ProjectId" id="2GzpjqBZkgeZkjS5XeITyjpDAZC" />
-  <component name="ProjectLevelVcsManager">
+  <component name="ProjectId" id="2FS7SFRwspmlz8f6BdOGAsEY1M8" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <ConfirmationsSetting value="2" id="Add" />
   </component>
   <component name="ProjectViewState">
@@ -32,12 +50,16 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="node.js.detected.package.eslint" value="true" />
-    <property name="node.js.selected.package.eslint" value="(autodetect)" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/pynars/NARS/DataStructures/MC" />
+    <property name="settings.editor.selected.configurable" value="project.propVCSSupport.DirectoryMappings" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\TORY\Downloads\PyNARS-0_0_2_pre_alpha (1)\PyNARS-0_0_2_pre_alpha\pynars\NARS\DataStructures\MC" />
+    </key>
   </component>
   <component name="RunManager" selected="Python.ConsoleMC">
-    <configuration name="Console" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="PyNARS-0_0_2_pre_alpha" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -45,8 +67,63 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/pynars" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="TARGET" value="" />
+      <option name="SETTINGS_FILE" value="" />
+      <option name="CUSTOM_SETTINGS" value="false" />
+      <option name="USE_OPTIONS" value="false" />
+      <option name="OPTIONS" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="PyBehaveRunConfigurationType" factoryName="Behave">
+      <module name="PyNARS-0_0_2_pre_alpha" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
       <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="ADDITIONAL_ARGS" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="ChannelMC" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="PyNARS-0_0_2_pre_alpha" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/pynars/NARS/DataStructures/MC" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/pynars/NARS/DataStructures/MC/ChannelMC.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Console" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="PyNARS-0_0_2_pre_alpha" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="C:\Users\TORY\anaconda3\envs\python37\python.exe" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/pynars" />
+      <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
@@ -81,14 +158,14 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="Unnamed" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="PyNARS-0_0_2_pre_alpha" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
-      <option name="SDK_HOME" value="C:\Users\TORY\anaconda3\envs\python37\python.exe" />
+      <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="" />
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
@@ -103,48 +180,299 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="code2" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="PyNARS-0_0_2_pre_alpha" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../../../../../Fall 2022/CIS 5543" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/../../../../../Fall 2022/CIS 5543/code2.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="draft" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="PyNARS-0_0_2_pre_alpha" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/draft.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="Python.FlaskServer">
+      <module name="PyNARS-0_0_2_pre_alpha" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="launchJavascriptDebuger" value="false" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="Tox" factoryName="Tox">
+      <module name="PyNARS-0_0_2_pre_alpha" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="docs" factoryName="Docutils task">
+      <module name="PyNARS-0_0_2_pre_alpha" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="docutils_input_file" value="" />
+      <option name="docutils_output_file" value="" />
+      <option name="docutils_params" value="" />
+      <option name="docutils_task" value="" />
+      <option name="docutils_open_in_browser" value="false" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="docs" factoryName="Sphinx task">
+      <module name="PyNARS-0_0_2_pre_alpha" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="docutils_input_file" value="" />
+      <option name="docutils_output_file" value="" />
+      <option name="docutils_params" value="" />
+      <option name="docutils_task" value="" />
+      <option name="docutils_open_in_browser" value="false" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Autodetect">
+      <module name="PyNARS-0_0_2_pre_alpha" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Doctests">
+      <module name="PyNARS-0_0_2_pre_alpha" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <method v="2" />
+    </configuration>
     <list>
-      <item itemvalue="Python.Unnamed" />
+      <item itemvalue="Python.ChannelMC" />
+      <item itemvalue="Python.code2" />
+      <item itemvalue="Python.draft" />
       <item itemvalue="Python.ConsoleMC" />
       <item itemvalue="Python.Console" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.ConsoleMC" />
+        <item itemvalue="Python.draft" />
         <item itemvalue="Python.Console" />
+        <item itemvalue="Python.ChannelMC" />
+        <item itemvalue="Python.code2" />
       </list>
     </recent_temporary>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="cd6c8da9-d934-4bfa-bbe2-1d4b695e912a" name="Changes" comment="" />
-      <created>1667401405829</created>
+      <changelist id="911ba051-6b9b-452b-9974-bdcc93e36626" name="Changes" comment="" />
+      <created>1664473628875</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1667401405829</updated>
-      <workItem from="1667401407164" duration="6113000" />
-      <workItem from="1668084636412" duration="27981000" />
+      <updated>1664473628875</updated>
+      <workItem from="1664473630787" duration="16271000" />
+      <workItem from="1664644277272" duration="1465000" />
+      <workItem from="1664915432089" duration="1906000" />
+      <workItem from="1664981990920" duration="17960000" />
+      <workItem from="1665008624495" duration="10000" />
+      <workItem from="1665070490784" duration="8076000" />
+      <workItem from="1665089184257" duration="5894000" />
+      <workItem from="1665249363507" duration="4538000" />
+      <workItem from="1665676054848" duration="2061000" />
+      <workItem from="1665757084820" duration="12059000" />
+      <workItem from="1666028068695" duration="2378000" />
+      <workItem from="1666108955102" duration="9291000" />
+      <workItem from="1666119237507" duration="16552000" />
+      <workItem from="1666148870369" duration="422000" />
+      <workItem from="1666188202162" duration="14353000" />
+      <workItem from="1666203194953" duration="776000" />
+      <workItem from="1666203989597" duration="285000" />
+      <workItem from="1666204315100" duration="11000" />
+      <workItem from="1666213448933" duration="633000" />
+      <workItem from="1666291661329" duration="8715000" />
+      <workItem from="1666389280503" duration="800000" />
+      <workItem from="1666392805358" duration="15514000" />
+      <workItem from="1666497312732" duration="4806000" />
+      <workItem from="1666526602098" duration="3164000" />
+      <workItem from="1666531028872" duration="9463000" />
+      <workItem from="1666545761025" duration="856000" />
+      <workItem from="1666639915198" duration="7138000" />
+      <workItem from="1666719292382" duration="7285000" />
+      <workItem from="1666881616093" duration="16476000" />
+      <workItem from="1666960366267" duration="3985000" />
+      <workItem from="1666973818049" duration="2023000" />
+      <workItem from="1667172225460" duration="4178000" />
+      <workItem from="1667184103010" duration="2545000" />
+      <workItem from="1667217676587" duration="10314000" />
+      <workItem from="1667240868678" duration="10504000" />
+      <workItem from="1667321796436" duration="10633000" />
+      <workItem from="1667332541393" duration="3460000" />
     </task>
-    <task id="LOCAL-00001" summary="Large update on efficiency! 10x faster, or even faster. But it is still slow. Looks like there is a big tail increasing while the system is running. Going to fix it soon.&#10;&#10;I have also created a new experiment environment, on Wumpus world, and 4 corresponding channels.&#10;&#10;I have also provided a &quot;tutoring schema&quot;, which is using a &quot;malfunctioning&quot; tutor to make NARS learns better. Much like &quot;watching someone else working on the environment&quot;. Will make it better in the future.">
-      <created>1668129845938</created>
+    <task id="LOCAL-00001" summary="Initial commit.">
+      <created>1665253389457</created>
       <option name="number" value="00001" />
       <option name="presentableId" value="LOCAL-00001" />
       <option name="project" value="LOCAL" />
-      <updated>1668129845938</updated>
+      <updated>1665253389457</updated>
     </task>
-    <task id="LOCAL-00002" summary="Large update on efficiency! 10x faster, or even faster. But it is still slow. Looks like there is a big tail increasing while the system is running. Going to fix it soon.&#10;&#10;I have also created a new experiment environment, on Wumpus world, and 4 corresponding channels.&#10;&#10;I have also provided a &quot;tutoring schema&quot;, which is using a &quot;malfunctioning&quot; tutor to make NARS learns better. Much like &quot;watching someone else working on the environment&quot;. Will make it better in the future.">
-      <created>1668129853806</created>
+    <task id="LOCAL-00002" summary="Initial commit.">
+      <created>1665253913343</created>
       <option name="number" value="00002" />
       <option name="presentableId" value="LOCAL-00002" />
       <option name="project" value="LOCAL" />
-      <updated>1668129853806</updated>
+      <updated>1665253913343</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Initial commit.">
+      <created>1665253992958</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1665253992958</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Several bugs are fixed.&#10;1. SlotMC.py | For this class, I have updated the three &quot;updating&quot; function. Two points, 1) &quot;term1 == term2&quot; is now turned to &quot;term1.equal(term2)&quot;; 2) When the new task's priority value is smaller than all existed events, it will be added at the beginning of this PQ. But previously, this will happen unconditionally.&#10;2. InputBufferMC.py | Several bugs are fixed and several ameliorations are made. 1) When two such tasks are involved in compound generation, &quot;A, (&amp;|, A, B)&quot;. One existed compound will be generated again. Revision will only happen when the newly-generated one has a higher priority value. 2) Small bugs.&#10;3. GlobalBufferMC.py | Several fatal bugs are fixed and better syntax is used. 1) Previously, the prediction's word is generated in an ugly way, now they will be created using Statement(); 2) Some bugs in the variables used.">
+      <created>1666299661937</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1666299661937</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Several bugs are fixed.&#10;1. SlotMC.py | For this class, I have updated the three &quot;updating&quot; function. Two points, 1) &quot;term1 == term2&quot; is now turned to &quot;term1.equal(term2)&quot;; 2) When the new task's priority value is smaller than all existed events, it will be added at the beginning of this PQ. But previously, this will happen unconditionally.&#10;2. InputBufferMC.py | Several bugs are fixed and several ameliorations are made. 1) When two such tasks are involved in compound generation, &quot;A, (&amp;|, A, B)&quot;. One existed compound will be generated again. Revision will only happen when the newly-generated one has a higher priority value. 2) Small bugs.&#10;3. GlobalBufferMC.py | Several fatal bugs are fixed and better syntax is used. 1) Previously, the prediction's word is generated in an ugly way, now they will be created using Statement(); 2) Some bugs in the variables used.&#10;&#10;Except for the above ones, a GUI is added, looks cool!">
+      <created>1666645922816</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1666645922816</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Fetal bugs fixed.&#10;&#10;The priority queue for events and predictions are actually from large to small (e.g., 1, 2, 3, ...). But I considered that it is from small to larger, so I used the last one as the candidate.&#10;&#10;I have also fixed the bug in making anticipations. In PyNARS, not like OpenNARS, &quot;+1&quot; is allowed in Narsese, so it is possible to have &quot;(&amp;/, A, +1)&quot; as the subject of a prediction. Here I used only &quot;A&quot; as the subject. This time offset is used to put the anticipation in the corresponding time slot. Therefore, I also changed the UI updating method, every time slot will be updated simultaneously.&#10;&#10;Enjoy!">
+      <created>1666726703585</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1666726703585</updated>
+    </task>
+    <task id="LOCAL-00007" summary="The Output window in the main_UI is available now! It will only show your direct commands (what you type in the input box), and the system's response to questions and goals. Though something ugly here. :(&#10;But at least, you can let NARS run while giving it some orders (your orders need to draw NARS's attention.)&#10;&#10;Enjoy!">
+      <created>1666902813126</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1666902813126</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Fatal bugs fixed. The biggest one is that I found I did not allow NARS to do a reasoning cycle after accept the task from the global buffer. Another big one is that I did not handle unsatisfied anticipations previously. Maybe one more, previously, all events from channels are just permanent (without :|: in the end).&#10;&#10;Code updates. More comments are added, and unnecessary debugging comments are deleted. With an ameliorated arrangement, I hope you can understand the code better.&#10;&#10;Some updates in UI, small details, it is clearer. Two more buttons are added. &#10;&#10;One more channel is added for the shapes detected in the vision.&#10;&#10;Next, I will make the environment more meaningful.&#10;&#10;Enjoy!">
+      <created>1667227944142</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1667227944142</updated>
+    </task>
+    <task id="LOCAL-00009" summary="Fatal bugs fixed. The biggest one is that I found I did not allow NARS to do a reasoning cycle after accept the task from the global buffer. Another big one is that I did not handle unsatisfied anticipations previously. Maybe one more, previously, all events from channels are just permanent (without :|: in the end).&#10;&#10;Code updates. More comments are added, and unnecessary debugging comments are deleted. With an ameliorated arrangement, I hope you can understand the code better.&#10;&#10;Some updates in UI, small details, it is clearer. Two more buttons are added. &#10;&#10;One more channel is added for the shapes detected in the vision.&#10;&#10;Next, I will make the environment more meaningful.&#10;&#10;Enjoy!">
+      <created>1667241058907</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1667241058907</updated>
+    </task>
+    <task id="LOCAL-00010" summary="Fatal bugs fixed. The biggest one is that I found I did not allow NARS to do a reasoning cycle after accept the task from the global buffer. Another big one is that I did not handle unsatisfied anticipations previously. Maybe one more, previously, all events from channels are just permanent (without :|: in the end).&#10;&#10;Code updates. More comments are added, and unnecessary debugging comments are deleted. With an ameliorated arrangement, I hope you can understand the code better.&#10;&#10;Some updates in UI, small details, it is clearer. Two more buttons are added. &#10;&#10;One more channel is added for the shapes detected in the vision.&#10;&#10;Next, I will make the environment more meaningful.&#10;&#10;Enjoy!">
+      <created>1667241274366</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1667241274366</updated>
+    </task>
+    <task id="LOCAL-00011" summary="One more update on efficiency. Previously, updating events or checking anticipation is implemented in am ugly way. Now the algorithm is much better, but the running results is not as wished. I don't know why. I will deal with this efficiency problem later.">
+      <created>1667335747154</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1667335747154</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.History.Properties">
+    <option name="COLUMN_ID_ORDER">
+      <list>
+        <option value="Default.Root" />
+        <option value="Default.Author" />
+        <option value="Default.Date" />
+        <option value="Default.Subject" />
+        <option value="Space.CommitStatus" />
+      </list>
+    </option>
   </component>
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">
@@ -158,28 +486,70 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Large update on efficiency! 10x faster, or even faster. But it is still slow. Looks like there is a big tail increasing while the system is running. Going to fix it soon.&#10;&#10;I have also created a new experiment environment, on Wumpus world, and 4 corresponding channels.&#10;&#10;I have also provided a &quot;tutoring schema&quot;, which is using a &quot;malfunctioning&quot; tutor to make NARS learns better. Much like &quot;watching someone else working on the environment&quot;. Will make it better in the future." />
-    <option name="LAST_COMMIT_MESSAGE" value="Large update on efficiency! 10x faster, or even faster. But it is still slow. Looks like there is a big tail increasing while the system is running. Going to fix it soon.&#10;&#10;I have also created a new experiment environment, on Wumpus world, and 4 corresponding channels.&#10;&#10;I have also provided a &quot;tutoring schema&quot;, which is using a &quot;malfunctioning&quot; tutor to make NARS learns better. Much like &quot;watching someone else working on the environment&quot;. Will make it better in the future." />
+    <ignored-roots>
+      <path value="$PROJECT_DIR$/pynars" />
+      <path value="$PROJECT_DIR$/pynars - 副本" />
+    </ignored-roots>
+    <MESSAGE value="Initial commit." />
+    <MESSAGE value="Several bugs are fixed.&#10;1. SlotMC.py | For this class, I have updated the three &quot;updating&quot; function. Two points, 1) &quot;term1 == term2&quot; is now turned to &quot;term1.equal(term2)&quot;; 2) When the new task's priority value is smaller than all existed events, it will be added at the beginning of this PQ. But previously, this will happen unconditionally.&#10;2. InputBufferMC.py | Several bugs are fixed and several ameliorations are made. 1) When two such tasks are involved in compound generation, &quot;A, (&amp;|, A, B)&quot;. One existed compound will be generated again. Revision will only happen when the newly-generated one has a higher priority value. 2) Small bugs.&#10;3. GlobalBufferMC.py | Several fatal bugs are fixed and better syntax is used. 1) Previously, the prediction's word is generated in an ugly way, now they will be created using Statement(); 2) Some bugs in the variables used." />
+    <MESSAGE value="Several bugs are fixed.&#10;1. SlotMC.py | For this class, I have updated the three &quot;updating&quot; function. Two points, 1) &quot;term1 == term2&quot; is now turned to &quot;term1.equal(term2)&quot;; 2) When the new task's priority value is smaller than all existed events, it will be added at the beginning of this PQ. But previously, this will happen unconditionally.&#10;2. InputBufferMC.py | Several bugs are fixed and several ameliorations are made. 1) When two such tasks are involved in compound generation, &quot;A, (&amp;|, A, B)&quot;. One existed compound will be generated again. Revision will only happen when the newly-generated one has a higher priority value. 2) Small bugs.&#10;3. GlobalBufferMC.py | Several fatal bugs are fixed and better syntax is used. 1) Previously, the prediction's word is generated in an ugly way, now they will be created using Statement(); 2) Some bugs in the variables used.&#10;&#10;Except for the above ones, a GUI is added, looks cool!" />
+    <MESSAGE value="Fetal bugs fixed.&#10;&#10;The priority queue for events and predictions are actually from large to small (e.g., 1, 2, 3, ...). But I considered that it is from small to larger, so I used the last one as the candidate.&#10;&#10;I have also fixed the bug in making anticipations. In PyNARS, not like OpenNARS, &quot;+1&quot; is allowed in Narsese, so it is possible to have &quot;(&amp;/, A, +1)&quot; as the subject of a prediction. Here I used only &quot;A&quot; as the subject. This time offset is used to put the anticipation in the corresponding time slot. Therefore, I also changed the UI updating method, every time slot will be updated simultaneously.&#10;&#10;Enjoy!" />
+    <MESSAGE value="The Output window in the main_UI is available now! It will only show your direct commands (what you type in the input box), and the system's response to questions and goals. Though something ugly here. :(&#10;But at least, you can let NARS run while giving it some orders (your orders need to draw NARS's attention.)&#10;&#10;Enjoy!" />
+    <MESSAGE value="Fatal bugs fixed. The biggest one is that I found I did not allow NARS to do a reasoning cycle after accept the task from the global buffer. Another big one is that I did not handle unsatisfied anticipations previously. Maybe one more, previously, all events from channels are just permanent (without :|: in the end).&#10;&#10;Code updates. More comments are added, and unnecessary debugging comments are deleted. With an ameliorated arrangement, I hope you can understand the code better.&#10;&#10;Some updates in UI, small details, it is clearer. Two more buttons are added. &#10;&#10;One more channel is added for the shapes detected in the vision.&#10;&#10;Next, I will make the environment more meaningful.&#10;&#10;Enjoy!" />
+    <MESSAGE value="One more update on efficiency. Previously, updating events or checking anticipation is implemented in am ugly way. Now the algorithm is much better, but the running results is not as wished. I don't know why. I will deal with this efficiency problem later." />
+    <option name="LAST_COMMIT_MESSAGE" value="One more update on efficiency. Previously, updating events or checking anticipation is implemented in am ugly way. Now the algorithm is much better, but the running results is not as wished. I don't know why. I will deal with this efficiency problem later." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/pynars/NARS/Control/ReasonerMC.py</url>
-          <line>345</line>
-          <option name="timeStamp" value="17" />
+          <url>file://$PROJECT_DIR$/pynars/NARS/DataStructures/MC/SampleChannels/SampleEnvironment1.py</url>
+          <line>64</line>
+          <option name="timeStamp" value="48" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/pynars/NARS/DataStructures/MC/SlotMC.py</url>
-          <line>7</line>
-          <option name="timeStamp" value="18" />
+          <url>file://$PROJECT_DIR$/pynars/Console.py</url>
+          <line>53</line>
+          <option name="timeStamp" value="86" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/pynars/NARS/Control/Reasoner.py</url>
+          <line>99</line>
+          <option name="timeStamp" value="91" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/pynars/NARS/Control/ReasonerMC.py</url>
+          <line>283</line>
+          <option name="timeStamp" value="96" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/pynars/NARS/Control/ReasonerMC.py</url>
+          <line>285</line>
+          <option name="timeStamp" value="97" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/pynars/NARS/Control/ReasonerMC.py</url>
+          <line>287</line>
+          <option name="timeStamp" value="98" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/pynars/NARS/Control/ReasonerMC.py</url>
+          <line>160</line>
+          <option name="timeStamp" value="99" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/PyNARS_0_0_2_pre_alpha$ConsoleMC.coverage" NAME="ConsoleMC Coverage Results" MODIFIED="1668118995402" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/pynars" />
-    <SUITE FILE_PATH="coverage/PyNARS_0_0_2_pre_alpha$Console.coverage" NAME="Console Coverage Results" MODIFIED="1668099576279" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/pynars" />
+    <SUITE FILE_PATH="coverage/PyNARS_0_0_2_pre_alpha$code2.coverage" NAME="code2 Coverage Results" MODIFIED="1666204024787" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/../../../Fall 2022/CIS 5543" />
+    <SUITE FILE_PATH="coverage/PyNARS_0_0_2_pre_alpha$ChannelMC.coverage" NAME="ChannelMC Coverage Results" MODIFIED="1667260147598" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/pynars/NARS/DataStructures/MC" />
+    <SUITE FILE_PATH="coverage/PyNARS$draft.coverage" NAME="draft Coverage Results" MODIFIED="1672937397702" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/PyNARS_0_0_2_pre_alpha$draft.coverage" NAME="draft Coverage Results" MODIFIED="1667326322834" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/PyNARS_0_0_2_pre_alpha$ConsoleMC.coverage" NAME="ConsoleMC Coverage Results" MODIFIED="1667336227503" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/pynars" />
+    <SUITE FILE_PATH="coverage/PyNARS_0_0_2_pre_alpha$Console.coverage" NAME="Console Coverage Results" MODIFIED="1667324221816" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/pynars" />
+    <SUITE FILE_PATH="coverage/PyNARS_0_0_2_pre_alpha$SampleEnvironment1.coverage" NAME="SampleEnvironment1 Coverage Results" MODIFIED="1665762478887" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/pynars/NARS/DataStructures/MC/SampleChannels" />
     <SUITE FILE_PATH="coverage/PyNARS_0_0_2_pre_alpha$Unnamed.coverage" NAME="Unnamed Coverage Results" MODIFIED="1667401482739" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/PyNARS_0_0_2_pre_alpha$assignment2.coverage" NAME="assignment2 Coverage Results" MODIFIED="1666203933989" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/PyNARS$ConsoleMC.coverage" NAME="ConsoleMC Coverage Results" MODIFIED="1672939594236" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/pynars" />
   </component>
 </project>
