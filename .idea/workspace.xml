@@ -1,16 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="911ba051-6b9b-452b-9974-bdcc93e36626" name="Changes" comment="One more update on efficiency. Previously, updating events or checking anticipation is implemented in am ugly way. Now the algorithm is much better, but the running results is not as wished. I don't know why. I will deal with this efficiency problem later.">
-      <change beforePath="$PROJECT_DIR$/(2).idea/PyNARS-0_0_2_pre_alpha.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/(2).idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/(2).idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/(2).idea/misc.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/(2).idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/(2).idea/vcs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    <list default="true" id="911ba051-6b9b-452b-9974-bdcc93e36626" name="Changes" comment="MC 23/1/10 1st revision">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/draft.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pynars/NARS/DataStructures/MC/SampleChannels/NarseseChannel.py" beforeDir="false" afterPath="$PROJECT_DIR$/pynars/NARS/DataStructures/MC/SampleChannels/NarseseChannel.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pynars/NARS/DataStructures/MC/SampleChannels/SampleChannel1.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pynars/NARS/DataStructures/MC/SlotMC_archieve.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pynars/NARS/DataStructures/MC/playground.txt" beforeDir="false" afterPath="$PROJECT_DIR$/pynars/NARS/DataStructures/MC/SampleChannels/playground.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pynars/moon.jpg" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -51,47 +48,19 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/pynars/NARS/DataStructures/MC" />
+    <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="settings.editor.selected.configurable" value="project.propVCSSupport.DirectoryMappings" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\TORY\Downloads\PyNARS-0_0_2_pre_alpha (1)\PyNARS-0_0_2_pre_alpha\pynars\NARS\DataStructures\MC" />
     </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\TORY\OneDrive - Temple University\AGI research\opennars_v3.1.2-main\archieve\PyNARS\PyNARS\pynars\NARS\DataStructures\MC\SampleChannels" />
+    </key>
   </component>
   <component name="RunManager" selected="Python.ConsoleMC">
-    <configuration default="true" type="DjangoTestsConfigurationType">
-      <module name="PyNARS-0_0_2_pre_alpha" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="TARGET" value="" />
-      <option name="SETTINGS_FILE" value="" />
-      <option name="CUSTOM_SETTINGS" value="false" />
-      <option name="USE_OPTIONS" value="false" />
-      <option name="OPTIONS" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration default="true" type="PyBehaveRunConfigurationType" factoryName="Behave">
-      <module name="PyNARS-0_0_2_pre_alpha" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="ADDITIONAL_ARGS" value="" />
-      <method v="2" />
-    </configuration>
     <configuration name="ChannelMC" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="PyNARS-0_0_2_pre_alpha" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -158,28 +127,6 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
-      <module name="PyNARS-0_0_2_pre_alpha" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <configuration name="code2" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="PyNARS-0_0_2_pre_alpha" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -222,99 +169,6 @@
       <option name="MODULE_MODE" value="false" />
       <option name="REDIRECT_INPUT" value="false" />
       <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration default="true" type="Python.FlaskServer">
-      <module name="PyNARS-0_0_2_pre_alpha" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="launchJavascriptDebuger" value="false" />
-      <method v="2" />
-    </configuration>
-    <configuration default="true" type="Tox" factoryName="Tox">
-      <module name="PyNARS-0_0_2_pre_alpha" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <method v="2" />
-    </configuration>
-    <configuration default="true" type="docs" factoryName="Docutils task">
-      <module name="PyNARS-0_0_2_pre_alpha" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="docutils_input_file" value="" />
-      <option name="docutils_output_file" value="" />
-      <option name="docutils_params" value="" />
-      <option name="docutils_task" value="" />
-      <option name="docutils_open_in_browser" value="false" />
-      <method v="2" />
-    </configuration>
-    <configuration default="true" type="docs" factoryName="Sphinx task">
-      <module name="PyNARS-0_0_2_pre_alpha" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="docutils_input_file" value="" />
-      <option name="docutils_output_file" value="" />
-      <option name="docutils_params" value="" />
-      <option name="docutils_task" value="" />
-      <option name="docutils_open_in_browser" value="false" />
-      <method v="2" />
-    </configuration>
-    <configuration default="true" type="tests" factoryName="Autodetect">
-      <module name="PyNARS-0_0_2_pre_alpha" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;&quot;" />
-      <option name="_new_targetType" value="&quot;PATH&quot;" />
-      <method v="2" />
-    </configuration>
-    <configuration default="true" type="tests" factoryName="Doctests">
-      <module name="PyNARS-0_0_2_pre_alpha" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="" />
-      <option name="CLASS_NAME" value="" />
-      <option name="METHOD_NAME" value="" />
-      <option name="FOLDER_NAME" value="" />
-      <option name="TEST_TYPE" value="TEST_SCRIPT" />
-      <option name="PATTERN" value="" />
-      <option name="USE_PATTERN" value="false" />
       <method v="2" />
     </configuration>
     <list>
@@ -379,6 +233,7 @@
       <workItem from="1667240868678" duration="10504000" />
       <workItem from="1667321796436" duration="10633000" />
       <workItem from="1667332541393" duration="3460000" />
+      <workItem from="1673396712224" duration="744000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit.">
       <created>1665253389457</created>
@@ -457,7 +312,14 @@
       <option name="project" value="LOCAL" />
       <updated>1667335747154</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="MC 23/1/10 1st revision">
+      <created>1673394545707</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1673394545707</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -497,7 +359,8 @@
     <MESSAGE value="The Output window in the main_UI is available now! It will only show your direct commands (what you type in the input box), and the system's response to questions and goals. Though something ugly here. :(&#10;But at least, you can let NARS run while giving it some orders (your orders need to draw NARS's attention.)&#10;&#10;Enjoy!" />
     <MESSAGE value="Fatal bugs fixed. The biggest one is that I found I did not allow NARS to do a reasoning cycle after accept the task from the global buffer. Another big one is that I did not handle unsatisfied anticipations previously. Maybe one more, previously, all events from channels are just permanent (without :|: in the end).&#10;&#10;Code updates. More comments are added, and unnecessary debugging comments are deleted. With an ameliorated arrangement, I hope you can understand the code better.&#10;&#10;Some updates in UI, small details, it is clearer. Two more buttons are added. &#10;&#10;One more channel is added for the shapes detected in the vision.&#10;&#10;Next, I will make the environment more meaningful.&#10;&#10;Enjoy!" />
     <MESSAGE value="One more update on efficiency. Previously, updating events or checking anticipation is implemented in am ugly way. Now the algorithm is much better, but the running results is not as wished. I don't know why. I will deal with this efficiency problem later." />
-    <option name="LAST_COMMIT_MESSAGE" value="One more update on efficiency. Previously, updating events or checking anticipation is implemented in am ugly way. Now the algorithm is much better, but the running results is not as wished. I don't know why. I will deal with this efficiency problem later." />
+    <MESSAGE value="MC 23/1/10 1st revision" />
+    <option name="LAST_COMMIT_MESSAGE" value="MC 23/1/10 1st revision" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -550,6 +413,6 @@
     <SUITE FILE_PATH="coverage/PyNARS_0_0_2_pre_alpha$SampleEnvironment1.coverage" NAME="SampleEnvironment1 Coverage Results" MODIFIED="1665762478887" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/pynars/NARS/DataStructures/MC/SampleChannels" />
     <SUITE FILE_PATH="coverage/PyNARS_0_0_2_pre_alpha$Unnamed.coverage" NAME="Unnamed Coverage Results" MODIFIED="1667401482739" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/PyNARS_0_0_2_pre_alpha$assignment2.coverage" NAME="assignment2 Coverage Results" MODIFIED="1666203933989" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/PyNARS$ConsoleMC.coverage" NAME="ConsoleMC Coverage Results" MODIFIED="1672939594236" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/pynars" />
+    <SUITE FILE_PATH="coverage/PyNARS$ConsoleMC.coverage" NAME="ConsoleMC Coverage Results" MODIFIED="1673397129836" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/pynars" />
   </component>
 </project>
