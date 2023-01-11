@@ -3,6 +3,7 @@ from pynars.NAL.Functions.Tools import truth_to_quality
 from pynars.NARS.DataStructures._py.Channel import Channel
 
 from pynars.NARS.DataStructures._py.Link import TaskLink
+from pynars.NARS.InferenceEngine import TemporalEngine
 # from pynars.NARS.Operation import Interface_Awareness
 from pynars.Narsese._py.Budget import Budget
 from pynars.Narsese._py.Statement import Statement

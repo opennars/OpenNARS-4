@@ -263,6 +263,16 @@ class TEST_NAL6(unittest.TestCase):
         )
         pass
 
+    def test_unification_5_1(self):
+        '''
+        'Variable unification 
+        <(&&,<$x --> A>,<$x --> B>, <$y --> C>) ==> <$y --> D>>. 
+        <(&&,<$x --> C>, <$x --> E>) ==> <$x --> D>>.
+
+        ''outputMustContain('<(&&,<$x --> A>,<$x --> B>) ==> <$y --> D>>.  %1.00;0.45%')
+        '''
+        pass
+
 
 
     def test_unification_6(self):
