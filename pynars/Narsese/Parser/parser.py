@@ -44,7 +44,7 @@ class TreeToNarsese(Transformer):
     c_judgement: float
     c_goal: float
     k: int
-    
+
     temporal_window: int
 
     names_ivar: defaultdict
@@ -78,7 +78,7 @@ class TreeToNarsese(Transformer):
                 d = durability or self.d_goal
                 q = quality or Budget.quality_from_truth(goal.truth)
         else:
-            p, d, q = priority, durability, quality 
+            p, d, q = priority, durability, quality
 
         budget = Budget(p, d, q)
 
@@ -101,7 +101,7 @@ class TreeToNarsese(Transformer):
 
         tense = Global.time + tense if tense is not None else tense
         base = Base((Global.get_input_id(),))
-        kwargs['truth'] = Truth(f,c,k)    
+        kwargs['truth'] = Truth(f,c,k)
         kwargs['stamp'] =  Stamp(Global.time, tense, None, base)
         return ('sentence', Judgement(statement, **kwargs))
 
@@ -216,7 +216,7 @@ class TreeToNarsese(Transformer):
     def statement_operation1(self, op: Operation, *args: str):
         terms = (term for term in args)
         return Statement(Compound(Connector.Product, *terms, is_input=True), Copula.Inheritance, op, is_input=True)
-    
+
     @inline_args
     def statement_operation2(self, word: Token, *args: str):
         op = word.value
@@ -267,32 +267,32 @@ class TreeToNarsese(Transformer):
     @inline_args
     def predictive_equivalence(self):
         return Copula.PredictiveEquivalence
-    
+
     @inline_args
     def concurrent_equivalence(self):
         return Copula.ConcurrentEquivalence
 
-    
 
-    
+
+
 
     '''tense'''
     # @inline_args
     def tense_present(self, *args):
         return ('tense', 0)
-    
+
     @inline_args
     def tense_future(self, *args):
         return ('tense', self.temporal_window)
-    
+
     @inline_args
     def tense_past(self, *args):
         return ('tense', -self.temporal_window)
-    
+
     @inline_args
     def tense_time(self, number: Token):
         return ('tense', int(number.value))
-    
+
 
     '''multi'''
     @inline_args
@@ -342,7 +342,7 @@ class TreeToNarsese(Transformer):
     @inline_args
     def single_prefix(self, connector, term1, term2):
         return Compound(connector, term1, term2, is_input=True)
-    
+
     @inline_args
     def single_infix(self, term1, connector, term2):
         return Compound(connector, term1, term2, is_input=True)
@@ -350,11 +350,11 @@ class TreeToNarsese(Transformer):
     @inline_args
     def negation(self, connector, term):
         return Compound(connector, term, is_input=True)
-    
+
     @inline_args
     def ext_image(self, connector, *args):
         return Compound(connector, *args, is_input=True)
-    
+
     @inline_args
     def int_image(self, connector, *args):
         return Compound(connector, *args, is_input=True)
@@ -368,31 +368,31 @@ class TreeToNarsese(Transformer):
     @inline_args
     def con_product(self):
         return Connector.Product
-    
+
     @inline_args
     def con_disjunction(self):
         return Connector.Disjunction
-    
+
     @inline_args
     def con_parallel_events(self):
         return Connector.ParallelEvents
-    
+
     @inline_args
     def con_sequential_events(self):
         return Connector.SequentialEvents
-    
+
     @inline_args
     def con_intensional_intersection(self):
         return Connector.IntensionalIntersection
-    
+
     @inline_args
     def con_extensional_intersection(self):
         return Connector.ExtensionalIntersection
-    
+
     @inline_args
     def con_extensional_difference(self):
         return Connector.ExtensionalDifference
-    
+
     @inline_args
     def con_intensional_difference(self):
         return Connector.IntensionalDifference
@@ -481,7 +481,7 @@ class LarkParser:
         TreeToNarsese.d_quest = Config.Config.d_quest
         TreeToNarsese.p_goal = Config.Config.p_goal
         TreeToNarsese.d_goal = Config.Config.d_goal
-        
+
         # truth
         TreeToNarsese.f = Config.Config.f
         TreeToNarsese.c_judgement = Config.Config.c_judgement

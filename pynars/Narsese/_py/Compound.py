@@ -1,7 +1,7 @@
 # from pynars.NAL.Functions.ExtendedBooleanFunctions import Or
 from copy import copy
 from pynars.Config import Enable
-from pynars.Narsese._py.Interval import Interval 
+from pynars.Narsese._py.Interval import Interval
 from pynars.utils.IndexVar import IndexVar
 from .Term import Term, TermType, place_holder
 from .Terms import Terms
@@ -12,16 +12,19 @@ from typing import Set
 from pynars.utils.tools import list_contains
 import numpy as np
 
-class Compound(Term): #, OrderedSet):
+
+class Compound(Term):  # , OrderedSet):
     type = TermType.COMPOUND
 
     _terms: Terms
+
     def __init__(self, connector: Connector, *terms: Term, is_input=False) -> None:
         ''''''
         self._is_commutative = connector.is_commutative
         terms = Terms(terms, self._is_commutative)
-        self.connector, self._terms = self.prepocess_terms(connector, terms, is_input) # the connector may be changed, for example, (|, {A}, {B}) is changed into {A, B}. 
-
+        # the connector may be changed, for example, (|, {A}, {B}) is changed into {A, B}.
+        self.connector, self._terms = self.prepocess_terms(
+            connector, terms, is_input)
 
         terms = self._terms
 
@@ -31,22 +34,24 @@ class Compound(Term): #, OrderedSet):
         if self.is_commutative:
             terms_sorted = sorted(terms, key=hash)
             word_sorted = self._terms_to_word(*terms_sorted)
-        else: word_sorted = None
+        else:
+            word_sorted = None
         Term.__init__(self, word, word_sorted=word_sorted)
-        
+
         compound: Set[Term] = self
-        self._components = OrderedSet(term for component in compound for term in component.sub_terms)
+        self._components = OrderedSet(
+            term for component in compound for term in component.sub_terms)
 
         self._complexity += sum(term.complexity for term in terms)
-        self._is_higher_order = False # connector.is_higher_order
+        self._is_higher_order = False  # connector.is_higher_order
 
         self._is_single_only = self.connector.is_single_only
         self._is_double_only = self.connector.is_double_only
         self._is_multiple_only = self.connector.is_multiple_only
-        
+
         self._handle_variables(compound)
         # self.handle_index_var(compound, is_input)
-    
+
     @property
     def copula(self):
         return self.connector
@@ -58,11 +63,11 @@ class Compound(Term): #, OrderedSet):
     @property
     def is_single_only(self):
         return self._is_single_only
-    
+
     @property
     def is_double_only(self):
         return self._is_double_only
-        
+
     @property
     def is_multiple_only(self):
         return self._is_multiple_only
@@ -70,34 +75,33 @@ class Compound(Term): #, OrderedSet):
     @property
     def is_higher_order(self):
         return super().is_higher_order
-    
+
     @property
-    def terms(self) -> Terms: # Union[Set[Term], List[Term]]:
+    def terms(self) -> Terms:  # Union[Set[Term], List[Term]]:
         return self._terms
 
     # @property
     # def index_var(self):
     #     return self._terms._index_var
-    
+
     @property
     def variables(self):
         return self._terms.variables
-    
+
     @property
     def _vars_independent(self):
         return self._terms._vars_independent
 
-    
     @property
     def _vars_dependent(self):
         return self._terms._vars_dependent
-    
 
     @property
     def _vars_query(self):
         return self._terms._vars_query
 
-    def _merge_compounds(self, connector_parent: Connector, connector: Connector, compounds: List[Type['Compound']], is_input: bool):
+    def _merge_compounds(self, connector_parent: Connector, connector: Connector, compounds: List[Type['Compound']],
+                         is_input: bool):
         '''
         The `compounds` should have got the same `connector`.
         (&, {A, B}, {B,C}) ====> {A}
@@ -111,37 +115,43 @@ class Compound(Term): #, OrderedSet):
         '''
         if connector_parent is Connector.ExtensionalIntersection:
             if connector is Connector.ExtensionalSet:
-                return Terms.intersection(compounds[0].terms, *(compound.terms for compound in compounds[1:]), is_input=is_input)
+                return Terms.intersection(compounds[0].terms, *(compound.terms for compound in compounds[1:]),
+                                          is_input=is_input)
                 # return Terms(compounds[0].terms, compounds[0].is_commutative, is_input).intersection(*(Terms(compound, compound.is_commutative, is_input) for compound in compounds[1:]))
             elif connector is Connector.IntensionalSet:
                 # return Terms(compounds[0].terms, compounds[0].is_commutative, is_input).union(*(Terms(compound.terms, compound.is_commutative, is_input) for compound in compounds[1:]))
-                return Terms.union(compounds[0].terms, *(compound.terms for compound in compounds[1:]), is_input=is_input)
+                return Terms.union(compounds[0].terms, *(compound.terms for compound in compounds[1:]),
+                                   is_input=is_input)
             else:
                 return None
         elif connector_parent is Connector.IntensionalIntersection:
             if connector is Connector.ExtensionalSet:
                 # return Terms(compounds[0].terms, compounds[0].is_commutative, is_input).union(*(Terms(compound.terms, compound.is_commutative, is_input) for compound in compounds[1:]))
-                return Terms.union(compounds[0].terms, *(compound.terms for compound in compounds[1:]), is_input=is_input)
+                return Terms.union(compounds[0].terms, *(compound.terms for compound in compounds[1:]),
+                                   is_input=is_input)
             elif connector is Connector.IntensionalSet:
                 # return Terms(compounds[0].terms, compounds[0].is_commutative, is_input).intersection(*(Terms(compound.terms, compound.is_commutative, is_input) for compound in compounds[1:]))
-                return Terms.intersection(compounds[0].terms, *(compound.terms for compound in compounds[1:]), is_input=is_input)
+                return Terms.intersection(compounds[0].terms, *(compound.terms for compound in compounds[1:]),
+                                          is_input=is_input)
             else:
                 return None
 
         elif connector_parent is Connector.ExtensionalDifference and connector is Connector.ExtensionalSet:
             # return Terms(compounds[0].terms, compounds[0].is_commutative, is_input).intersection(*(Terms(compound.terms, compound.is_commutative, is_input) for compound in compounds[1:]), is_input=is_input)
-            return Terms.intersection(compounds[0].terms, *(compound.terms for compound in compounds[1:]), is_input=is_input)
+            return Terms.intersection(compounds[0].terms, *(compound.terms for compound in compounds[1:]),
+                                      is_input=is_input)
         elif connector_parent is Connector.IntensionalDifference and connector is Connector.IntensionalSet:
             # return Terms(compounds[0].terms, compounds[0].is_commutative, is_input).intersection(*(Terms(compound.terms, compound.is_commutative, is_input) for compound in compounds[1:]), is_input=is_input)
-            return Terms.intersection(compounds[0].terms, *(compound.terms for compound in compounds[1:]), is_input=is_input)
+            return Terms.intersection(compounds[0].terms, *(compound.terms for compound in compounds[1:]),
+                                      is_input=is_input)
 
         elif connector_parent is connector:
             return Terms((t for ts in compounds for t in ts), connector.is_commutative, is_input=is_input)
         else:
             return None
 
-
-    def prepocess_terms(self, connector_parent: Connector, terms: Iterable[Union[Type['Compound'], Term]], is_input=False):
+    def prepocess_terms(self, connector_parent: Connector, terms: Iterable[Union[Type['Compound'], Term]],
+                        is_input=False):
         '''
         pre-process the terms, return the connecor of this compound and the set/list of components.
         For `{{A, B}, {B, C}}`, return `{, A, B, C`;
@@ -169,26 +179,31 @@ class Compound(Term): #, OrderedSet):
             # if there are terms with the same commutative connector, they should be combined togethor
             categories = {}
             for term in terms:
-                connector = term.connector if term.is_compound and term.is_commutative else None # `None` means the connector of the term is not cared about, because it just need to be added into the parent compound-term as a whole.
+                # `None` means the connector of the term is not cared about, because it just need to be added into the parent compound-term as a whole.
+                connector = term.connector if term.is_compound and term.is_commutative else None
                 category = categories.get(connector, None)
-                if category is None: categories[connector] = category = []
+                if category is None:
+                    categories[connector] = category = []
                 category.append(term)
-            
+
             terms_norm: List[Compound] = []
             for connector, compounds in categories.items():
-                if connector is None: 
-                    terms_norm.extend([(connector, compound) for compound in compounds])
+                if connector is None:
+                    terms_norm.extend([(connector, compound)
+                                      for compound in compounds])
                     continue
                 # Now, `connector` is not `None`.
-                
-                terms_merged = self._merge_compounds(connector_parent, connector, compounds, is_input=is_input)
-                if terms_merged is None: # they don't need to be merged to be a whole
+
+                terms_merged = self._merge_compounds(
+                    connector_parent, connector, compounds, is_input=is_input)
+                if terms_merged is None:  # they don't need to be merged to be a whole
                     # terms_norm.append((connector, compounds))
-                    terms_norm.extend([(connector, compound) for compound in compounds])
-                    continue 
-                
-                # Now, `terms_merged` is not `None`. 
-                # However, the compounds (in `terms_merged`), as components, shouldn't further be constructed as a compound term immediately, as there are some cases where there is only one compound and the parent connector should be set as the current single compound connector, for example, (|, {A, B}, {C, D}) is handled and `terms_merged` is `A, B, C, D`. In this case, if this function returned a compound `{A, B, C, D}`, the parent compound would be (&, {A, B, C, D}), which is obviously incorrect. 
+                    terms_norm.extend([(connector, compound)
+                                      for compound in compounds])
+                    continue
+
+                # Now, `terms_merged` is not `None`.
+                # However, the compounds (in `terms_merged`), as components, shouldn't further be constructed as a compound term immediately, as there are some cases where there is only one compound and the parent connector should be set as the current single compound connector, for example, (|, {A, B}, {C, D}) is handled and `terms_merged` is `A, B, C, D`. In this case, if this function returned a compound `{A, B, C, D}`, the parent compound would be (&, {A, B, C, D}), which is obviously incorrect.
                 # Hence, the final construction of the compound is out of this function.
 
                 terms_norm.append((connector, terms_merged))
@@ -196,74 +211,87 @@ class Compound(Term): #, OrderedSet):
                 terms = []
                 connector: Connector
                 for connector, term in terms_norm:
-                    if connector is None: terms.append(term)
-                    elif connector is connector_parent: terms.extend(term)
-                    else: 
+                    if connector is None:
+                        terms.append(term)
+                    elif connector is connector_parent:
+                        terms.extend(term)
+                    else:
                         if connector.check_valid(len(term)):
                             term = Compound(connector, *term, is_input=False)
                             terms.append(term)
                 if len(terms) > 1:
                     return connector_parent, Terms(terms, is_commutative=True, is_input=False)
-                else: # len(terms) == 1
+                else:  # len(terms) == 1
                     term = terms[0]
-                    terms_norm = [[term.connector, term.terms] if term.is_compound else [None, term]]
-            
+                    terms_norm = [[term.connector, term.terms]
+                                  if term.is_compound else [None, term]]
+
             # Now, there are at list two terms in `terms_norm`
-            
+
             # There were only a single compound if the terms were made into the one.
-            # the connector returned depends on the types of `connector` and `connector_parent`. For examples, 
+            # the connector returned depends on the types of `connector` and `connector_parent`. For examples,
             # if `connector_parent` is `&` and `connector` is `{`, the return `connector`;
             # if `connector_parent` is `|` and `connector` is `{`, the return `connector`;
             # if `connector_parent` is `&` and `connector` is `&`, it makes no difference returning either `connector` or `connector_parent`;
-            
-            connector, terms = terms_norm[0]
-            if connector is None: terms = (terms, )
 
-            if (connector in (Connector.ExtensionalSet, Connector.IntensionalSet)) and (connector_parent in (Connector.IntensionalIntersection, Connector.ExtensionalIntersection)):
+            connector, terms = terms_norm[0]
+            if connector is None:
+                terms = (terms,)
+
+            if (connector in (Connector.ExtensionalSet, Connector.IntensionalSet)) and (
+                    connector_parent in (Connector.IntensionalIntersection, Connector.ExtensionalIntersection)):
                 return connector, Terms(terms, is_commutative=True, is_input=is_input)
 
             # otherwise, return `connector_parent` as the connector.
             return connector_parent, Terms(terms, is_commutative=True, is_input=is_input)
         else:
             # e.g. (&/, (&/, A, B), (&|, C, D), E) will be converted to (&/, A, B, (&|, C, D), E)
-            terms = (term2 for term1 in (((term0 for term0 in term.terms) if term.is_compound and (term.connector is connector_parent) else (term,))for term in terms) for term2 in term1)
+            terms = (term2 for term1 in (
+                ((term0 for term0 in term.terms) if term.is_compound and (
+                    term.connector is connector_parent) else (term,))
+                for term in terms) for term2 in term1)
 
             return connector_parent, Terms(terms, is_commutative=False, is_input=is_input)
 
-
     def count_components(self):
-        return len(self.terms) # OrderedSet.__len__(self)
-    
+        return len(self.terms)  # OrderedSet.__len__(self)
+
     def contains(self, compound: Type['Compound']) -> bool:
         if compound.is_compound and compound.connector is self.connector:
             return self.terms.issuperset(compound.terms)
-        else: return compound in self.terms
+        else:
+            return compound in self.terms
 
     def __iter__(self):
-        return iter(self.terms) # OrderedSet.__iter__(self)
-    
+        return iter(self.terms)  # OrderedSet.__iter__(self)
+
     def __getitem__(self, index: List[int]) -> Term:
-        if isinstance(index, int): index = (index,)
-        if len(index) == 0: return self
-        
+        if isinstance(index, int):
+            index = (index,)
+        if len(index) == 0:
+            return self
+
         idx = index[0]
-        if idx > self.count(): raise "Out of bounds."
+        if idx > self.count():
+            raise "Out of bounds."
 
         index = index[1:]
-        term: Term = self.terms[idx] # OrderedSet.__getitem__(self, idx)
+        term: Term = self.terms[idx]  # OrderedSet.__getitem__(self, idx)
         return term.__getitem__(index)
 
     def __sub__(self, s: Type['Compound']) -> Union[Type['Compound'], Term]:
         # if self.is_double_only or self.is_single_only: raise 'Invalid case.'
         # if OrderedSet.__contains__(self, s): s = (s,)
-        
-        if self.is_commutative: 
-            if s.is_compound and s.connector: s = s.terms # s should be a type of `Term`
-            else: s = Terms((s,), False, is_input=False)
+
+        if self.is_commutative:
+            if s.is_compound and s.connector:
+                s = s.terms  # s should be a type of `Term`
+            else:
+                s = Terms((s,), False, is_input=False)
             terms = self.terms - s
-        else: 
-            if s.is_compound and s.connector: 
-                s = s.terms # s should be a type of `Term`
+        else:
+            if s.is_compound and s.connector:
+                s = s.terms  # s should be a type of `Term`
                 terms = [term for term in self.terms if term not in s]
             else:
                 terms = [term for term in self.terms if term != s]
@@ -273,15 +301,17 @@ class Compound(Term): #, OrderedSet):
         else:
             result = Compound(self.connector, *terms)
         return result
-    
+
     def __rsub__(self, s: Term) -> Union[Type['Compound'], Term]:
         return self - s
 
+    def has_common(self, compound: Type['Compound'], same_connector: bool = True) -> bool:
+        if not compound.is_compound:
+            return False
 
-    def has_common(self, compound: Type['Compound'], same_connector: bool=True) -> bool:
-        if not compound.is_compound: return False
-
-        return ((self.connector is compound.connector) if same_connector else True) and ((not self.terms.isdisjoint(compound.terms)) if self.is_commutative else list_contains(self.terms, list(compound.terms)))
+        return ((self.connector is compound.connector) if same_connector else True) and (
+            (not self.terms.isdisjoint(compound.terms)) if self.is_commutative else list_contains(self.terms,
+                                                                                                  list(compound.terms)))
 
     @classmethod
     def copy(cls, compound: Type['Compound']):
@@ -291,12 +321,13 @@ class Compound(Term): #, OrderedSet):
         '''
         return cls(compound.connector, *compound)
 
-    def replace(self, term_old: Term, term_new: Term, connector: Connector=None, idx: int=None) -> Type['Compound']:
+    def replace(self, term_old: Term, term_new: Term, connector: Connector = None, idx: int = None) -> Type['Compound']:
         # if term_old.is_atom: term_old = (term_old,)
         # elif term_old.is_compo
         terms: Union[OrderedSet, list] = self.terms
         idx = terms.index(term_old) if idx is None else idx
-        return Compound(self.connector if connector is None else connector, *(term if i != idx else term_new for i, term in enumerate(self)))
+        return Compound(self.connector if connector is None else connector,
+                        *(term if i != idx else term_new for i, term in enumerate(self)))
 
     def equal(self, o: Type['Compound']) -> bool:
         '''
@@ -304,46 +335,52 @@ class Compound(Term): #, OrderedSet):
             is_equal (bool), is_replacable(bool)
         '''
         if o.is_compound:
-            if not self.connector is o.connector: return False
+            if not self.connector is o.connector:
+                return False
             if self.is_commutative:
                 set1: Iterable[Term] = self.terms - o.terms
                 set2: Iterable[Term] = o.terms - self.terms
                 if len(set1) == len(set2) == 0:
                     return True
-                eq_array = np.array([[term1.equal(term2) for term2 in set2] for term1 in set1])
+                eq_array = np.array([[term1.equal(term2)
+                                    for term2 in set2] for term1 in set1])
                 if np.prod(eq_array.sum(axis=0)) > 0 and np.prod(eq_array.sum(axis=1)) > 0:
                     return True
-                else: return False
+                else:
+                    return False
             else:
-                if len(self) != len(o): return False
+                if len(self) != len(o):
+                    return False
                 term1: Term
                 term2: Term
                 for term1, term2 in zip(self.terms, o.terms):
-                    if not term1.equal(term2): return False
+                    if not term1.equal(term2):
+                        return False
                 return True
         elif o.is_atom and o.is_var:
             return True
-        else: return False
-
+        else:
+            return False
 
     def __repr__(self, *args) -> str:
         return f'<Compound: {self.repr()}>'
 
-
     def _terms_to_word(self, *terms: Term):
         connector = self.connector
-        if connector == Connector.ExtensionalSet: word = f"{{{', '.join([str(term) for term in terms])}}}"
-        elif connector == Connector.IntensionalSet: word = f"[{', '.join([str(term) for term in terms])}]"
-        else: word = f"({connector.value}, {', '.join([str(term) for term in terms])})"
+        if connector == Connector.ExtensionalSet:
+            word = f"{{{', '.join([str(term) for term in terms])}}}"
+        elif connector == Connector.IntensionalSet:
+            word = f"[{', '.join([str(term) for term in terms])}]"
+        else:
+            word = f"({connector.value}, {', '.join([str(term) for term in terms])})"
         return word
-
 
     def repr(self):
         compound: Set[Term] = self
-        word_terms = (str(component) if not component.has_var else component.repr() for component in compound)
+        word_terms = (str(component) if not component.has_var else component.repr()
+                      for component in compound)
 
         return self._terms_to_word(*word_terms)
-
 
     @staticmethod
     def _convert(compound: Type['Compound']):
@@ -352,7 +389,8 @@ class Compound(Term): #, OrderedSet):
         for example, if the compound is multiple-only and the length of its terms is 1, then return the first term, instead of the compound, of the terms.
         '''
         if compound.is_compound:
-            if compound.is_multiple_only and len(compound.terms) == 1: # it cannot be 0.
+            # it cannot be 0.
+            if compound.is_multiple_only and len(compound.terms) == 1:
                 return compound[0]
             elif compound.is_single_only and len(compound.terms) > 1:
                 raise "Invalid case!"
@@ -367,7 +405,7 @@ class Compound(Term): #, OrderedSet):
     @classmethod
     def IntensionalSet(cls, *terms: Term, is_input=False) -> Type['Compound']:
         return cls._convert(Compound(Connector.IntensionalSet, *terms, is_input=is_input))
-    
+
     @classmethod
     def Instance(cls, term: Term, is_input=False) -> Type['Compound']:
         return cls._convert(Compound.ExtensionalSet(term, is_input=is_input))
@@ -377,71 +415,88 @@ class Compound(Term): #, OrderedSet):
         return cls._convert(Compound.IntensionalSet(term, is_input=is_input))
 
     @classmethod
-    def ExtensionalImage(cls, term_relation: Term, *terms: Term, idx: int=None, compound_product: Type['Compound']=None, is_input=False) -> Type['Compound']:
+    def ExtensionalImage(cls, term_relation: Term, *terms: Term, idx: int = None, compound_product: Type['Compound'] = None, is_input=False) -> Type['Compound']:
         if compound_product is not None:
             # if idx is None:
             terms = compound_product.terms
             idx = terms.index(term_relation) if idx is None else idx
-            compound = Compound.ExtensionalImage(term_relation, *(tm if i != idx else place_holder for i, tm in enumerate(compound_product)), is_input=is_input)
+            compound = Compound.ExtensionalImage(
+                term_relation, *(tm if i != idx else place_holder for i, tm in enumerate(compound_product)), is_input=is_input)
         elif terms is not None:
             if idx is not None:
                 terms: list = [*terms[:idx], place_holder, *terms[idx:]]
-            compound = Compound(Connector.ExtensionalImage, term_relation, *terms, is_input=is_input)
+            compound = Compound(Connector.ExtensionalImage,
+                                term_relation, *terms, is_input=is_input)
         return cls._convert(compound)
 
     @classmethod
-    def IntensionalImage(cls, term_relation: Term, *terms: Term, idx: int=None, compound_product: Type['Compound']=None, compound_image: Type['Compound']=None, is_input=False) -> Type['Compound']:
+    def IntensionalImage(cls, term_relation: Term, *terms: Term, idx: int = None, compound_product: Type['Compound'] = None, compound_image: Type['Compound'] = None, is_input=False) -> Type['Compound']:
         if compound_product is not None:
             # if idx is None:
-            idx = compound_product.terms.index(term_relation) if idx is None else idx
-            compound = Compound.IntensionalImage(term_relation, *(tm if i != idx else place_holder for i, tm in enumerate(compound_product)), is_input=is_input)
+            idx = compound_product.terms.index(
+                term_relation) if idx is None else idx
+            compound = Compound.IntensionalImage(
+                term_relation, *(tm if i != idx else place_holder for i, tm in enumerate(compound_product)), is_input=is_input)
         elif terms is not None:
             if idx is not None:
                 terms: list = [*terms[:idx], place_holder, *terms[idx:]]
-            compound = Compound(Connector.IntensionalImage, term_relation, *terms, is_input=is_input)
+            compound = Compound(Connector.IntensionalImage,
+                                term_relation, *terms, is_input=is_input)
         return cls._convert(compound)
 
     @classmethod
-    def Image(cls, replaced_term: Term, compound_image: Type['Compound'], idx_replaced: int=None, is_input=False) -> Type['Compound']:
+    def Image(cls, replaced_term: Term, compound_image: Type['Compound'], idx_replaced: int = None, is_input=False) -> Type['Compound']:
         '''Convert Image to Image'''
-        idx_replaced = compound_image.terms.index(replaced_term) if idx_replaced is None else idx_replaced
-        
-        compound = Compound(compound_image.connector, *((place_holder if i == idx_replaced else tm if tm != place_holder else replaced_term) for i, tm in enumerate(compound_image)), is_input=is_input)
-        
+        idx_replaced = compound_image.terms.index(
+            replaced_term) if idx_replaced is None else idx_replaced
+
+        compound = Compound(compound_image.connector, *((place_holder if i == idx_replaced else tm if tm !=
+                            place_holder else replaced_term) for i, tm in enumerate(compound_image)), is_input=is_input)
+
         return cls._convert(compound)
 
     @classmethod
-    def Product(cls, term: Term, *terms: Term, idx: int=None, compound_image: Type['Compound']=None, is_input=False):
+    def Product(cls, term: Term, *terms: Term, idx: int = None, compound_image: Type['Compound'] = None, is_input=False):
         if compound_image is not None:
-            idx = compound_image.terms.index(place_holder)-1 if idx is None else idx
-            compound = Compound.Product(*((tm if i != idx else term) for i, tm in enumerate(compound_image.terms[1:])), is_input=is_input)
-        else: compound = Compound(Connector.Product, term, *terms, is_input=is_input)
+            idx = compound_image.terms.index(
+                place_holder)-1 if idx is None else idx
+            compound = Compound.Product(
+                *((tm if i != idx else term) for i, tm in enumerate(compound_image.terms[1:])), is_input=is_input)
+        else:
+            compound = Compound(Connector.Product, term,
+                                *terms, is_input=is_input)
         return cls._convert(compound)
 
     @classmethod
     def Negation(cls, term: Type['Compound'], is_input=False) -> Union[Type['Compound'], Term]:
-        if term.is_compound and term.connector == Connector.Negation: compound = term[0]
-        else: compound = Compound(Connector.Negation, term, is_input=is_input)
+        if term.is_compound and term.connector == Connector.Negation:
+            compound = term[0]
+        else:
+            compound = Compound(Connector.Negation, term, is_input=is_input)
         return cls._convert(compound)
 
     @classmethod
     def Conjunction(cls, *terms: Union[Term, Type['Compound']], is_input=False) -> Type['Compound']:
-        terms = (term for compound in terms for term in (compound if compound.is_compound and compound.connector==Connector.Conjunction else (compound,)))        
+        terms = (term for compound in terms for term in (
+            compound if compound.is_compound and compound.connector == Connector.Conjunction else (compound,)))
         return cls._convert(Compound(Connector.Conjunction, *terms, is_input=is_input))
 
     @classmethod
     def Disjunction(cls, *terms: Union[Term, Type['Compound']], is_input=False) -> Type['Compound']:
-        terms = (term for compound in terms for term in (compound if compound.is_compound and compound.connector==Connector.Disjunction else (compound,)))  
+        terms = (term for compound in terms for term in (
+            compound if compound.is_compound and compound.connector == Connector.Disjunction else (compound,)))
         return cls._convert(Compound(Connector.Disjunction, *terms, is_input=is_input))
 
     @classmethod
     def IntensionalIntersection(cls, *terms: Union[Term, Type['Compound']], is_input=False) -> Type['Compound']:
-        terms = (term for compound in terms for term in (compound if compound.is_compound and compound.connector==Connector.IntensionalIntersection else (compound,)))        
+        terms = (term for compound in terms for term in (
+            compound if compound.is_compound and compound.connector == Connector.IntensionalIntersection else (compound,)))
         return cls._convert(Compound(Connector.IntensionalIntersection, *terms, is_input=is_input))
 
     @classmethod
     def ExtensionalIntersection(cls, *terms: Union[Term, Type['Compound']], is_input=False) -> Type['Compound']:
-        terms = (term for compound in terms for term in (compound if compound.is_compound and compound.connector==Connector.ExtensionalIntersection else (compound,)))        
+        terms = (term for compound in terms for term in (
+            compound if compound.is_compound and compound.connector == Connector.ExtensionalIntersection else (compound,)))
         return cls._convert(Compound(Connector.ExtensionalIntersection, *terms, is_input=is_input))
 
     @classmethod
@@ -451,7 +506,7 @@ class Compound(Term): #, OrderedSet):
     @classmethod
     def IntensionalDifference(cls, term1: Term, term2: Term, is_input=False) -> Type['Compound']:
         return cls._convert(Compound(Connector.IntensionalDifference, term1, term2, is_input=is_input))
-    
+
     @classmethod
     def SequentialEvents(cls, *terms: Union[Term, Interval], is_input=False) -> Type['Compound']:
         return cls._convert(Compound(Connector.SequentialEvents, *terms, is_input=is_input))
@@ -460,11 +515,11 @@ class Compound(Term): #, OrderedSet):
     def ParallelEvents(cls, *terms: Term, is_input=False) -> Type['Compound']:
         return cls._convert(Compound(Connector.ParallelEvents, *terms, is_input=is_input))
 
-
     def clone(self):
-        if not self.has_var: return self
+        if not self.has_var:
+            return self
         # now, not self.has_var
         clone = copy(self)
         clone._terms = self._terms.clone()
-        
+
         return clone

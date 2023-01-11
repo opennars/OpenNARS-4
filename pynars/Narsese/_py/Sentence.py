@@ -9,14 +9,16 @@ from typing import Type, Set
 from ordered_set import OrderedSet
 from .Evidence import *
 
-from pynars.Config import Config, Enable  
-from pynars import Global 
+from pynars.Config import Config, Enable
+from pynars import Global
+
 
 class Punctuation(Enum):
-    Judgement   = r"."
-    Question    = r"?"
-    Goal        = r"!"
-    Quest       = r"@"
+    Judgement = r"."
+    Question = r"?"
+    Goal = r"!"
+    Quest = r"@"
+
     @property
     def is_judgement(self):
         return self == Punctuation.Judgement
@@ -33,9 +35,11 @@ class Punctuation(Enum):
     def is_quest(self):
         return self == Punctuation.Quest
 
+
 class Stamp:
-    
-    def __init__(self, t_creation: int, t_occurrence: int, t_put: int, evidential_base: Type['Base'], is_external: bool=True) -> None:
+
+    def __init__(self, t_creation: int, t_occurrence: int, t_put: int, evidential_base: Type['Base'],
+                 is_external: bool = True) -> None:
         '''
         Args:
             t_creation(int): creation time of the stamp
@@ -46,13 +50,12 @@ class Stamp:
         self.t_occurrence = t_occurrence
         self.t_put = t_put
         self.evidential_base: Type['Base'] = evidential_base
-        self.is_external = is_external # whether a sentence is from the external world or the internal world. Only those sentences derived from Mental Operations are internal.
-
+        self.is_external = is_external  # whether a sentence is from the external world or the internal world. Only those sentences derived from Mental Operations are internal.
 
     @property
     def tense(self):
-        return Tense.Eternal if self.t_occurrence is None else Tense.Future if self.t_occurrence >= Global.time+Config.temporal_duration else Tense.Past if self.t_occurrence <= Global.time-Config.temporal_duration else Tense.Present
-    
+        return Tense.Eternal if self.t_occurrence is None else Tense.Future if self.t_occurrence >= Global.time + Config.temporal_duration else Tense.Past if self.t_occurrence <= Global.time - Config.temporal_duration else Tense.Present
+
     @property
     def is_eternal(self):
         return self.t_occurrence is None
@@ -62,8 +65,10 @@ class Stamp:
 
     def extend_evidenital_base(self, base: Type['Base']):
         if self.evidential_base is None:
-            if base is None: return
-            elif self.evidential_base is None: self.evidential_base = Base(())
+            if base is None:
+                return
+            elif self.evidential_base is None:
+                self.evidential_base = Base(())
         self.evidential_base.extend(base)
 
     def __str__(self):
@@ -71,19 +76,23 @@ class Stamp:
 
     def __repr__(self):
         return f'<Stamp: {str(self)}>'
+
+
 '''
 Doubt that are Question and Quest have got a tense?
 '''
 
+
 class Sentence:
     truth: Truth = None
-    def __init__(self, term: Term, punct: Punctuation, stamp: Stamp, do_hashing: bool=False) -> None:
+
+    def __init__(self, term: Term, punct: Punctuation, stamp: Stamp, do_hashing: bool = False) -> None:
         ''''''
         self.term = term
         self.word = term.word + str(punct.value)
         self.punct = punct
         self.stamp: Stamp = stamp
-    
+
     @property
     def evidential_base(self):
         return self.stamp.evidential_base
@@ -96,7 +105,7 @@ class Sentence:
     # def temporal_order(self):
     #     return self.term.temporal_order
 
-    def eternalize(self, truth: Truth=None):
+    def eternalize(self, truth: Truth = None):
         sentence = copy(self)
         if truth is not None:
             sentence.truth = truth
@@ -107,10 +116,10 @@ class Sentence:
 
     def __hash__(self) -> int:
         return hash(self.term)
-    
+
     def __str__(self) -> str:
         return self.word
-    
+
     def __repr__(self) -> str:
         return f'<{"Sentence" if self.is_eternal else "Event"}: {self.term.repr()}{self.punct.value}>'
 
@@ -121,23 +130,23 @@ class Sentence:
     @property
     def is_judgement(self) -> bool:
         return self.punct == Punctuation.Judgement
-    
+
     @property
     def is_goal(self) -> bool:
         return self.punct == Punctuation.Goal
-    
+
     @property
     def is_question(self) -> bool:
         return self.punct == Punctuation.Question
 
-    @property 
+    @property
     def is_quest(self) -> bool:
         return self.punct == Punctuation.Quest
-    
+
     @property
     def is_eternal(self) -> bool:
         return self.stamp.is_eternal
-    
+
     @property
     def is_event(self) -> bool:
         return not self.stamp.is_eternal
@@ -147,14 +156,13 @@ class Sentence:
         return not self.is_eternal and self.stamp.is_external
 
 
-
 class Judgement(Sentence):
-    def __init__(self, term: Term, stamp: Stamp=None, truth: Truth=None) -> None:
+    def __init__(self, term: Term, stamp: Stamp = None, truth: Truth = None) -> None:
         ''''''
         stamp = stamp if stamp is not None else Stamp(Global.time, None, None, None)
         Sentence.__init__(self, term, Punctuation.Judgement, stamp)
         self.truth = truth if truth is not None else Truth(Config.f, Config.c, Config.k)
-        
+
     def __str__(self) -> str:
         return f'{self.word}{(" " + str(self.tense.value)) if self.tense != Tense.Eternal else ""} {self.truth}'
 
@@ -162,49 +170,50 @@ class Judgement(Sentence):
     def repr(self,is_input=False):
         return f'{self.term.repr()}{self.punct.value}{(" " + str(self.tense.value)) if self.tense != Tense.Eternal else ""} {self.truth}'
 
+
 class Goal(Sentence):
-    def __init__(self, term: Term, stamp: Stamp=None, desire: Truth=None) -> None:
+    def __init__(self, term: Term, stamp: Stamp = None, desire: Truth = None) -> None:
         ''''''
         stamp = stamp if stamp is not None else Stamp(Global.time, None, None, None, None)
         Sentence.__init__(self, term, Punctuation.Goal, stamp)
         self.truth = desire if desire is not None else Truth(Config.f, Config.c, Config.k)
-    
+
     def __str__(self) -> str:
         return f'{self.word}{(" " + str(self.tense.value)) if self.tense != Tense.Eternal else ""} {str(self.truth)}'
 
+    def repr(self, is_input = False):
+        return f'{self.term.repr(is_input) + self.punct.value}{(" " + str(self.tense.value)) if self.tense != Tense.Eternal else ""} {str(self.truth)}'
 
-    def repr(self, is_input=False):
-        return f'{self.term.repr(is_input)+self.punct.value}{(" " + str(self.tense.value)) if self.tense != Tense.Eternal else ""} {str(self.truth)}'
 
 class Question(Sentence):
     answer_best: Sentence = None
-    def __init__(self, term: Term, stamp: Stamp=None, curiosiry: Truth=None) -> None:
+
+    def __init__(self, term: Term, stamp: Stamp = None, curiosiry: Truth = None) -> None:
         ''''''
         stamp = stamp if stamp is not None else Stamp(Global.time, None, None, None, None)
         # stamp.set_eternal()
         Sentence.__init__(self, term, Punctuation.Question, stamp)
-        self.is_query = False # TODO: if there is a query variable in the sentence, then `self.is_query=True`
-    
+        self.is_query = False  # TODO: if there is a query variable in the sentence, then `self.is_query=True`
+
     def __str__(self) -> str:
         return f'{self.word}{(" " + str(self.tense.value)) if self.tense != Tense.Eternal else ""}'
         # return self.word + (str(self.tense.value) if self.tense != Tense.Eternal else "")
 
-
-    def repr(self, is_input=False):
-        return f'{self.term.repr(is_input)+self.punct.value}{(" " + str(self.tense.value)) if self.tense != Tense.Eternal else ""}'
+    def repr(self, is_input = False):
+        return f'{self.term.repr(is_input) + self.punct.value}{(" " + str(self.tense.value)) if self.tense != Tense.Eternal else ""}'
 
 
 class Quest(Sentence):
-    def __init__(self, term: Term, stamp: Stamp=None, curiosiry: Truth=None) -> None:
+    def __init__(self, term: Term, stamp: Stamp = None, curiosiry: Truth = None) -> None:
         ''''''
         stamp = stamp if stamp is not None else Stamp(Global.time, None, None, None, None)
         # stamp.set_eternal()
-        Sentence.__init__(self, term,  Punctuation.Quest, stamp)
-        self.is_query = False # TODO: if there is a query variable in the sentence, then `self.is_query=True`
+        Sentence.__init__(self, term, Punctuation.Quest, stamp)
+        self.is_query = False  # TODO: if there is a query variable in the sentence, then `self.is_query=True`
 
     def __str__(self) -> str:
         return f'{self.word}{(" " + str(self.tense.value)) if self.tense != Tense.Eternal else ""}'
         # return self.word + (str(self.tense.value) if self.tense != Tense.Eternal else "")
 
-    def repr(self, is_input=False):
-        return f'{self.term.repr(is_input)+self.punct.value}{(" " + str(self.tense.value)) if self.tense != Tense.Eternal else ""}'
+    def repr(self, is_input = False):
+        return f'{self.term.repr(is_input) + self.punct.value}{(" " + str(self.tense.value)) if self.tense != Tense.Eternal else ""}'
