@@ -16,14 +16,15 @@ from typing import Callable, List, Tuple, Union
 import pynars.NARS.Operation as Operation
 from pynars import Global
 
+
 class Reasoner:
 
-    def __init__(self, n_memory, capacity, config='./config.json') -> None:
+    def __init__(self, n_memory, capacity, config = './config.json') -> None:
         # print('''Init...''')
         Config.load(config)
-        
+
         self.inference = GeneralEngine()
-        self.temporal_inference = TemporalEngine() # for temporal causal reasoning 
+        self.temporal_inference = TemporalEngine()  # for temporal causal reasoning
 
         self.memory = Memory(n_memory)
         self.overall_experience = Buffer(capacity)
@@ -33,11 +34,10 @@ class Reasoner:
         self.channels: List[Channel] = [
             self.narsese_channel,
             self.perception_channel
-        ] # TODO: other channels
+        ]  # TODO: other channels
 
-        self.sequence_buffer = Buffer(capacity) 
+        self.sequence_buffer = Buffer(capacity)
         self.operations_buffer = Buffer(capacity)
-        
 
     def reset(self):
         ''''''
@@ -47,7 +47,7 @@ class Reasoner:
         for _ in range(n_cycle):
             self.cycle()
 
-    def input_narsese(self, text, go_cycle: bool=True) -> Tuple[bool, Union[Task, None], Union[Task, None]]:
+    def input_narsese(self, text, go_cycle: bool = True) -> Tuple[bool, Union[Task, None], Union[Task, None]]:
         success, task, task_overflow = self.narsese_channel.put(text)
         if go_cycle: self.cycle()
         return success, task, task_overflow
@@ -61,7 +61,8 @@ class Reasoner:
             if task_in is not None:
                 self.overall_experience.put(task_in)
 
-        # step 2. Take out an Item from the `Internal Experience`, with putting it back afterwards, and then put it into the `Overall Experience`
+        # step 2. Take out an Item from the `Internal Experience`, with putting it back afterwards, and then put it
+        # into the `Overall Experience`
         task: Task = self.internal_experience.take(remove=True)
         if task is not None:
             self.overall_experience.put(task)
@@ -71,7 +72,8 @@ class Reasoner:
         task: Task = self.overall_experience.take()
         if task is not None:
             judgement_revised, goal_revised, answers_question, answers_quest = self.memory.accept(task)
-            # self.sequence_buffer.put_back(task) # globalBuffer.putBack(task, narParameters.GLOBAL_BUFFER_FORGET_DURATIONS, this)
+            # self.sequence_buffer.put_back(task) # globalBuffer.putBack(task,
+            # narParameters.GLOBAL_BUFFER_FORGET_DURATIONS, this)
 
             if Enable.temporal_rasoning:
                 # TODO: Temporal Inference
@@ -86,10 +88,10 @@ class Reasoner:
             if goal_revised is not None:
                 self.internal_experience.put(goal_revised)
             if answers_question is not None:
-                for answer in answers_question: 
+                for answer in answers_question:
                     self.internal_experience.put(answer)
             if answers_quest is not None:
-                for answer in answers_quest: 
+                for answer in answers_quest:
                     self.internal_experience.put(answer)
         else:
             judgement_revised, goal_revised, answers_question, answers_quest = None, None, None, None
@@ -100,29 +102,30 @@ class Reasoner:
         if concept is not None:
             tasks_inference_derived = self.inference.step(concept)
             tasks_derived.extend(tasks_inference_derived)
-            
+
             # TODO: relevant process
             is_concept_valid = True
             if is_concept_valid:
                 self.memory.put_back(concept)
-        
+
         #   temporal induction in NAL-7
         if False and task is not None and task.is_judgement and task.is_external_event:
             concept_task: Concept = self.memory.take_by_key(task.term, remove=False)
             tasks_derived.extend(
                 self.temporal_inference.step(
-                    task, concept_task, 
-                    self.sequence_buffer, 
+                    task, concept_task,
+                    self.sequence_buffer,
                     self.operations_buffer
                 )
             )
         else:
-            pass # TODO: select a task from `self.sequence_buffer`?
-        
+            pass  # TODO: select a task from `self.sequence_buffer`?
+
         #   mental operation of NAL-9
         task_operation_return, task_executed = None, None
         if False:
-            task_operation_return, task_executed, belief_awared = self.mental_operation(task, concept, answers_question, answers_quest)
+            task_operation_return, task_executed, belief_awared = self.mental_operation(task, concept, answers_question,
+                                                                                        answers_quest)
             if task_operation_return is not None: tasks_derived.append(task_operation_return)
             if task_executed is not None: tasks_derived.append(task_executed)
             if belief_awared is not None: tasks_derived.append(belief_awared)
@@ -138,7 +141,7 @@ class Reasoner:
                 concept_task = self.memory.take_by_key(task, remove=False)
                 if concept_task is not None:
                     belief: Belief = concept_task.match_belief(task.sentence)
-                if belief is not None: 
+                if belief is not None:
                     task.budget.reduce_by_achieving_level(belief.truth.e)
                 if task_operation_return is not None: tasks_derived.append(task_operation_return)
                 if task_executed is not None: tasks_derived.append(task_executed)
@@ -147,37 +150,35 @@ class Reasoner:
         for task_derived in tasks_derived:
             self.internal_experience.put(task_derived)
 
-
         # handle the sense of time
         Global.time += 1
 
-        return tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest, (task_operation_return, task_executed)
+        return tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest, (
+            task_operation_return, task_executed)
 
     def mental_operation(self, task: Task, concept: Concept, answers_question: Task, answers_quest: Task):
         # handle the mental operations in NAL-9
         task_operation_return, task_executed, belief_awared = None, None, None
-        
+
         # belief-awareness
         for answers in (answers_question, answers_quest):
             if answers is None: continue
-            for answer in answers: 
+            for answer in answers:
                 belief_awared = Operation.aware__believe(answer)
 
         if task is not None:
-        # question-awareness
+            # question-awareness
             if task.is_question:
                 belief_awared = Operation.aware__wonder(task)
-        # quest-awareness
+            # quest-awareness
             elif task.is_quest:
-                belief_awared = Operation.aware__evaluate(task)    
+                belief_awared = Operation.aware__evaluate(task)
 
-        # execute mental operation
+                # execute mental operation
         if task is not None and task.is_executable:
             task_operation_return, task_executed = Operation.execute(task, concept, self.memory)
-            
 
-        return task_operation_return, task_executed, belief_awared  
-    
+        return task_operation_return, task_executed, belief_awared
 
     def register_operation(self, name_operation: str, callback: Callable):
         ''''''
