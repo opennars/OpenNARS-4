@@ -86,7 +86,7 @@ Truth_induction: TruthFunction = lambda truth1, truth2: truth_from_w(
     *F_induction(truth1.f, truth1.c, truth2.f, truth2.c), truth1.k)
 
 # F_exe
-F_ind = F_exemplification = lambda f1, c1, f2, c2: (And(f1, f2, c1, c2), And(f1, f2, c1, c2))  # return: w+, w
+F_exe = F_exemplification = lambda f1, c1, f2, c2: (And(f1, f2, c1, c2), And(f1, f2, c1, c2))  # return: w+, w
 Truth_exemplification: TruthFunction = lambda truth1, truth2: truth_from_w(
     *F_exemplification(truth1.f, truth1.c, truth2.f, truth2.c), truth1.k)
 # def Truth_exemplification(truth1: Truth, truth2: Truth) -> Truth: 
