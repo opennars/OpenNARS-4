@@ -1,9 +1,10 @@
-#!/usr/bin/python3
-# *-* encoding:utf8 *_*
-
+'''
+Reference:
+https://github.com/Noctis-Xu/NARS-FighterPlane
+'''
 import sys
-from game_sprites import *
-from NARS import *
+from .game_sprites import *
+from .Agent import *
 
 CREATE_ENEMY_EVENT = pygame.USEREVENT
 UPDATE_NARS_EVENT = pygame.USEREVENT + 1
@@ -11,17 +12,17 @@ OPENNARS_BABBLE_EVENT = pygame.USEREVENT + 2
 
 
 class PlaneGame:
-    def __init__(self, nars_type):
+    def __init__(self):
         print("Game initialization...")
         pygame.init()
         self.game_speed = 1.0  # don't set too large, self.game_speed = 1.0 is the default speed.
         self.fps = 60 * self.game_speed
-        self.nars_type = nars_type
+        # self.nars_type = nars_type
         self.screen = pygame.display.set_mode(SCREEN_RECT.size)  # create a display surface, SCREEN_RECT.size=(480,700)
         self.clock = pygame.time.Clock()  # create a game clock
         self.font = pygame.font.SysFont('consolas', 18, True)  # display text like scores, times, etc.
         self.__create_sprites()  # sprites initialization
-        self.__create_NARS(self.nars_type)
+        self.__create_agent()
         self.__set_timer()
         self.score = 0  # hit enemy
 
@@ -44,16 +45,9 @@ class PlaneGame:
         self.hero = Hero()
         self.hero_group = pygame.sprite.Group(self.hero)
 
-    def __create_NARS(self, type):
-        # if type == 'opennars':
-        #     self.nars = opennars()
-        #     self.remaining_babble_times = 200
-        # elif type == 'ONA':
-        #     self.nars = ONA()
-        #     self.remaining_babble_times = 0
-        if type == 'pynars':
-            self.nars = PyNARS()
-            self.remaining_babble_times = 200
+    def __create_agent(self):
+        self.agent = Agent()
+        self.remaining_babble_times = 200
 
     def start_game(self):
         print("Game start...")
@@ -68,29 +62,29 @@ class PlaneGame:
     def __event_handler(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                self.nars.process_kill()
+                self.agent.process_kill()
                 PlaneGame.__game_over()
             elif event.type == CREATE_ENEMY_EVENT:
                 enemy = Enemy()
                 self.enemy_group.add(enemy)
             elif event.type == UPDATE_NARS_EVENT:
-                self.nars.update(self.hero, self.enemy_group)  # use objects' positions to update NARS's sensors
+                self.agent.update(self.hero, self.enemy_group)  # use objects' positions to update NARS's sensors
             elif event.type == OPENNARS_BABBLE_EVENT:
                 if self.remaining_babble_times == 0:
                     pygame.event.set_blocked(OPENNARS_BABBLE_EVENT)
                 else:
-                    self.nars.babble()
+                    self.agent.babble()
                     self.remaining_babble_times -= 1
                     print('The remaining babble times: ' + str(self.remaining_babble_times))
-        if self.nars.operation_left:
+        if self.agent.operation_left:
             self.hero.speed = -4
-        elif self.nars.operation_right:
+        elif self.agent.operation_right:
             self.hero.speed = 4
         else:
             self.hero.speed = 0
-        if self.nars.operation_fire:
+        if self.agent.operation_fire:
             self.hero.fire()
-            self.nars.operation_fire = False
+            self.agent.operation_fire = False
 
     def __check_collide(self):
         # Several collisions may happen at the same time
@@ -98,7 +92,7 @@ class PlaneGame:
                                                 True)  # collided=pygame.sprite.collide_circle_ratio(0.8)
         if collisions:
             self.score += len(collisions)  # len(collisions) denotes how many collisions happened
-            self.nars.praise()
+            self.agent.praise()
             print("good")
             print('score: ' + str(self.score))
 
@@ -131,9 +125,9 @@ class PlaneGame:
         else:
             performance = self.score / speeding_delta_time_s
 
-        if self.nars.operation_left:
+        if self.agent.operation_left:
             operation_text = 'move left'
-        elif self.nars.operation_right:
+        elif self.agent.operation_right:
             operation_text = 'move right'
         else:
             operation_text = 'stay still'
@@ -143,7 +137,7 @@ class PlaneGame:
         surface_score = self.font.render('Score: %d' % self.score, True, [235, 235, 20])
         surface_fps = self.font.render('FPS: %d' % self.clock.get_fps(), True, [235, 235, 20])
         surface_babbling = self.font.render('Babbling: %d' % self.remaining_babble_times, True, [235, 235, 20])
-        surface_nars_type = self.font.render(self.nars_type, True, [235, 235, 20])
+        surface_nars_type = self.font.render('pynars', True, [235, 235, 20])
         surface_version = self.font.render('v1.0', True, [235, 235, 20])
         surface_operation = self.font.render('Operation: %s' % operation_text, True, [235, 235, 20])
         self.screen.blit(surface_operation, [20, 10])
@@ -162,7 +156,5 @@ class PlaneGame:
 
 
 if __name__ == '__main__':
-    #game = PlaneGame('opennars')  # input 'ONA' or 'opennars'
-    game = PlaneGame('pynars')
-    # game = PlaneGame(sys.argv[1])
+    game = PlaneGame()
     game.start_game()

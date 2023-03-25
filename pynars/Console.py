@@ -115,6 +115,8 @@ def run_nars(filepath: str):
     rand_seed(seed)
     out_print(PrintType.COMMENT, f'rand_seed={seed}', comment_title='Setup')
     nars = Reasoner(100, 100)
+    nars.register_operation('left', lambda *args: print('execute left.'))
+
     out_print(PrintType.COMMENT, 'Init...', comment_title='NARS')
     out_print(PrintType.COMMENT, 'Run...', comment_title='NARS')
     run_file(nars, filepath)

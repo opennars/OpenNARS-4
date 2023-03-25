@@ -338,6 +338,8 @@ class GeneralEngine(Engine):
     def step(self, concept: Concept):
         '''One step inference.'''
         tasks_derived = []
+
+        Global.States.record_concept(concept)
         
         # Based on the selected concept, take out a task and a belief for further inference.
         task_link_valid: TaskLink = concept.task_links.take(remove=True)
@@ -349,6 +351,8 @@ class GeneralEngine(Engine):
         # inference for single-premise rules
         is_valid, _, rules_immediate = GeneralEngine.match(task, None, None, task_link_valid, None)
         if is_valid:
+            Global.States.record_premises(task)
+            Global.States.record_rules(rules_immediate)
             tasks = self.inference(task, None, None, task_link_valid, None, rules_immediate)
             tasks_derived.extend(tasks)
     
@@ -381,6 +385,8 @@ class GeneralEngine(Engine):
                 
         
         if is_valid:
+            Global.States.record_premises(task, belief)
+            Global.States.record_rules(rules)
             tasks = self.inference(task, belief, term_belief, task_link_valid, term_link_valid, rules)
             if term_link_valid is not None: # TODO: Check here whether the budget updating is the same as OpenNARS 3.0.4.
                 for task in tasks: TermLink.update_budget(term_link_valid.budget, task.budget.quality, belief.budget.priority if belief is not None else concept_target.budget.priority)
@@ -408,7 +414,13 @@ class GeneralEngine(Engine):
                 # beleif_eternalized = belief # TODO: should it be added into the `tasks_derived`?
 
         belief = belief if belief is not None else term_belief
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules]
+        tasks_derived = []
+        for rule in rules:
+            try:
+                tasks_derived.append(rule(task, belief, task_link, term_link))
+            except:
+                pass
+        # tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules]
 
         # normalize the variable indices
         for task in tasks_derived:

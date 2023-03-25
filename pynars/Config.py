@@ -72,7 +72,8 @@ class Config:
     n_sequence_attempts = 10
     n_op_condition_attempts = 10
 
-    
+    projection_decay = 0.1
+    decision_threshold = 0.51
 
     @classmethod
     def check(cls):

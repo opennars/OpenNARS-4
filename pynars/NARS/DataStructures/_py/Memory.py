@@ -1,4 +1,4 @@
-from pynars.Config import Enable
+from pynars.Config import Enable, Config
 from pynars.NAL.Inference.LocalRules import solve_query, solution_query, solution_question
 from pynars.NAL.MetaLevelInference.VariableSubstitution import get_elimination__var_const
 
@@ -11,9 +11,9 @@ from .Bag import Bag
 from pynars.NAL.Functions.Tools import revisible
 from pynars.NAL.Inference import local__revision
 # from pynars.NARS import Operation
+from pynars.NAL.Functions.Tools import project, project_truth
+from pynars import Global
 
-
-# from pynars.NARS import Operation
 
 class Memory:
     def __init__(self, capacity: int, n_buckets: int = None, take_in_order: bool = False, output_buffer = None) -> None:
@@ -24,6 +24,7 @@ class Memory:
         '''
         **Accept task**: Accept a task from the `Overall Experience`, and link it from all directly related concepts. Ref: *The Conceptual Design of OpenNARS 3.1.0*.
         '''
+        tasks_derived = []
         # merging the new task as a concept into the memory
         concept: Concept = Concept._conceptualize(self, task.term, task.budget)
         if concept is None: return None  # The memroy is full. The concept fails to get into the memory.
@@ -34,7 +35,7 @@ class Memory:
             # revised the belief if there has been one, and try to solve question if there has been a corresponding one.
             task_revised, answers_question = self._accept_judgement(task, concept)
         elif task.is_goal:
-            task_revised, belief_selected = self._accept_goal(task, concept)
+            task_revised, belief_selected, tasks_derived = self._accept_goal(task, concept)
             # TODO, ugly!
             if self.output_buffer is not None:
                 exist = False
@@ -74,7 +75,7 @@ class Memory:
             # }
             raise  # TODO
 
-        return task_revised, goal_derived, answers_question, answer_quest
+        return task_revised, goal_derived, answers_question, answer_quest, tasks_derived
 
     def _accept_judgement(self, task: Task, concept: Concept):
         ''''''
@@ -135,12 +136,15 @@ class Memory:
         ''''''
         desire_revised = None
         belief_selected = None
-        if Enable.operation: raise  # InternalExperienceBuffer.handleOperationFeedback(task, nal);
-        if Enable.anticipation: raise  # ProcessAnticipation.confirmAnticipation(task, concept, nal);
-
+        tasks_derived = []
+        
+        # if the goal exists in the desire table, do nothing with it
+        '''Ref.: OpenNARS 3.0.4 ProcessGoal.java lines 77~87'''
         g1: Goal = task.sentence
         desire: Desire = concept.match_desire(g1)
         if desire is not None:
+            if (desire.evidential_base == task.evidential_base):
+                return desire_revised, belief_selected, tasks_derived
             g2: Goal = desire.sentence
             if revisible(task, desire):
                 # TODO: Temporal projection
@@ -148,24 +152,105 @@ class Memory:
                 # reduce priority by achieving level
                 task.reduce_budget_by_achieving_level(desire)
 
-        if task.budget.is_above_thresh:
-            '''
+        if not task.budget.is_above_thresh:
+            return desire_revised, belief_selected, tasks_derived
+    
+        '''Task beliefT = null;
+        if(task.aboveThreshold()) {
+            beliefT = concept.selectCandidate(task, concept.beliefs, nal.time);
+
             for (final Task iQuest : concept.quests ) {
                 trySolution(task.sentence, iQuest, nal, true);
             }
+
+            // check if the Goal is already satisfied
             if (beliefT != null) {
                 // check if the Goal is already satisfied (manipulate budget)
                 trySolution(beliefT.sentence, task, nal, true);
             }
-            '''
+        }'''
+        '''Ref.: OpenNARS 3.0.4 ProcessGoal.java lines 89~102'''
 
-            # 1. try to solve questions
+        belief = concept.match_belief(task.sentence)
+        # TODO: try to solve the goal
 
-            # 2. try to solve quests
+        
+        '''
+        double AntiSatisfaction = 0.5f; // we dont know anything about that goal yet
+        if (beliefT != null) {
+            final Sentence belief = beliefT.sentence;
+            final Sentence projectedBelief = belief.projection(task.sentence.getOccurenceTime(), nal.narParameters.DURATION, nal.memory);
+            AntiSatisfaction = task.sentence.truth.getExpDifAbs(projectedBelief.truth);
+        }
 
-            concept.add_desire(task)
+        task.setPriority(task.getPriority()* (float)AntiSatisfaction);
+        '''
+        '''Ref.: OpenNARS 3.0.4 ProcessGoal.java lines 142~149'''
+        anti_satisfaction = 0.5
+        if belief is not None:
+            truth = project_truth(belief, task.sentence)
+            anti_satisfaction = abs(task.truth.e - truth.e)
+        task.budget.priority = task.budget.priority * anti_satisfaction
+        if not task.budget.is_above_thresh:
+            return desire_revised, belief_selected, tasks_derived
+        
+        '''
+        final boolean isFullfilled = AntiSatisfaction < nal.narParameters.SATISFACTION_TRESHOLD; # 
+        final Sentence projectedGoal = goal.projection(nal.time.time(), nal.time.time(), nal.memory);
+        if (!(projectedGoal != null && task.aboveThreshold() && !isFullfilled)) {
+            return;
+        }'''
 
-        return desire_revised, belief_selected
+        '''
+        for (final Task iQuest : concept.quests ) {
+            trySolution(task.sentence, iQuest, nal, true);
+        }
+        if (beliefT != null) {
+            // check if the Goal is already satisfied (manipulate budget)
+            trySolution(beliefT.sentence, task, nal, true);
+        }
+        '''
+
+        # 1. try to solve questions
+
+        # 2. try to solve quests
+
+        concept.add_desire(task)
+
+        if not task.is_eternal:
+            truth = project(task.truth, task.stamp.t_occurrence, Global.time, Global.time)
+        else:
+            truth = task.truth
+        if truth.e > Config.decision_threshold:
+            if (task is not None) and task.is_executable and not (desire is not None and task.evidential_base in desire.evidential_base):
+                    #   execute registered operations 
+                    stat: Statement = task.term
+                    op = stat.predicate
+                    from pynars.NARS.Operation.Register import registered_operations
+                    from pynars.NARS.Operation.Execution import execute
+                    if op in registered_operations and not task.is_mental_operation:
+                        
+                        # to judge whether the goal has been fulfilled
+                        task_operation_return, task_executed = execute(task, concept, self)
+                        concept_task = self.take_by_key(task, remove=False)
+                        if concept_task is not None:
+                            belief: Belief = concept_task.match_belief(task.sentence)
+                        if belief is not None:
+                            task.budget.reduce_by_achieving_level(belief.truth.e)
+                        if task_operation_return is not None: tasks_derived.append(task_operation_return)
+                        if task_executed is not None: tasks_derived.append(task_executed)
+
+
+
+        
+        # if Enable.operation: raise  # InternalExperienceBuffer.handleOperationFeedback(task, nal);
+        # if Enable.anticipation: raise  # ProcessAnticipation.confirmAnticipation(task, concept, nal);
+
+        
+        
+
+       
+        return desire_revised, belief_selected, tasks_derived
 
     def _accept_quest(self, task: Task, concept: Concept):
         ''''''

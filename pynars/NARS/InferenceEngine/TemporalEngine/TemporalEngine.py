@@ -91,7 +91,13 @@ class TemporalEngine(Engine):
     @staticmethod
     def inference(task_event1: Task, task_event2: Task, rules: List[Callable[[Task, Task], List[Task]]]) -> List[Task]: 
         ''''''
-        tasks_derived = [rule(task_event1, task_event2) for rule in rules]
+        tasks_derived = []
+        for rule in rules:
+            try:
+                tasks_derived.append(rule(task_event1, task_event2))
+            except:
+                pass
+        # tasks_derived = [rule(task_event1, task_event2) for rule in rules]
 
         return tasks_derived
 
@@ -129,10 +135,11 @@ class TemporalEngine(Engine):
             
 
             # temporal induction
-            # TODO: use SparseLUT to find the rules.
             is_valid, rules = TemporalEngine.match(task_event, task)
             if is_valid:
                 tasks_derived = self.inference(task_event, task, rules)
+                # for task in tasks_derived:
+                #     print(task)
 
         for task in tasks_attempted:
             sequence_buffer.put_back(task)

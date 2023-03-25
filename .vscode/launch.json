@@ -2,6 +2,13 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python: plane_game",
+            "type": "python",
+            "request": "launch",
+            "module": "Experiments.FighterPlane.plane_game",
+            "justMyCode": true
+        },
+        {
             "name": "Python: test_indexvar",
             "type": "python",
             "request": "launch",
@@ -199,7 +206,7 @@
             "request": "launch",
             "module": "pynars.Console",
             "console": "integratedTerminal",
-            "env":{
+            "env": {
                 "CODON_PATH": "/Users/bowenxu/.codon/lib/codon/stdlib"
             },
             "args": [
@@ -225,7 +232,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "env":{
+            "env": {
                 "CODON_PATH": "/Users/bowenxu/.codon/lib/codon/stdlib"
             }
         }

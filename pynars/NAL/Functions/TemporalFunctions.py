@@ -1,7 +1,7 @@
 
 from pynars.Narsese import Truth
 from .UncertaintyMappingFunctions import w_to_c
-
+from pynars.Config import Config
 
 def project(truth: Truth, t_source: int, t_current: int, t_target: int):
     '''
@@ -21,7 +21,9 @@ def project(truth: Truth, t_source: int, t_current: int, t_target: int):
 
             $$c_{new} = (1 - k_c) * c_{old}$$
     '''
-    k_c = abs(t_source - t_target) / (abs(t_source - t_current) + abs(t_target - t_current))
+    a = 100000.0 * Config.projection_decay
+
+    k_c = abs(t_source - t_target) / (abs(t_source - t_current) + abs(t_target - t_current) + a)
     c_new = (1 - k_c) * truth.c
     return Truth(truth.f, c_new, truth.k)
 

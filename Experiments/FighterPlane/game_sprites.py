@@ -1,5 +1,12 @@
+'''
+Reference:
+https://github.com/Noctis-Xu/NARS-FighterPlane
+'''
 import pygame
 import random
+from pathlib import Path
+
+image_root = (Path(__file__).parent/'images').absolute()
 
 SCREEN_RECT = pygame.Rect(0, 0, 480, 700)  # the size of game window, Rect(left, top, width, height). left = x, top = y
 
@@ -16,7 +23,7 @@ class GameSprite(pygame.sprite.Sprite):
 
 class Background(GameSprite):
     def __init__(self, is_alternative=False):
-        super().__init__("images/background.png")
+        super().__init__(image_root/"background.png")
         if is_alternative:
             self.rect.y = -self.rect.height
 
@@ -28,7 +35,7 @@ class Background(GameSprite):
 
 class Enemy(GameSprite):
     def __init__(self):
-        super().__init__("images/enemy1.png")
+        super().__init__(image_root/"enemy1.png")
         self.speed = random.randint(2, 3)
         self.rect.bottom = 0
         max_x = SCREEN_RECT.width - self.rect.width
@@ -46,7 +53,7 @@ class Enemy(GameSprite):
 
 class Hero(GameSprite):
     def __init__(self):
-        super().__init__("images/me1.png", 0)
+        super().__init__(image_root/"me1.png", 0)
         self.rect.centerx = SCREEN_RECT.centerx
         self.rect.bottom = SCREEN_RECT.bottom
         self.bullets = pygame.sprite.Group()
@@ -69,7 +76,7 @@ class Hero(GameSprite):
 
 class Bullet(GameSprite):
     def __init__(self, speed=-2):
-        super().__init__("images/bullet1.png", speed)
+        super().__init__(image_root/"bullet1.png", speed)
 
     def update(self):
         super().update()

@@ -97,3 +97,6 @@ class Base:
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({len(self._set)})"
+
+    def __contains__(self, base: 'Base') -> bool:
+        return self._set.__contains__(base._set)

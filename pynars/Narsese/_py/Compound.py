@@ -11,6 +11,7 @@ from ordered_set import OrderedSet
 from typing import Set
 from pynars.utils.tools import list_contains
 import numpy as np
+from pynars.Global import States
 
 
 class Compound(Term):  # , OrderedSet):
@@ -27,6 +28,8 @@ class Compound(Term):  # , OrderedSet):
             connector, terms, is_input)
 
         terms = self._terms
+        if len(terms) == 0:
+            raise Exception("Empty")
 
         self._height = max((term._height for term in terms))+1
 

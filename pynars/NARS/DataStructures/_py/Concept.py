@@ -97,19 +97,23 @@ class Concept(Item):
         _, item_max = max(qualities, key=lambda quality: quality[0])
         return item_max
         
+    def add_belief(self, task: Task) -> Union[Judgement, None]:
+        ''''''
+        self.belief_table.add(task, task.truth.c)
+    
+    def get_desire(self, task: Task) -> Union[Judgement, None]:
+        ''''''
+        self.desire_table.first(task, task.truth.c)
+
     def match_desire(self, goal: Goal) -> Task:
         '''
         Select a desire with highest quality, within the desire_table, according to the task
         '''
-        desire_table: List[Tuple[Task, float]] = self.desire_table
+        desire_table: List[Task] = self.desire_table
         if len(desire_table) == 0: return None
         qualities = [(calculate_solution_quality(goal, task.sentence), task) for task in desire_table]
         _, item_max = max(qualities, key=lambda quality: quality[0])
         return item_max
-        
-    def add_belief(self, task: Task) -> Union[Judgement, None]:
-        ''''''
-        self.belief_table.add(task, task.truth.c)
 
     def add_desire(self, task: Task) -> Union[Task, None]:
         ''''''
