@@ -65,8 +65,8 @@ def run_line(nars: Reasoner, line: str):
 
             tasks_all = nars.cycle()
             return [deepcopy(tasks_all)]
-        except:
-            out_print(PrintType.ERROR, f'Unknown error: {line}')
+        except Exception as e:
+            out_print(PrintType.ERROR, f'Unknown error: {line}. \n{e}')
 
 
 def handle_lines(nars: Reasoner, lines: str):

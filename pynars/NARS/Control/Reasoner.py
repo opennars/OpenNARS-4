@@ -60,6 +60,7 @@ class Reasoner:
         '''Everything to do by NARS in a single working cycle'''
         Global.States.reset()
         tasks_derived: List[Task] = []
+        task_operation_return, task_executed = None, None
         # step 1. Take out an Item from `Channels`, and then put it into the `Overall Experience`
         for channel in self.channels:
             task_in: Task = channel.take()
@@ -76,10 +77,14 @@ class Reasoner:
         # step 3. Process a task in the global experience buffer
         task: Task = self.overall_experience.take()
         if task is not None:
+            if task.is_goal:
+                print(task)
             # concept = self.memory.take_by_key(task.term, remove=False)
             # if task.is_goal:
                 # goal_revised = self.process_goal(task, concept)
-            judgement_revised, goal_revised, answers_question, answers_quest, _tasks_derived = self.memory.accept(task)
+            judgement_revised, goal_revised, answers_question, answers_quest, (task_operation_return, task_executed), _tasks_derived = self.memory.accept(task)
+            if task_operation_return is not None: tasks_derived.append(task_operation_return)
+            if task_executed is not None: tasks_derived.append(task_executed)
             tasks_derived.extend(_tasks_derived)
             # self.sequence_buffer.put_back(task) # globalBuffer.putBack(task,
             # narParameters.GLOBAL_BUFFER_FORGET_DURATIONS, this)
@@ -134,7 +139,6 @@ class Reasoner:
             pass  # TODO: select a task from `self.sequence_buffer`?
 
         #   mental operation of NAL-9
-        task_operation_return, task_executed = None, None
         if False:
             task_operation_return, task_executed, belief_awared = self.mental_operation(task, concept, answers_question,
                                                                                         answers_quest)

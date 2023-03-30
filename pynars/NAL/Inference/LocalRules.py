@@ -46,15 +46,15 @@ def revision(task: Task, belief: Task, budget_tasklink: Budget=None, budget_term
 def solution_question(task: Task, belief: Belief, budget_tasklink: Budget=None, budget_termlink: Budget=None):
     question: Union[Question, Quest] = task.sentence
     answer: Union[Judgement, Goal] = belief.sentence
-    answer_best =  question.answer_best
-    if answer_best is None: question.answer_best = answer
+    answer_best =  question.best_answer
+    if answer_best is None: question.best_answer = answer
     else:
         quality_new = calculate_solution_quality(question, answer)
         quality_old = calculate_solution_quality(question, answer_best)
         if quality_new <= quality_old: answer = None
-        else: question.answer_best = answer
+        else: question.best_answer = answer
     
-    if answer is not None and question.answer_best is answer:
+    if answer is not None and question.best_answer is answer:
         quality = calculate_solution_quality(question, answer, question.term.has_qvar)
         # reward the belief
         budget_answer = Budget(Or(task.budget.priority, quality), task.budget.durability, truth_to_quality(answer.truth))
@@ -64,6 +64,29 @@ def solution_question(task: Task, belief: Belief, budget_tasklink: Budget=None, 
         task.budget.priority = min(1-quality, task.budget.priority) # BUG: here, after setting the priority, the level of the task should change within a Bag.
         
     return belief if answer is not None else None
+
+def solution_goal(task: Task, belief: Belief, budget_tasklink: Budget=None, budget_termlink: Budget=None):
+    question: Union[Question, Quest] = task.sentence
+    answer: Union[Judgement, Goal] = belief.sentence
+    answer_best =  question.best_answer
+    if answer_best is None: question.best_answer = answer
+    else:
+        quality_new = calculate_solution_quality(question, answer)
+        quality_old = calculate_solution_quality(question, answer_best)
+        if quality_new <= quality_old: answer = None
+        else: question.best_answer = answer
+    
+    if answer is not None and question.best_answer is answer:
+        quality = calculate_solution_quality(question, answer, question.term.has_qvar)
+        # reward the belief
+        budget_answer = Budget(Or(task.budget.priority, quality), task.budget.durability, truth_to_quality(answer.truth))
+        belief = Belief(Judgement(answer.term, answer.stamp, answer.truth), budget_answer)
+
+        # de-prioritize the question
+        task.budget.priority = min(1-quality, task.budget.priority) # BUG: here, after setting the priority, the level of the task should change within a Bag.
+        
+    return belief if answer is not None else None
+
 
 def solution_query(task: Task, belief: Belief, budget_tasklink: Budget=None, budget_termlink: Budget=None):
     '''

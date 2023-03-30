@@ -172,6 +172,8 @@ class Judgement(Sentence):
 
 
 class Goal(Sentence):
+    best_solution: 'Judgement' = None
+
     def __init__(self, term: Term, stamp: Stamp = None, desire: Truth = None) -> None:
         ''''''
         stamp = stamp if stamp is not None else Stamp(Global.time, None, None, None, None)
@@ -182,11 +184,11 @@ class Goal(Sentence):
         return f'{self.word}{(" " + str(self.tense.value)) if self.tense != Tense.Eternal else ""} {str(self.truth)}'
 
     def repr(self, is_input = False):
-        return f'{self.term.repr(is_input) + self.punct.value}{(" " + str(self.tense.value)) if self.tense != Tense.Eternal else ""} {str(self.truth)}'
+        return f'{self.term.repr() + self.punct.value}{(" " + str(self.tense.value)) if self.tense != Tense.Eternal else ""} {str(self.truth)}'
 
 
 class Question(Sentence):
-    answer_best: Sentence = None
+    best_answer: 'Judgement' = None
 
     def __init__(self, term: Term, stamp: Stamp = None, curiosiry: Truth = None) -> None:
         ''''''
@@ -204,6 +206,7 @@ class Question(Sentence):
 
 
 class Quest(Sentence):
+    best_answer: 'Goal' = None
     def __init__(self, term: Term, stamp: Stamp = None, curiosiry: Truth = None) -> None:
         ''''''
         stamp = stamp if stamp is not None else Stamp(Global.time, None, None, None, None)

@@ -13,6 +13,8 @@ from pynars.NAL.Inference import local__revision
 # from pynars.NARS import Operation
 from pynars.NAL.Functions.Tools import project, project_truth
 from pynars import Global
+from pynars.NAL.Functions.BudgetFunctions import Budget_evaluate_goal_solution
+from pynars.NAL.Functions.Tools import calculate_solution_quality
 
 
 class Memory:
@@ -25,6 +27,7 @@ class Memory:
         **Accept task**: Accept a task from the `Overall Experience`, and link it from all directly related concepts. Ref: *The Conceptual Design of OpenNARS 3.1.0*.
         '''
         tasks_derived = []
+        task_operation_return, task_executed = None, None
         # merging the new task as a concept into the memory
         concept: Concept = Concept._conceptualize(self, task.term, task.budget)
         if concept is None: return None  # The memroy is full. The concept fails to get into the memory.
@@ -35,7 +38,7 @@ class Memory:
             # revised the belief if there has been one, and try to solve question if there has been a corresponding one.
             task_revised, answers_question = self._accept_judgement(task, concept)
         elif task.is_goal:
-            task_revised, belief_selected, tasks_derived = self._accept_goal(task, concept)
+            task_revised, belief_selected, (task_operation_return, task_executed), tasks_derived = self._accept_goal(task, concept)
             # TODO, ugly!
             if self.output_buffer is not None:
                 exist = False
@@ -75,7 +78,7 @@ class Memory:
             # }
             raise  # TODO
 
-        return task_revised, goal_derived, answers_question, answer_quest, tasks_derived
+        return task_revised, goal_derived, answers_question, answer_quest, (task_operation_return, task_executed), tasks_derived
 
     def _accept_judgement(self, task: Task, concept: Concept):
         ''''''
@@ -132,10 +135,11 @@ class Memory:
 
         return answers
 
-    def _accept_goal(self, task: Task, concept: Concept):
+    def _accept_goal(self, task: Task, concept: Concept, task_link: TaskLink=None):
         ''''''
         desire_revised = None
         belief_selected = None
+        task_operation_return, task_executed = None, None
         tasks_derived = []
         
         # if the goal exists in the desire table, do nothing with it
@@ -144,7 +148,7 @@ class Memory:
         desire: Desire = concept.match_desire(g1)
         if desire is not None:
             if (desire.evidential_base == task.evidential_base):
-                return desire_revised, belief_selected, tasks_derived
+                return desire_revised, belief_selected, (task_operation_return, task_executed), tasks_derived
             g2: Goal = desire.sentence
             if revisible(task, desire):
                 # TODO: Temporal projection
@@ -153,7 +157,7 @@ class Memory:
                 task.reduce_budget_by_achieving_level(desire)
 
         if not task.budget.is_above_thresh:
-            return desire_revised, belief_selected, tasks_derived
+            return desire_revised, belief_selected, (task_operation_return, task_executed), tasks_derived
     
         '''Task beliefT = null;
         if(task.aboveThreshold()) {
@@ -171,9 +175,8 @@ class Memory:
         }'''
         '''Ref.: OpenNARS 3.0.4 ProcessGoal.java lines 89~102'''
 
-        belief = concept.match_belief(task.sentence)
-        # TODO: try to solve the goal
-
+        _tasks, belief = self._solve_goal(task, concept, task_link)
+        tasks_derived.extend(_tasks)
         
         '''
         double AntiSatisfaction = 0.5f; // we dont know anything about that goal yet
@@ -192,7 +195,7 @@ class Memory:
             anti_satisfaction = abs(task.truth.e - truth.e)
         task.budget.priority = task.budget.priority * anti_satisfaction
         if not task.budget.is_above_thresh:
-            return desire_revised, belief_selected, tasks_derived
+            return desire_revised, belief_selected, (task_operation_return, task_executed), tasks_derived
         
         '''
         final boolean isFullfilled = AntiSatisfaction < nal.narParameters.SATISFACTION_TRESHOLD; # 
@@ -222,7 +225,7 @@ class Memory:
         else:
             truth = task.truth
         if truth.e > Config.decision_threshold:
-            if (task is not None) and task.is_executable and not (desire is not None and task.evidential_base in desire.evidential_base):
+            if (task is not None) and task.is_executable and not (desire is not None and desire.evidential_base.contains(task.evidential_base)):
                     #   execute registered operations 
                     stat: Statement = task.term
                     op = stat.predicate
@@ -237,8 +240,8 @@ class Memory:
                             belief: Belief = concept_task.match_belief(task.sentence)
                         if belief is not None:
                             task.budget.reduce_by_achieving_level(belief.truth.e)
-                        if task_operation_return is not None: tasks_derived.append(task_operation_return)
-                        if task_executed is not None: tasks_derived.append(task_executed)
+                        # if task_operation_return is not None: tasks_derived.append(task_operation_return)
+                        # if task_executed is not None: tasks_derived.append(task_executed)
 
 
 
@@ -246,11 +249,7 @@ class Memory:
         # if Enable.operation: raise  # InternalExperienceBuffer.handleOperationFeedback(task, nal);
         # if Enable.anticipation: raise  # ProcessAnticipation.confirmAnticipation(task, concept, nal);
 
-        
-        
-
-       
-        return desire_revised, belief_selected, tasks_derived
+        return desire_revised, belief_selected, (task_operation_return, task_executed), tasks_derived
 
     def _accept_quest(self, task: Task, concept: Concept):
         ''''''
@@ -338,12 +337,29 @@ class Memory:
             raise "Invalid case."
         return answers
 
-    def _solve_goal(self, task: Task, concept: Concept):
+    def _solve_goal(self, task: Task, concept: Concept, task_link: TaskLink=None):
         '''
         Args:
             task (Task): Its sentence should be a goal.
             concept (Concept): The concept corresponding to the task.
         '''
+        tasks = []
+        belief = concept.match_belief(task.sentence)
+        if belief is None:
+            return tasks, None
+        old_best = task.best_solution
+        if old_best is not None:
+            quality_new = calculate_solution_quality(task.sentence, belief.sentence, True)
+            quality_old = calculate_solution_quality(task.sentence, old_best.sentence, True)
+            if (quality_new <= quality_old):
+                return tasks, belief
+        task.best_solution = belief
+        tasks.append(belief) # the task as the new best solution should be added into the internal buffer, so that it would be paid attention
+        budget = Budget_evaluate_goal_solution(task.sentence, belief.sentence, task.budget, (task_link.budget if task_link is not None else None))
+        if budget.is_above_thresh:
+            task.budget = budget
+            tasks.append(task)
+        return tasks, belief
 
     def _solve_quest(self, task: Task, concept: Concept):
         '''

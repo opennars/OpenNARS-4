@@ -1,12 +1,13 @@
 # from pynars.NARS.DataStructures._py.Link import TermLink
 from math import log2
-from pynars.Narsese import Budget, Truth, Term
+from pynars.Narsese import Budget, Truth, Term, Task, Goal, Judgement
 from pynars.Config import Config
 from .ExtendedBooleanFunctions import *
 from copy import deepcopy
 from .UncertaintyMappingFunctions import w_to_c
-
 from .Tools import truth_to_quality
+from .Tools import calculate_solution_quality
+from .ExtendedBooleanFunctions import Or
 
 def Budget_revision(budget_task: Budget, truth_task: Truth, truth_belief: Truth, truth_derived: Truth, budget_tasklink: Budget=None, budget_termlink: Budget=None, replace=True, replace_tasklink=True, replace_termlink=True):
     '''
@@ -146,3 +147,20 @@ def Budget_merge(budget_base: Budget, budget_merged: Budget, replace=True):
 '''Belief and Desire'''
 '''Processing Units'''
 '''Goal Evaluations'''
+def Budget_evaluate_goal_solution(problem: Goal, solution: Judgement, budget_problem: Budget, budget_tasklink: Budget=None) -> Budget:
+    '''
+    Evaluate the quality of a belief as a solution to a problem, then reward the belief and de-prioritize the problem
+    '''
+    quality = calculate_solution_quality(problem, solution, False) # TODO: final boolean rateByConfidence = problem.getTerm().hasVarQuery();
+
+    budget = Budget(
+        Or(budget_problem.priority, quality), 
+        budget_problem.durability, 
+        truth_to_quality(solution.truth)
+    )
+
+
+    if budget_tasklink is not None:
+        raise NotImplementedError("TODO: feedback to links")
+
+    return budget

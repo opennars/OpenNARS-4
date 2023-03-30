@@ -29,7 +29,7 @@ class PlaneGame:
     def __set_timer(self):
         CREATE_ENEMY_EVENT_TIMER = 1000
         UPDATE_NARS_EVENT_TIMER = 200
-        OPENNARS_BABBLE_EVENT_TIMER = 250
+        OPENNARS_BABBLE_EVENT_TIMER = 0
         timer_enemy = int(CREATE_ENEMY_EVENT_TIMER / self.game_speed)
         timer_update_NARS = int(UPDATE_NARS_EVENT_TIMER / self.game_speed)
         timer_babble = int(OPENNARS_BABBLE_EVENT_TIMER / self.game_speed)
