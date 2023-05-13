@@ -108,8 +108,10 @@ def Budget_decay(budget: Budget, replace=True):
     p = budget.priority
     q = budget.quality * Q
     d = budget.durability
-    budget.priority = q + (p-q)*pow(d, 1.0/(p*C))
-    # budget.priority = q + (p-q)*pow(d, 1.0/((p-q)*C)) # the implementation in OpenNARS 3.0.4
+    if abs(p-q) == 0.0:
+        return budget
+    budget.priority = q + (p-q)*pow(d, 1.0/(abs(p-q)*C))
+    # budget.priority = q + (p-q)*pow(d, 1.0/(abs(p-q)*C)) if p > q else q # the implementation in OpenNARS 3.0.4
     return budget
 
 def Budget_merge(budget_base: Budget, budget_merged: Budget, replace=True):
@@ -158,6 +160,8 @@ def Budget_evaluate_goal_solution(problem: Goal, solution: Judgement, budget_pro
         budget_problem.durability, 
         truth_to_quality(solution.truth)
     )
+
+    budget_problem.priority = min(1-quality, budget_problem.quality)
 
 
     if budget_tasklink is not None:

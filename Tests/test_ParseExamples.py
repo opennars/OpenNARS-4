@@ -7,7 +7,7 @@ from pynars.Narsese import Judgement, Term, Statement, Copula, Truth
 from pathlib import Path
 import Narsese
 
-from pynars.utils.Print import out_print, PrintType, print_filename
+from pynars.utils.Print import print_out, PrintType, print_filename
 
 examples_path = Path(__file__).parent/'examples'
 single_step_path = examples_path/'single_step'
@@ -37,14 +37,14 @@ def parse_file(file: str):
                 try:
                     content_check = Narsese.parser.parse(line) # TODO: check the outputs
                 except:
-                    out_print(PrintType.ERROR, f'{file}, line {i}, {line}')
+                    print_out(PrintType.ERROR, f'{file}, line {i}, {line}')
                     raise
             continue
         elif line.startswith("'"):
             continue
         elif line.isdigit():
             n_cycle = int(line)
-            out_print(PrintType.INFO, f'Run {n_cycle} cycles.')
+            print_out(PrintType.INFO, f'Run {n_cycle} cycles.')
 
         else:
             line = line.rstrip(' \n')
@@ -53,9 +53,9 @@ def parse_file(file: str):
             # content = Narsese.parser.parse(line)
             try:
                 content = Narsese.parser.parse(line) # TODO: check the outputs
-                out_print(PrintType.IN, str(content.sentence), *content.budget)
+                print_out(PrintType.IN, str(content.sentence), *content.budget)
             except:
-                out_print(PrintType.ERROR, f'{file}, line {i}, {line}')
+                print_out(PrintType.ERROR, f'{file}, line {i}, {line}')
                 raise
 
 

@@ -5,25 +5,30 @@ from depq import DEPQ
 from pynars.Config import Config
 from pynars.Narsese import Item, Task
 from pynars.NAL.Functions.BudgetFunctions import *
-from typing import Union
+from typing import Union, Callable, Any
 
 
 class Bag:
     # TODO: Re-implement this DataStructure, in order to optimize the complexity.
     class LUT:
-        def __init__(self, *args, **kwargs):
+        def __init__(self, key=None, *args, **kwargs):
             self.lut = OrderedDict(*args, **kwargs)
+            self.key = key
 
         def get(self, key, default = None):
+            if self.key is not None: key = self.key(key)
             return self.lut.get(hash(key), default)
 
         def pop(self, key, default = None):
+            if self.key is not None: key = self.key(key)
             return self.lut.pop(hash(key), default)
 
         def __getitem__(self, k):
+            if self.key is not None: k = self.key(k)
             return self.lut.__getitem__(hash(k))
 
         def __setitem__(self, k, v):
+            if self.key is not None: k = self.key(k)
             return self.lut.__setitem__(hash(k), v)
 
         def __contains__(self, o: object) -> bool:
@@ -32,7 +37,7 @@ class Bag:
         def __len__(self):
             return len(self.lut)
 
-    def __init__(self, capacity: int, n_buckets: int = None, take_in_order: bool = True) -> None:
+    def __init__(self, capacity: int, n_buckets: int = None, take_in_order: bool = True, key: Callable[[Item], Any]=None) -> None:
         '''
         Args:
             capacity (int): the maximum number of items.
@@ -42,7 +47,7 @@ class Bag:
         self.capacity = capacity
         self.pointer = 0  # Pointing to the Bag's current bucket number
         self.take_in_order = take_in_order
-        self.item_lut = self.LUT()  # look up table
+        self.item_lut = self.LUT(key=key)  # look up table
         self.n_levels = n_buckets if n_buckets is not None else Config.num_buckets
         self.levels = tuple(list() for i in range(self.n_levels))  # initialize buckets between 0 and capacity
         # self.buckets = self.Depq(maxlen=self.n_buckets)
@@ -119,9 +124,12 @@ class Bag:
             self.item_lut.pop(item)
         return item
 
-    def put(self, item: Item):
+    def put(self, item: Item, key=None):
+        if key is None: 
+            key = item
+
         item_popped = None
-        old_item: Item = self.take_by_key(item, remove=False)
+        old_item: Item = self.take_by_key(key, remove=False)
         if old_item is not None:
             Budget_merge(old_item.budget, item.budget)
             return item_popped
@@ -138,17 +146,17 @@ class Bag:
                 item_popped = item
                 return item_popped
 
-        self.item_lut[item] = item
+        self.item_lut[key] = item
         level: list = self.levels[pointer_new]
         level.append(item)
 
         return item_popped
 
-    def put_back(self, item: Item):
+    def put_back(self, item: Item, key=None):
         ''''''
         # return putIn(oldItem);
         Bag.decay(item)
-        self.put(item)
+        self.put(item, key)
 
     @classmethod
     def decay(cls, item: Item):

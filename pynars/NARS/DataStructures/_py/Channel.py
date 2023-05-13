@@ -3,7 +3,7 @@ from .Buffer import Buffer
 from queue import Queue
 from pynars.Narsese import Task
 from pynars.Narsese import parser
-from pynars.utils.Print import out_print, PrintType
+from pynars.utils.Print import print_out, PrintType
 
 class Channel(Buffer):
     ''''''

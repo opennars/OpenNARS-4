@@ -11,7 +11,7 @@ from pathlib import Path
 import Narsese
 from pynars.Narsese import Compound, Budget
 
-from pynars.utils.Print import out_print, PrintType, print_filename
+from pynars.utils.Print import print_out, PrintType, print_filename
 
 class TEST_Get_Index(unittest.TestCase):
     '''Examples files in `application`.'''

@@ -27,7 +27,7 @@ from pynars.Narsese._py.Compound import Compound
 from pynars.Narsese._py.Sentence import Goal
 from pynars.Narsese._py.Statement import Statement
 from pynars.Narsese._py.Truth import Truth
-from pynars.utils.Print import PrintType, out_print
+from pynars.utils.Print import PrintType, print_out
 from pynars.utils.tools import rand_seed
 
 rander_mode: Literal['human'] = 'human'
@@ -138,7 +138,7 @@ def policy_nars(env: gym.Env):
             # print(info_str)
             if task is not None:
                 nars.perception_channel.put(task)
-                out_print(PrintType.IN, task.sentence, *task.budget)
+                print_out(PrintType.IN, task.sentence, *task.budget)
             handle_lines(nars, '10')
             # nars.cycles(10)
         else:

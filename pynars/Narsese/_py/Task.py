@@ -105,7 +105,7 @@ class Task(Item):
 
     def __str__(self) -> str:
         '''$p;d;q$ sentence %f;c%'''
-        return f'{(str(self.budget) if self.budget is not None else "$-;-;-$") + " "}{self.sentence.repr(False)}'
+        return f'{(str(self.budget) if self.budget is not None else "$-;-;-$") + " "}{self.sentence.repr(False)} {str(self.stamp)}'
 
     def __repr__(self) -> str:
         return str(self)

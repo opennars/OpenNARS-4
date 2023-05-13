@@ -7,7 +7,7 @@ from pynars.Narsese import Judgement, Term, Statement, Copula, Truth, Connector
 from pathlib import Path
 from pynars.Narsese._py.Compound import Compound
 
-from pynars.utils.Print import out_print, PrintType, print_filename
+from pynars.utils.Print import print_out, PrintType, print_filename
 
 class TEST_IndexVar(unittest.TestCase):
     '''Examples files in `application`.'''

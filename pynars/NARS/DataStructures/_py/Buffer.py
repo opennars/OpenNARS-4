@@ -1,6 +1,8 @@
 from .Bag import Bag
 from pynars.Config import Config
-from pynars.Narsese import Item
+from pynars.Narsese import Item, Task
+from pynars.NAL.Functions.BudgetFunctions import *
+from typing import Callable, Any
 
 class Buffer(Bag):
     '''
@@ -21,9 +23,18 @@ class Buffer(Bag):
     '''
 
     def __init__(self, capacity: int, n_buckets: int=None, take_in_order: bool=False, max_duration: int=None) -> None:
-        Bag.__init__(self, capacity, n_buckets=n_buckets, take_in_order=take_in_order)
+        key: Callable[[Task], Any] = lambda task: (hash(task), hash(task.stamp.evidential_base))
+        Bag.__init__(self, capacity, n_buckets=n_buckets, take_in_order=take_in_order, key=key)
         self.max_duration = max_duration if max_duration is not None else Config.max_duration
 
+    # def put(self, task: Task):
+    #     return Bag.put(self, task, (hash(task), hash(task.stamp.evidential_base)))
+    
+    # def put_back(self, task: Task):
+    #     ''''''
+    #     return Bag.put_back(self, task, (hash(task), hash(task.stamp.evidential_base)))
+
+    
 
     def is_expired(self, put_time, current_time):
         return (current_time - put_time) > self.max_duration

@@ -96,7 +96,7 @@ class Base:
         return len(self._set)
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}({len(self._set)})"
+        return f"{self.__class__.__name__}{set(self._set)}"
 
     def contains(self, base: 'Base'):
         return len(self._set - base._set) == 0

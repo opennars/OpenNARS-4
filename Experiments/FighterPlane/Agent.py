@@ -39,7 +39,8 @@ class Agent:
             tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest, (
             task_operation_return, task_executed) = self.core.cycle()
             if len(tasks_derived) > 0:
-                pass
+                for task in tasks_derived:
+                    print(task)
             if task_operation_return is not None and len(task_operation_return) > 0:
                 print("task_operation_return")
             if task_executed is not None:
@@ -49,8 +50,8 @@ class Agent:
 
     def update(self, hero, enemy_group):  # update sensors (object positions), remind goals, and make inference
         self.update_sensors(hero, enemy_group)
-        self.remind_knowledge()
         self.remind_goal()
+        self.remind_knowledge()
         self.add_inference_cycles(self.inference_cycle_frequency)
 
     def update_sensors(self, hero, enemy_group):
@@ -95,9 +96,12 @@ class Agent:
 
     def remind_knowledge(self):
         ''''''
-        self.core.input_narsese('< (&/, <{enemy} --> [left]>, <(*,{SELF}) --> ^left>) =/> <{SELF} --> [good]>>.')
-        self.core.input_narsese('< (&/, <{enemy} --> [right]>, <(*,{SELF}) --> ^right>) =/> <{SELF} --> [good]>>.')
-        self.core.input_narsese('< (&/, <{enemy} --> [ahead]>, <(*,{SELF}) --> ^fire>) =/> <{SELF} --> [good]>>.')
+        # self.core.input_narsese('< (&/, <{enemy} --> [left]>, (&/, <(*,{SELF}) --> ^left>, <(*,{SELF}) --> ^fire>)) =/> <{SELF} --> [good]>>.')
+        # self.core.input_narsese('< (&/, <{enemy} --> [right]>, (&/, <(*,{SELF}) --> ^right>), <(*,{SELF}) --> ^fire>) =/> <{SELF} --> [good]>>.')
+        self.core.input_narsese('< (&/, <{enemy} --> [left]>, <(*,{SELF}) --> ^left>) =/> <{SELF} --> [good]>>. :|:')
+        self.core.input_narsese('< (&/, <{enemy} --> [right]>, <(*,{SELF}) --> ^right>) =/> <{SELF} --> [good]>>. :|:')
+        self.core.input_narsese('< (&/, <{enemy} --> [ahead]>, <(*,{SELF}) --> ^fire>) =/> <{SELF} --> [good]>>. :|:')
+        # self.core.input_narsese('<(*,{SELF}) --> ^fire>! :|:')
 
     def remind_goal(self):
         # self.add_to_cmd('<{SELF} --> [good]>! :|:')

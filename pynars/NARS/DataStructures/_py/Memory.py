@@ -4,7 +4,7 @@ from pynars.NAL.MetaLevelInference.VariableSubstitution import get_elimination__
 
 from pynars.NARS.DataStructures._py.Link import TaskLink
 from pynars.Narsese._py.Sentence import Goal, Judgement, Question
-from pynars.Narsese import Statement, Term, Sentence, Budget, Task
+from pynars.Narsese import Statement, Term, Sentence, Budget, Task, Truth
 from pynars.Narsese._py.Task import Belief, Desire
 from .Concept import Concept
 from .Bag import Bag
@@ -15,10 +15,11 @@ from pynars.NAL.Functions.Tools import project, project_truth
 from pynars import Global
 from pynars.NAL.Functions.BudgetFunctions import Budget_evaluate_goal_solution
 from pynars.NAL.Functions.Tools import calculate_solution_quality
-
+from typing import Callable, Any
 
 class Memory:
     def __init__(self, capacity: int, n_buckets: int = None, take_in_order: bool = False, output_buffer = None) -> None:
+        # key: Callable[[Task], Any] = lambda task: task.term
         self.concepts = Bag(capacity, n_buckets=n_buckets, take_in_order=take_in_order)
         self.output_buffer = output_buffer
 
@@ -122,6 +123,10 @@ class Memory:
             # try to solve questions
             answers = self._solve_judgement(task, concept)
 
+            for task_goal in concept.desire_table:
+                answers_goal, _ = self._solve_goal(task_goal, concept, None, task)
+                answers.extend(answers_goal)
+
         return belief_revised, answers
 
     def _accept_question(self, task: Task, concept: Concept):
@@ -148,6 +153,11 @@ class Memory:
         desire: Desire = concept.match_desire(g1)
         if desire is not None:
             if (desire.evidential_base == task.evidential_base):
+                # concept_task = self.take_by_key(task.term, remove=False)
+                # if concept_task is not None:
+                #     belief: Belief = concept_task.match_belief(task.sentence)
+                #     if belief is not None:
+                #         task.budget.reduce_by_achieving_level(belief.truth.e)
                 return desire_revised, belief_selected, (task_operation_return, task_executed), tasks_derived
             g2: Goal = desire.sentence
             if revisible(task, desire):
@@ -177,6 +187,9 @@ class Memory:
 
         _tasks, belief = self._solve_goal(task, concept, task_link)
         tasks_derived.extend(_tasks)
+        
+        if not task.budget.is_above_thresh:
+            return desire_revised, belief_selected, (task_operation_return, task_executed), tasks_derived
         
         '''
         double AntiSatisfaction = 0.5f; // we dont know anything about that goal yet
@@ -235,11 +248,13 @@ class Memory:
                         
                         # to judge whether the goal has been fulfilled
                         task_operation_return, task_executed = execute(task, concept, self)
-                        concept_task = self.take_by_key(task, remove=False)
+                        concept_task = self.take_by_key(task.term, remove=False)
                         if concept_task is not None:
                             belief: Belief = concept_task.match_belief(task.sentence)
-                        if belief is not None:
-                            task.budget.reduce_by_achieving_level(belief.truth.e)
+                            if belief is not None:
+                                task.budget.reduce_by_achieving_level(belief.truth.e)
+                        tasks_derived.append(task_executed)
+                        task_executed = task
                         # if task_operation_return is not None: tasks_derived.append(task_operation_return)
                         # if task_executed is not None: tasks_derived.append(task_executed)
 
@@ -337,14 +352,14 @@ class Memory:
             raise "Invalid case."
         return answers
 
-    def _solve_goal(self, task: Task, concept: Concept, task_link: TaskLink=None):
+    def _solve_goal(self, task: Task, concept: Concept, task_link: TaskLink=None, belief=None):
         '''
         Args:
             task (Task): Its sentence should be a goal.
             concept (Concept): The concept corresponding to the task.
         '''
         tasks = []
-        belief = concept.match_belief(task.sentence)
+        belief = belief or concept.match_belief(task.sentence)
         if belief is None:
             return tasks, None
         old_best = task.best_solution

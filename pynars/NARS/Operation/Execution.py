@@ -19,6 +19,7 @@ def executed_task(task: Task):
     '''
     input_id = Global.get_input_id()
     truth = Truth(1.0, Config.c_judgement, Config.k)
+    # truth = Truth(1.0, 0.5, Config.k)
     stamp = Stamp(Global.time, Global.time, None, Base((input_id,)))
     budget = Budget(Config.p_feedback, Config.d_feedback, truth_to_quality(task.truth))
     

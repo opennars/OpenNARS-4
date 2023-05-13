@@ -6,7 +6,7 @@ from collections import OrderedDict
 from sparse_lut import SparseLUT
 from pynars.Config import Enable
 
-from pynars.utils.Print import out_print, PrintType
+from pynars.utils.Print import print_out, PrintType
 
 import time
 from datetime import datetime
@@ -60,22 +60,22 @@ class RuleMap:
         # if Enable.debug: out_print(PrintType.INFO, f'The size of map: {get_size(self.map.lut)/1024/1024:.6f}MB')
         
     def load(self, root_path: str):
-        if Enable.debug: out_print(PrintType.INFO, f'Loading RuleMap <{self.name}.pkl>...')
+        if Enable.debug: print_out(PrintType.INFO, f'Loading RuleMap <{self.name}.pkl>...')
         t_start = time.time()
         self.map.load(str(root_path), self.name)
         t_end = time.time()
-        if Enable.debug: out_print(PrintType.INFO, f'Done. Time-cost: {t_end-t_start}s.')
+        if Enable.debug: print_out(PrintType.INFO, f'Done. Time-cost: {t_end-t_start}s.')
 
     def rebuild(self, root_path: str, clear=True):
         ''''''
-        if Enable.debug: out_print(PrintType.INFO, f'Building RuleMap <{self.name}.pkl>...')
+        if Enable.debug: print_out(PrintType.INFO, f'Building RuleMap <{self.name}.pkl>...')
         t_start = time.time()
         self.map.build(clear)
         t_end = time.time()
-        if Enable.debug: out_print(PrintType.INFO, f'Done. Time-cost: {t_end-t_start}s.')
-        if Enable.debug: out_print(PrintType.INFO, f'Saving RuleMap...')
+        if Enable.debug: print_out(PrintType.INFO, f'Done. Time-cost: {t_end-t_start}s.')
+        if Enable.debug: print_out(PrintType.INFO, f'Saving RuleMap...')
         self.map.dump(str(root_path), self.name)
-        if Enable.debug: out_print(PrintType.INFO, f'Done.')
+        if Enable.debug: print_out(PrintType.INFO, f'Done.')
 
 
     def draw(self, show_labels=True):

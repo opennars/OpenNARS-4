@@ -14,7 +14,7 @@ class PrintType(Enum):
 def print_filename(filename):
         print(f'{fg.li_blue}-- File: {ef.italic}{filename}{rs.italic} --{fg.rs}')
 
-def out_print(type: PrintType, content, p: float=None, d: float=None, q: float=None, comment_title: str=None, end: str=None):
+def print_out(type: PrintType, content, p: float=None, d: float=None, q: float=None, comment_title: str=None, end: str=None):
     # show_budget = True
     # if isinstance(p, float) and isinstance(d, float) and isinstance(q, float):
     #     if p<0 or p>1 or q<0 or q>1 or d<0 or d>1:

@@ -72,7 +72,7 @@ class Stamp:
         self.evidential_base.extend(base)
 
     def __str__(self):
-        return f'{self.evidential_base}, {self.tense}'
+        return f'{{{self.t_occurrence}: {", ".join(str(b) for b in self.evidential_base._set)}}}'
 
     def __repr__(self):
         return f'<Stamp: {str(self)}>'
@@ -115,7 +115,7 @@ class Sentence:
         return sentence
 
     def __hash__(self) -> int:
-        return hash(self.term)
+        return hash((self.term, self.punct))
 
     def __str__(self) -> str:
         return self.word

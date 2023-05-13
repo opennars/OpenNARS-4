@@ -9,7 +9,7 @@ from pynars.Narsese.Parser.parser import TreeToNarsese
 from pynars.Narsese import Sentence
 import random
 from pynars.NARS import Reasoner as Reasoner
-from pynars.utils.Print import out_print, PrintType
+from pynars.utils.Print import print_out, PrintType
 from pynars.Narsese import Task
 from typing import List
 from pynars.utils.tools import rand_seed
@@ -37,16 +37,16 @@ def run_line(nars: Reasoner, line: str):
             if len(line) == 0: return
             try:
                 content_check = Narsese.parser.parse(line)
-                out_print(PrintType.INFO, f'OutputContains({content_check.sentence.repr()})')
+                print_out(PrintType.INFO, f'OutputContains({content_check.sentence.repr()})')
             except:
-                out_print(PrintType.ERROR, f'Invalid input! Failed to parse: {line}')
+                print_out(PrintType.ERROR, f'Invalid input! Failed to parse: {line}')
                 # out_print(PrintType.ERROR, f'{file}, line {i}, {line}')
         return
     elif line.startswith("'"):
         return None
     elif line.isdigit():
         n_cycle = int(line)
-        out_print(PrintType.INFO, f'Run {n_cycle} cycles.')
+        print_out(PrintType.INFO, f'Run {n_cycle} cycles.')
         tasks_all_cycles = []
         for _ in range(n_cycle):
             tasks_all = nars.cycle()
@@ -59,14 +59,14 @@ def run_line(nars: Reasoner, line: str):
         try:
             success, task, _ = nars.input_narsese(line, go_cycle=False)
             if success:
-                out_print(PrintType.IN, task.sentence.repr(), *task.budget)
+                print_out(PrintType.IN, task.sentence.repr(), *task.budget)
             else:
-                out_print(PrintType.ERROR, f'Invalid input! Failed to parse: {line}')
+                print_out(PrintType.ERROR, f'Invalid input! Failed to parse: {line}')
 
             tasks_all = nars.cycle()
             return [deepcopy(tasks_all)]
         except Exception as e:
-            out_print(PrintType.ERROR, f'Unknown error: {line}. \n{e}')
+            print_out(PrintType.ERROR, f'Unknown error: {line}. \n{e}')
 
 
 def handle_lines(nars: Reasoner, lines: str):
@@ -82,18 +82,18 @@ def handle_lines(nars: Reasoner, lines: str):
     for tasks_line in tasks_lines:
         tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest, (
         task_operation_return, task_executed) = tasks_line
-        for task in tasks_derived: out_print(PrintType.OUT, task.sentence.repr(), *task.budget)
+        for task in tasks_derived: print_out(PrintType.OUT, task.sentence.repr(), *task.budget)
 
-        if judgement_revised is not None: out_print(PrintType.OUT, judgement_revised.sentence.repr(),
+        if judgement_revised is not None: print_out(PrintType.OUT, judgement_revised.sentence.repr(),
                                                     *judgement_revised.budget)
-        if goal_revised is not None: out_print(PrintType.OUT, goal_revised.sentence.repr(), *goal_revised.budget)
+        if goal_revised is not None: print_out(PrintType.OUT, goal_revised.sentence.repr(), *goal_revised.budget)
         if answers_question is not None:
-            for answer in answers_question: out_print(PrintType.ANSWER, answer.sentence.repr(), *answer.budget)
+            for answer in answers_question: print_out(PrintType.ANSWER, answer.sentence.repr(), *answer.budget)
         if answers_quest is not None:
-            for answer in answers_quest: out_print(PrintType.ANSWER, answers_quest.sentence.repr(),
+            for answer in answers_quest: print_out(PrintType.ANSWER, answers_quest.sentence.repr(),
                                                    *answers_quest.budget)
         if task_executed is not None:
-            out_print(PrintType.EXE,
+            print_out(PrintType.EXE,
                       f'{task_executed.term.repr()} = {str(task_operation_return) if task_operation_return is not None else None}')
 
 
@@ -102,7 +102,7 @@ def run_file(nars: Reasoner, filepath: str = None):
     if filepath is not None:
         filepath: Path = Path(filepath)
         filename = filepath.name
-        out_print(PrintType.COMMENT, f'Run file <{filename}>.', comment_title='NARS')
+        print_out(PrintType.COMMENT, f'Run file <{filename}>.', comment_title='NARS')
         with open(filepath, 'r') as f:
             lines = f.read()
             handle_lines(nars, lines)
@@ -113,17 +113,17 @@ def run_nars(filepath: str):
     # info('Console')
     seed = 137
     rand_seed(seed)
-    out_print(PrintType.COMMENT, f'rand_seed={seed}', comment_title='Setup')
+    print_out(PrintType.COMMENT, f'rand_seed={seed}', comment_title='Setup')
     nars = Reasoner(100, 100)
     nars.register_operation('left', lambda *args: print('execute left.'))
 
-    out_print(PrintType.COMMENT, 'Init...', comment_title='NARS')
-    out_print(PrintType.COMMENT, 'Run...', comment_title='NARS')
+    print_out(PrintType.COMMENT, 'Init...', comment_title='NARS')
+    print_out(PrintType.COMMENT, 'Run...', comment_title='NARS')
     run_file(nars, filepath)
     # console
-    out_print(PrintType.COMMENT, 'Console.', comment_title='NARS')
+    print_out(PrintType.COMMENT, 'Console.', comment_title='NARS')
     while True:
-        out_print(PrintType.COMMENT, '', comment_title='Input', end='')
+        print_out(PrintType.COMMENT, '', comment_title='Input', end='')
         lines = input()
         handle_lines(nars, lines)
 
@@ -139,7 +139,7 @@ if __name__ == '__main__':
     try:
         run_nars(filepath)
     except KeyboardInterrupt:
-        out_print(PrintType.COMMENT, 'Stop...', comment_title='\n\nNARS')
+        print_out(PrintType.COMMENT, 'Stop...', comment_title='\n\nNARS')
 
     print('Done.')
 

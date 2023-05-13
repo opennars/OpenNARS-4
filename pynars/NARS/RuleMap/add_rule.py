@@ -23,7 +23,7 @@ from pynars.NAL.Inference import *
 from sparse_lut import SparseLUT
 from pynars.utils.tools import get_size
 
-from pynars.utils.Print import out_print, PrintType
+from pynars.utils.Print import print_out, PrintType
 
 import time
 from datetime import datetime

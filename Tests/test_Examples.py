@@ -7,22 +7,22 @@ from pynars.Narsese import Judgement, Term, Statement, Copula, Truth
 from pathlib import Path
 from pynars import Narsese, NARS
 
-from pynars.utils.Print import out_print, PrintType, print_filename
+from pynars.utils.Print import print_out, PrintType, print_filename
 
 examples_path = Path(__file__).parent/'examples'
 
 def print_tasks(tasks_line):
     tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest, (task_operation_return, task_executed) = tasks_line
-    for task in tasks_derived: out_print(PrintType.OUT, task.sentence.repr(), *task.budget)
+    for task in tasks_derived: print_out(PrintType.OUT, task.sentence.repr(), *task.budget)
     
-    if judgement_revised is not None: out_print(PrintType.OUT, judgement_revised.sentence.repr(), *judgement_revised.budget)
-    if goal_revised is not None: out_print(PrintType.OUT, goal_revised.sentence.repr(), *goal_revised.budget)
+    if judgement_revised is not None: print_out(PrintType.OUT, judgement_revised.sentence.repr(), *judgement_revised.budget)
+    if goal_revised is not None: print_out(PrintType.OUT, goal_revised.sentence.repr(), *goal_revised.budget)
     if answers_question is not None: 
-        for answer in answers_question: out_print(PrintType.ANSWER, answer.sentence.repr(), *answer.budget)
+        for answer in answers_question: print_out(PrintType.ANSWER, answer.sentence.repr(), *answer.budget)
     if answers_quest is not None: 
-        for answer in answers_quest: out_print(PrintType.ANSWER, answers_quest.sentence.repr(), *answers_quest.budget)
+        for answer in answers_quest: print_out(PrintType.ANSWER, answers_quest.sentence.repr(), *answers_quest.budget)
     if task_executed is not None:
-        out_print(PrintType.EXE, f'{task_executed.term.repr()} = {str(task_operation_return) if task_operation_return is not None else None}')
+        print_out(PrintType.EXE, f'{task_executed.term.repr()} = {str(task_operation_return) if task_operation_return is not None else None}')
 
 def run_file(file: str):
     nars = NARS.Reasoner(100, 100)
@@ -48,14 +48,14 @@ def run_file(file: str):
                     content_check = Narsese.parser.parse(line)
                     output_contains.append(content_check)
                 except:
-                    out_print(PrintType.ERROR, f'{file}, line {i}, {line}')
+                    print_out(PrintType.ERROR, f'{file}, line {i}, {line}')
                     raise
             continue
         elif line.startswith("'"):
             continue
         elif line.isdigit():
             n_cycle = int(line)
-            out_print(PrintType.INFO, f'Run {n_cycle} cycles.')
+            print_out(PrintType.INFO, f'Run {n_cycle} cycles.')
             for _ in range(n_cycle):
                 tasks_derived = nars.cycle()
                 # tasks_derived_all.extend(tasks_derived)
@@ -70,8 +70,8 @@ def run_file(file: str):
             # content = Narsese.parser.parse(line)
             try:
                 success, task, _ = nars.input_narsese(line, go_cycle=False)
-                if success: out_print(PrintType.IN, task.sentence, *task.budget)
-                else: out_print(PrintType.ERROR, f'Invalid input! Failed to parse: {line}')
+                if success: print_out(PrintType.IN, task.sentence, *task.budget)
+                else: print_out(PrintType.ERROR, f'Invalid input! Failed to parse: {line}')
 
                 tasks_derived = nars.cycle()
                 print_tasks(tasks_derived)
@@ -81,7 +81,7 @@ def run_file(file: str):
                 if not success:
                     raise
             except:
-                out_print(PrintType.ERROR, f'{file}, line {i}, {line}')
+                print_out(PrintType.ERROR, f'{file}, line {i}, {line}')
                 raise
     # if expect_out_empty and len(output_contains)==0:
     #     if len(tasks_derived_all) != 0: raise

@@ -40,6 +40,7 @@ class Budget:
 
     def reduce_by_achieving_level(self, h: float):
         self.priority = self.priority * (1 - h)
+        # self.quality = self.quality * (1 - h)
     
     def distribute(self, n: int):
         '''

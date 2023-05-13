@@ -77,14 +77,15 @@ class Reasoner:
         # step 3. Process a task in the global experience buffer
         task: Task = self.overall_experience.take()
         if task is not None:
-            if task.is_goal:
-                print(task)
+            # if task.is_goal:
+            #     print(task)
+            
             # concept = self.memory.take_by_key(task.term, remove=False)
             # if task.is_goal:
                 # goal_revised = self.process_goal(task, concept)
             judgement_revised, goal_revised, answers_question, answers_quest, (task_operation_return, task_executed), _tasks_derived = self.memory.accept(task)
             if task_operation_return is not None: tasks_derived.append(task_operation_return)
-            if task_executed is not None: tasks_derived.append(task_executed)
+            # if task_executed is not None: tasks_derived.append(task_executed)
             tasks_derived.extend(_tasks_derived)
             # self.sequence_buffer.put_back(task) # globalBuffer.putBack(task,
             # narParameters.GLOBAL_BUFFER_FORGET_DURATIONS, this)
@@ -134,7 +135,6 @@ class Reasoner:
             )
             t2 = time()
             print(f"time: {t2-t1}")
-
         else:
             pass  # TODO: select a task from `self.sequence_buffer`?
 
