@@ -26,7 +26,7 @@ class EventBuffer(Buffer):
         Remember that in EventBuffers, only one
         """
         # if there are no inputs at all, return
-        if self.slots[self.present].spatial_candidate is None:
+        if len(self.slots[self.present].events) == 0:
             return
 
         # a list of candidates, it may be like (None, A, None, B), since the buffer CAN have nothing input
@@ -42,7 +42,9 @@ class EventBuffer(Buffer):
                 if interval != 0:
                     previous_events.append(Interval(interval))
                     interval = 0
-                previous_events.append(self.slots[i].events[self.slots[i].events.keys()[0]].t)
+                # here, though list(dict.keys()) is not am array, but we ASSUME in each time slot, there is only one
+                # event
+                previous_events.append(self.slots[i].events[list(self.slots[i].events.keys())[0]].t)
             elif not skip:
                 interval += 1
 
@@ -53,7 +55,7 @@ class EventBuffer(Buffer):
                     *[each.term if not isinstance(each, Interval) else each for each in previous_events[i:]])
                 # truth, using truth-induction function
                 truth = previous_events[i].truth
-                for each in previous_events[i+1:]:
+                for each in previous_events[i + 1:]:
                     if not isinstance(each, Interval):
                         truth = Truth_induction(truth, each.truth)
                 # stamp, using the current stamp
@@ -65,6 +67,10 @@ class EventBuffer(Buffer):
                 # task generation
                 task = Task(sentence, budget)
                 self.slots[self.present].update_working_space(task)
+
+        # if there are no previous events at all, then just put the only event into the working space
+        self.slots[self.present].update_working_space(
+            self.slots[self.present].events[list(self.slots[self.present].events.keys())[0]].t)
 
     def compound_generation(self):
         # every event is loaded to the working space by temporal compounding

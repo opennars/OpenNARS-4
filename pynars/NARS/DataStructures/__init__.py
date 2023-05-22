@@ -2,11 +2,13 @@
 
 '''
 if True:
+    # TODO, move ._py to here
     # import from _py
     # from ._py import *
     from ._py.Bag import *
     from ._py.Buffer import *
     from ._py.Channel import *
+    from ._py.NarseseChannel import *
     from ._py.Concept import *
     from ._py.Memory import *
     from ._py.Link import *

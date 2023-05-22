@@ -1,8 +1,7 @@
+from pynars import Global
 from pynars.Config import Config
-from pynars.NAL.Functions import truth_to_quality
-from pynars.Narsese import Task, parser, Judgement, Truth, Budget
-from pynars.NAL.Inference.LocalRules import revision
-from pynars.NARS.DataStructures import Buffer
+from pynars.NARS.DataStructures._py import Buffer
+from pynars.Narsese import Task, Judgement, Truth, Stamp
 
 
 class Anticipation:

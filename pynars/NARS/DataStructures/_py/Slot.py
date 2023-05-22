@@ -3,7 +3,8 @@ import numpy as np
 from pynars.Config import Config
 from pynars.NAL.Inference.LocalRules import revision
 from pynars.Narsese import Task, Budget, Term, Judgement
-from pynars.NARS.DataStructures import Anticipation, Buffer, Event
+from pynars.NARS.DataStructures._py.Anticipation import Anticipation
+from pynars.NARS.DataStructures._py.Event import Event
 
 
 class Slot:
@@ -84,7 +85,7 @@ class Slot:
         if len(self.operations) < self.num_operation:
             self.operations.append(Task(Judgement(term)))  # default budget
 
-    def check_anticipation(self, buffer: Buffer):
+    def check_anticipation(self, buffer):
         """
         Unexpected event:= not an anticipation
 
@@ -96,13 +97,13 @@ class Slot:
         events_updates = []  # satisfied anticipations will be used for revision
 
         for each_event in self.working_space:
-            if each_event.word in self.anticipations:
+            if each_event in self.anticipations:
                 # a satisfied anticipation
                 # revision for the event and the prediction
                 # the prediction revision is finished in .satisfied(self)
-                events_updates.append(self.anticipations[each_event.word].satisfied(buffer))
+                events_updates.append(self.anticipations[self.working_space[each_event].word].satisfied(buffer))
             else:
-                each_event.priority_multiplier *= 1.1
+                self.working_space[each_event].priority_multiplier *= 1.1
 
         for each_task in events_updates:  # pay attention to the name
             self.update_working_space(each_task)

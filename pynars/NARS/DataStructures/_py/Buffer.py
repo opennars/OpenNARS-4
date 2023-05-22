@@ -4,6 +4,7 @@ from pynars.NARS.DataStructures._py.Anticipation import Anticipation
 from pynars.NARS.DataStructures._py.Slot import Slot
 from pynars.Narsese import Compound, Task, Judgement, Interval, Statement, Copula, Goal, Term, Connector
 
+
 # the priority value of predictions (predictive implications)
 # in some cases, the priority value used for sorting might be different from the priority value (budget.priority)
 # of these tasks (though here used by default)
@@ -44,7 +45,7 @@ class Buffer:
         word = p.term.word
         if word in self.predictions:
             # revision
-            self.predictions[word] = revision(self.predictions[word].t, p)
+            self.predictions[word] = revision(self.predictions[word], p)
         elif len(self.predictions) < self.num_prediction:
             self.predictions.update({word: p})
 
@@ -69,7 +70,7 @@ class Buffer:
         for each in self.slots[self.present].events:
             new_p = self.slots[self.present].events[each].priority
             if new_p > p:
-                event = self.slots[self.present][each]
+                event = self.slots[self.present].events[each]
                 p = new_p
 
         if event is not None:  # else, there are no inputs at all in this time slot
@@ -99,30 +100,35 @@ class Buffer:
             # but if it is "(&/, A, +1, B) =/> C", no need to change the subject
 
             interval = 0
-            if isinstance(each_prediction.term.subject.terms[-1], Interval):
-                subject = Compound.SequentialEvents(*each_prediction.term.subject.terms[:-1])  # precondition
-                interval = int(each_prediction.term.subject.terms[-1])
+            if isinstance(self.predictions[each_prediction].term.subject.terms[-1], Interval):
+                subject = Compound.SequentialEvents(
+                    *self.predictions[each_prediction].term.subject.terms[:-1])  # precondition
+                interval = int(self.predictions[each_prediction].term.subject.terms[-1])
             else:
-                subject = each_prediction.term.subject
+                subject = self.predictions[each_prediction].term.subject
 
             # since there might be some little differences in Narsese, e.g., (&/, A, +1) and simply A
             # deduction functions cannot be applied here, though the same process will follow
             for each_event in self.slots[self.present].working_space:
-                if subject.equal(each_event.t.term):
+                if subject.equal(self.slots[self.present].working_space[each_event].t.term):
                     # term generation
-                    term = each_prediction.term.predicate
+                    term = self.predictions[each_prediction].term.predicate
                     # truth, using truth-deduction function
-                    truth = Truth_deduction(each_prediction.truth, each_event.t.truth)
+                    truth = Truth_deduction(self.predictions[each_prediction].truth,
+                                            self.slots[self.present].working_space[each_event].t.truth)
                     # stamp, using stamp-merge function
-                    stamp = Stamp_merge(each_prediction.stamp, each_event.t.stamp)
+                    stamp = Stamp_merge(self.predictions[each_prediction].stamp,
+                                        self.slots[self.present].working_space[each_event].t.stamp)
                     # budget, using budget-forward function
-                    budget = Budget_forward(each_prediction.budget, each_event.t.budget)
+                    budget = Budget_forward(truth,
+                                            self.predictions[each_prediction].budget,
+                                            self.slots[self.present].working_space[each_event].t.budget)
                     # sentence composition
                     sentence = Judgement(term, stamp, truth)
                     # task generation
                     task = Task(sentence, budget)
                     # anticipation generation
-                    anticipation = Anticipation(task, each_prediction)
+                    anticipation = Anticipation(task, self.predictions[each_prediction])
                     # if interval is too large, a far anticipation will be created
                     if interval <= self.present:
                         self.slots[self.present + interval].update_anticipations(anticipation)
@@ -141,8 +147,8 @@ class Buffer:
     def goal_filtering(self):
         for each in self.slots[self.present].working_space:
             if each in self.goals:
-                # for these events fit self.goals, there priority multiplier will be 1.1 times larger. TODO
-                self.slots[self.present].working_space[each].priority_multiplier *= 1.1
+                # for these events fit self.goals, there priority multiplier will be 1.5 times larger. TODO
+                self.slots[self.present].working_space[each].priority_multiplier *= 1.5
 
     def memory_based_evaluations(self):
         """
@@ -154,7 +160,8 @@ class Buffer:
         e.g., hotdog as a compound, but it is also an atom
         """
         for each_event in self.slots[self.present].working_space:
-            tmp = self.memory.concepts.take_by_key(each_event.t.term, remove=False)
+            tmp = self.memory.concepts.take_by_key(self.slots[self.present].working_space[each_event].t.term,
+                                                   remove=False)
             if tmp is not None:
                 budget = Budget_merge(each_event[1].budget, tmp.budget)
                 each_event.priority_multiplier *= budget.priority / each_event.t.budget.priority
@@ -194,16 +201,14 @@ class Buffer:
                     stamp = Stamp_merge(self.slots[i].candidate.stamp,
                                         self.slots[self.present].candidate.stamp)
                     # budget, using budget-forward function
-                    budget = Budget_forward(self.slots[i].candidate.budget,
+                    budget = Budget_forward(truth,
+                                            self.slots[i].candidate.budget,
                                             self.slots[self.present].candidate.budget)
                     # sentence composition
                     sentence = Judgement(term, stamp, truth)
                     # task generation
                     prediction = Task(sentence, budget)
                     self.update_prediction(prediction)
-
-        # clean the working space to save some memory
-        self.slots[self.present].working_space = {}
 
         return self.slots[self.present].candidate
 
