@@ -4,7 +4,7 @@ from pynars.Narsese import Task, Belief
 
 class Table:
     '''
-    Used for belief table, desire table, etc., in the `Concept`.
+    Utilized for belief table, desire table, etc. in the `Concept`.
     '''
     def __init__(self, capacity):
         self._table = DEPQ(maxlen=capacity)
