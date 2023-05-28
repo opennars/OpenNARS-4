@@ -25,7 +25,8 @@ num_goal = 10
 memory = Memory(100, 100)
 
 EB = EventBuffer(num_slot, num_anticipation, num_operation, num_prediction, num_goal, memory)
-EB.update_goal(Goal(Compound.SequentialEvents(*[Term("X"), Term("B"), Term("C"), Term("Y")])))
+# EB.update_goal(Goal(Compound.SequentialEvents(*[Term("X"), Term("B"), Term("C"), Term("Y")])))
+EB.update_goal(Goal( Term("Y")))
 
 for i, each in enumerate(tqdm(D_train)):
     EB.step([each])
