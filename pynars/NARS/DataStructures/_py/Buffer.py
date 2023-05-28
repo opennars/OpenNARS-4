@@ -5,11 +5,17 @@ from pynars.NARS.DataStructures._py.Slot import Slot
 from pynars.Narsese import Compound, Task, Judgement, Interval, Statement, Copula, Goal, Term, Connector
 
 
-# the priority value of predictions (predictive implications)
-# in some cases, the priority value used for sorting might be different from the priority value (budget.priority)
-# of these tasks (though here used by default)
 def p_value(t: Task):
-    return t.budget.priority
+    """
+    the priority value of predictions (predictive implications)
+
+    In some cases, the priority value used for sorting might be different from the priority value (budget.priority)
+    of these tasks.
+
+    Here this value is effected by 1) its own priority, and 2) its frequency. Since we don't want some "negative
+    predictions", e.g. "B will NOT follow A".
+    """
+    return t.budget.priority * t.truth.f
 
 
 class Buffer:
@@ -195,15 +201,15 @@ class Buffer:
                     # term
                     term = Statement(subject, copula, predicate)
                     # truth, using truth-induction function
-                    truth = Truth_induction(self.slots[i].candidate.truth,
-                                            self.slots[self.present].candidate.truth)
+                    truth = Truth_induction(self.slots[self.present].candidate.truth,
+                                            self.slots[i].candidate.truth)
                     # stamp, using stamp-merge function
-                    stamp = Stamp_merge(self.slots[i].candidate.stamp,
-                                        self.slots[self.present].candidate.stamp)
+                    stamp = Stamp_merge(self.slots[self.present].candidate.stamp,
+                                        self.slots[i].candidate.stamp, )
                     # budget, using budget-forward function
                     budget = Budget_forward(truth,
-                                            self.slots[i].candidate.budget,
-                                            self.slots[self.present].candidate.budget)
+                                            self.slots[self.present].candidate.budget,
+                                            self.slots[i].candidate.budget)
                     # sentence composition
                     sentence = Judgement(term, stamp, truth)
                     # task generation
