@@ -1,10 +1,10 @@
-from pynars.NARS.DataStructures import EventBuffer
-from pynars.NARS.DataStructures import Memory
-from .dataset import generate_dataset
-from pynars.Narsese import Task, Judgement, Term, parser, Goal, Compound
 from tqdm import tqdm
 
+from dataset import generate_dataset
 from pynars import Config
+from pynars.NARS.DataStructures import EventBuffer
+from pynars.NARS.DataStructures import Memory
+from pynars.Narsese import Term, parser, Goal, Compound
 
 Config.Config.task_show_evidence = False
 
@@ -29,9 +29,9 @@ EB.update_goal(Goal(Compound.SequentialEvents(*[Term("X"), Term("B"), Term("C"),
 
 for i, each in enumerate(tqdm(D_train)):
     EB.step([each])
-    if (i+1)%100==0:
-        for each in EB.predictions:
-                print(EB.predictions[each])
+    if (i + 1) % 100 == 0:
+        for i in range(len(EB.predictions)):
+            print(EB.predictions[i][1])
         print("----------------------")
         for each in EB.goals:
             print(EB.goals[each])

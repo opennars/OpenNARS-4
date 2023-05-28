@@ -5,7 +5,7 @@ from pynars.NARS.DataStructures._py.Slot import Slot
 from pynars.Narsese import Compound, Task, Judgement, Interval, Statement, Copula, Goal, Term, Connector
 
 
-def p_value(t: Task):
+def p_value(p: Task):
     """
     the priority value of predictions (predictive implications)
 
@@ -15,7 +15,7 @@ def p_value(t: Task):
     Here this value is effected by 1) its own priority, and 2) its frequency. Since we don't want some "negative
     predictions", e.g. "B will NOT follow A".
     """
-    return t.budget.priority * t.truth.f
+    return p.budget.priority * p.truth.f
 
 
 class Buffer:
@@ -38,7 +38,8 @@ class Buffer:
         # data structures
         self.memory = memory
 
-        self.predictions = {}
+        # sorted from large to small
+        self.predictions = []  # a list of lists, e.g., [prediction.word, prediction, prediction's priority value]
         self.goals = {}
         self.slots = [Slot(1, num_anticipation, num_operation) for _ in range(self.num_slot)]
 
@@ -46,14 +47,29 @@ class Buffer:
         """
         Duplicate predictions will be revised.
 
-        If self.predictions is already overwhelmed, no following predictions will be input.
+        Predictions will be sorted in descending order, by insertion sort.
         """
         word = p.term.word
-        if word in self.predictions:
+
+        words = [each[0] for each in self.predictions]
+        if word in words:
+            idx = words.index(word)
             # revision
-            self.predictions[word] = revision(self.predictions[word], p)
-        elif len(self.predictions) < self.num_prediction:
-            self.predictions.update({word: p})
+            self.predictions[idx][1] = revision(self.predictions[idx][1], p)
+            self.predictions[idx][2] = p_value(self.predictions[idx][1])
+        else:
+            priority = p_value(p)
+            added = False
+            for i in range(len(self.predictions)):
+                if priority > self.predictions[i][2]:
+                    self.predictions = self.predictions[:i] + [[word, p, priority]] + self.predictions[i:]
+                    added = True
+                    break
+            if not added:
+                self.predictions += [[word, p, priority]]
+
+        if len(self.predictions) > self.num_prediction:
+            self.predictions = self.predictions[:self.num_prediction]
 
     def update_goal(self, g: Goal):
         """
@@ -95,7 +111,7 @@ class Buffer:
         its priority and truth-value (is applicable).
         """
         # check whether some predictions can be applied (fire)
-        for each_prediction in self.predictions:
+        for i in range(len(self.predictions)):
 
             # subject =/> predict
 
@@ -106,35 +122,35 @@ class Buffer:
             # but if it is "(&/, A, +1, B) =/> C", no need to change the subject
 
             interval = 0
-            if isinstance(self.predictions[each_prediction].term.subject.terms[-1], Interval):
+            if isinstance(self.predictions[i][1].term.subject.terms[-1], Interval):
                 subject = Compound.SequentialEvents(
-                    *self.predictions[each_prediction].term.subject.terms[:-1])  # precondition
-                interval = int(self.predictions[each_prediction].term.subject.terms[-1])
+                    *self.predictions[i][1].term.subject.terms[:-1])  # precondition
+                interval = int(self.predictions[i][1].term.subject.terms[-1])
             else:
-                subject = self.predictions[each_prediction].term.subject
+                subject = self.predictions[i][1].term.subject
 
             # since there might be some little differences in Narsese, e.g., (&/, A, +1) and simply A
             # deduction functions cannot be applied here, though the same process will follow
             for each_event in self.slots[self.present].working_space:
                 if subject.equal(self.slots[self.present].working_space[each_event].t.term):
                     # term generation
-                    term = self.predictions[each_prediction].term.predicate
+                    term = self.predictions[i][1].term.predicate
                     # truth, using truth-deduction function
-                    truth = Truth_deduction(self.predictions[each_prediction].truth,
+                    truth = Truth_deduction(self.predictions[i][1].truth,
                                             self.slots[self.present].working_space[each_event].t.truth)
                     # stamp, using stamp-merge function
-                    stamp = Stamp_merge(self.predictions[each_prediction].stamp,
+                    stamp = Stamp_merge(self.predictions[i][1].stamp,
                                         self.slots[self.present].working_space[each_event].t.stamp)
                     # budget, using budget-forward function
                     budget = Budget_forward(truth,
-                                            self.predictions[each_prediction].budget,
+                                            self.predictions[i][1].budget,
                                             self.slots[self.present].working_space[each_event].t.budget)
                     # sentence composition
                     sentence = Judgement(term, stamp, truth)
                     # task generation
                     task = Task(sentence, budget)
                     # anticipation generation
-                    anticipation = Anticipation(task, self.predictions[each_prediction])
+                    anticipation = Anticipation(task, self.predictions[i][1])
                     # if interval is too large, a far anticipation will be created
                     if interval <= self.present:
                         self.slots[self.present + interval].update_anticipations(anticipation)
@@ -236,8 +252,8 @@ class Buffer:
         """
         goal_updates = []
 
-        for each in self.predictions:
-            statement: Statement = self.predictions[each].term
+        for i in range(len(self.predictions)):
+            statement: Statement = self.predictions[i][1].term
             if statement.predicate.word in self.goals:
                 goal_updates.append(Goal(statement.predicate))
 
