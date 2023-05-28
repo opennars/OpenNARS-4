@@ -1,5 +1,5 @@
 from pynars.NAL.Functions import Truth_induction
-from pynars.NARS.DataStructures import Buffer
+from pynars.NARS.DataStructures._py.Buffer import Buffer
 from pynars.Narsese import Compound, Interval, Judgement, Task
 
 

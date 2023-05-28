@@ -23,6 +23,13 @@
             "justMyCode": true
         },
         {
+            "name": "Python: event_buffer",
+            "type": "python",
+            "request": "launch",
+            "module": "Tests.test_EventBuffer.EB_test",
+            "justMyCode": true
+        },
+        {
             "name": "Python: test_indexvar",
             "type": "python",
             "request": "launch",

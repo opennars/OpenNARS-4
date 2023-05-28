@@ -4,7 +4,7 @@ from pynars.Config import Config
 from pynars.NAL.Inference.LocalRules import revision
 from pynars.Narsese import Task, Budget, Term, Judgement
 from pynars.NARS.DataStructures._py.Anticipation import Anticipation
-from pynars.NARS.DataStructures._py.Event import Event
+from pynars.NARS.DataStructures._py.EventBuffer.Event import Event
 
 
 class Slot:
@@ -50,7 +50,7 @@ class Slot:
             # even it is input, it is also possible for duplicate tasks
             self.events[word] = Event(revision(self.events[word].t, t))
         elif len(self.events) < self.num_event:
-            self.events.update({word: Event(t)})
+            self.events[word] = Event(t)
 
     def update_working_space(self, t: Task):
         """

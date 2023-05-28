@@ -74,7 +74,7 @@ class Buffer:
                 p = new_p
 
         if event is not None:  # else, there are no inputs at all in this time slot
-            self.slots[self.present].events_archived.update({event.word: event})
+            self.slots[self.present].events_archived[event.word] = event
             self.slots[self.present].events, self.slots[self.present].events_archived = \
                 self.slots[self.present].events_archived, self.slots[self.present].events
 

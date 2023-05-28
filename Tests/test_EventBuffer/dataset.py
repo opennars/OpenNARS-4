@@ -4,7 +4,7 @@ from ordered_set import OrderedSet
 from pynars.Narsese import Term, Judgement, Task
 
 
-def generate_dataset(seqs, n_train = 10000, n_test = 10000, seed = 137, exclude_sample = False, randoms = True):
+def generate_dataset(seqs, n_train = 10000, n_test = 10000, seed = 137, exclude_sample = False, randoms = True, n_rand=4):
     np.random.seed(seed)
     samples = OrderedSet([chr(i) for i in range(65, 91)])
     if exclude_sample:
@@ -18,7 +18,7 @@ def generate_dataset(seqs, n_train = 10000, n_test = 10000, seed = 137, exclude_
         for _ in range(n):
             seq = seqs[(np.random.choice(len(seqs), 1))[0]]
             if randoms:
-                seq = seq + list(np.random.choice(samples, 4))
+                seq = seq + list(np.random.choice(samples, n_rand))
             sequence.extend(seq)
         return sequence
 
