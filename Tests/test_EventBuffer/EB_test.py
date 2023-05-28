@@ -1,6 +1,6 @@
 from tqdm import tqdm
 
-from dataset import generate_dataset
+from Tests.test_EventBuffer.dataset import generate_dataset
 from pynars import Config
 from pynars.NARS.DataStructures import EventBuffer
 from pynars.NARS.DataStructures import Memory
