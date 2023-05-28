@@ -20,4 +20,4 @@ class Event:
         # just an example
         # say the priority of an event in a buffer is decided by its truth, priority, and its complexity
         # but if such event exists in the main memory already, its complexity will be set to 1
-        return self.t.budget.priority * self.priority_multiplier * self.t.truth.e / (self.complexity ** 0.5)
+        return self.t.budget.priority * self.priority_multiplier * self.t.truth.e

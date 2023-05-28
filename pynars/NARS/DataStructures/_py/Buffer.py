@@ -1,11 +1,15 @@
-from pynars.NAL.Functions import Stamp_merge, Budget_merge, Truth_induction, Truth_deduction, Budget_forward
+import copy
+import math
+
+from pynars.NAL.Functions import Stamp_merge, Budget_merge, Truth_induction, Truth_deduction, Budget_forward, \
+    Budget_decay
 from pynars.NAL.Inference.LocalRules import revision
 from pynars.NARS.DataStructures._py.Anticipation import Anticipation
 from pynars.NARS.DataStructures._py.Slot import Slot
 from pynars.Narsese import Compound, Task, Judgement, Interval, Statement, Copula, Goal, Term, Connector
 
 
-def p_value(p: Task):
+def predictions_p_value(p: Task):
     """
     the priority value of predictions (predictive implications)
 
@@ -16,6 +20,10 @@ def p_value(p: Task):
     predictions", e.g. "B will NOT follow A".
     """
     return p.budget.priority * p.truth.f
+
+
+def short_term_memory_sorting_policy(t: Task):
+    return t.budget.priority
 
 
 class Buffer:
@@ -34,14 +42,16 @@ class Buffer:
         self.num_operation = num_operation
         self.num_prediction = num_prediction
         self.num_goal = num_goal
+        self.num_short_term_memory = 2 * self.num_prediction
 
         # data structures
         self.memory = memory
 
-        # sorted from large to small
         self.predictions = []  # a list of lists, e.g., [prediction.word, prediction, prediction's priority value]
+        # sorted from large to small
         self.goals = {}
         self.slots = [Slot(1, num_anticipation, num_operation) for _ in range(self.num_slot)]
+        self.short_term_memory = []
 
     def update_prediction(self, p: Task):
         """
@@ -56,9 +66,9 @@ class Buffer:
             idx = words.index(word)
             # revision
             self.predictions[idx][1] = revision(self.predictions[idx][1], p)
-            self.predictions[idx][2] = p_value(self.predictions[idx][1])
+            self.predictions[idx][2] = predictions_p_value(self.predictions[idx][1])
         else:
-            priority = p_value(p)
+            priority = predictions_p_value(p)
             added = False
             for i in range(len(self.predictions)):
                 if priority > self.predictions[i][2]:
@@ -80,6 +90,53 @@ class Buffer:
         word = g.term.word
         if word not in self.goals and len(self.goals) < self.num_goal:
             self.goals.update({word: g})
+
+    def update_short_term_memory(self, tasks):
+        """
+        short-term memory is s place remembering "recent events (including compounds)".
+
+        Copied from Slot.working_space, but the durability will be changed. The shorter the term, the less the
+        durability it has. Currently, a linear function 2 / (1 + exp(-0.2 * (complexity - 1))) - 1 is used.
+
+        This is used to check whether recently some terms are paid attention. If not, they will have a "great" priority
+        punishment.
+
+        In each buffer cycle, the short-term memory will decay automatically.
+        """
+
+        # decay
+        for each in self.short_term_memory:
+            each.budget = Budget_decay(each.budget)
+
+        # update
+        for each in tasks:
+            added = False
+
+            tmp_task = copy.deepcopy(tasks[each].t)
+            tmp_task.budget.durability = 2 / (1 + math.exp(- 0.2 * (tmp_task.term.complexity - 0.9))) - 1
+
+            for i in range(len(self.short_term_memory)):
+                # revision
+                if hash(tasks[each].t.term) == hash(self.short_term_memory[i].term):
+                    self.short_term_memory[i] = revision(tmp_task, self.short_term_memory[i])
+                    added = True
+                    break
+            if not added:
+                self.short_term_memory.append(tmp_task)
+
+        # sorting
+        self.short_term_memory.sort(key=short_term_memory_sorting_policy, reverse=True)
+
+        # overflow handling
+        if len(self.short_term_memory) > self.num_short_term_memory:
+            self.short_term_memory = self.short_term_memory[:self.num_short_term_memory]
+
+    def in_short_term_memory(self, t: Task):
+        t = hash(t.term)
+        for i in range(len(self.short_term_memory)):
+            if t == hash(self.short_term_memory[i].term):
+                return i
+        return -1
 
     def input_filtering(self):
         """
@@ -188,6 +245,21 @@ class Buffer:
                 budget = Budget_merge(each_event[1].budget, tmp.budget)
                 each_event.priority_multiplier *= budget.priority / each_event.t.budget.priority
                 each_event.complexity = 1
+
+        # print("-------------------------")
+        # print("without short-term memory")
+        # for each in self.slots[self.present].working_space:
+        #     print(self.slots[self.present].working_space[each].t)
+
+        for each in self.slots[self.present].working_space:
+            idx = self.in_short_term_memory(self.slots[self.present].working_space[each].t)
+            if idx != -1:
+                self.slots[self.present].working_space[each].t.budget = self.short_term_memory[idx].budget
+            else:
+                self.slots[self.present].working_space[each].t.budget.priority = 0.1
+
+        # short-term memory handling
+        self.update_short_term_memory(self.slots[self.present].working_space)
 
         # sorting (finding the max)
         # after the above process, every event in the working space will not be further changed, so it is the time
@@ -330,5 +402,16 @@ class Buffer:
         self.memory_based_evaluations()
         task_forward = self.prediction_generation()
         self.goal_reasoning()
+
+        # print("-------------------------")
+        # print("with short-term memory")
+        # for each in self.slots[self.present].working_space:
+        #     print(self.slots[self.present].working_space[each].t)
+
+        print("-------------------------")
+        print("short-term memory")
+        for each in self.short_term_memory:
+            print(each)
+        print("-------------------------")
 
         return task_forward

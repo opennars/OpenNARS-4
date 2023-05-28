@@ -19,7 +19,7 @@ D_train = [parser.parse(each + ".") for each in D_train]
 num_slot = 5
 num_anticipation = 10
 num_operation = 10
-num_prediction = 200
+num_prediction = 10
 num_goal = 10
 
 memory = Memory(100, 100)
