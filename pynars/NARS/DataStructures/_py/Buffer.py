@@ -57,7 +57,7 @@ class Buffer:
         """
         word = g.term.word
         if word not in self.goals and len(self.goals) < self.num_goal:
-            self.goals.update({word: g})
+            self.goals[word] = g
 
     def input_filtering(self):
         """
@@ -224,7 +224,7 @@ class Buffer:
 
     def rule_1(self):
         """
-        For predictions like "A =/> B", when B is a goal, then make A is a goal as well.
+        For predictions like "A =/> B", when B is a goal, then make A as a goal as well.
 
         This function is called after self.goal_achieved.
         """
