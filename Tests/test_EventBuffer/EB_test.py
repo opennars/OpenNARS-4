@@ -10,8 +10,8 @@ Config.Config.task_show_evidence = False
 
 seq1 = ['A', 'B', 'C', 'D']
 seq2 = ['X', 'B', 'C', 'Y']
-seq3 = ['M', 'B', 'C', 'N']
-seqs = [seq1, seq2, seq3]
+# seq3 = ['M', 'B', 'C', 'N']
+seqs = [seq1, seq2]
 
 D_train, _ = generate_dataset(seqs, 100, 100, n_rand=2)
 D_train = [parser.parse(each + ".") for each in D_train]

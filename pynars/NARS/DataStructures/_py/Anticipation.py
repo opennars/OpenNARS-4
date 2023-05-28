@@ -1,7 +1,7 @@
 from pynars import Global
 from pynars.Config import Config
 from pynars.NARS.DataStructures._py import Buffer
-from pynars.Narsese import Task, Judgement, Truth, Stamp
+from pynars.Narsese import Task, Judgement, Truth, Stamp, Statement
 
 
 class Anticipation:
@@ -29,3 +29,5 @@ class Anticipation:
         # one negative case
         tmp_prediction = Task(Judgement(self.parent_prediction.term, truth=Truth(0, Config.c, Config.k)))
         buffer.update_prediction(tmp_prediction)
+        statement: Statement = self.parent_prediction.term
+        return statement.subject

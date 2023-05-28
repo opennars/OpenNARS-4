@@ -1,6 +1,7 @@
+from pynars.Config import Config
 from pynars.NAL.Functions import Truth_induction
 from pynars.NARS.DataStructures._py.Buffer import Buffer
-from pynars.Narsese import Compound, Interval, Judgement, Task
+from pynars.Narsese import Compound, Interval, Judgement, Task, Truth
 
 
 class EventBuffer(Buffer):
@@ -54,10 +55,13 @@ class EventBuffer(Buffer):
                 term = Compound.SequentialEvents(
                     *[each.term if not isinstance(each, Interval) else each for each in previous_events[i:]])
                 # truth, using truth-induction function
-                truth = previous_events[i].truth
-                for each in previous_events[i + 1:]:
-                    if not isinstance(each, Interval):
-                        truth = Truth_induction(truth, each.truth)
+                # truth = previous_events[i].truth
+                # for each in previous_events[i + 1:]:
+                #     if not isinstance(each, Interval):
+                #         truth = Truth_induction(truth, each.truth)
+
+                truth = Truth(Config.f, Config.c, Config.k)
+
                 # stamp, using the current stamp
                 stamp = previous_events[i].stamp
                 # budget, using the current budget

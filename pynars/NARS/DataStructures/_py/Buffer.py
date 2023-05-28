@@ -42,7 +42,7 @@ class Buffer:
         self.num_operation = num_operation
         self.num_prediction = num_prediction
         self.num_goal = num_goal
-        self.num_short_term_memory = 2 * self.num_prediction
+        self.num_short_term_memory = 20 * self.num_prediction
 
         # data structures
         self.memory = memory
@@ -110,18 +110,17 @@ class Buffer:
 
         # update
         for each in tasks:
-            added = False
 
             tmp_task = copy.deepcopy(tasks[each].t)
             tmp_task.budget.durability = 2 / (1 + math.exp(- 0.2 * (tmp_task.term.complexity - 0.9))) - 1
 
-            for i in range(len(self.short_term_memory)):
+            idx = self.in_short_term_memory(tasks[each].t.term)
+            if idx != -1:
                 # revision
-                if hash(tasks[each].t.term) == hash(self.short_term_memory[i].term):
-                    self.short_term_memory[i] = revision(tmp_task, self.short_term_memory[i])
-                    added = True
-                    break
-            if not added:
+                self.short_term_memory[idx] = revision(tmp_task, self.short_term_memory[idx])
+                self.short_term_memory[idx].budget.durability = min(1,
+                                                                    1.1 * self.short_term_memory[idx].budget.durability)
+            else:
                 self.short_term_memory.append(tmp_task)
 
         # sorting
@@ -131,8 +130,8 @@ class Buffer:
         if len(self.short_term_memory) > self.num_short_term_memory:
             self.short_term_memory = self.short_term_memory[:self.num_short_term_memory]
 
-    def in_short_term_memory(self, t: Task):
-        t = hash(t.term)
+    def in_short_term_memory(self, t: Term):
+        t = hash(t)
         for i in range(len(self.short_term_memory)):
             if t == hash(self.short_term_memory[i].term):
                 return i
@@ -221,7 +220,12 @@ class Buffer:
         for each_anticipation in self.slots[self.present].anticipations:
             if not self.slots[self.present].anticipations[each_anticipation].solved:
                 # punish the predictions
-                self.slots[self.present].anticipations[each_anticipation].unsatisfied(self)
+                subject = self.slots[self.present].anticipations[each_anticipation].unsatisfied(self)
+                if subject.terms[-1].is_interval:
+                    subject = Compound.SequentialEvents(*subject.terms[:-1])
+                idx = self.in_short_term_memory(subject)
+                if idx != -1:
+                    self.short_term_memory[idx].budget.priority *= 0.95
 
     def goal_filtering(self):
         for each in self.slots[self.present].working_space:
@@ -249,13 +253,15 @@ class Buffer:
         # print("-------------------------")
         # print("without short-term memory")
         # for each in self.slots[self.present].working_space:
-        #     print(self.slots[self.present].working_space[each].t)
+        #     print(self.slots[self.present].working_space[each].priority,
+        #           self.slots[self.present].working_space[each].priority_multiplier,
+        #           self.slots[self.present].working_space[each].t)
 
         for each in self.slots[self.present].working_space:
-            idx = self.in_short_term_memory(self.slots[self.present].working_space[each].t)
+            idx = self.in_short_term_memory(self.slots[self.present].working_space[each].t.term)
             if idx != -1:
-                # self.slots[self.present].working_space[each].t.budget = self.short_term_memory[idx].budget
-                pass
+                self.slots[self.present].working_space[each].priority_multiplier *= self.short_term_memory[
+                    idx].budget.priority
             else:
                 self.slots[self.present].working_space[each].priority_multiplier *= 0.1
 
@@ -407,7 +413,9 @@ class Buffer:
         # print("-------------------------")
         # print("with short-term memory")
         # for each in self.slots[self.present].working_space:
-        #     print(self.slots[self.present].working_space[each].t)
+        #     print(self.slots[self.present].working_space[each].priority,
+        #           self.slots[self.present].working_space[each].priority_multiplier,
+        #           self.slots[self.present].working_space[each].t)
 
         print("-------------------------")
         print("short-term memory")
