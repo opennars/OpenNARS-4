@@ -254,9 +254,10 @@ class Buffer:
         for each in self.slots[self.present].working_space:
             idx = self.in_short_term_memory(self.slots[self.present].working_space[each].t)
             if idx != -1:
-                self.slots[self.present].working_space[each].t.budget = self.short_term_memory[idx].budget
+                # self.slots[self.present].working_space[each].t.budget = self.short_term_memory[idx].budget
+                pass
             else:
-                self.slots[self.present].working_space[each].t.budget.priority = 0.1
+                self.slots[self.present].working_space[each].priority_multiplier *= 0.1
 
         # short-term memory handling
         self.update_short_term_memory(self.slots[self.present].working_space)
