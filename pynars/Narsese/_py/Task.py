@@ -5,6 +5,8 @@ from .Item import Item
 from .Budget import Budget
 from .Term import Term
 from .Truth import Truth
+from pynars.Config import Config
+
 
 class Task(Item):
     input_id = -1
@@ -105,7 +107,7 @@ class Task(Item):
 
     def __str__(self) -> str:
         '''$p;d;q$ sentence %f;c%'''
-        return f'{(str(self.budget) if self.budget is not None else "$-;-;-$") + " "}{self.sentence.repr(False)} {str(self.stamp)}'
+        return f'{(str(self.budget) if self.budget is not None else "$-;-;-$") + " "}{self.sentence.repr(False)} {str(self.stamp) if Config.task_show_evidence else ""}'
 
     def __repr__(self) -> str:
         return str(self)

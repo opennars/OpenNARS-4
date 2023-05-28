@@ -75,6 +75,8 @@ class Config:
     projection_decay = 0.1
     decision_threshold = 0.51
 
+    task_show_evidence = True
+
     @classmethod
     def check(cls):
         '''Check if each parameter is valid'''

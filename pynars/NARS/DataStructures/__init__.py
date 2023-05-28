@@ -7,6 +7,7 @@ if True:
     # from ._py import *
     from ._py.Bag import *
     from ._py.Buffer import *
+    from ._py.EventBuffer.EventBuffer import *
     from ._py.Channel import *
     from ._py.NarseseChannel import *
     from ._py.Concept import *
