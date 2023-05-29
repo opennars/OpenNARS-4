@@ -49,7 +49,7 @@ class Stamp:
         self.t_creation = t_creation
         self.t_occurrence = t_occurrence
         self.t_put = t_put
-        self.evidential_base: Type['Base'] = evidential_base
+        self.evidential_base: Type['Base'] = evidential_base if evidential_base is not None else Base((Global.get_input_id(),))
         self.is_external = is_external  # whether a sentence is from the external world or the internal world. Only those sentences derived from Mental Operations are internal.
 
     @property
@@ -72,7 +72,7 @@ class Stamp:
         self.evidential_base.extend(base)
 
     def __str__(self):
-        return f'{{{self.t_occurrence}: {", ".join(str(b) for b in self.evidential_base._set)}}}'
+        return f'{{{(str(self.t_occurrence+": ")if self.t_occurrence is not None else "")}{", ".join(str(b) for b in self.evidential_base._set)}}}'
 
     def __repr__(self):
         return f'<Stamp: {str(self)}>'
