@@ -14,7 +14,9 @@ class Table:
             self._table.remove(task)
         self._table.insert(task, p)
 
-
+    def clear(self):
+        self._table.clear()
+        
     # def remove(self, task: Task):
     #     self._table.elim(task)
 
