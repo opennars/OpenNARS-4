@@ -1,7 +1,6 @@
 from pynars.NAL.Functions import Stamp_merge, Budget_merge, Truth_induction, Truth_deduction, Budget_forward
 from pynars.NAL.Inference.LocalRules import revision
-from pynars.NARS.DataStructures._py.Anticipation import Anticipation
-from pynars.NARS.DataStructures._py.Slot import Slot
+
 from pynars.Narsese import Compound, Task, Judgement, Interval, Statement, Copula, Goal, Term, Connector
 
 # the priority value of predictions (predictive implications)
@@ -19,7 +18,8 @@ class Buffer:
     """
 
     def __init__(self, num_slot, num_anticipation, num_operation, num_prediction, num_goal, memory):
-
+        from pynars.NARS.DataStructures._py.Anticipation import Anticipation
+        from pynars.NARS.DataStructures._py.Slot import Slot
         # parameters
         self.num_slot = num_slot * 2 + 1  # symmetric
         self.present = num_slot
