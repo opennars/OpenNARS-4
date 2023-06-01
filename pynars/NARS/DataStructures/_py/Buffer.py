@@ -1,12 +1,13 @@
 import copy
 import math
 
-from pynars.NAL.Functions import Stamp_merge, Budget_merge, Truth_induction, Truth_deduction, Budget_forward, \
-    Budget_decay
+from pynars.Config import Config
+from pynars.NAL.Functions import Stamp_merge, Budget_merge, Truth_deduction, Budget_forward, \
+    Budget_decay, truth_to_quality, Truth_revision
 from pynars.NAL.Inference.LocalRules import revision
 from pynars.NARS.DataStructures._py.Anticipation import Anticipation
 from pynars.NARS.DataStructures._py.Slot import Slot
-from pynars.Narsese import Compound, Task, Judgement, Interval, Statement, Copula, Goal, Term, Connector
+from pynars.Narsese import Compound, Task, Judgement, Interval, Statement, Copula, Goal, Term, Connector, Truth, Budget
 
 
 def predictions_p_value(p: Task):
@@ -19,7 +20,7 @@ def predictions_p_value(p: Task):
     Here this value is effected by 1) its own priority, and 2) its frequency. Since we don't want some "negative
     predictions", e.g. "B will NOT follow A".
     """
-    return p.budget.priority * p.truth.f
+    return p.budget.priority
 
 
 def short_term_memory_sorting_policy(t: Task):
@@ -53,6 +54,10 @@ class Buffer:
         self.slots = [Slot(1, num_anticipation, num_operation) for _ in range(self.num_slot)]
         self.short_term_memory = []
 
+        self.count = 0
+        self.total = 0
+        self.plot = []
+
     def update_prediction(self, p: Task):
         """
         Duplicate predictions will be revised.
@@ -65,8 +70,22 @@ class Buffer:
         if word in words:
             idx = words.index(word)
             # revision
-            self.predictions[idx][1] = revision(self.predictions[idx][1], p)
-            self.predictions[idx][2] = predictions_p_value(self.predictions[idx][1])
+
+            # truth
+            truth = Truth_revision(self.predictions[idx][1].truth, p.truth)
+            # stamp
+            stamp = Stamp_merge(self.predictions[idx][1].stamp, p.stamp)
+            # budget
+            budget1, budget2 = self.predictions[idx][1].budget, p.budget
+            budget = Budget(max(budget1.priority, budget2.priority), max(budget1.durability, budget2.durability),
+                            truth_to_quality(truth))
+            # sentence composition
+            sentence = Judgement(self.predictions[idx][1].term, stamp, truth)
+            # task generation
+            new_prediction = Task(sentence, budget)
+
+            self.predictions[idx][1] = new_prediction
+            self.predictions[idx][2] = predictions_p_value(new_prediction)
         else:
             priority = predictions_p_value(p)
             added = False
@@ -161,11 +180,20 @@ class Buffer:
         self.slots[self.present].working_space = self.slots[self.present].events.copy()
         # buffers have no temporal/spatial compounding capability, so then pass
 
+    def prediction_decay(self):
+        for each in self.predictions:
+            each[1].budget = Budget_decay(each[1].budget)
+            each[2] = predictions_p_value(each[1])
+
     def local_evaluation(self):
         """
         For buffers, only one event is input in each buffer cycle, so the local evaluation function is only to adjust
         its priority and truth-value (is applicable).
         """
+
+        # prediction decay
+        self.prediction_decay()
+
         # check whether some predictions can be applied (fire)
         for i in range(len(self.predictions)):
 
@@ -177,7 +205,7 @@ class Buffer:
             # predictions may be like "(&/, A, +1) =/> B", the content of the subject will just be A in this version
             # but if it is "(&/, A, +1, B) =/> C", no need to change the subject
 
-            interval = 0
+            interval = 1
             if isinstance(self.predictions[i][1].term.subject.terms[-1], Interval):
                 subject = Compound.SequentialEvents(
                     *self.predictions[i][1].term.subject.terms[:-1])  # precondition
@@ -189,8 +217,10 @@ class Buffer:
             # deduction functions cannot be applied here, though the same process will follow
             for each_event in self.slots[self.present].working_space:
                 if subject.equal(self.slots[self.present].working_space[each_event].t.term):
+
                     # term generation
                     term = self.predictions[i][1].term.predicate
+
                     # truth, using truth-deduction function
                     truth = Truth_deduction(self.predictions[i][1].truth,
                                             self.slots[self.present].working_space[each_event].t.truth)
@@ -250,13 +280,6 @@ class Buffer:
                 each_event.priority_multiplier *= budget.priority / each_event.t.budget.priority
                 each_event.complexity = 1
 
-        # print("-------------------------")
-        # print("without short-term memory")
-        # for each in self.slots[self.present].working_space:
-        #     print(self.slots[self.present].working_space[each].priority,
-        #           self.slots[self.present].working_space[each].priority_multiplier,
-        #           self.slots[self.present].working_space[each].t)
-
         for each in self.slots[self.present].working_space:
             idx = self.in_short_term_memory(self.slots[self.present].working_space[each].t.term)
             if idx != -1:
@@ -282,34 +305,33 @@ class Buffer:
 
     def prediction_generation(self):
 
-        # subject =/> predict
-        # using induction rules (TODO, maybe another)
+        """
+        Now the prediction generation code is irrelevant from the candidates.
 
-        if self.slots[self.present].candidate is not None:
-            predicate = self.slots[self.present].candidate.term
-            for i in range(self.present):
-                if self.slots[i].candidate:
-                    # e.g., (E, +1) as the subject
-                    subject = Compound.SequentialEvents(self.slots[i].candidate.term,
-                                                        Interval(abs(self.present - i)))
-                    copula = Copula.PredictiveImplication  # =/>
-                    # term
-                    term = Statement(subject, copula, predicate)
-                    # truth, using truth-induction function
-                    truth = Truth_induction(self.slots[self.present].candidate.truth,
-                                            self.slots[i].candidate.truth)
-                    # stamp, using stamp-merge function
-                    stamp = Stamp_merge(self.slots[self.present].candidate.stamp,
-                                        self.slots[i].candidate.stamp, )
-                    # budget, using budget-forward function
-                    budget = Budget_forward(truth,
-                                            self.slots[self.present].candidate.budget,
-                                            self.slots[i].candidate.budget)
-                    # sentence composition
-                    sentence = Judgement(term, stamp, truth)
-                    # task generation
-                    prediction = Task(sentence, budget)
-                    self.update_prediction(prediction)
+        Now we just use the previous "working space" as the precedent of each prediction.
+
+        Currently, it will just use "exactly the previous" working space.
+
+        Previously, this function will decide the candidate, but candidate is not decided, it is just used here, so
+        the returning will not be changed.
+        """
+
+        subjects = self.slots[self.present - 1].working_space
+        predicate = self.slots[self.present].events[list(self.slots[self.present].events.keys())[0]].t
+        for subject in subjects:
+            subject = subjects[subject].t
+            copula = Copula.PredictiveImplication  # =/>
+            term = Statement(subject.term, copula, predicate.term)
+            # truth, using a default truth
+            truth = Truth(1, 0.5, Config.k)
+            # stamp, eternal
+            # budget, using budget-forward function
+            budget = Budget(Config.priority, Config.durability, truth_to_quality(truth))
+            # sentence composition
+            sentence = Judgement(term, truth=truth)
+            # task generation
+            prediction = Task(sentence, budget)
+            self.update_prediction(prediction)
 
         return self.slots[self.present].candidate
 
@@ -404,23 +426,26 @@ class Buffer:
             self.slots[self.present].input_events(each)
 
         self.input_filtering()
+
+        A = self.slots[self.present].events[list(self.slots[self.present].events.keys())[0]].t.term
+        tmp = [self.slots[self.present].anticipations[each] for each in self.slots[self.present].anticipations]
+        B = sorted(tmp, key=lambda x: x.t.truth.e)
+        if len(B) != 0:
+            B = B[-1].t.term
+        else:
+            B = None
+        # print("Current Input: ", A, " | ", "Previous anticipation: ", B)
+        if A == B:
+            self.count += 1
+        self.total += 1
+        self.plot.append(self.count/(self.total + 1e-3))
+
+        # print("Prediction acc: ", self.count/(self.total + 1e-3))
+
         self.compound_generation()
         self.local_evaluation()
         self.memory_based_evaluations()
         task_forward = self.prediction_generation()
         self.goal_reasoning()
-
-        # print("-------------------------")
-        # print("with short-term memory")
-        # for each in self.slots[self.present].working_space:
-        #     print(self.slots[self.present].working_space[each].priority,
-        #           self.slots[self.present].working_space[each].priority_multiplier,
-        #           self.slots[self.present].working_space[each].t)
-
-        print("-------------------------")
-        print("short-term memory")
-        for each in self.short_term_memory:
-            print(each)
-        print("-------------------------")
 
         return task_forward

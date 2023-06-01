@@ -1,10 +1,7 @@
-import numpy as np
-
-from pynars.Config import Config
 from pynars.NAL.Inference.LocalRules import revision
-from pynars.Narsese import Task, Budget, Term, Judgement
 from pynars.NARS.DataStructures._py.Anticipation import Anticipation
 from pynars.NARS.DataStructures._py.EventBuffer.Event import Event
+from pynars.Narsese import Task, Term, Judgement
 
 
 class Slot:
@@ -101,7 +98,9 @@ class Slot:
                 # a satisfied anticipation
                 # revision for the event and the prediction
                 # the prediction revision is finished in .satisfied(self)
-                events_updates.append(self.anticipations[self.working_space[each_event].word].satisfied(buffer))
+                events_updates.append(self.anticipations[
+                    self.working_space[each_event].word].satisfied(
+                    buffer, self.working_space[each_event].t))
             else:
                 self.working_space[each_event].priority_multiplier *= 1.1
 

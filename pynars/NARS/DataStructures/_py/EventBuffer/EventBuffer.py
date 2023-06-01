@@ -1,7 +1,7 @@
 from pynars.Config import Config
-from pynars.NAL.Functions import Truth_induction
+from pynars.NAL.Functions import truth_to_quality
 from pynars.NARS.DataStructures._py.Buffer import Buffer
-from pynars.Narsese import Compound, Interval, Judgement, Task, Truth
+from pynars.Narsese import Compound, Interval, Judgement, Task, Truth, Budget
 
 
 class EventBuffer(Buffer):
@@ -53,19 +53,14 @@ class EventBuffer(Buffer):
             if not isinstance(previous_events[i], Interval):  # then it must be a Task
                 # term
                 term = Compound.SequentialEvents(
-                    *[each.term if not isinstance(each, Interval) else each for each in previous_events[i:]])
-                # truth, using truth-induction function
-                # truth = previous_events[i].truth
-                # for each in previous_events[i + 1:]:
-                #     if not isinstance(each, Interval):
-                #         truth = Truth_induction(truth, each.truth)
-
-                truth = Truth(Config.f, Config.c, Config.k)
-
-                # stamp, using the current stamp
+                    *([each.term if not isinstance(each, Interval) else each for each in previous_events[i:]] +
+                      [self.slots[self.present].events[list(self.slots[self.present].events.keys())[0]].t.term]))
+                # truth, using a default truth
+                truth = Truth(1, 0.5, Config.k)
+                # stamp, using the stamp corresponding to the previous slot
                 stamp = previous_events[i].stamp
-                # budget, using the current budget
-                budget = previous_events[i].budget
+                # budget, using a default budget
+                budget = Budget(Config.priority, Config.durability, truth_to_quality(truth))
                 # sentence composition
                 sentence = Judgement(term, stamp, truth)
                 # task generation

@@ -1,7 +1,6 @@
-from pynars import Global
 from pynars.Config import Config
 from pynars.NARS.DataStructures._py import Buffer
-from pynars.Narsese import Task, Judgement, Truth, Stamp, Statement
+from pynars.Narsese import Task, Judgement, Truth, Statement
 
 
 class Anticipation:
@@ -18,9 +17,11 @@ class Anticipation:
         # check whether an anticipation is examined
         self.solved = False
 
-    def satisfied(self, buffer: Buffer):
+    def satisfied(self, buffer: Buffer, event: Task):
         # one positive case
-        tmp_prediction = Task(Judgement(self.parent_prediction.term, truth=Truth(1, Config.c, Config.k)))
+        self.solved = True
+        tmp_prediction = Task(Judgement(self.parent_prediction.term,
+                                        truth=Truth(1.0, event.achieving_level(self.t.truth), Config.k)))
         buffer.update_prediction(tmp_prediction)
 
         return self.t
