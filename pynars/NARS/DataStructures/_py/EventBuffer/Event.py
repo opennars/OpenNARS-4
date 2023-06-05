@@ -21,3 +21,13 @@ class Event:
         # say the priority of an event in a buffer is decided by its truth, priority, and its complexity
         # but if such event exists in the main memory already, its complexity will be set to 1
         return self.t.budget.priority * self.priority_multiplier * self.t.truth.e
+
+
+class WorkingEvent:
+    """
+    The above class is for recording, this is for using.
+    """
+
+    def __init__(self, t: Task):
+        self.t = t
+        self.related_concepts = []

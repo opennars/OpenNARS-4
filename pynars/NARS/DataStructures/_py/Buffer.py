@@ -1,11 +1,14 @@
 import copy
 import math
 
+import numpy as np
+
 from pynars.Config import Config
 from pynars.NAL.Functions import Stamp_merge, Budget_merge, Truth_deduction, Budget_forward, \
     Budget_decay, truth_to_quality, Truth_revision
 from pynars.NAL.Inference.LocalRules import revision
 from pynars.NARS.DataStructures._py.Anticipation import Anticipation
+from pynars.NARS.DataStructures._py.EventBuffer.Event import WorkingEvent, Event
 from pynars.NARS.DataStructures._py.Slot import Slot
 from pynars.Narsese import Compound, Task, Judgement, Interval, Statement, Copula, Goal, Term, Connector, Truth, Budget
 
@@ -36,6 +39,8 @@ class Buffer:
 
     def __init__(self, num_slot, num_anticipation, num_operation, num_prediction, num_goal, memory):
 
+        self.num_events = 2
+
         # parameters
         self.num_slot = num_slot * 2 + 1  # symmetric
         self.present = num_slot
@@ -51,7 +56,7 @@ class Buffer:
         self.predictions = []  # a list of lists, e.g., [prediction.word, prediction, prediction's priority value]
         # sorted from large to small
         self.goals = {}
-        self.slots = [Slot(1, num_anticipation, num_operation) for _ in range(self.num_slot)]
+        self.slots = [Slot(self.num_events, num_anticipation, num_operation) for _ in range(self.num_slot)]
         self.short_term_memory = []
 
         self.count = 0
@@ -63,6 +68,9 @@ class Buffer:
         Duplicate predictions will be revised.
 
         Predictions will be sorted in descending order, by insertion sort.
+
+        Those stable (c > 0.9) and positive (f > 0.5) predictions will be changed to a compound and forwarded to the
+        memory.
         """
         word = p.term.word
 
@@ -84,9 +92,17 @@ class Buffer:
             # task generation
             new_prediction = Task(sentence, budget)
 
+            if new_prediction.truth.f > 0.8 and new_prediction.truth.c > 0.95:
+                s: Statement = new_prediction.term
+                a, b = s.subject.terms, s.predicate.terms
+                self.memory.accept(Task(Judgement(Compound.SequentialEvents(*(*a, *b)))))
+
             self.predictions[idx][1] = new_prediction
             self.predictions[idx][2] = predictions_p_value(new_prediction)
         else:
+            """
+            Newly-created predictions cannot satisfy the above condition.
+            """
             priority = predictions_p_value(p)
             added = False
             for i in range(len(self.predictions)):
@@ -156,24 +172,70 @@ class Buffer:
                 return i
         return -1
 
+    # def input_filtering(self):
+    #     """
+    #     It is possible that there are multiple inputs (more than one). This function is to find just one of them.
+    #
+    #     The chosen one is left in slot.events, and the original inputs are moved to slot.events_archived.
+    #     """
+    #     event = None
+    #     p = -1
+    #     for each in self.slots[self.present].events:
+    #         new_p = self.slots[self.present].events[each].priority
+    #         if new_p > p:
+    #             event = self.slots[self.present].events[each]
+    #             p = new_p
+    #
+    #     if event is not None:  # else, there are no inputs at all in this time slot
+    #         self.slots[self.present].events_archived[event.word] = event
+    #         self.slots[self.present].events, self.slots[self.present].events_archived = \
+    #             self.slots[self.present].events_archived, self.slots[self.present].events
+
     def input_filtering(self):
         """
-        It is possible that there are multiple inputs (more than one). This function is to find just one of them.
+        It is possible for multiple input events, but this pipeline can process one event each time slot, this
+        function is to select one event from the input sequence. For example, we have a time slot like the following,
+        [[A1, A2], [B1, B2], [C1, C2], [D1, D2]], says that in time slot 0, there are two inputs, (D1, D2). And in
+        time slot -1, there are two inputs, (C1, C2).
 
-        The chosen one is left in slot.events, and the original inputs are moved to slot.events_archived.
+        This function is to select one event in each slot. E.g., we select [A2, B1, C2, D1] as a result.
+
+        This process is decided by two factors, 1) the strength of the input signal, if the input is of high priority,
+        or its truth is certain enough, it is preferred. 2) It is also decided by the record in the memory, say if one
+        concept is highly active in memory, it is also preferred.
         """
-        event = None
-        p = -1
-        for each in self.slots[self.present].events:
-            new_p = self.slots[self.present].events[each].priority
-            if new_p > p:
-                event = self.slots[self.present].events[each]
-                p = new_p
 
-        if event is not None:  # else, there are no inputs at all in this time slot
-            self.slots[self.present].events_archived[event.word] = event
-            self.slots[self.present].events, self.slots[self.present].events_archived = \
-                self.slots[self.present].events_archived, self.slots[self.present].events
+        # archive initial inputs (facts)
+        if not self.slots[self.present].initialized:
+            self.slots[self.present].events_archived = copy.deepcopy(self.slots[self.present].events)
+            self.slots[self.present].initialized = True
+
+        # find related concepts
+        related_concepts = []
+        for each in self.slots[self.present].events_archived:  # O(M), M is the size of input
+            cpt = self.memory.take_by_key(self.slots[self.present].events_archived[each].t, remove=False)
+            if cpt is not None:
+                related_concepts.append(cpt)
+
+        working_events = []
+        for i in range(self.present + 1):
+            working_events.append(
+                [WorkingEvent(self.slots[i].events_archived[each].t) for each in self.slots[i].events_archived])
+
+        for each in related_concepts:
+            for i in range(len(working_events)):
+                for j in range(len(working_events[i])):
+                    if working_events[i][j].t.term in each.terms:
+                        working_events[i][j].related_concepts.append(each)
+
+        for i in range(len(working_events)):
+            np.random.shuffle(working_events[i])
+            working_events[i].sort(key=lambda x: len(x.related_concepts))
+            if len(working_events[i]) != 0:
+                if len(working_events[i]) > 2:
+                    print(1)
+                t = working_events[i][-1].t
+                self.slots[i].events = {t.term.word: Event(t)}
 
     def compound_generation(self):
         # the start of a buffer cycle, so every event is loaded to the working space
@@ -273,12 +335,15 @@ class Buffer:
         e.g., hotdog as a compound, but it is also an atom
         """
         for each_event in self.slots[self.present].working_space:
-            tmp = self.memory.concepts.take_by_key(self.slots[self.present].working_space[each_event].t.term,
-                                                   remove=False)
+
+            e = self.slots[self.present].working_space[each_event]
+
+            tmp = self.memory.concepts.take_by_key(e.t.term, remove=False)
+
             if tmp is not None:
-                budget = Budget_merge(each_event[1].budget, tmp.budget)
-                each_event.priority_multiplier *= budget.priority / each_event.t.budget.priority
-                each_event.complexity = 1
+                budget = Budget_merge(e.t.budget, tmp.budget)
+                e.priority_multiplier *= budget.priority / e.t.budget.priority
+                e.complexity = 1
 
         for each in self.slots[self.present].working_space:
             idx = self.in_short_term_memory(self.slots[self.present].working_space[each].t.term)
@@ -420,14 +485,14 @@ class Buffer:
         """
         # remove the oldest slot and create a new one
         self.slots = self.slots[1:]
-        self.slots.append(Slot(1, self.num_anticipation, self.num_operation))
+        self.slots.append(Slot(self.num_events, self.num_anticipation, self.num_operation))
 
         for each in new_content:  # new_content is a list of tasks
             self.slots[self.present].input_events(each)
 
         self.input_filtering()
 
-        A = self.slots[self.present].events[list(self.slots[self.present].events.keys())[0]].t.term
+        A = self.slots[self.present].events_archived[list(self.slots[self.present].events_archived.keys())[0]].t.term
         tmp = [self.slots[self.present].anticipations[each] for each in self.slots[self.present].anticipations]
         B = sorted(tmp, key=lambda x: x.t.truth.e)
         if len(B) != 0:
@@ -438,7 +503,7 @@ class Buffer:
         if A == B:
             self.count += 1
         self.total += 1
-        self.plot.append(self.count/(self.total + 1e-3))
+        self.plot.append(self.count / (self.total + 1e-3))
 
         # print("Prediction acc: ", self.count/(self.total + 1e-3))
 

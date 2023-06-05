@@ -29,6 +29,7 @@ class Slot:
         self.events = {}
         self.events_archived = {}
         self.working_space = {}
+        self.initialized = False
 
         self.anticipations = {}
         self.operations = []
