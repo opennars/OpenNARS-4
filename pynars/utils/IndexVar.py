@@ -119,7 +119,7 @@ class IndexVar:
         variables_unfolded = [0, 1, 1, 2]
     '''
 
-    _positions_normalized: tuple = None
+    _indices_normalized: tuple = None
     _hash_value = None
 
     def __init__(self) -> None:
@@ -134,13 +134,13 @@ class IndexVar:
 
     def normalize(self):
         '''normalize the index, so that the index is unique in terms of one statement which has variable(s).'''
-        if self._positions_normalized is None:
-            self._positions_normalized = _normalize([int(var) for var in self.indices])
-        return self._positions_normalized
+        if self._indices_normalized is None:
+            self._indices_normalized = _normalize([int(var) for var in self.indices])
+        return self._indices_normalized
 
     @property
     def indices_normalized(self):
-        return self.normalize() if self._positions_normalized is None else self._positions_normalized
+        return self.normalize() if self._indices_normalized is None else self._indices_normalized
 
 
     def do_hashing(self):
@@ -222,12 +222,6 @@ class IndexVar:
             index = index.successors[pos]
         index.indices.clear()
         index.positions.clear()
-
-
-    
-
-
-
 
 
 def _normalize(variables):

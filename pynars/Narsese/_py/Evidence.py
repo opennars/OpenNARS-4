@@ -43,7 +43,7 @@ class Base:
         
 
         # TODO: Ref: OpenNARS 3.1.0 Stamp.java line 178~187.
-        # TODO: Optimize this loop with cython (with python-style).
+        # TODO: Optimize this loop with cython.
         # while (j < baseLength) {
         #     if(i2 < secondLength) {
         #         evidentialBase[j++] = secondBase[i2++];

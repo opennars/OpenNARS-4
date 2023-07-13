@@ -30,9 +30,9 @@ class Statement(Term):
 
         self.is_operation = self.predicate.is_operation
 
-        self._height = max((self.subject._height, self.predicate._height))+1
+        # self._height = max((self.subject._height, self.predicate._height))+1
 
-        # Variables related initialization
+        ''' Variables related initialization '''
         terms = (self.subject, self.predicate)
         self._handle_variables(terms)
         self._init_variables(self.variables, terms)

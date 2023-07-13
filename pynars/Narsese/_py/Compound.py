@@ -107,12 +107,12 @@ class Compound(Term):  # , OrderedSet):
                          is_input: bool):
         '''
         The `compounds` should have got the same `connector`.
-        (&, {A, B}, {B,C}) ====> {A}
-        (|, {A, B}, {B,C}) ====> {A, B, C}
-        (&, [A, B], [B,C]) ====> [A, B, C]
-        (|, [A, B], [B,C]) ====> [A]
-        (-, {A, B}, {C, D}) ====> {A}
-        (~, [A, B], [C, D]) ====> [A]
+        (&, {A, B}, {B, C}) ====> {B}
+        (|, {A, B}, {B, C}) ====> {A, B, C}
+        (&, [A, B], [B, C]) ====> [A, B, C]
+        (|, [A, B], [B, C]) ====> [B]
+        (-, {A, B}, {B, C}) ====> {A}
+        (~, [A, B], [B, C]) ====> [A]
 
         It is ensured that the concerned components have no further nested compound which should be unfolded, because if there were, it would be unfolded when building its parent compound.
         '''
@@ -141,11 +141,11 @@ class Compound(Term):  # , OrderedSet):
 
         elif connector_parent is Connector.ExtensionalDifference and connector is Connector.ExtensionalSet:
             # return Terms(compounds[0].terms, compounds[0].is_commutative, is_input).intersection(*(Terms(compound.terms, compound.is_commutative, is_input) for compound in compounds[1:]), is_input=is_input)
-            return Terms.intersection(compounds[0].terms, *(compound.terms for compound in compounds[1:]),
+            return Terms.difference(compounds[0].terms, *(compound.terms for compound in compounds[1:]),
                                       is_input=is_input)
         elif connector_parent is Connector.IntensionalDifference and connector is Connector.IntensionalSet:
             # return Terms(compounds[0].terms, compounds[0].is_commutative, is_input).intersection(*(Terms(compound.terms, compound.is_commutative, is_input) for compound in compounds[1:]), is_input=is_input)
-            return Terms.intersection(compounds[0].terms, *(compound.terms for compound in compounds[1:]),
+            return Terms.difference(compounds[0].terms, *(compound.terms for compound in compounds[1:]),
                                       is_input=is_input)
 
         elif connector_parent is connector:
@@ -169,20 +169,18 @@ class Compound(Term):  # , OrderedSet):
         Returns:
             connector, terms
         '''
-        if connector_parent is Connector.Product:
+        if connector_parent in {Connector.Product, Connector.ExtensionalImage, Connector.IntensionalImage, Connector.ExtensionalDifference, Connector.IntensionalDifference}:
             '''
             For example, in the test-case `nal6.22.nal`, there is a statement
                 `<(*,(*,(*,0))) --> num>`
             '''
             return connector_parent, terms
 
-        # TODO: The `ExtensionalDifference` and `IntensionalDifference` cases.
         if self.is_commutative:
-            # terms with the commutative connetors are also unduplicatable
             # if there are terms with the same commutative connector, they should be combined togethor
             categories = {}
             for term in terms:
-                # `None` means the connector of the term is not cared about, because it just need to be added into the parent compound-term as a whole.
+                # `None` means the connector of the term is not cared about, because it just needs to be added into the parent compound-term as a whole.
                 connector = term.connector if term.is_compound and term.is_commutative else None
                 category = categories.get(connector, None)
                 if category is None:
@@ -210,6 +208,7 @@ class Compound(Term):  # , OrderedSet):
                 # Hence, the final construction of the compound is out of this function.
 
                 terms_norm.append((connector, terms_merged))
+            
             if len(terms_norm) > 1:
                 terms = []
                 connector: Connector
@@ -229,10 +228,9 @@ class Compound(Term):  # , OrderedSet):
                     terms_norm = [[term.connector, term.terms]
                                   if term.is_compound else [None, term]]
 
-            # Now, there are at list two terms in `terms_norm`
+            # Now, there is only one term in `terms_norm`
 
-            # There were only a single compound if the terms were made into the one.
-            # the connector returned depends on the types of `connector` and `connector_parent`. For examples,
+            # the connector returned depends on the types of `connector` and `connector_parent`. For example,
             # if `connector_parent` is `&` and `connector` is `{`, the return `connector`;
             # if `connector_parent` is `|` and `connector` is `{`, the return `connector`;
             # if `connector_parent` is `&` and `connector` is `&`, it makes no difference returning either `connector` or `connector_parent`;
@@ -248,6 +246,11 @@ class Compound(Term):  # , OrderedSet):
             # otherwise, return `connector_parent` as the connector.
             return connector_parent, Terms(terms, is_commutative=True, is_input=is_input)
         else:
+            # if len(terms == 1):
+            #     term: Compound = terms[0]
+            #     if term.is_compound and term.connector == Connector.Negation and connector_parent == Connector.Negation:
+            #         return connector_parent, terms
+
             # e.g. (&/, (&/, A, B), (&|, C, D), E) will be converted to (&/, A, B, (&|, C, D), E)
             terms = (term2 for term1 in (
                 ((term0 for term0 in term.terms) if term.is_compound and (

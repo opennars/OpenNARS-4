@@ -19,7 +19,7 @@ class NarseseChannel(Channel):
     def put(self, text: str):
         try:
             task: Task = parser.parse(text)
-        except:
+        except Exception as e:
             task = None
             return False, None, None
         

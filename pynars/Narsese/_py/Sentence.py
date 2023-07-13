@@ -38,8 +38,7 @@ class Punctuation(Enum):
 
 class Stamp:
 
-    def __init__(self, t_creation: int, t_occurrence: int, t_put: int, evidential_base: Type['Base'],
-                 is_external: bool = True) -> None:
+    def __init__(self, t_creation: int, t_occurrence: int, t_put: int, evidential_base: Type['Base']) -> None:
         '''
         Args:
             t_creation(int): creation time of the stamp
@@ -50,7 +49,6 @@ class Stamp:
         self.t_occurrence = t_occurrence
         self.t_put = t_put
         self.evidential_base: Type['Base'] = evidential_base
-        self.is_external = is_external  # whether a sentence is from the external world or the internal world. Only those sentences derived from Mental Operations are internal.
 
     @property
     def tense(self):
@@ -58,6 +56,7 @@ class Stamp:
 
     @property
     def is_eternal(self):
+        # whether a sentence is from the external world or the internal world. Only those sentences derived from Mental Operations are internal.
         return self.t_occurrence is None
 
     def eternalize(self):
@@ -152,7 +151,7 @@ class Sentence:
         return not self.stamp.is_eternal
 
     @property
-    def is_external_event(self) -> bool:
+    def is_external_event(self) -> bool: # TODO: ???
         return not self.is_eternal and self.stamp.is_external
 
 
