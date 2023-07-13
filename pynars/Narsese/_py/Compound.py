@@ -178,6 +178,16 @@ class Compound(Term):  # , OrderedSet):
 
         if self.is_commutative:
             # if there are terms with the same commutative connector, they should be combined togethor
+            
+            terms2 = terms
+            terms = []
+            for term in terms2:
+                if term.is_compound and term.connector == connector_parent:
+                    for _term in term.terms:
+                        terms.append(_term)
+                else:
+                    terms.append(term)
+
             categories = {}
             for term in terms:
                 # `None` means the connector of the term is not cared about, because it just needs to be added into the parent compound-term as a whole.
