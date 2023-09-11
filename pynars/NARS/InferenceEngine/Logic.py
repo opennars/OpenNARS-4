@@ -12,13 +12,9 @@ c = conclusion.strip("<>").split()
 
 # print(p1, p2, c) # ['M', '-->', 'P'] ['S', '-->', 'M'] ['S', '-->', 'P']
 
-_vars = {} # mappings of terms to vars
-
 def replace_terms(t: str):
     if t.isalpha():
-        if not t in _vars:
-            _vars[t] = var()
-        return _vars[t]
+        return var(t)
     else:
         return t
 
@@ -26,7 +22,7 @@ p1 = list(map(replace_terms, p1))
 p2 = list(map(replace_terms, p2))
 c = list(map(replace_terms, c))
 
-# print(p1, p2, c) # [~_1, '-->', ~_2] [~_3, '-->', ~_1] [~_3, '-->', ~_2]
+# print(p1, p2, c) # [~M, '-->', ~P] [~S, '-->', ~M] [~S, '-->', ~P]
 
 t1, t2 = "bird --> animal", "robin --> bird"
 t1, t2 = t1.split(), t2.split() # ["bird", "-->", "animal"], ["robin", "-->", "bird"]
