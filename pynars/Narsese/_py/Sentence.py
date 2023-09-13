@@ -201,7 +201,7 @@ class Question(Sentence):
         # return self.word + (str(self.tense.value) if self.tense != Tense.Eternal else "")
 
     def repr(self, is_input = False):
-        return f'{self.term.repr(is_input) + self.punct.value}{(" " + str(self.tense.value)) if self.tense != Tense.Eternal else ""}'
+        return f'{self.term.repr() + self.punct.value}{(" " + str(self.tense.value)) if self.tense != Tense.Eternal else ""}'
 
 
 class Quest(Sentence):
@@ -218,4 +218,4 @@ class Quest(Sentence):
         # return self.word + (str(self.tense.value) if self.tense != Tense.Eternal else "")
 
     def repr(self, is_input = False):
-        return f'{self.term.repr(is_input) + self.punct.value}{(" " + str(self.tense.value)) if self.tense != Tense.Eternal else ""}'
+        return f'{self.term.repr() + self.punct.value}{(" " + str(self.tense.value)) if self.tense != Tense.Eternal else ""}'
