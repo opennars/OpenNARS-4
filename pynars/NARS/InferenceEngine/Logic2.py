@@ -1,68 +1,161 @@
-from kanren import run, eq, var, membero
-
-# rule = '''{<( && C S ) ==> P>, <S>} |- <C ==> P>'''
-rule = '''{<( && C S ) ==> P>, <M>} |- <( - ( && C S ) M ) ==> P>'''
-
-premises, conclusion = rule.split(" |- ")
-
-p1, p2 = premises.strip("{}").split(", ")
-
-p1 = p1.strip("<>").split()
-p2 = p2.strip("<>").split()
-c = conclusion.strip("<>").split()
-
-# print(p1, p2, c)
-
-def replace_terms(t: str):
-    if t.isalpha():
-        return var(t)
-    else:
-        return t
-
-p1 = list(map(replace_terms, p1))
-p2 = list(map(replace_terms, p2))
-c = list(map(replace_terms, c))
-
-# print(p1, p2, c)
-
-t1, t2 = "( && A B ) ==> Z", "B"
-t1, t2 = t1.split(), t2.split()
-
-# print(t1, t2)
-
-# apply rule
-
-result = run(1, c, eq(p1, t1), eq(p2, t2), membero(t2[0], t1[:-2]))
-# print(result)
-
-if result:
-    print("Positive example:")
-    print(' '.join(result[0]))
-
-# multi-component set
+from kanren import run, eq, var
 from cons import cons, car, cdr
 
-t1, t2 = "( && A B C ) ==> Z", "( && B C )"
-t1, t2 = t1.split(), t2.split()
+from pynars import Narsese
+from pynars.Narsese import Term, Terms, TermType, Copula, Connector, Statement, Compound
 
-p1 = cons("==>", cons(*p1[1:-3]), p1[-1])
-t1 = cons("==>", cons(*t1[1:-3]), t1[-1])
-p2 = cons("&&", *p2)
-t2 = cons(*t2[1:-1])
 
-print(p1)
-print(t1)
-print(p2)
-print(t2)
+#################################################
+### Conversion between Narsese and miniKanren ###
+#################################################
 
-print(t1, t2)
+prefix = '_rule_'
 
-# apply rule
+def logic(term, rule=False):
+    if term.type is TermType.ATOM:
+        name = prefix+term.word if rule else term.word
+        return var(name)
+    if term.type is TermType.STATEMENT:
+        return cons(term.copula, *[logic(t, rule) for t in term.terms])
+    if term.type is TermType.COMPOUND:
+        return cons(term.connector, *[logic(t, rule) for t in term.terms])
 
-result = run(1, c, eq(p1, t1), eq(p2, t2))#, membero(t2, car(cdr(t1))))
-print(result)
+def term(logic):
+    if type(logic) is var:
+        word = logic.token.replace(prefix, '')
+        return Term(word)
+    if type(logic) is cons:
+        if type(car(logic)) is Copula:
+            sub = car(cdr(logic))
+            cop = car(logic)
+            pre = cdr(cdr(logic))
+            return Statement(term(sub), cop, term(pre))
+        if type(car(logic)) is Connector:
+            con = car(logic)
+            terms = toList(cdr(logic))
+            return Compound(con, *terms)
+    return logic # atom or cons
 
-if result:
-    print("Positive example:")
-    print(' '.join(result[0]))
+def toList(pair) -> list:
+    l = [term(car(pair))]
+    if type(cdr(pair)) is list and cdr(pair) == []:
+        () # empty TODO: there's gotta be a better way to check
+    elif type(cdr(pair)) is cons:
+        t = term(cdr(pair))
+        if type(t) is cons:
+            l.extend(toList(t)) # recurse
+        else:
+            l.append(t)
+    else:
+        l.append(term(cdr(pair))) # atom
+    return l
 
+#################################################
+
+    # WARNING: terrible code below :)
+
+### quick and dirty example of applying diff ####
+
+def diff(c):
+    difference = -1 # result of applying diff
+
+    if type(c) is Statement:
+        if type(c.subject) is Compound and c.copula is Copula.Implication:
+            if c.subject.connector is Connector.ExtensionalDifference:
+                if len(c.subject.terms.terms) == 2:
+                    components = c.subject.terms.terms
+                    l = components[0]
+                    r = components[1]
+                    l = set(l.terms.terms if type(l) is Terms else l.terms)
+                    r = set(r.terms.terms if type(r) is Terms else r.terms)
+                    diff = l.difference(r)
+                    if l == diff:
+                        difference = None
+                    else:
+                        terms = list(diff)
+                        if len(terms) == 0:
+                            difference = None # TODO: what is a better way to handle this?
+                        elif len(terms) == 1:
+                            difference = terms[0]
+                        else:
+                            difference = Compound(components[0].connector, *list(diff))
+
+    if difference == None or difference == -1:
+        return difference
+    else:
+        return Statement(difference, c.copula, c.predicate)
+
+#################################################
+
+
+# rule = '''{<(&&, C, S) ==> P>. S} |- <C ==> P>'''
+rule = '''{<(&&, C, S) ==> P>. M} |- <((&&, C, S) - M) ==> P>'''
+
+rules = [rule, '{<M-->P>. <S-->M>} |- <S-->P>']
+
+
+def convert(rule):
+    # convert to logical form
+    premises, conclusion = rule.split(" |- ")
+
+    p1, p2 = premises.strip("{}").split(". ")
+
+    # TODO: can we parse statements instead?
+    p1 = Narsese.parser.parse(p1+'.').term
+    p2 = Narsese.parser.parse(p2+'.').term
+    c = Narsese.parser.parse(conclusion+'.').term
+
+    p1 = logic(p1, True)
+    p2 = logic(p2, True)
+    c = logic(c, True)
+    return (p1, p2, c)
+
+def apply(rule, *args):
+    print("\nRULE:", rule)
+    p1, p2, c = convert(rule)
+
+    # test statements
+    t1, t2 = args
+    print("Test:", t1, t2)
+
+    # apply rule
+    result = run(1, c, eq(p1, logic(t1)), eq(p2, logic(t2)))
+    # print(result)
+
+    if result:
+        conclusion = term(result[0])
+        # apply diff connector
+        difference = diff(conclusion)
+        if difference == None:
+            print("Rule application failed.")
+        elif difference == -1:
+            print(conclusion) # no diff application
+        else:
+            print(difference) # diff applied successfully
+    else:
+        print("Rule application failed.")
+
+    print("-------------------")
+
+# CONDITIONAL
+
+t1 = Narsese.parser.parse('<(&&, A, B, C, D) ==> Z>.').term
+
+t2 = Narsese.parser.parse('B.').term # positive example
+for rule in rules:
+    apply(rule, t1, t2)
+
+t2 = Narsese.parser.parse('U.').term # negative example
+for rule in rules:
+    apply(rule, t1, t2)
+
+t2 = Narsese.parser.parse('(&&, B, C).').term # complex example
+for rule in rules:
+    apply(rule, t1, t2)
+
+# DEDUCTION
+
+t1 = Narsese.parser.parse('<bird --> animal>.').term
+t2 = Narsese.parser.parse('<robin --> bird>.').term
+for rule in rules:
+    apply(rule, t1, t2)
