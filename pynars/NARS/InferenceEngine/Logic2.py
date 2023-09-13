@@ -2,7 +2,7 @@ from kanren import run, eq, var
 from cons import cons, car, cdr
 
 from pynars import Narsese
-from pynars.Narsese import Term, Terms, TermType, Copula, Connector, Statement, Compound
+from pynars.Narsese import Term, Copula, Connector, Statement, Compound
 
 
 #################################################
@@ -11,13 +11,13 @@ from pynars.Narsese import Term, Terms, TermType, Copula, Connector, Statement, 
 
 prefix = '_rule_'
 
-def logic(term, rule=False):
-    if term.type is TermType.ATOM:
+def logic(term: Term, rule=False):
+    if term.is_atom:
         name = prefix+term.word if rule else term.word
         return var(name)
-    if term.type is TermType.STATEMENT:
+    if term.is_statement:
         return cons(term.copula, *[logic(t, rule) for t in term.terms])
-    if term.type is TermType.COMPOUND:
+    if term.is_compound:
         return cons(term.connector, *[logic(t, rule) for t in term.terms])
 
 def term(logic):
@@ -32,18 +32,18 @@ def term(logic):
             return Statement(term(sub), cop, term(pre))
         if type(car(logic)) is Connector:
             con = car(logic)
-            terms = toList(cdr(logic))
+            terms = to_list(cdr(logic))
             return Compound(con, *terms)
     return logic # atom or cons
 
-def toList(pair) -> list:
+def to_list(pair) -> list:
     l = [term(car(pair))]
     if type(cdr(pair)) is list and cdr(pair) == []:
         () # empty TODO: there's gotta be a better way to check
     elif type(cdr(pair)) is cons:
         t = term(cdr(pair))
         if type(t) is cons:
-            l.extend(toList(t)) # recurse
+            l.extend(to_list(t)) # recurse
         else:
             l.append(t)
     else:
@@ -60,25 +60,16 @@ def diff(c):
     difference = -1 # result of applying diff
 
     if type(c) is Statement:
-        if type(c.subject) is Compound and c.copula is Copula.Implication:
+        if c.subject.is_compound and c.copula is Copula.Implication:
             if c.subject.connector is Connector.ExtensionalDifference:
                 if len(c.subject.terms.terms) == 2:
                     components = c.subject.terms.terms
                     l = components[0]
                     r = components[1]
-                    l = set(l.terms.terms if type(l) is Terms else l.terms)
-                    r = set(r.terms.terms if type(r) is Terms else r.terms)
-                    diff = l.difference(r)
-                    if l == diff:
-                        difference = None
+                    if l.contains(r) and not l.equal(r):
+                        difference = l - r
                     else:
-                        terms = list(diff)
-                        if len(terms) == 0:
-                            difference = None # TODO: what is a better way to handle this?
-                        elif len(terms) == 1:
-                            difference = terms[0]
-                        else:
-                            difference = Compound(components[0].connector, *list(diff))
+                        difference = None
 
     if difference == None or difference == -1:
         return difference
