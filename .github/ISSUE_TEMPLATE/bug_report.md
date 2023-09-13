@@ -26,6 +26,7 @@ If applicable, add screenshots to help explain your problem.
 **Environment (please complete the following information):**
  - OS: [e.g. MacOS 13.1, Windows 10, Ubuntu 22]
  - Language: [e.g. Python 3.11, PyPy3.10]
+ - PyNARS branch and report date (optional if the branch is master): [e.g. master, dev,], [e.g., Sep 13, 2023]
  - Others (optional): [e.g. numpy 1.25.2]
 
 **Additional context**
