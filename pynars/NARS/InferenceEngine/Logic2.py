@@ -22,8 +22,7 @@ def logic(term: Term, rule=False):
 
 def term(logic):
     if type(logic) is var:
-        word = logic.token.replace(prefix, '')
-        return Term(word)
+        return Term(logic.token)
     if type(logic) is cons:
         if type(car(logic)) is Copula:
             sub = car(cdr(logic))
@@ -34,7 +33,7 @@ def term(logic):
             con = car(logic)
             terms = to_list(cdr(logic))
             return Compound(con, *terms)
-    return logic # atom or cons
+    return logic # cons
 
 def to_list(pair) -> list:
     l = [term(car(pair))]
