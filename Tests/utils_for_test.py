@@ -13,9 +13,11 @@ from pynars.Narsese._py.Term import Term
 from pynars.NAL.MentalOperation import execute
 from pynars.Narsese import Sentence, Judgement, Quest, Question, Goal
 
+from pynars.NARS.InferenceEngine.Logic2 import KanrenEngine
+
 nars = Reasoner(100, 100)
 engine: GeneralEngine = nars.inference
-
+kanren: KanrenEngine = KanrenEngine()
 
 def rule_map_two_premises(premise1: str, premise2: str, term_common: str, inverse: bool=False, is_belief_term: bool=False, index_task=None, index_belief=None) -> Tuple[List[RuleCallable], Task, Belief, Concept, TaskLink, TermLink, Tuple[Task, Task, Task, Task]]:
     ''''''

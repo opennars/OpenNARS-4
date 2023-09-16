@@ -15,6 +15,8 @@ from pynars.NARS import Reasoner as Reasoner
 import Tests.utils_for_test as utils_for_test
 from Tests.utils_for_test import *
 
+import logging
+
 # utils_for_test.engine = RuleMap()
 
 class TEST_NAL1(unittest.TestCase):
@@ -60,10 +62,18 @@ class TEST_NAL1(unittest.TestCase):
         'Robin is a type of animal.
         ''outputMustContain('<robin --> animal>. %1.00;0.81%')
         '''
+
         rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
             '<bird --> animal>. %1.00;0.90%', 
             '<robin --> bird>. %1.00;0.90%', 
             'bird.')
+        
+        # Set log level
+        logging.basicConfig()
+        log = logging.getLogger("LOG")
+        results = kanren.inference(task.sentence, belief.sentence)
+        log.warning(results)
+        
         tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
         self.assertTrue(
             output_contains(tasks_derived, '<robin --> animal>. %1.00;0.81%')
@@ -161,7 +171,13 @@ class TEST_NAL1(unittest.TestCase):
         self.assertTrue(
             output_contains(tasks_derived, '<animal --> robin>. %1.00;0.45%')
         )
-        
+                
+        # Set log level
+        logging.basicConfig()
+        log = logging.getLogger("LOG")
+        results = kanren.inference(task.sentence, belief.sentence)
+        log.warning(results)
+
         pass
 
 
