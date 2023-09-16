@@ -9,9 +9,9 @@ app = QtWidgets.QApplication(sys.argv)
 apply_stylesheet(app, theme='dark_teal.xml')
 
 window = NARSWindow()
-p_nars = Process(target=run_nars, args=(None,))
-p_nars.start()
-p_nars.join()
+# p_nars = Process(target=run_nars, args=(None,))
+# p_nars.start()
+# p_nars.join()
 
 # run
 window.show()
