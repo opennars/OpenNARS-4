@@ -46,8 +46,12 @@ def rule_map_two_premises(premise1: str, premise2: str, term_common: str, invers
             else: indices_belief = Link.get_index(concept.term, belief.term)
             if indices_belief is not None: index_belief = indices_belief[0]
 
-    task_link = concept.task_links.take_by_key(TaskLink(concept, task, None, index=index_task))
-    term_link = concept.term_links.take_by_key(TermLink(concept, belief, None, index=index_belief))
+    tl = TaskLink(concept, task, None, index=index_task)
+    task_link = [link for link in concept.task_links.item_lut.lut.values() if link.source == tl.source and link.target==tl.target and link.component_index==tl.component_index]
+    task_link = task_link[0] if len(task_link) > 0 else None
+    tl = TermLink(concept, belief, None, index=index_belief)
+    term_link = [link for link in concept.term_links.item_lut.lut.values() if link.source == tl.source and link.target==tl.target and link.component_index==tl.component_index]
+    term_link = term_link[0] if len(term_link) > 0 else None
     
     subst, elimn, intro = GeneralEngine.unify(task.term, belief.term, term_common, task_link, term_link)
     task_subst, task_elimn, task_intro = GeneralEngine.substitute(subst, elimn, intro, task)
