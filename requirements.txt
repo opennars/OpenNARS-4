@@ -21,3 +21,5 @@ miniKanren>=1.0.3
 # GUI related packages
 qt-material>=2.14
 qtawesome>=1.2.3
+as-prc>=1.0.1
+qasync

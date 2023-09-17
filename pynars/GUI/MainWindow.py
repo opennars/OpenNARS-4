@@ -11,12 +11,15 @@ import qtawesome as qta
 from .utils import change_stylesheet
 from .Widgets.Button import Button
 from .Widgets.Slider import Slider
+from as_rpc import AioRpcClient
 
 # create the application and the main window
 class NARSWindow(QMainWindow):
+    client: AioRpcClient = None
     def __init__(self):
         super().__init__()
         self.init_layout()
+
 
     def init_layout(self):
         '''
@@ -145,10 +148,27 @@ class NARSWindow(QMainWindow):
                     return True
         return super().eventFilter(obj, event)
     
+    def set_client(self, client: AioRpcClient):
+        self.client = client
+
     def input_narsese(self):
         content: str = self.text_input.toPlainText()
         self.text_input.clear()
-        print(content)
+        if self.client is not None:
+            self.client.call_func("handle_lines", self.print_out, content)
+        else:
+            print(content)
+    
+    def print_out(self, content):
+        ''''''
+        # print(content)
+        out, err = content
+        if err is not None:
+            print(err)
+            self.text_output.append(':Error')
+        else:
+            self.text_output.append(out)
+        # self.text_output.append('\n')
 
     def _center_window(self):
         '''
