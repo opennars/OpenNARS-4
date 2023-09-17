@@ -17,6 +17,8 @@ import pynars.NARS.Operation as Operation
 from pynars import Global
 from time import time
 from pynars.NAL.Functions.Tools import project_truth, project
+from .GlobalEval import GlobalEval
+
 
 class Reasoner:
 
@@ -40,6 +42,8 @@ class Reasoner:
 
         self.sequence_buffer = Buffer(capacity)
         self.operations_buffer = Buffer(capacity)
+
+        self.global_eval = GlobalEval()
 
     def reset(self):
         ''''''
