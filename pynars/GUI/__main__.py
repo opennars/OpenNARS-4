@@ -9,11 +9,6 @@ from time import sleep, time
 from as_rpc import AioRpcClient, rpc
 
 app = QtWidgets.QApplication(sys.argv)
-# loop = asyncio.new_event_loop()
-# async def foo():
-#     print('foo')
-# loop.create_task(foo())
-# loop._ready
 loop = QEventLoop(app)
 
 asyncio.set_event_loop(loop)
@@ -35,7 +30,7 @@ while True:
     try:
         client.init()
         break
-    except ConnectionRefusedError as e:
+    except (ConnectionRefusedError, FileNotFoundError):
         t_now = time()
         if t_now - t_begin <= timeout:
             sleep(1)
