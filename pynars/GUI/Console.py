@@ -12,13 +12,13 @@ import asyncio
 from as_rpc import AioRpcServer, AioRpcClient, rpc
 from functools import partial
 
-server = AioRpcServer(buff=6553500)
 
 
 def run_line(nars: Reasoner, line: str):
     ''''''
 
     ret = []
+    satisfactions = []
 
     def handle_line(tasks_line: Tuple[List[Task], Task, Task, List[Task], Task, Tuple[Task, Task]]):
         tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest, (
@@ -47,6 +47,7 @@ def run_line(nars: Reasoner, line: str):
         n_cycle = int(line)
         for _ in range(n_cycle):
             tasks_all = nars.cycle()
+            satisfactions.append(nars.global_eval.S)
             handle_line(tasks_all)
     else:
         line = line.rstrip(' \n')
@@ -60,22 +61,25 @@ def run_line(nars: Reasoner, line: str):
                 ret.append(f':Invalid input! Failed to parse: {line}')
 
             tasks_all = nars.cycle()
+            satisfactions.append(nars.global_eval.S)
             handle_line(tasks_all)
         except Exception as e:
             ret.append(f':Unknown error: {line}. \n{e}')
-    return ret
+    return ret, satisfactions
 
 
 def handle_lines(nars: Reasoner, lines: str):
     ret = []
+    satisfactions = []
     for line in lines.split('\n'):
         if len(line) == 0:
             continue
 
-        ret_line = run_line(nars, line)
+        ret_line, satisfactions_line = run_line(nars, line)
         ret.extend(ret_line)
+        satisfactions.extend(satisfactions_line)
 
-    return '\n'.join(ret)
+    return '\n'.join(ret), satisfactions
 
 
 def run_nars(capacity_mem=1000, capacity_buff=1000):
@@ -83,6 +87,7 @@ def run_nars(capacity_mem=1000, capacity_buff=1000):
     rand_seed(seed)
     nars = Reasoner(capacity_mem, capacity_buff)
     print_out(PrintType.COMMENT, 'Running with GUI.', comment_title='NARS')
+    server = AioRpcServer(buff=6553500)
     rpc(server, "run_line")(run_line)
 
     def _handle_lines(content):

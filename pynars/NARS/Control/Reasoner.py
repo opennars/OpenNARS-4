@@ -17,7 +17,7 @@ import pynars.NARS.Operation as Operation
 from pynars import Global
 from time import time
 from pynars.NAL.Functions.Tools import project_truth, project
-from .GlobalEval import GlobalEval
+from ..GlobalEval import GlobalEval
 
 
 class Reasoner:
@@ -26,11 +26,13 @@ class Reasoner:
         # print('''Init...''')
         Config.load(config)
 
+        self.global_eval = GlobalEval()
+
         self.inference = GeneralEngine()
         self.variable_inference = VariableEngine()
         self.temporal_inference = TemporalEngine() # for temporal causal reasoning 
 
-        self.memory = Memory(n_memory)
+        self.memory = Memory(n_memory, global_eval=self.global_eval)
         self.overall_experience = Buffer(capacity)
         self.internal_experience = Buffer(capacity)
         self.narsese_channel = NarseseChannel(capacity)
@@ -43,7 +45,6 @@ class Reasoner:
         self.sequence_buffer = Buffer(capacity)
         self.operations_buffer = Buffer(capacity)
 
-        self.global_eval = GlobalEval()
 
     def reset(self):
         ''''''
