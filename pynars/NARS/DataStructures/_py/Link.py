@@ -15,6 +15,8 @@ from copy import copy, deepcopy
 from pynars.NAL.Functions.ExtendedBooleanFunctions import *
 from pynars.Config import Config
 
+from collections import deque
+
 class LinkType(Enum):
     SELF = 0 # At C, point to C; TaskLink only 
     COMPONENT = 1 # At (&&, A, C), point to C
@@ -201,7 +203,7 @@ class Link(Item):
 
 
 class TermLink(Link):
-    def __init__(self, source: 'Concept', target: Task, budget: Budget, source_is_component: bool=None, copy_budget=True, index: list=None) -> None:
+    def __init__(self, source: 'Concept', target: 'Concept', budget: Budget, source_is_component: bool=None, copy_budget=True, index: list=None) -> None:
         super().__init__(source, target, budget, source_is_component, copy_budget=copy_budget, index=index)
 
     def set_type(self, source_is_component=True, type: LinkType=None):
@@ -224,6 +226,14 @@ class TermLink(Link):
         return f'{self.budget} {self.source.term} --- {self.target.term}, {"+" if self.source_is_component else "-"}{self.component_index}'
 
 class TaskLink(Link):
+
+    class Recording:
+        def __init__(self, term: Term, time: int):
+            self.term = term
+            self.time = time
+
+    records = deque()
+
     def __init__(self, source: 'Concept', target: 'Concept', budget: Budget, copy_budget=True, index: list=None) -> None:
         super().__init__(source, target, budget, True, copy_budget=copy_budget, index=index)
 
@@ -242,6 +252,31 @@ class TaskLink(Link):
             LinkType.TEMPORAL
         )
 
+    def novel(self, term_link: TermLink, current_time: int) -> bool:
+        if term_link.target.term == self.target.term:
+            return False
+        
+        term_link_key = term_link.target.term
+
+        # iterating the FIFO deque from oldest (first) to newest (last)
+        for record in list(self.records):
+            if record.term == term_link_key:
+                if current_time < record.time + Config.novelty_horizon:
+                    # too recent, not novel
+                    return False
+                else:
+                    self.records.remove(record)
+                    record.time = current_time
+                    self.records.append(record)
+                    return True
+
+        # keep recordedLinks queue a maximum finite size
+        while len(self.records) + 1 >= Config.term_link_record_length:
+            self.records.popleft()
+        # add knowledge reference to recordedLinks
+        self.records.append(self.Recording(term_link_key, current_time))
+        return True
+    
     def __str__(self) -> str:
         return f'{self.budget} {self.source.term} --- {self.target.term}{self.target.sentence.punct.value}, {"+" if self.source_is_component else "-"}{self.component_index}'
     

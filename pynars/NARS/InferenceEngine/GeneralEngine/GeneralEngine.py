@@ -362,8 +362,11 @@ class GeneralEngine(Engine):
         is_valid = False
         for _ in range(len(concept.term_links)):
             # To find a belief, which is valid to interact with the task, by iterating over the term-links.
-            term_link: TaskLink = concept.term_links.take(remove=True)
+            term_link: TermLink = concept.term_links.take(remove=True)
             term_links.append(term_link)
+
+            if not task_link_valid.novel(term_link, Global.time):
+                continue
             
             concept_target: Concept = term_link.target
             belief = concept_target.get_belief() # TODO: consider all beliefs.
