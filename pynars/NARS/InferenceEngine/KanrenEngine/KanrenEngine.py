@@ -68,8 +68,8 @@ nal5 = '''
 {<P ==> S>. S} |- P .abd
 {S. <S <=> P>} |- P .ana
 {S. <P <=> S>} |- P .ana
-{<S <=> P>. S} |- P .ana’
-{<P <=> S>. S} |- P .ana’
+{<S <=> P>. S} |- P .ana'
+{<P <=> S>. S} |- P .ana'
 
 'conditional conjunctive
 '(C ^ S) => P, S |- C => P (alternative syntax below)
@@ -397,6 +397,7 @@ t1 = parse('<(&&, A, B, C, D) ==> Z>.')
 
 t2 = parse('B.') # positive example
 print(engine.inference(t1, t2))
+
 t2 = parse('U.') # negative example
 print(engine.inference(t1, t2))
 
