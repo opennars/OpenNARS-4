@@ -154,12 +154,8 @@ class KanrenEngine:
         
         rules = nal1_rules + nal2_rules + nal3_rules + nal5_rules
 
-        self.variables = set()
+        self._variables = set() # used as scratchpad while converting
         self.rules = [self._convert(rule) for rule in rules]
-
-        var_combinations = list(combinations(self.variables, 2))
-        # TODO: allow ex. C and _C to be the same
-        self.constraints = [neq(c[0], c[1]) for c in var_combinations]
 
 
     #################################################
@@ -175,10 +171,11 @@ class KanrenEngine:
                 vname = term.word + term.name
                 name = self._prefix+vname if rule else vname 
                 if rule and not substitution: # collect rule variable names
-                    self.variables.add(var(name))
+                    self._variables.add(var(name))
                 return var(name)
             if rule and not substitution: # collect rule variable names
-                self.variables.add(var(name))
+                # allow _S and S to be the same in rule definitions
+                self._variables.add(var(name.replace(self._prefix+'_', self._prefix)))
             return var(name) if rule else term
         if term.is_statement:
             return cons(term.copula, *[self.logic(t, rule, substitution) for t in term.terms])
@@ -319,17 +316,23 @@ class KanrenEngine:
         p2 = parse(p2+'.', True)
         c = parse(c+'.', True)
 
+        self._variables.clear()
+
         p1 = self.logic(p1, True)
         p2 = self.logic(p2, True)
         c = self.logic(c, True)
-        return ((p1, p2, c), r)
+
+        var_combinations = list(combinations(self._variables, 2))
+        constraints = [neq(c[0], c[1]) for c in var_combinations]
+
+        return ((p1, p2, c), (r, constraints))
 
     def inference(self, t1: Sentence, t2: Sentence) -> list:
         results = []
         for rule in self.rules:
             res = self.apply(rule, t1.term, t2.term)
             if res is not None:
-                r = rule[1]
+                r, _ = rule[1]
                 inverse = True if r[-1] == "'" else False
                 r = r.replace("'", '') # remove trailing '
                 t1t, t2t = (t1.truth, t2.truth) if not inverse else (t2.truth, t1.truth)
@@ -340,7 +343,7 @@ class KanrenEngine:
 
     def apply(self, rule: tuple, *args: Term):
         # print("\nRULE:", rule)
-        (p1, p2, c), r = rule[0], rule[1]
+        (p1, p2, c), (r, constraints) = rule[0], rule[1]
 
         # test statements
         t1, t2 = args
@@ -357,7 +360,8 @@ class KanrenEngine:
         #     print("Substituted:", t1, t2)
 
         # apply rule
-        result = run(1, c, eq((p1, p2), (self.logic(t1), self.logic(t2))), *self.constraints)
+
+        result = run(1, c, eq((p1, p2), (self.logic(t1), self.logic(t2))), *constraints)
         # print(result)
 
         if result:
