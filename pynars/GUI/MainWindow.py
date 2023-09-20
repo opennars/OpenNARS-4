@@ -167,7 +167,8 @@ class NARSWindow(QMainWindow):
             print(err)
             self.text_output.append(':Error')
         else:
-            self.text_output.append(out)
+            if len(out) > 0:
+                self.text_output.append(out)
         # self.text_output.append('\n')
 
     def _center_window(self):
