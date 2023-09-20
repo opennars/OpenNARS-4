@@ -190,7 +190,8 @@ class NARSWindow(QMainWindow):
             # print(satisfactions)
             if len(satisfactions) > 0:
                 self.plot_satisfaction.update_values(satisfactions)
-            self.text_output.append(text)
+            if len(text) > 0:
+                self.text_output.append(text)
         # self.text_output.append('\n')
 
     def _center_window(self):
