@@ -50,10 +50,11 @@ NAL4
 no new rules
 
 NAL5
-replace --> with ==> in NAL1-3
+replace --> with ==> in NAL1 & NAL2
 replace <-> with <=> in NAL2
-replace | with || in NAL3
-replace & with && in NAL3
+replace --> with ==> in NAL3 (except difference)
+replace | with || in NAL3 (except difference)
+replace & with && in NAL3 (except difference)
 
 'conditional syllogistic
 {<S ==> P>. S} |- P .ded
@@ -67,7 +68,7 @@ replace & with && in NAL3
 '(C ^ S) => P, S |- C => P (alternative syntax below)
 {<(&&, C, S) ==> P>. _S} |- <((&&, C, S) - _S) ==> P> .ded
 
-'(C ^ S) => P, M => S |- (C ^ M) => P (alternative syntax)
+'(C ^ S) => P, M => S |- (C ^ M) => P (alternative syntax below)
 {<(&&, C, S) ==> P>. <M ==> _S>} |- <(&&, ((&&, C, S) - _S), M) ==> P> .ded
 
 '(C ^ S) => P, C => P |- S (alternative syntax below)
@@ -76,11 +77,11 @@ replace & with && in NAL3
 '(C ^ S) => P, (C ^ M) => P |- M => S (alternative syntax below)
 {<(&&, C, S) ==> P>. <(&&, _C, M) ==> P>} |- <((&&, _C, M) - C) ==> ((&&, C, S) - _C)> .abd
 
-'works as-is, no alternative syntax needed
-{<C ==> P>. S} |- <(&&, C, S) ==> P> .ind
+'{<C ==> P>. S} |- <(&&, C, S) ==> P> .ind (alternative syntax below)
+{<(&&, C, M) ==> P>. (&&, S, M)} |- <(&&, C, S, M) ==> P> .ind
 
 '(C ^ M) => P, M => S |- (C ^ S) => P (alternative syntax below)
-{<(&&, C, M) ==> P>. _M ==> S} |- (&&, ((&&, C, M) - _M), S) ==> P .ind
+{<(&&, C, M) ==> P>. <_M ==> S>} |- <(&&, ((&&, C, M) - _M), S) ==> P> .ind
 
 
 NAL6
