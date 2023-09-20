@@ -6,7 +6,7 @@ from cons import cons, car, cdr
 from itertools import combinations
 
 from pynars import Narsese
-from pynars.Narsese import Term, Copula, Connector, Statement, Compound, Variable, VarPrefix, Sentence
+from pynars.Narsese import Term, Copula, Connector, Statement, Compound, Variable, VarPrefix, Sentence, Punctuation, Stamp
 
 from pynars.NAL.Functions.TruthValueFunctions import *
 
@@ -105,6 +105,8 @@ def parse(narsese: str, rule=False):
 
 class KanrenEngine:
 
+    _prefix = '_rule_'
+
     _truth_functions = {
         'ded': Truth_deduction,
         'ana': Truth_analogy,
@@ -162,8 +164,33 @@ class KanrenEngine:
     ### Conversion between Narsese and miniKanren ###
     #################################################
 
-    _prefix = '_rule_'
+    def _convert(self, rule):
+        # convert to logical form
+        premises, conclusion = rule.split(" |- ")
 
+        p1, p2 = premises.strip("{}").split(". ")
+        conclusion = conclusion.split(" .")
+        c = conclusion[0]
+        r = conclusion[1]
+
+        # TODO: can we parse statements instead?
+        p1 = parse(p1+'.', True)
+        p2 = parse(p2+'.', True)
+        c = parse(c+'.', True)
+
+        self._variables.clear() # clear scratchpad
+
+        p1 = self.logic(p1, True)
+        p2 = self.logic(p2, True)
+        c = self.logic(c, True)
+
+        var_combinations = list(combinations(self._variables, 2))
+        # filter out combinations like (_C, C) allowing them to be the same
+        cond = lambda x, y: x.token.replace('_', '') != y.token.replace('_', '')
+        constraints = [neq(c[0], c[1]) for c in var_combinations if cond(c[0], c[1])]
+
+        return ((p1, p2, c), (r, constraints))
+    
     def logic(self, term: Term, rule=False, substitution=False):
         if term.is_atom:
             name = self._prefix+term.word if rule else term.word
@@ -174,8 +201,7 @@ class KanrenEngine:
                     self._variables.add(var(name))
                 return var(name)
             if rule and not substitution: # collect rule variable names
-                # allow _S and S to be the same in rule definitions
-                self._variables.add(var(name.replace(self._prefix+'_', self._prefix)))
+                self._variables.add(var(name))
             return var(name) if rule else term
         if term.is_statement:
             return cons(term.copula, *[self.logic(t, rule, substitution) for t in term.terms])
@@ -223,12 +249,11 @@ class KanrenEngine:
         return l
 
     #################################################
-
-        # WARNING: terrible code below :)
-
     ### quick and dirty example of applying diff ####
+    #################################################
 
     def _diff(self, c):
+        # TODO: room for improvement
         difference = -1 # result of applying diff
 
         def calculate_difference(l: Term, r: Term):
@@ -302,30 +327,7 @@ class KanrenEngine:
 
     #################################################
 
-    def _convert(self, rule):
-        # convert to logical form
-        premises, conclusion = rule.split(" |- ")
-
-        p1, p2 = premises.strip("{}").split(". ")
-        conclusion = conclusion.split(" .")
-        c = conclusion[0]
-        r = conclusion[1]
-
-        # TODO: can we parse statements instead?
-        p1 = parse(p1+'.', True)
-        p2 = parse(p2+'.', True)
-        c = parse(c+'.', True)
-
-        self._variables.clear()
-
-        p1 = self.logic(p1, True)
-        p2 = self.logic(p2, True)
-        c = self.logic(c, True)
-
-        var_combinations = list(combinations(self._variables, 2))
-        constraints = [neq(c[0], c[1]) for c in var_combinations]
-
-        return ((p1, p2, c), (r, constraints))
+    # INFERENCE
 
     def inference(self, t1: Sentence, t2: Sentence) -> list:
         results = []
@@ -349,10 +351,10 @@ class KanrenEngine:
         t1, t2 = args
         # print("Test:", t1, t2)
 
-        # TODO: what about other possibilities?
         t1e = self._variable_elimination(t1, t2)
         t2e = self._variable_elimination(t2, t1)
 
+        # TODO: what about other possibilities?
         t1 = t1e[0] if len(t1e) else t1
         t2 = t2e[0] if len(t2e) else t2
 
@@ -383,6 +385,10 @@ class KanrenEngine:
             return None
 
 
+#################################################
+
+### EXAMPLES ###
+
 engine = KanrenEngine()
 
 # CONDITIONAL
@@ -407,8 +413,8 @@ t2 = parse('<B ==> Z>.')
 for r in engine.inference(t1, t2):
     print(r)
 
-# t2 = parse('<U ==> B>.')
-# print(engine.inference(t1, t2))
+t2 = parse('<U ==> B>.')
+print(engine.inference(t1, t2))
 
 print('\n----DEDUCTION')
 
@@ -437,3 +443,22 @@ print('\n--nal6.12')
 t1 = parse('<(&&,<$x --> flyer>,<$x --> [chirping]>, <(*, $x, worms) --> food>) ==> <$x --> bird>>.')
 t2 = parse('<{Tweety} --> flyer>.')
 print(engine.inference(t1, t2))
+
+
+# THEOREMS
+
+print('\n\n----THEOREMS')
+
+theorem = parse('<<$S <-> $P> ==> <$S --> $P>>.', False)
+
+t1 = parse('<dog <-> pet>.', False)
+
+# t2 = engine._variable_elimination(theorem, t1)[0]
+
+# from pynars.Narsese import Base
+# from pynars import Global
+
+# t1 = Sentence(t1, Punctuation.Judgement, Stamp(Global.time, Global.time, None, Base((Global.get_input_id(),)), is_external=False))
+# t2 = Sentence(t2, Punctuation.Judgement, Stamp(Global.time, Global.time, None, Base((Global.get_input_id(),)), is_external=False))
+# print(t1, t2)
+print(engine.inference(theorem, t1))
