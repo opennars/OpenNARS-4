@@ -13,8 +13,8 @@ def nars_core():
     """
     global nars_input
     global nars_output
-    global wcn_input
-    global wcn_output
+    global wch_input
+    global wch_output
     for _ in range(300):
         # here it runs for 300 cycles, but it is designed to run forever, if so, please use while(True)
         if len(nars_input) == 0:
@@ -28,30 +28,28 @@ def nars_core():
         nars_output.append(ret)
         if len(ret[0]) != 0:
             for each in ret[0]:
-                wcn_input.append(each)
+                wch_input.append(each)
 
 
 def wcn_core():
     global nars_input
     global nars_output
-    global wcn_input
-    global wcn_output
+    global wch_input
+    global wch_output
     for _ in range(300):
         # here it runs for 300 cycles, but it is designed to run forever, if so, please use while(True)
-        if len(wcn_input) == 0:
+        if len(wch_input) == 0:
             ret = wcn.WordNetQuery()
         else:
-            ret = wcn.WordNetQuery(wcn_input.pop(0))
-        wcn_output.append(ret)
+            ret = wcn.WordNetQuery(wch_input.pop(0))
+        wch_output.append(ret)
         if ret is not None:
             nars_input.append(each)
 
 
 if __name__ == "__main__":
 
-    apriori_knowledge = ["<<cat --> #y> ==> <cat --> [KNOWN]>>.",
-                         "<<#y --> cat> ==> <cat --> [KNOWN]>>.",
-                         "<Query(WordNet, cat) ==> <cat --> [KNOWN]>>."]
+    apriori_knowledge = ["<Query(WordNet, cat) ==> <cat --> [KNOWN]>>."]
     # including product as images
 
     nars = Reasoner(100, 100)
@@ -64,8 +62,8 @@ if __name__ == "__main__":
     # global data
     nars_input = ["<cat --> [KNOWN]>!", "<?x --> cat>?"]  # though there is a question here, the answer is not used
     nars_output = []
-    wcn_input = []
-    wcn_output = []
+    wch_input = []
+    wch_output = []
 
     process_list = []
 
@@ -81,4 +79,4 @@ if __name__ == "__main__":
         process_list[i].join()
 
     print(nars_output)
-    print(wcn_output)
+    print(wch_output)
