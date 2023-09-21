@@ -235,6 +235,20 @@
             ]
         },
         {
+            "name": "Python: console plus",
+            "type": "python",
+            "request": "launch",
+            "module": "pynars.ConsolePlus",
+            "console": "integratedTerminal",
+            "env": {
+                "CODON_PATH": "/Users/bowenxu/.codon/lib/codon/stdlib"
+            },
+            "args": [
+                // "Tests/examples/single_step/nal7/nal7.revrev.nal"
+                // "Tests/examples/single_step/nal5.query.nal"
+            ]
+        },
+        {
             "name": "Python: _generate_init_file",
             "type": "python",
             "request": "launch",
