@@ -1,7 +1,5 @@
 from kanren import run, eq, var
-from kanren.constraints import neq, ConstrainedVar
-from kanren import Relation, facts
-
+from kanren.constraints import neq
 from unification import unify, reify
 from cons import cons, car, cdr
 
@@ -158,15 +156,8 @@ class KanrenEngine:
         
         rules = nal1_rules + nal2_rules + nal3_rules + nal5_rules
 
-        self.rule_store = Relation()
-
-        self._variables = set() # used as scratchpad when converting
-
-        for r in rules:
-            self._convert(r) # populate rule store
-
-        var_combinations = list(combinations(self._variables, 2))
-        self.constraints = [neq(v[0], v[1]) for v in var_combinations]
+        self._variables = set() # used as scratchpad while converting
+        self.rules = [self._convert(rule) for rule in rules]
 
 
     #################################################
@@ -187,11 +178,18 @@ class KanrenEngine:
         p2 = parse(p2+'.', True)
         c = parse(c+'.', True)
 
+        self._variables.clear() # clear scratchpad
+
         p1 = self.logic(p1, True)
         p2 = self.logic(p2, True)
         c = self.logic(c, True)
 
-        self.rule_store.add_fact(p1, p2, c, r)
+        var_combinations = list(combinations(self._variables, 2))
+        # filter out combinations like (_C, C) allowing them to be the same
+        cond = lambda x, y: x.token.replace('_', '') != y.token.replace('_', '')
+        constraints = [neq(c[0], c[1]) for c in var_combinations if cond(c[0], c[1])]
+
+        return ((p1, p2, c), (r, constraints))
     
     def logic(self, term: Term, rule=False, substitution=False):
         if term.is_atom:
@@ -203,8 +201,7 @@ class KanrenEngine:
                     self._variables.add(var(name))
                 return var(name)
             if rule and not substitution: # collect rule variable names
-                # allow variables like _C and C (used in rules) to be interchangeable
-                self._variables.add(var(name.replace(self._prefix+'_', self._prefix)))
+                self._variables.add(var(name))
             return var(name) if rule else term
         if term.is_statement:
             return cons(term.copula, *[self.logic(t, rule, substitution) for t in term.terms])
@@ -214,7 +211,7 @@ class KanrenEngine:
     def term(self, logic):
         if type(logic) is Term:
             return logic
-        if type(logic) is var or type(logic) is ConstrainedVar:
+        if type(logic) is var:
             name = logic.token.replace(self._prefix, '')
             if name[0] == '$':
                 return Variable(VarPrefix.Independent, name[1:])
@@ -334,43 +331,58 @@ class KanrenEngine:
 
     def inference(self, t1: Sentence, t2: Sentence) -> list:
         results = []
+        for rule in self.rules:
+            res = self.apply(rule, t1.term, t2.term)
+            if res is not None:
+                r, _ = rule[1]
+                inverse = True if r[-1] == "'" else False
+                r = r.replace("'", '') # remove trailing '
+                t1t, t2t = (t1.truth, t2.truth) if not inverse else (t2.truth, t1.truth)
+                truth = self._truth_functions[r](t1t, t2t)
+                # results.append(((res, truth), self.term(rule[0][0]), self.term(rule[0][1]), self.term(rule[0][2])))
+                results.append((res, truth))
+        return results
+
+    def apply(self, rule: tuple, *args: Term):
+        # print("\nRULE:", rule)
+        (p1, p2, c), (r, constraints) = rule[0], rule[1]
+
+        # test statements
+        t1, t2 = args
+        # print("Test:", t1, t2)
+
+        t1e = self._variable_elimination(t1, t2)
+        t2e = self._variable_elimination(t2, t1)
 
         # TODO: what about other possibilities?
-        t1e = self._variable_elimination(t1.term, t2.term)
-        t1t = t1e[0] if len(t1e) else t1.term
-        t2e = self._variable_elimination(t2.term, t1.term)
-        t2t = t2e[0] if len(t2e) else t2.term
+        t1 = t1e[0] if len(t1e) else t1
+        t2 = t2e[0] if len(t2e) else t2
 
-        t1l = self.logic(t1t)
-        t2l = self.logic(t2t)
-        c, r = var(), var()
+        # if len(t1e) or len(t2e):
+        #     print("Substituted:", t1, t2)
 
-        # apply rules
-        solutions = run(0, [c, r], self.rule_store(t1l, t2l, c, r), *self.constraints)
+        # apply rule
 
-        for solution in solutions:
-            c, r = solution
-            conclusion = self.term(c)
+        result = run(1, c, eq((p1, p2), (self.logic(t1), self.logic(t2))), *constraints)
+        # print(result)
+
+        if result:
+            conclusion = self.term(result[0])
             # print(conclusion)
             # apply diff connector
             difference = self._diff(conclusion)
-
             if difference == None:
-                continue # rule application failed
+                # print("Rule application failed.")
+                return None
             elif difference == -1:
-                result = conclusion # no diff
+                # print(conclusion) # no diff application
+                return (conclusion, r)
             else:
-                result = difference # diff applied
-
-            inverse = True if r[-1] == "'" else False
-            r = r.replace("'", '') # remove trailing '
-
-            tr1, tr2 = (t1.truth, t2.truth) if not inverse else (t2.truth, t1.truth)
-            truth = self._truth_functions[r](tr1, tr2)
-
-            results.append((result, truth))
-
-        return results
+                # print(difference) # diff applied successfully
+                return (difference, r)
+        else:
+            # print("Rule application failed.")
+            return None
 
 
 #################################################
@@ -405,13 +417,6 @@ for r in engine.inference(t1, t2):
 t2 = parse('<U ==> B>.')
 print(engine.inference(t1, t2))
 
-import time
-def timeit():
-    t = time.time()
-    engine.inference(t1, t2)
-    t = time.time() - t
-    print(len(engine.rule_store.facts), 'rules processed in', t, 'seconds')
-
 print('\n----DEDUCTION')
 
 # DEDUCTION
@@ -419,31 +424,27 @@ print('\n----DEDUCTION')
 t1 = parse('<bird --> animal>.')
 t2 = parse('<robin --> bird>.')
 print(engine.inference(t1, t2))
-timeit()
 
 print("\n\n----VARIABLE SUBSTITUTION")
 
 # CONDITIONAL SYLLOGISTIC
 
-
 print('\n--nal6.7')
 t1 = parse('<<$x --> bird> ==> <$x --> animal>>.')
 t2 = parse('<robin --> bird>.')
 print(engine.inference(t1, t2))
-timeit()
 
 print('\n--nal6.8')
 t1 = parse('<<$x --> bird> ==> <$x --> animal>>.')
 t2 = parse('<tiger --> animal>.')
 print(engine.inference(t1, t2))
-timeit()
 
 print('\n--nal6.12')
 
 t1 = parse('<(&&,<$x --> flyer>,<$x --> [chirping]>, <(*, $x, worms) --> food>) ==> <$x --> bird>>.')
 t2 = parse('<{Tweety} --> flyer>.')
 print(engine.inference(t1, t2))
-timeit()
+
 
 # THEOREMS
 
@@ -462,64 +463,3 @@ t1 = parse('<dog <-> pet>.', False)
 # t2 = Sentence(t2, Punctuation.Judgement, Stamp(Global.time, Global.time, None, Base((Global.get_input_id(),)), is_external=False))
 # print(t1, t2)
 print(engine.inference(theorem, t1))
-
-
-exit()
-
-rule = Relation()
-for r in engine.rules:
-    rule.add_fact(r[0], r[1][0], tuple(r[1][1]))
-
-# t1 = parse('<bird --> animal>.')
-# t2 = parse('<robin --> bird>.')
-# t1 = parse('<(&&,<$x --> flyer>,<$x --> [chirping]>, <(*, $x, worms) --> food>) ==> <$x --> bird>>.')
-# t2 = parse('<{Tweety} --> flyer>.')
-t1 = parse('<(&&, A, B, C, D) ==> Z>.')
-t2 = parse('<B ==> Z>.')
-
-
-x = var('x')
-y = var('y')
-z = var('z')
-
-t = time.time()
-result = rule(((engine.logic(t1.term), engine.logic(t2.term), x)), y, z)({})
-t = time.time() - t
-print('time:', t)
-
-for res in list(result):
-    # print(res[x], res[y])
-    print(reify(x, res), res[y])
-# print(*[r[0] for r in engine.rules[:2]])
-
-print("\n\n")
-
-exit()
-
-r = Relation()
-engine.rule_store = r
-
-for rule in engine.rules:
-    (p1, p2, c), (rul, constraints) = rule[0], rule[1]
-
-    # x = var('x')
-    # y = var('y')
-
-    facts(r, (p1, p2, c, rul))
-
-t1 = parse('<bird --> animal>.')
-t2 = parse('<robin --> bird>.')
-
-print(
-    engine.inference(t1, t2)
-)
-
-l1 = engine.logic(t1.term)
-l2 = engine.logic(t2.term)
-
-# print(p1, p2)
-# print(l1, l2)
-
-res = run(1, [x, y], r(l1, l2, x, y), *constraints)
-for result in res:
-    print(engine.term(result[0]), result[1])
