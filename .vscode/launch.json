@@ -249,6 +249,13 @@
             ]
         },
         {
+            "name": "Python: Console Experimental Features",
+            "type": "python",
+            "request": "launch",
+            "module": "Experiments.ExConsole.main",
+            "justMyCode": true
+        },
+        {
             "name": "Python: _generate_init_file",
             "type": "python",
             "request": "launch",
