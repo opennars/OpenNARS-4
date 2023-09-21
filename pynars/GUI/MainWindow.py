@@ -6,7 +6,6 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QStackedLayout
 from PySide6.QtWidgets import QFrame, QTextEdit, QToolBar, QPushButton, QSlider, QSplitter, QDockWidget
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QScreen, QAction, QIcon, QColor, QFont, QKeyEvent, QFontDatabase
-from qt_material import apply_stylesheet
 import qtawesome as qta
 from .utils import change_stylesheet
 from .Widgets.Button import Button
@@ -217,10 +216,11 @@ class NARSWindow(QMainWindow):
             print(err)
             self.text_output.append(':Error')
         else:
-            text, satisfactions = out
+            text, (satisfactions, busynesses) = out
             # print(satisfactions)
             if len(satisfactions) > 0:
                 self.plot_satisfaction.update_values(satisfactions)
+                self.plot_busyness.update_values(busynesses)
             if len(text) > 0:
                 self.text_output.append(text)
         # self.text_output.append('\n')

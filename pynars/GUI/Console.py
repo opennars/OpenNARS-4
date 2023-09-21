@@ -19,6 +19,7 @@ def run_line(nars: Reasoner, line: str):
 
     ret = []
     satisfactions = []
+    busynesses = []
 
     def handle_line(tasks_line: Tuple[List[Task], Task, Task, List[Task], Task, Tuple[Task, Task]]):
         tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest, (
@@ -48,6 +49,7 @@ def run_line(nars: Reasoner, line: str):
         for _ in range(n_cycle):
             tasks_all = nars.cycle()
             satisfactions.append(nars.global_eval.S)
+            busynesses.append(nars.global_eval.B)
             handle_line(tasks_all)
     else:
         line = line.rstrip(' \n')
@@ -62,24 +64,27 @@ def run_line(nars: Reasoner, line: str):
 
             tasks_all = nars.cycle()
             satisfactions.append(nars.global_eval.S)
+            busynesses.append(nars.global_eval.B)
             handle_line(tasks_all)
         except Exception as e:
             ret.append(f':Unknown error: {line}. \n{e}')
-    return ret, satisfactions
+    return ret, (satisfactions, busynesses)
 
 
 def handle_lines(nars: Reasoner, lines: str):
     ret = []
     satisfactions = []
+    busynesses = []
     for line in lines.split('\n'):
         if len(line) == 0:
             continue
 
-        ret_line, satisfactions_line = run_line(nars, line)
+        ret_line, (satisfactions_line, busynesses_line) = run_line(nars, line)
         ret.extend(ret_line)
         satisfactions.extend(satisfactions_line)
+        busynesses.extend(busynesses_line)
 
-    return '\n'.join(ret), satisfactions
+    return '\n'.join(ret), (satisfactions, busynesses)
 
 
 def run_nars(capacity_mem=1000, capacity_buff=1000):
