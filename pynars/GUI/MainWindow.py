@@ -3,7 +3,7 @@ from PySide6 import QtWidgets
 # from PySide6
 from PySide6.QtWidgets import QMainWindow, QLabel, QPushButton, QApplication
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QStackedLayout
-from PySide6.QtWidgets import QFrame, QTextEdit, QToolBar, QPushButton, QSlider, QSplitter
+from PySide6.QtWidgets import QFrame, QTextEdit, QToolBar, QPushButton, QSlider, QSplitter, QDockWidget
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QScreen, QAction, QIcon, QColor, QFont, QKeyEvent, QFontDatabase
 from qt_material import apply_stylesheet
@@ -149,10 +149,41 @@ class NARSWindow(QMainWindow):
         '''
         Plots for global evaluations
         '''
+        dock = QDockWidget()
+        widget = QWidget()
+        widget.setContentsMargins(0,0,0,0)
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0,0,0,0)
+        layout.setSpacing(0)
+        widget.setLayout(layout)
+        dock.setWidget(widget)
+        
         self.plot_satisfaction = Plot()
+        self.plot_satisfaction.setTitle("satisfaction")
         self.plot_satisfaction.setYRange(0.0, 1.0)
         self.plot_satisfaction.setFixedHeight(100)
-        self.left_layout.addWidget(self.plot_satisfaction)
+        layout.addWidget(self.plot_satisfaction)
+
+        self.plot_busyness = Plot()
+        self.plot_busyness.setTitle("busyness")
+        self.plot_busyness.setYRange(0.0, 1.0)
+        self.plot_busyness.setFixedHeight(100)
+        layout.addWidget(self.plot_busyness)
+
+        self.plot_alertness = Plot()
+        self.plot_alertness.setTitle("alertness")
+        self.plot_alertness.setYRange(0.0, 1.0)
+        self.plot_alertness.setFixedHeight(100)
+        layout.addWidget(self.plot_alertness)
+
+        self.plot_wellbeing = Plot()
+        self.plot_wellbeing.setTitle("well-being")
+        self.plot_wellbeing.setYRange(0.0, 1.0)
+        self.plot_wellbeing.setFixedHeight(100)
+        layout.addWidget(self.plot_wellbeing)
+
+        self.left_layout.addWidget(dock)
+
 
     def eventFilter(self, obj, event):
         '''
