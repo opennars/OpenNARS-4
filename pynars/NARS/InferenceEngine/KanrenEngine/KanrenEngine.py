@@ -185,9 +185,7 @@ class KanrenEngine:
         c = self.logic(c, True)
 
         var_combinations = list(combinations(self._variables, 2))
-        # filter out combinations like (_C, C) allowing them to be the same
-        cond = lambda x, y: x.token.replace('_', '') != y.token.replace('_', '')
-        constraints = [neq(c[0], c[1]) for c in var_combinations if cond(c[0], c[1])]
+        constraints = [neq(c[0], c[1]) for c in var_combinations]
 
         return ((p1, p2, c), (r, constraints))
     
@@ -201,7 +199,8 @@ class KanrenEngine:
                     self._variables.add(var(name))
                 return var(name)
             if rule and not substitution: # collect rule variable names
-                self._variables.add(var(name))
+                # allow variables like _C and C (used in rules) to be interchangeable
+                self._variables.add(var(name.replace(self._prefix+'_', self._prefix)))
             return var(name) if rule else term
         if term.is_statement:
             return cons(term.copula, *[self.logic(t, rule, substitution) for t in term.terms])
@@ -331,37 +330,29 @@ class KanrenEngine:
 
     def inference(self, t1: Sentence, t2: Sentence) -> list:
         results = []
+
+        t1e = self._variable_elimination(t1.term, t2.term)
+        t2e = self._variable_elimination(t2.term, t1.term)
+
+        # TODO: what about other possibilities?
+        t1t = t1e[0] if len(t1e) else t1.term
+        t2t = t2e[0] if len(t2e) else t2.term
+
         for rule in self.rules:
-            res = self.apply(rule, t1.term, t2.term)
+            res = self.apply(rule, t1t, t2t)
             if res is not None:
                 r, _ = rule[1]
                 inverse = True if r[-1] == "'" else False
                 r = r.replace("'", '') # remove trailing '
-                t1t, t2t = (t1.truth, t2.truth) if not inverse else (t2.truth, t1.truth)
-                truth = self._truth_functions[r](t1t, t2t)
+                tr1, tr2 = (t1.truth, t2.truth) if not inverse else (t2.truth, t1.truth)
+                truth = self._truth_functions[r](tr1, tr2)
                 # results.append(((res, truth), self.term(rule[0][0]), self.term(rule[0][1]), self.term(rule[0][2])))
                 results.append((res, truth))
         return results
 
-    def apply(self, rule: tuple, *args: Term):
+    def apply(self, rule: tuple, t1: Term, t2: Term):
         # print("\nRULE:", rule)
         (p1, p2, c), (r, constraints) = rule[0], rule[1]
-
-        # test statements
-        t1, t2 = args
-        # print("Test:", t1, t2)
-
-        t1e = self._variable_elimination(t1, t2)
-        t2e = self._variable_elimination(t2, t1)
-
-        # TODO: what about other possibilities?
-        t1 = t1e[0] if len(t1e) else t1
-        t2 = t2e[0] if len(t2e) else t2
-
-        # if len(t1e) or len(t2e):
-        #     print("Substituted:", t1, t2)
-
-        # apply rule
 
         result = run(1, c, eq((p1, p2), (self.logic(t1), self.logic(t2))), *constraints)
         # print(result)
@@ -419,11 +410,19 @@ print(engine.inference(t1, t2))
 
 print('\n----DEDUCTION')
 
+import time
+def timeit():
+    t = time.time()
+    engine.inference(t1, t2)
+    t = time.time() - t
+    print(len(engine.rules), 'rules processed in', t, 'seconds')
+
 # DEDUCTION
 
 t1 = parse('<bird --> animal>.')
 t2 = parse('<robin --> bird>.')
 print(engine.inference(t1, t2))
+timeit()
 
 print("\n\n----VARIABLE SUBSTITUTION")
 
@@ -433,17 +432,20 @@ print('\n--nal6.7')
 t1 = parse('<<$x --> bird> ==> <$x --> animal>>.')
 t2 = parse('<robin --> bird>.')
 print(engine.inference(t1, t2))
+timeit()
 
 print('\n--nal6.8')
 t1 = parse('<<$x --> bird> ==> <$x --> animal>>.')
 t2 = parse('<tiger --> animal>.')
 print(engine.inference(t1, t2))
+timeit()
 
 print('\n--nal6.12')
 
 t1 = parse('<(&&,<$x --> flyer>,<$x --> [chirping]>, <(*, $x, worms) --> food>) ==> <$x --> bird>>.')
 t2 = parse('<{Tweety} --> flyer>.')
 print(engine.inference(t1, t2))
+timeit()
 
 
 # THEOREMS
