@@ -51,15 +51,23 @@ nal3 = '''
 {<T1 --> M>. <T2 --> M>} |- <(~, T2, T1) --> M> .dif'
 'decomposition
 {(--, <M --> (&, T1, T2)>). <M --> T1>} |- (--, <M --> T2>) .ded
+'TODO: need alternative syntax for decomposition
+'i.e. {(--, <M --> (&, T1, T2)>). <M --> _T1>} |- (--, <M --> ((&, T1, T2) - _T1)>) .ded
+{(--, <M --> (&, T2, T1)>). <M --> T1>} |- (--, <M --> T2>) .ded
 {<M --> (|, T1, T2)>. (--, <M --> T1>)} |- <M --> T2> .ded
+{<M --> (|, T2, T1)>. (--, <M --> T1>)} |- <M --> T2> .ded
 {(--, <M --> (-, T1, T2)>). <M --> T1>} |- <M --> T2> .ded
 {(--, <M --> (-, T2, T1)>). (--, <M --> T1>)} |- (--, <M --> T2>) .ded
 {(--, <(|, T2, T1) --> M>). <T1 --> M>} |- (--, <T2 --> M>) .ded
+{(--, <(|, T1, T2) --> M>). <T1 --> M>} |- (--, <T2 --> M>) .ded
 {<(&, T2, T1) --> M>. (--, <T1 --> M>)} |- <T2 --> M> .ded
+{<(&, T1, T2) --> M>. (--, <T1 --> M>)} |- <T2 --> M> .ded
 {(--, <(~, T1, T2) --> M>). <T1 --> M>} |- <T2 --> M> .ded
 {(--, <(~, T2, T1) --> M>). (--, <T1 --> M>)} |- (--, <T2 --> M>) .ded
 {(--, (&&, T1, T2)). T1} |- (--, T2) .ded
+{(--, (&&, T2, T1)). T1} |- (--, T2) .ded
 {(||, T1, T2). (--, T1)} |- T2 .ded
+{(||, T2, T1). (--, T1)} |- T2 .ded
 '''
 
 nal5 = '''
@@ -74,21 +82,31 @@ nal5 = '''
 'conditional conjunctive
 '(C ^ S) => P, S |- C => P (alternative syntax below)
 {<(&&, C, S) ==> P>. _S} |- <((&&, C, S) - _S) ==> P> .ded
+{<(&&, S, C) ==> P>. _S} |- <((&&, S, C) - _S) ==> P> .ded
 
 '(C ^ S) => P, M => S |- (C ^ M) => P (alternative syntax below)
 {<(&&, C, S) ==> P>. <M ==> _S>} |- <(&&, ((&&, C, S) - _S), M) ==> P> .ded
+{<(&&, S, C) ==> P>. <M ==> _S>} |- <(&&, ((&&, S, C) - _S), M) ==> P> .ded
 
 '(C ^ S) => P, C => P |- S (alternative syntax below)
 {<(&&, C, S) ==> P>. <_C ==> P>} |- ((&&, C, S) - _C) .abd
+{<(&&, S, C) ==> P>. <_C ==> P>} |- ((&&, S, C) - _C) .abd
 
 '(C ^ S) => P, (C ^ M) => P |- M => S (alternative syntax below)
 {<(&&, C, S) ==> P>. <(&&, _C, M) ==> P>} |- <((&&, _C, M) - C) ==> ((&&, C, S) - _C)> .abd
+{<(&&, S, C) ==> P>. <(&&, _C, M) ==> P>} |- <((&&, _C, M) - C) ==> ((&&, S, C) - _C)> .abd
+{<(&&, C, S) ==> P>. <(&&, M, _C) ==> P>} |- <((&&, M, _C) - C) ==> ((&&, C, S) - _C)> .abd
+{<(&&, S, C) ==> P>. <(&&, M, _C) ==> P>} |- <((&&, M, _C) - C) ==> ((&&, S, C) - _C)> .abd
 
 '{<C ==> P>. S} |- <(&&, C, S) ==> P> .ind (alternative syntax below)
 {<(&&, C, M) ==> P>. (&&, S, M)} |- <(&&, C, S, M) ==> P> .ind
+{<(&&, M, C) ==> P>. (&&, S, M)} |- <(&&, C, S, M) ==> P> .ind
+{<(&&, C, M) ==> P>. (&&, M, S)} |- <(&&, C, S, M) ==> P> .ind
+{<(&&, M, C) ==> P>. (&&, M, S)} |- <(&&, C, S, M) ==> P> .ind
 
 '(C ^ M) => P, M => S |- (C ^ S) => P (alternative syntax below)
 {<(&&, C, M) ==> P>. <_M ==> S>} |- <(&&, ((&&, C, M) - _M), S) ==> P> .ind
+{<(&&, M, C) ==> P>. <_M ==> S>} |- <(&&, ((&&, M, C) - _M), S) ==> P> .ind
 '''
 
 def split_rules(rules: str) -> list[str]:
@@ -185,7 +203,9 @@ class KanrenEngine:
         c = self.logic(c, True)
 
         var_combinations = list(combinations(self._variables, 2))
-        constraints = [neq(c[0], c[1]) for c in var_combinations]
+        # filter out combinations like (_C, C) allowing them to be the same
+        cond = lambda x, y: x.token.replace('_', '') != y.token.replace('_', '')
+        constraints = [neq(c[0], c[1]) for c in var_combinations if cond(c[0], c[1])]
 
         return ((p1, p2, c), (r, constraints))
     
@@ -199,8 +219,7 @@ class KanrenEngine:
                     self._variables.add(var(name))
                 return var(name)
             if rule and not substitution: # collect rule variable names
-                # allow variables like _C and C (used in rules) to be interchangeable
-                self._variables.add(var(name.replace(self._prefix+'_', self._prefix)))
+                self._variables.add(var(name))
             return var(name) if rule else term
         if term.is_statement:
             return cons(term.copula, *[self.logic(t, rule, substitution) for t in term.terms])
