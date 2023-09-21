@@ -251,10 +251,17 @@ def printHistory(*args: list[str]) -> None:
 
 
 @cmdRegister(('execute', 'exec'))
-def execPythonCode(*args: list[str]) -> None:
+def execCode(*args: list[str]) -> None:
     '''Format: exec <Python code >
     Directly invoke Python's built-in exec cmd to execute a single line of code'''
     exec(' '.join(args))
+
+
+@cmdRegister(('execute', 'exec'))
+def execCode(*args: list[str]) -> None:
+    '''Format: eval <Python code >
+    Directly invoke Python's built-in eval cmd to evaluate a single line of code'''
+    print(f'eval result: {eval(" ".join(args))}')
 
 
 @cmdRegister(('simplify-parse', 'parse'))
@@ -264,7 +271,7 @@ def toggleSimplifyParse() -> None:
     global _parseNeedSlash
     _parseNeedSlash = not _parseNeedSlash
     print(
-        f'Narsese parse simplification {"closed" if _parseNeedSlash else "opened"}.')
+        f'Narsese automatic analytic simplification {"closed" if _parseNeedSlash else "opened"}.')
 
 
 @cmdRegister('help')
@@ -285,7 +292,7 @@ def help(*keywords: list[str]) -> None:
                 f'''<{"/".join(cmdNameAlias)}>: {cmdFunction.__name__}\n{
                     cmdFunction.__doc__ 
                     if cmdFunction.__doc__ 
-                    else "!!! This directive has not yet been specifically described !!!"
+                    else "!!! This cmd don't have any description !!!"
                     }\n''')
         return
     print(f'No commends is browsed by "{", ".join(keywords)}"!')
@@ -373,20 +380,21 @@ def macroQuery(*args: list[str]) -> None:
             showMacro(name=name)
 
 
-def execMacro(name: str) -> None:
+def macroExec1(name: str) -> None:
+    '''Execute 1 macro'''
     cmds: list[str] = storedMacros[name]
     for cmd in cmds:
         execInput(cmd)
 
 
 @cmdRegister(('macro-exec', 'm-exec'))
-def execMacros(*args: list[str]) -> None:
+def macroExec(*args: list[str]) -> None:
     '''Format: macro-exec [... macro name]
     Execute macros by name (unlimited number can be stacked)
     If empty, execute macro "" (empty string)'''
     args = args if args else ['']
     for name in args:
-        execMacro(name=name)
+        macroExec1(name=name)
 
 
 @cmdRegister(('macro-repeat', 'm-repeat'))
@@ -394,13 +402,15 @@ def macroRepeat(name: str, numExecutes: int) -> None:
     '''Format: macro-repeat < macro name > < execution times >
     Execute macros as "name + number" (number can be stacked indefinitely)'''
     for _ in range(numExecutes):
-        execMacro(name=name)
+        macroExec1(name=name)
 
 # Reasoner management #
 
 
 currentNARSInterface: NARSInterface = NARSInterface.constructInterface(
-    137, 500, 500, silent=False)
+    137,
+    500, 500,
+    silent=False)
 
 reasoners: dict[str:Reasoner] = {'initial': currentNARSInterface}
 
@@ -609,7 +619,7 @@ def execInput(inp: str, *otherInput: list[str]) -> None:
                 # auto complete
                 if not cmdName in nameAliasHints[0]:
                     print(
-                        f'Autocompleted cmd to "{"/".join(nameAliasHints[0])}" ')
+                        f'Autocompleted cmd to "{"/".join(nameAliasHints[0])}".')
                 nameAliasIndex = nameAliasHints[0]
                 # Cmd execution: Automatically adjust the "parameter requirements" of specific cmds and intercept parameters
                 cmdData = PRESET_CMDS[nameAliasIndex]
@@ -626,8 +636,8 @@ def execInput(inp: str, *otherInput: list[str]) -> None:
                     print('Cmd execute failed: ',
                           e.with_traceback(None) if e else e)
             else:
-                hint = 'What are you looking for' + \
-                    "\", \"".join('/'.join(alias) for alias in nameAliasHints) + \
+                hint = 'Are you looking for "' + \
+                    "\"|\"".join('/'.join(alias) for alias in nameAliasHints) + \
                     '"?' if nameAliasHints else ''
                 print(f'Unknown cmd {cmdName}. {hint}')
         return  # If it's executed as a command, it won't execute as Narsese input

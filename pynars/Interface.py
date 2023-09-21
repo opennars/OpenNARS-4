@@ -157,7 +157,7 @@ class NARSInterface:
                 else '    ')
 
     def outMessageNoColor(type: PrintType, content,
-                          pStr: float = None, dStr: float = None, qStr: float = None,
+                          p: float = None, d: float = None, q: float = None,
                           comment_title: str = None):
         ''''from pynars.utils.Print import out_print'''
         # show_budget = True
@@ -166,9 +166,9 @@ class NARSInterface:
         #         show_budget = False
         # else:
         #     show_budget = False
-        pStr: str = NARSInterface.floatRestrictStr(pStr)
-        qStr: str = NARSInterface.floatRestrictStr(qStr)
-        dStr: str = NARSInterface.floatRestrictStr(dStr)
+        pStr: str = NARSInterface.floatRestrictStr(p)
+        qStr: str = NARSInterface.floatRestrictStr(q)
+        dStr: str = NARSInterface.floatRestrictStr(d)
         if type:
             # ! ↓ The value of this enumeration class comes with a foreground color
             value: str = type.value[5:-1]
@@ -186,8 +186,8 @@ class NARSInterface:
             NARSInterface.outMessageNoColor(
                 type=type, content=content,
                 p=p, d=d, q=q,
-                comment_title=comment_title,
-                end=end))
+                comment_title=comment_title),
+            end=end)
 
     def _is0to1Float(x): return isinstance(x, float) and 0 <= x <= 1
 
