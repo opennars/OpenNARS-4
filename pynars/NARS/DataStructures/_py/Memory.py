@@ -86,8 +86,7 @@ class Memory:
     def _accept_judgement(self, task: Task, concept: Concept):
         ''''''
         belief_revised = None
-        answers = { Question: [],
-                             Goal: []}
+        answers = { Question: [], Goal: []}
         if Enable.operation: raise  # InternalExperienceBuffer.handleOperationFeedback(task, nal);
         if Enable.anticipation: raise  # ProcessAnticipation.confirmAnticipation(task, concept, nal);
 
@@ -112,7 +111,6 @@ class Memory:
                 # reduce priority by achieving level
                 task.reduce_budget_by_achieving_level(belief)
 
-        answers_goals = []
         if task.budget.is_above_thresh:
             '''final int nnq = concept.questions.size();
             for (int i = 0; i < nnq; i++) {
