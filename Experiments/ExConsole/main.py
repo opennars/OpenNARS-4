@@ -359,7 +359,7 @@ def copy_JSON() -> None:
         copy(jpEnar)  # copy to clipboard
         print('JSON data copied!')
     except BaseException as e:
-        print(f'Save Failed!\nError:{e.with_traceback(None) if e else e}')
+        print(f'Save Failed! Error: {e.with_traceback(None) if e else e}')
 
 
 @expRegister('loadJ')
@@ -390,12 +390,71 @@ def load_JSON() -> None:
                     f'Pre-deserialized JSON string:\n{jsonStr}\nNew reasoner:\n{infReasoner(decodedNAR)}')
             except BaseException as e:
                 print(
-                    f'Import failed! \nError:{e.with_traceback(None) if e else e}')
+                    f'Import failed! \nError: {e.with_traceback(None) if e else e}')
         except BaseException as e:
             print(
-                f'Deserialization failed! \nError:{e.with_traceback(None) if e else e}')
+                f'Deserialization failed! \nError: {e.with_traceback(None) if e else e}')
     except BaseException as e:
-        print(f'Read failed! \nError:{e.with_traceback(None) if e else e}')
+        print(f'Read failed! \nError: {e.with_traceback(None) if e else e}')
+
+
+@expRegister('copy', 'pickle')
+def copy_pickle() -> None:
+    '''Save the reasoner data to a file'''
+    nars = currentNARSInterface.reasoner
+    # import module
+    import pickle as p
+    # start to save
+    file_name: str = input(
+        'Please enter the file name to save reasoner (default is "[current reasoner name].pickle):')
+    try:
+        with open(f'{file_name if file_name else getCurrentReasonerName()}.pickle', 'wb') as file:
+            print(
+                f'Trying to save the reasoner "{getCurrentReasonerName()}" to file "{file_name}.pickle"...')
+            # pickle reasoner to file
+            p.dump(nars, file)
+            print(f'Reasoner data saved as "{file_name}.pickle"!')
+    except BaseException as e:
+        print(f'Save Failed! Error: {e.with_traceback(None) if e else e}')
+        # TODO: Failed with error "Can't pickle local object 'Bag.__init__.<locals>.map_priority'"
+
+
+@expRegister('load', 'unpickle')
+def load_pickle() -> None:
+    '''load the reasoner data into the interface'''
+    # import module
+    import pickle as p
+    try:
+        from pathlib import Path
+        file_path: str = input(
+            'Please enter the file path of your saved reasoner (e.g. "reasoner.pickle"): ')  # get .pickle path
+        file_path: Path = Path(file_path)
+        with open(file_path, mode='rb') as file:
+            try:
+                print(
+                    f'Trying to load reasoner from "{file_path}"...')
+                # deserialize from pickle file
+                decodedNAR: Reasoner = p.load(file)
+                try:
+                    # accept the reasoner with a new interface
+                    interfaceName: str = input(
+                        'Please enter a new interface name: ')
+                    # create interface
+                    interface: NARSInterface = NARSInterface(NARS=decodedNAR)
+                    reasoners[interfaceName] = interface  # directly add
+                    reasonerGoto(interfaceName)  # goto
+                    print(
+                        f"Import a reasoner named {interfaceName}, silent {'on' if interface.silentOutput else 'off'}.")
+                    print(
+                        f'New reasoner:\n{infReasoner(decodedNAR)}')
+                except BaseException as e:
+                    print(
+                        f'Import failed! \nError: {e.with_traceback(None) if e else e}')
+            except BaseException as e:
+                print(
+                    f'Deserialization failed! \nError: {e.with_traceback(None) if e else e}')
+    except BaseException as e:
+        print(f'Read failed! \nError: {e.with_traceback(None) if e else e}')
 
 
 def _cmdExperiment(cmd: str):
