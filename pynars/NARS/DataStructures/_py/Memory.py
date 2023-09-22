@@ -38,8 +38,7 @@ class Memory:
         if task.is_judgement:
             # revised the belief if there has been one, and try to solve question if there has been a corresponding one.
             task_revised, answers = self._accept_judgement(task, concept)
-            answers_question = answers[Question]
-            answer_quest = answers[Goal]
+            answers_question, answer_quest = answers[Question], answers[Goal]
         elif task.is_goal:
             task_revised, belief_selected, (task_operation_return, task_executed), tasks_derived = self._accept_goal(task, concept)
             # TODO, ugly!
