@@ -85,7 +85,7 @@ class Memory:
     def _accept_judgement(self, task: Task, concept: Concept):
         ''''''
         belief_revised = None
-        answers = { Question: [], Goal: []}
+        answers = { Question: [], Goal: [] }
         if Enable.operation: raise  # InternalExperienceBuffer.handleOperationFeedback(task, nal);
         if Enable.anticipation: raise  # ProcessAnticipation.confirmAnticipation(task, concept, nal);
 
