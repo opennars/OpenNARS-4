@@ -91,8 +91,7 @@ def handle_lines(nars: Reasoner, lines: str):
             for answer in answers_question: print_out(PrintType.ANSWER, answer.sentence.repr(), *answer.budget)
         if answers_quest is not None:
             for answer in answers_quest:
-                print_out(PrintType.ACHIEVED, answer.sentence.repr(),
-                                                   *answer.budget)
+                print_out(PrintType.ACHIEVED, answer.sentence.repr(), *answer.budget)
         if task_executed is not None:
             print_out(PrintType.EXE,
                       f'{task_executed.term.repr()} = {str(task_operation_return) if task_operation_return is not None else None}')
