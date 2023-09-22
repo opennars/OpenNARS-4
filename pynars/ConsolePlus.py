@@ -38,22 +38,21 @@ def prefixBrowse(toBrowse: list[str], *keywords: list[str]) -> list[str]:
             # find matching cmds by: do not repeat
             for string in toBrowse
             # match the list of all cmds, as long as they match the search results - not necessarily in order
-            if any(string.startswith(prefix) for prefix in keywords)
-            ]
+            if any(
+                string.startswith(prefix)
+                for prefix in keywords)]
 
 
-def prefixCmdBrowse(*keywords: list[str]) -> list[tuple[str]]:
+def prefixCmdBrowse(cmdDict: dict[tuple:tuple], *keywords: list[str]) -> list[tuple[str]]:
     '''Matches the content against the string prefix'''
     return [aliasIndices  # returns cmd names
             # find matching cmds by: do not repeat
-            for aliasIndices in PRESET_CMDS
+            for aliasIndices in cmdDict
             if any(
-                any(aliasIndex.startswith(keyword)
-                    for aliasIndex in aliasIndices
-                    )
-                for keyword in keywords
-            )  # match the list of all cmds, as long as they match the search results - not necessarily in order
-            ]
+                any(
+                    aliasIndex.startswith(keyword)
+                    for aliasIndex in aliasIndices)
+                for keyword in keywords)]  # match the list of all cmds, as long as they match the search results - not necessarily in order
 
 
 def quickConvertCmdTypes(inp: list[str], type_N_default: list[tuple[type, any]]) -> list[str]:
@@ -275,19 +274,19 @@ def toggleSimplifyParse() -> None:
 
 
 @cmdRegister('help')
-def help(*keywords: list[str]) -> None:
+def help(*keywords: list[str], searchIn: dict[tuple:tuple] = PRESET_CMDS) -> None:
     '''Format: help [... specific cmd]
     Display this help document, or assist in retrieving help for additional cmds'''
     # Core idea: Empty prefix = all cmds
     keywords = keywords if keywords else ['']
     # find a matching cmd name
-    cmdNameAliases: list[tuple(str)] = prefixCmdBrowse(*keywords)
+    cmdNameAliases: list[tuple(str)] = prefixCmdBrowse(searchIn, *keywords)
     # display "matching cmds" as follows
     if cmdNameAliases:
         # match the list of all cmds, as long as they match the search results - not necessarily in order
         for cmdNameAlias in cmdNameAliases:
             # Structure: {Name: (handler, ordinal and default list)}
-            cmdFunction = PRESET_CMDS[cmdNameAlias][0]
+            cmdFunction = searchIn[cmdNameAlias][0]
             print(
                 f'''<{"/".join(cmdNameAlias)}>: {cmdFunction.__name__}\n{
                     cmdFunction.__doc__ 
@@ -613,33 +612,7 @@ def execInput(inp: str, *otherInput: list[str]) -> None:
         words: list[str] = inp[1:].split()
         if words:  # if not empty
             cmdName: str = words[0].lower()  # case insensitive
-            nameAliasHints: list[tuple[str]] = prefixCmdBrowse(
-                cmdName)  # auto browse & complete
-            if len(nameAliasHints) == 1:  # Only option: Full match or auto complete
-                # auto complete
-                if not cmdName in nameAliasHints[0]:
-                    print(
-                        f'Autocompleted cmd to "{"/".join(nameAliasHints[0])}".')
-                nameAliasIndex = nameAliasHints[0]
-                # Cmd execution: Automatically adjust the "parameter requirements" of specific cmds and intercept parameters
-                cmdData = PRESET_CMDS[nameAliasIndex]
-                cmdHandler = cmdData[0]
-                type_N_default: list[tuple[type, any]] = cmdData[1] if len(
-                    cmdData) > 1 else None
-                params: list = quickConvertCmdTypes(words[1:], type_N_default)
-                if 1:
-                    # in the form of positional arguments, to the appropriate handler. Structure: {Name: (handler, ordinal and default list)}
-                    cmdHandler(*params)
-                try:
-                    pass
-                except BaseException as e:
-                    print('Cmd execute failed: ',
-                          e.with_traceback(None) if e else e)
-            else:
-                hint = 'Are you looking for "' + \
-                    "\"|\"".join('/'.join(alias) for alias in nameAliasHints) + \
-                    '"?' if nameAliasHints else ''
-                print(f'Unknown cmd {cmdName}. {hint}')
+            autoExecuteCmdByName(cmdName, words[1:])
         return  # If it's executed as a command, it won't execute as Narsese input
 
     # Narsese parsing
@@ -651,6 +624,47 @@ def execInput(inp: str, *otherInput: list[str]) -> None:
 
     # input NAL
     currentNARSInterface.inputNAL(inp)
+
+
+def autoExecuteCmdByName(cmdName: str, words: list[str], cmdDict: dict[tuple:tuple] = PRESET_CMDS) -> bool:
+    '''Execute cmd by name with autocompletion
+    returns: whether a cmd is chosen and executed successfully'''
+    # auto browse & complete
+    nameAliasHints: list[tuple[str]] = prefixCmdBrowse(cmdDict, cmdName)
+    # if it have a precise match, directly use it
+    for i in range(len(nameAliasHints)):
+        nameAliases = nameAliasHints[i]
+        if any(nameAlias == cmdName for nameAlias in nameAliases):
+            nameAliasHints = [nameAliases]
+            break
+    # Only option: Full match or auto complete
+    if len(nameAliasHints) == 1:
+        # auto complete
+        if not cmdName in nameAliasHints[0]:
+            print(
+                f'Autocompleted cmd to "{"/".join(nameAliasHints[0])}".')
+        nameAliasIndex = nameAliasHints[0]
+        # Cmd execution: Automatically adjust the "parameter requirements" of specific cmds and intercept parameters
+        cmdData = cmdDict[nameAliasIndex]
+        cmdHandler = cmdData[0]
+        type_N_default: list[tuple[type, any]] = (
+            cmdData[1]
+            if len(cmdData) > 1 else None)
+        params: list = quickConvertCmdTypes(words[1:], type_N_default)
+        try:
+            # in the form of positional arguments, to the appropriate handler. Structure: {Name: (handler, ordinal and default list)}
+            cmdHandler(*params)
+            return True
+        except BaseException as e:
+            print('Cmd execute failed: ',
+                  e.with_traceback(None) if e else e)
+            return False
+    else:
+        hint = 'Are you looking for "' + \
+            "\"|\"".join('/'.join(alias) for alias in nameAliasHints) + \
+            '"?' if nameAliasHints else ''
+        print(f'Unknown cmd {cmdName}. {hint}')
+        return False
 
 # @checkExcept error alarm (message formatted message =' Input execution failed: %s')
 # TODO fix "TypeError: checkExcept error alarm..decorator decorator () missing 1 required positional argument: 'func'"
