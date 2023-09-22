@@ -80,8 +80,8 @@ def handle_lines(nars: Reasoner, lines: str):
 
     tasks_lines: List[Tuple[List[Task], Task, Task, List[Task], Task, Tuple[Task, Task]]]
     for tasks_line in tasks_lines:
-        tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest, (
-        task_operation_return, task_executed) = tasks_line
+        tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest, \
+        (task_operation_return, task_executed) = tasks_line
         for task in tasks_derived: print_out(PrintType.OUT, task.sentence.repr(), *task.budget)
 
         if judgement_revised is not None: print_out(PrintType.OUT, judgement_revised.sentence.repr(),
@@ -90,8 +90,9 @@ def handle_lines(nars: Reasoner, lines: str):
         if answers_question is not None:
             for answer in answers_question: print_out(PrintType.ANSWER, answer.sentence.repr(), *answer.budget)
         if answers_quest is not None:
-            for answer in answers_quest: print_out(PrintType.ANSWER, answers_quest.sentence.repr(),
-                                                   *answers_quest.budget)
+            for answer in answers_quest:
+                print_out(PrintType.ACHIEVED, answer.sentence.repr(),
+                                                   *answer.budget)
         if task_executed is not None:
             print_out(PrintType.EXE,
                       f'{task_executed.term.repr()} = {str(task_operation_return) if task_operation_return is not None else None}')

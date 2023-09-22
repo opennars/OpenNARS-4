@@ -37,7 +37,9 @@ class Memory:
         task_revised, goal_derived, answers_question, answer_quest = None, None, None, None
         if task.is_judgement:
             # revised the belief if there has been one, and try to solve question if there has been a corresponding one.
-            task_revised, answers_question = self._accept_judgement(task, concept)
+            task_revised, answers = self._accept_judgement(task, concept)
+            answers_question = answers[Question]
+            answer_quest = answers[Goal]
         elif task.is_goal:
             task_revised, belief_selected, (task_operation_return, task_executed), tasks_derived = self._accept_goal(task, concept)
             # TODO, ugly!
@@ -84,7 +86,8 @@ class Memory:
     def _accept_judgement(self, task: Task, concept: Concept):
         ''''''
         belief_revised = None
-        answers = None
+        answers = { Question: [],
+                             Goal: []}
         if Enable.operation: raise  # InternalExperienceBuffer.handleOperationFeedback(task, nal);
         if Enable.anticipation: raise  # ProcessAnticipation.confirmAnticipation(task, concept, nal);
 
@@ -109,6 +112,7 @@ class Memory:
                 # reduce priority by achieving level
                 task.reduce_budget_by_achieving_level(belief)
 
+        answers_goals = []
         if task.budget.is_above_thresh:
             '''final int nnq = concept.questions.size();
             for (int i = 0; i < nnq; i++) {
@@ -121,11 +125,11 @@ class Memory:
             concept.add_belief(task)
 
             # try to solve questions
-            answers = self._solve_judgement(task, concept)
+            answers[Question] = self._solve_judgement(task, concept)
 
             for task_goal in concept.desire_table:
-                answers_goal, _ = self._solve_goal(task_goal, concept, None, task)
-                answers.extend(answers_goal)
+                _, goal_answer = self._solve_goal(task_goal, concept, None, task)
+                answers[Goal] = [goal_answer]
 
         return belief_revised, answers
 
