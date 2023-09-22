@@ -23,8 +23,12 @@ from pynars.Narsese import VarPrefix
 from ..VariableEngine.VariableEngine import VariableEngine
 from ordered_set import OrderedSet
 
+from ...InferenceEngine.KanrenEngine.KanrenEngine import KanrenEngine
+
 class GeneralEngine(Engine):
     
+    kanren = KanrenEngine()
+
     rule_map = RuleMap(name='LUT', root_rules=Path(__file__).parent/'Rules')
 
     def __init__(self, build=True, add_rules={1,2,3,4,5,6,7,8,9}):
@@ -393,7 +397,13 @@ class GeneralEngine(Engine):
         if is_valid:
             Global.States.record_premises(task, belief)
             Global.States.record_rules(rules)
-            tasks = self.inference(task, belief, term_belief, task_link_valid, term_link_valid, rules)
+            tasks = []#self.inference(task, belief, term_belief, task_link_valid, term_link_valid, rules)
+            results = self.kanren.inference(task.sentence, belief.sentence)
+            
+            for term, truth in results:
+                task_derived = Task(Judgement(term[0], stamp=Stamp(Global.time, None, None, Base(())), truth=truth))
+                tasks.append(task_derived)
+
             if term_link_valid is not None: # TODO: Check here whether the budget updating is the same as OpenNARS 3.0.4.
                 for task in tasks: TermLink.update_budget(term_link_valid.budget, task.budget.quality, belief.budget.priority if belief is not None else concept_target.budget.priority)
             
