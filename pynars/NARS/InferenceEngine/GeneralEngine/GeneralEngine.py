@@ -127,8 +127,8 @@ class GeneralEngine(Engine):
                 if rules_var is not None:
                     rules = rules | rules_var if rules is not None else rules_var
 
-                if rules is not None and len(rules) > 0:
-                    is_valid = True
+                # if rules is not None and len(rules) > 0:
+                is_valid = True
         elif term_belief is not None: # belief is None
             if task.term == term_belief:pass
             elif task.term.equal(term_belief): pass
@@ -364,6 +364,8 @@ class GeneralEngine(Engine):
         term_links = []
         term_link_valid = None
         is_valid = False
+        if concept.term.word == 'flyer':
+            print('here')
         for _ in range(len(concept.term_links)):
             # To find a belief, which is valid to interact with the task, by iterating over the term-links.
             term_link: TermLink = concept.term_links.take(remove=True)
@@ -375,31 +377,45 @@ class GeneralEngine(Engine):
             concept_target: Concept = term_link.target
             belief = concept_target.get_belief() # TODO: consider all beliefs.
             if belief is None: continue
-            term_belief = concept_target.term
+            # term_belief = concept_target.term
             # if belief is None: continue
 
             # if belief is not None:
             #     print(">>", task.term, belief.term)
+            #     print(belief.evidential_base.is_overlaped(task.evidential_base))
 
             # before matching and applying the rules, do variable-related processes (i.e. unification, and substitution/introduction/elimination)
-            subst, elimn, intro = GeneralEngine.unify(task.term, belief.term if belief is not None else None, concept.term, task_link_valid, term_link)
-            task_subst, task_elimn, task_intro = GeneralEngine.substitute(subst, elimn, intro, task)
-            task = task_subst or task_elimn or task_intro or task
+            # subst, elimn, intro = GeneralEngine.unify(task.term, belief.term if belief is not None else None, concept.term, task_link_valid, term_link)
+            # task_subst, task_elimn, task_intro = GeneralEngine.substitute(subst, elimn, intro, task)
+            # task = task_subst or task_elimn or task_intro or task
 
             # Verify the interaction, and find a pair which is valid for inference.
-            is_valid, is_revision, rules = GeneralEngine.match(task, belief, term_belief, task_link_valid, term_link)
-            if is_revision: tasks_derived.append(local__revision(task, belief, task_link_valid.budget, term_link.budget))
-            if is_valid: 
+            # is_valid, is_revision, rules = GeneralEngine.match(task, belief, term_belief, task_link_valid, term_link)
+            # if is_revision: tasks_derived.append(local__revision(task, belief, task_link_valid.budget, term_link.budget))
+            # if is_valid: 
+                # term_link_valid = term_link
+                # break
+
+            if task == belief:
+                # if task.sentence.punct == belief.sentence.punct:
+                #     is_revision = revisible(task, belief)
+                pass
+            elif task.term.equal(belief.term): 
+                # TODO: here
+                pass
+            elif not belief.evidential_base.is_overlaped(task.evidential_base):
                 term_link_valid = term_link
+                is_valid = True
                 break
                 
         
         if is_valid:
             Global.States.record_premises(task, belief)
-            Global.States.record_rules(rules)
+            # if rules is not None and len(rules):
+            #     Global.States.record_rules(rules)
             tasks = []#self.inference(task, belief, term_belief, task_link_valid, term_link_valid, rules)
             results = self.kanren.inference(task.sentence, belief.sentence)
-            
+            print(">>>", results)
             for term, truth in results:
                 task_derived = Task(Judgement(term[0], stamp=Stamp(Global.time, None, None, Base(())), truth=truth))
                 tasks.append(task_derived)

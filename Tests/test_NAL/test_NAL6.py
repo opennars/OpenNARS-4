@@ -493,18 +493,21 @@ class TEST_NAL6(unittest.TestCase):
         'If Tweety can chirp and eats worms, then it is a bird.
         ''outputMustContain('<(&&,<(*,{Tweety},worms) --> food>,<{Tweety} --> [chirping]>) ==> <{Tweety} --> bird>>. %1.00;0.81%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        # rules, task, belief, concept, task_link, term_link, result1, result2 = 
+        tasks_derived = rule_map_two_premises_(
             '<(&&,<$x --> flyer>,<$x --> [chirping]>, <(*, $x, worms) --> food>) ==> <$x --> bird>>.%1.00;0.90%',
             '<{Tweety} --> flyer>.  %1.00;0.90%',
-            'flyer.'
+            12
         )
-        self.assertNotEqual(rules, None)
+        # self.assertNotEqual(rules, None)
 
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+        # tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
 
 
         self.assertTrue(
-            output_contains(tasks_derived, '<(&&,<(*,{Tweety},worms) --> food>,<{Tweety} --> [chirping]>) ==> <{Tweety} --> bird>>. %1.00;0.81%')
+            output_contains(tasks_derived, '<(&&, <(*,{Tweety},worms) --> food>, <{Tweety} --> [chirping]>) ==> <{Tweety} --> bird>>. %1.00;0.81%')
+            or 
+            output_contains(tasks_derived, '<(&&, <{Tweety} --> [chirping]>, <(*,{Tweety},worms) --> food>) ==> <{Tweety} --> bird>>. %1.00;0.81%')
         )
         pass
 

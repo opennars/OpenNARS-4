@@ -1,14 +1,15 @@
 from kanren import run, eq, var
-from kanren.constraints import neq
+from kanren.constraints import neq, ConstrainedVar
 from unification import unify, reify
 from cons import cons, car, cdr
 
 from itertools import combinations
 
-from pynars import Narsese
+from pynars import Narsese, Global
 from pynars.Narsese import Term, Copula, Connector, Statement, Compound, Variable, VarPrefix, Sentence, Punctuation, Stamp
 
-from pynars.NAL.Functions.TruthValueFunctions import *
+from pynars.NAL.Functions import *
+from pynars.NARS.DataStructures import Concept, Task, TaskLink, TermLink, Judgement
 
 
 nal1 = '''
@@ -229,7 +230,7 @@ class KanrenEngine:
     def term(self, logic):
         if type(logic) is Term:
             return logic
-        if type(logic) is var:
+        if type(logic) is var or type(logic) is ConstrainedVar:
             name = logic.token.replace(self._prefix, '')
             if name[0] == '$':
                 return Variable(VarPrefix.Independent, name[1:])
@@ -296,7 +297,7 @@ class KanrenEngine:
             if subject.is_compound:
                 if subject.connector is Connector.ExtensionalDifference:
                     do_diff(c.subject)
-                    if difference is not None:
+                    if difference is not None and difference != -1:
                         subject = difference
 
                 # check for nested difference
@@ -313,7 +314,7 @@ class KanrenEngine:
 
             # check predicate
             predicate = c.predicate
-            if predicate.is_compound and difference is not None: # already failed one check
+            if predicate.is_compound and difference is not None and difference != -1: # already failed one check
                 if predicate.connector is Connector.ExtensionalDifference:
                     do_diff(predicate)
                     if difference is not None:
@@ -323,6 +324,7 @@ class KanrenEngine:
             if difference == None or difference == -1:
                 return difference
             else:
+                print(":::::", subject)
                 return Statement(subject, c.copula, predicate)
 
         return -1 # no difference was applied
@@ -347,6 +349,85 @@ class KanrenEngine:
 
     # INFERENCE
 
+    def step(self, concept: Concept):
+        '''One step inference.'''
+        tasks_derived = []
+
+        Global.States.record_concept(concept)
+        
+        # Based on the selected concept, take out a task and a belief for further inference.
+        task_link: TaskLink = concept.task_links.take(remove=True)
+        
+        if task_link is None: 
+            return tasks_derived
+        
+        concept.task_links.put_back(task_link)
+
+        task: Task = task_link.target
+
+        # # inference for single-premise rules
+        # is_valid, _, rules_immediate = GeneralEngine.match(task, None, None, task_link_valid, None)
+        # if is_valid:
+        #     Global.States.record_premises(task)
+        #     Global.States.record_rules(rules_immediate)
+        #     tasks = self.inference(task, None, None, task_link_valid, None, rules_immediate)
+        #     tasks_derived.extend(tasks)
+    
+        # inference for two-premises rules
+        term_links = []
+        # term_link_valid = None
+        is_valid = False
+
+        for _ in range(len(concept.term_links)): # TODO: should limit max number of links to process
+            # To find a belief, which is valid to interact with the task, by iterating over the term-links.
+            term_link: TermLink = concept.term_links.take(remove=True)
+            term_links.append(term_link)
+
+            if not task_link.novel(term_link, Global.time):
+                continue
+            
+            concept_target: Concept = term_link.target
+            belief = concept_target.get_belief() # TODO: consider all beliefs.
+            
+            if belief is None: 
+                continue
+            
+            if task == belief:
+                # if task.sentence.punct == belief.sentence.punct:
+                #     is_revision = revisible(task, belief)
+                continue
+            elif task.term.equal(belief.term): 
+                # TODO: here
+                continue
+            elif not belief.evidential_base.is_overlaped(task.evidential_base):
+                # term_link_valid = term_link
+                is_valid = True
+                break
+
+        if is_valid:
+            Global.States.record_premises(task, belief)
+
+            results = self.inference(task.sentence, belief.sentence)
+            # print(">>>", results)
+            for term, truth in results:
+                stamp_task: Stamp = task.stamp
+                stamp_belief: Stamp = belief.stamp
+                stamp = Stamp_merge(stamp_task, stamp_belief)
+
+                if task.is_judgement: # TODO: hadle other cases
+                    # TODO: calculate budget
+                    sentence_derived = Judgement(term[0], stamp, truth)
+                    tasks_derived.append(Task(sentence_derived))
+
+            # if term_link_valid is not None: # TODO: Check here whether the budget updating is the same as OpenNARS 3.0.4.
+            #     for task in tasks_derived: 
+            #         TermLink.update_budget(term_link_valid.budget, task.budget.quality, belief.budget.priority if belief is not None else concept_target.budget.priority)
+                    
+        for term_link in term_links: 
+            concept.term_links.put_back(term_link)
+        
+        return tasks_derived
+
     def inference(self, t1: Sentence, t2: Sentence) -> list:
         results = []
 
@@ -357,8 +438,10 @@ class KanrenEngine:
         t1t = t1e[0] if len(t1e) else t1.term
         t2t = t2e[0] if len(t2e) else t2.term
 
+        l1 = self.logic(t1t)
+        l2 = self.logic(t2t)
         for rule in self.rules:
-            res = self.apply(rule, t1t, t2t)
+            res = self.apply(rule, l1, l2)
             if res is not None:
                 r, _ = rule[1]
                 inverse = True if r[-1] == "'" else False
@@ -369,11 +452,11 @@ class KanrenEngine:
                 results.append((res, truth))
         return results
 
-    def apply(self, rule: tuple, t1: Term, t2: Term):
+    def apply(self, rule: tuple, t1, t2):
         # print("\nRULE:", rule)
         (p1, p2, c), (r, constraints) = rule[0], rule[1]
 
-        result = run(1, c, eq((p1, p2), (self.logic(t1), self.logic(t2))), *constraints)
+        result = run(1, c, eq((p1, p2), (t1, t2)), *constraints)
         # print(result)
 
         if result:

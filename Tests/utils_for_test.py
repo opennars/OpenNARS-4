@@ -18,7 +18,7 @@ engine: GeneralEngine = nars.inference
 
 def rule_map_two_premises_(premise1: str, premise2: str, n_cycle: int) -> list[Task]:
     ''''''
-    # nars.reset()
+    # nars.reset() # TODO: uncomment when implemented
     nars = Reasoner(100, 100)
 
     nars.input_narsese(premise1)
