@@ -16,6 +16,29 @@ from pynars.Narsese import Sentence, Judgement, Quest, Question, Goal
 nars = Reasoner(100, 100)
 engine: GeneralEngine = nars.inference
 
+def rule_map_two_premises_(premise1: str, premise2: str, n_cycle: int) -> list[Task]:
+    ''''''
+    # nars.reset()
+    nars = Reasoner(100, 100)
+
+    nars.input_narsese(premise1)
+    nars.input_narsese(premise2)
+
+    tasks_all_cycles = []
+
+    for _ in range(n_cycle):
+        tasks_all = nars.cycle()
+        # print('>>>', tasks_all)
+        tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest, (task_operation_return, task_executed) = tasks_all
+        tasks_all_cycles.extend(tasks_derived)
+        if judgement_revised is not None:
+            tasks_all_cycles.append(judgement_revised)
+        if answers_question is not None:
+            tasks_all_cycles.extend(answers_question)
+        if answers_quest is not None:
+            tasks_all_cycles.extend(answers_quest)
+
+    return tasks_all_cycles
 
 def rule_map_two_premises(premise1: str, premise2: str, term_common: str, inverse: bool=False, is_belief_term: bool=False, index_task=None, index_belief=None) -> Tuple[List[RuleCallable], Task, Belief, Concept, TaskLink, TermLink, Tuple[Task, Task, Task, Task]]:
     ''''''
