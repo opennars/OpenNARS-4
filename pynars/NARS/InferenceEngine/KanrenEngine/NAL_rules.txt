@@ -1,0 +1,130 @@
+NAL-1
+{<M --> P>. <S --> M>} |- <S --> P> .ded
+{<P --> M>. <M --> S>} |- <P --> S> .ded'
+{<M --> P>. <M --> S>} |- <S --> P> .ind
+{<M --> P>. <M --> S>} |- <P --> S> .ind'
+{<P --> M>. <S --> M>} |- <S --> P> .abd
+{<P --> M>. <S --> M>} |- <P --> S> .abd'
+{<P --> M>. <M --> S>} |- <S --> P> .exe
+{<M --> P>. <S --> M>} |- <P --> S> .exe'
+
+NAL2
+{<M <-> P>. <S <-> M>} |- <S <-> P> .res
+{<M <-> P>. <M <-> S>} |- <S <-> P> .res
+{<P <-> M>. <S <-> M>} |- <S <-> P> .res
+{<P <-> M>. <M <-> S>} |- <S <-> P> .res
+{<M --> P>. <M --> S>} |- <S <-> P> .com
+{<P --> M>. <S --> M>} |- <S <-> P> .com'
+{<M --> P>. <S <-> M>} |- <S --> P> .ana
+{<M --> P>. <M <-> S>} |- <S --> P> .ana
+{<P --> M>. <S <-> M>} |- <P --> S> .ana
+{<P --> M>. <M <-> S>} |- <P --> S> .ana
+{<M <-> P>. <S --> M>} |- <S --> P> .ana'
+{<P <-> M>. <S --> M>} |- <S --> P> .ana'
+{<M <-> P>. <M --> S>} |- <P --> S> .ana'
+{<P <-> M>. <M --> S>} |- <P --> S> .ana'
+
+NAL3
+'composition
+{<M --> T1>. <M --> T2>} |- <M --> (&, T1, T2)> .int
+{<T1 --> M>. <T2 --> M>} |- <(|, T1, T2) --> M> .int
+{<M --> T1>. <M --> T2>} |- <M --> (|, T1, T2)> .uni
+{<T1 --> M>. <T2 --> M>} |- <(&, T1, T2) --> M> .uni
+{<M --> T1>. <M --> T2>} |- <M --> (-, T1, T2)> .dif
+{<M --> T1>. <M --> T2>} |- <M --> (-, T2, T1)> .dif'
+{<T1 --> M>. <T2 --> M>} |- <(~, T1, T2) --> M> .dif
+{<T1 --> M>. <T2 --> M>} |- <(~, T2, T1) --> M> .dif'
+'decomposition
+{(--, <M --> (&, T1, T2)>). <M --> T1>} |- (--, <M --> T2>) .ded
+{<M --> (|, T1, T2)>. (--, <M --> T1>)} |- <M --> T2> .ded
+{(--, <M --> (-, T1, T2)>). <M --> T1>} |- <M --> T2> .ded
+{(--, <M --> (-, T2, T1)>). (--, <M --> T1>)} |- (--, <M --> T2>) .ded
+{(--, <(|, T2, T1) --> M>). <T1 --> M>} |- (--, <T2 --> M>) .ded
+{<(&, T2, T1) --> M>. (--, <T1 --> M>)} |- <T2 --> M> .ded
+{(--, <(~, T1, T2) --> M>). <T1 --> M>} |- <T2 --> M> .ded
+{(--, <(~, T2, T1) --> M>). (--, <T1 --> M>)} |- (--, <T2 --> M>) .ded
+{(--, (&&, T1, T2)). T1} |- (--, T2) .ded
+{(||, T1, T2). (--, T1)} |- T2 .ded
+
+NAL4
+no new rules
+
+NAL5
+replace --> with ==> in NAL1 & NAL2
+replace <-> with <=> in NAL2
+replace --> with ==> in NAL3 (except difference)
+replace | with || in NAL3 (except difference)
+replace & with && in NAL3 (except difference)
+
+'conditional syllogistic
+{<S ==> P>. S} |- P .ded
+{<P ==> S>. S} |- P .abd
+{S. <S <=> P>} |- P .ana
+{S. <P <=> S>} |- P .ana
+{<S <=> P>. S} |- P .ana’
+{<P <=> S>. S} |- P .ana’
+
+'conditional conjunctive
+'(C ^ S) => P, S |- C => P (alternative syntax below)
+{<(&&, C, S) ==> P>. _S} |- <((&&, C, S) - _S) ==> P> .ded
+
+'(C ^ S) => P, M => S |- (C ^ M) => P (alternative syntax below)
+{<(&&, C, S) ==> P>. <M ==> _S>} |- <(&&, ((&&, C, S) - _S), M) ==> P> .ded
+
+'(C ^ S) => P, C => P |- S (alternative syntax below)
+{<(&&, C, S) ==> P>. <_C ==> P>} |- ((&&, C, S) - _C) .abd
+
+'(C ^ S) => P, (C ^ M) => P |- M => S (alternative syntax below)
+{<(&&, C, S) ==> P>. <(&&, _C, M) ==> P>} |- <((&&, _C, M) - C) ==> ((&&, C, S) - _C)> .abd
+
+'{<C ==> P>. S} |- <(&&, C, S) ==> P> .ind (alternative syntax below)
+{<(&&, C, M) ==> P>. (&&, S, M)} |- <(&&, C, S, M) ==> P> .ind
+
+'(C ^ M) => P, M => S |- (C ^ S) => P (alternative syntax below)
+{<(&&, C, M) ==> P>. <_M ==> S>} |- <(&&, ((&&, C, M) - _M), S) ==> P> .ind
+
+
+NAL6
+variable elimination already works with miniKanren, are explicit rules needed?
+? - are there additional formal rules for variable introduction besides (Table 10.6)?
+? - can these be handled by a combination of conditional compositional rules and substitution?
+
+NAL7
+no new rules
+. - atemporal versions of copulas and connectors can be used
+. - if the temporal order of events in the conclusion can be decided 
+. - a temporal conclusion is formed from the atemporal one
+
+NAL8
+no new rules
+
+NAL9
+no new rules
+
+
+
+#########
+
+QUESTIONS
+
+#########
+
+- When should we apply immediate rules? 
+(conversion, negation, contraposition)
+
+- When to apply decomposition rules?
+(always or only in certain conditions like with temporal compositional)
+
+- Are there higher order composition rules for .dif?
+
+- Is any arbitrary S valid for this rule?
+{<C ==> P>. S} |- <(&&, C, S) ==> P> .ind
+
+- Should these be handled outside of normal flow?
+- Can these also be the variable introduction rules (substituting {M/#x})?
+'conditional compositional i.e. {P, S} |- S => P, {P, S} |- (P ^ S)
+
+- Theorems can be handled explicitly using miniKanren
+should they be applied at the same time as immediate rules?
+
+
