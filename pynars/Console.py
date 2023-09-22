@@ -98,23 +98,21 @@ def handle_lines(nars: Reasoner, lines: str):
         if tasks_line is not None:
             tasks_lines.extend(tasks_line)
     # print the output #
-    tasks_lines: List[
-        Tuple[
-            List[Task], Task,
-            Task, List[Task],
-            Task, Tuple[Task, Task]
-        ]
-    ]
+    tasks_lines: List[Tuple[
+        List[Task],
+        Task,
+        Task,
+        List[Task],
+        Task,
+        Tuple[Task, Task]]]
     for tasks_line in tasks_lines:
         # unpack one of lines of tasks, and then print out
-        (
-            tasks_derived,
-            judgement_revised,
-            goal_revised,
-            answers_question,
-            answers_quest,
-            (task_operation_return, task_executed)
-        ) = tasks_line
+        (tasks_derived,
+         judgement_revised,
+         goal_revised,
+         answers_question,
+         answers_quest,
+         (task_operation_return, task_executed)) = tasks_line
         # while derived task(s)
         for task in tasks_derived:
             print_out(

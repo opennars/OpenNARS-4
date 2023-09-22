@@ -438,37 +438,31 @@ class NARSInterface:
             ]
         ]
         for taskLine in taskList:
-            (
-                tasksDerived,
-                judgementRevised,
-                goalRevised,
-                answersQuestion,
-                answersQuest,
-                (taskOperationReturn, taskExecuted)
-            ) = taskLine
-            for derivedTask in tasksDerived:
+            tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest,\
+                (task_operation_return, task_executed) = taskLine
+            for derivedTask in tasks_derived:
                 outs.append(
                     NARSOutput(
                         PrintType.OUT, derivedTask.sentence.repr(), *derivedTask.budget)
                 )
 
-            if judgementRevised is not None:
-                outs.append(NARSOutput(PrintType.OUT, judgementRevised.sentence.repr(
-                ), *judgementRevised.budget))
-            if goalRevised is not None:
+            if judgement_revised is not None:
+                outs.append(NARSOutput(PrintType.OUT, judgement_revised.sentence.repr(
+                ), *judgement_revised.budget))
+            if goal_revised is not None:
                 outs.append(NARSOutput(
-                    PrintType.OUT, goalRevised.sentence.repr(), *goalRevised.budget))
-            if answersQuestion is not None:
-                for answer in answersQuestion:
+                    PrintType.OUT, goal_revised.sentence.repr(), *goal_revised.budget))
+            if answers_question is not None:
+                for answer in answers_question:
                     outs.append(
                         NARSOutput(PrintType.ANSWER, answer.sentence.repr(), *answer.budget))
-            if answersQuest is not None:
-                for answer in answersQuest:
+            if answers_quest is not None:
+                for answer in answers_quest:
                     outs.append(NARSOutput(
-                        PrintType.ANSWER, answersQuest.sentence.repr(), *answersQuest.budget))
-            if taskExecuted is not None:
+                        PrintType.ACHIEVED, answers_quest.sentence.repr(), *answers_quest.budget))
+            if task_executed is not None:
                 outs.append(NARSOutput(
-                    PrintType.EXE, f'{taskExecuted.term.repr()} = {str(taskOperationReturn) if taskOperationReturn is not None else None}'))
+                    PrintType.EXE, f'{task_executed.term.repr()} = {str(task_operation_return) if task_operation_return is not None else None}'))
 
             # * print & event patch
             for out in outs:
