@@ -126,7 +126,7 @@ class Memory:
 
             for task_goal in concept.desire_table:
                 _, goal_answer = self._solve_goal(task_goal, concept, None, task)
-                answers[Goal] = [goal_answer]
+                if goal_answer is not None: answers[Goal] = [goal_answer]
 
         return belief_revised, answers
 
@@ -360,15 +360,18 @@ class Memory:
             concept (Concept): The concept corresponding to the task.
         '''
         tasks = []
-        belief = belief or concept.match_belief(task.sentence)
-        if belief is None:
-            return tasks, None
         old_best = task.best_solution
+
+        belief = belief or concept.match_belief(task.sentence)
+        if belief is None or belief == old_best:
+            return tasks, None
+
         if old_best is not None:
             quality_new = calculate_solution_quality(task.sentence, belief.sentence, True)
             quality_old = calculate_solution_quality(task.sentence, old_best.sentence, True)
             if (quality_new <= quality_old):
                 return tasks, belief
+
         task.best_solution = belief
         tasks.append(belief) # the task as the new best solution should be added into the internal buffer, so that it would be paid attention
         budget = Budget_evaluate_goal_solution(task.sentence, belief.sentence, task.budget, (task_link.budget if task_link is not None else None))
