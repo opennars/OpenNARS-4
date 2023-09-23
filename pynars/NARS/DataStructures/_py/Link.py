@@ -16,6 +16,7 @@ from pynars.NAL.Functions.ExtendedBooleanFunctions import *
 from pynars.Config import Config
 
 from collections import deque
+from typing import Deque
 
 class LinkType(Enum):
     SELF = 0 # At C, point to C; TaskLink only 
@@ -232,9 +233,8 @@ class TaskLink(Link):
             self.term = term
             self.time = time
 
-    records = deque()
-
     def __init__(self, source: 'Concept', target: 'Concept', budget: Budget, copy_budget=True, index: list=None) -> None:
+        self.records: Deque[self.Recording] = deque()
         super().__init__(source, target, budget, True, copy_budget=copy_budget, index=index)
 
     def set_type(self, source_is_component=True, type: LinkType=None):
