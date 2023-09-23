@@ -506,8 +506,6 @@ class TEST_NAL6(unittest.TestCase):
 
         self.assertTrue(
             output_contains(tasks_derived, '<(&&, <(*,{Tweety},worms) --> food>, <{Tweety} --> [chirping]>) ==> <{Tweety} --> bird>>. %1.00;0.81%')
-            or 
-            output_contains(tasks_derived, '<(&&, <{Tweety} --> [chirping]>, <(*,{Tweety},worms) --> food>) ==> <{Tweety} --> bird>>. %1.00;0.81%')
         )
         pass
 

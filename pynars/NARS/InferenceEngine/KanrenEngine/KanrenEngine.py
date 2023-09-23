@@ -10,6 +10,7 @@ from pynars.Narsese import Term, Copula, Connector, Statement, Compound, Variabl
 
 from pynars.NAL.Functions import *
 from pynars.NARS.DataStructures import Concept, Task, TaskLink, TermLink, Judgement
+from pynars.NAL.Functions.Tools import project_truth, revisible
 
 
 nal1 = '''
@@ -110,6 +111,13 @@ nal5 = '''
 {<(&&, M, C) ==> P>. <_M ==> S>} |- <(&&, ((&&, M, C) - _M), S) ==> P> .ind
 '''
 
+immediate = '''
+S |- (--, S) .neg
+<S --> P> |- <P --> S> .cnv
+<S ==> P> |- <P ==> S> .cnv
+<S ==> P> |- <(--, P) ==> (--, S)> .cnt
+'''
+
 def split_rules(rules: str) -> list[str]:
     lines = []
     for line in rules.splitlines():
@@ -136,7 +144,11 @@ class KanrenEngine:
         'com': Truth_comparison,
         'int': Truth_intersection,
         'uni': Truth_union,
-        'dif': Truth_difference
+        'dif': Truth_difference,
+
+        'neg': Truth_negation,
+        'cnv': Truth_conversion,
+        'cnt': Truth_contraposition
     }
 
     def __init__(self):
@@ -178,6 +190,8 @@ class KanrenEngine:
         self._variables = set() # used as scratchpad while converting
         self.rules = [self._convert(rule) for rule in rules]
 
+        self.rules_immediate = [self._convert_immediate(rule) for rule in split_rules(immediate)]
+
 
     #################################################
     ### Conversion between Narsese and miniKanren ###
@@ -210,6 +224,29 @@ class KanrenEngine:
 
         return ((p1, p2, c), (r, constraints))
     
+    def _convert_immediate(self, rule):
+        # convert to logical form
+        premise, conclusion = rule.split(" |- ")
+        conclusion = conclusion.split(" .")
+        c = conclusion[0]
+        r = conclusion[1]
+
+        # TODO: can we parse statements instead?
+        p = parse(premise+'.', True)
+        c = parse(c+'.', True)
+
+        self._variables.clear() # clear scratchpad
+
+        p = self.logic(p, True)
+        c = self.logic(c, True)
+        
+        var_combinations = list(combinations(self._variables, 2))
+        # filter out combinations like (_C, C) allowing them to be the same
+        cond = lambda x, y: x.token.replace('_', '') != y.token.replace('_', '')
+        constraints = [neq(c[0], c[1]) for c in var_combinations if cond(c[0], c[1])]
+
+        return ((p, c), (r, constraints))
+
     def logic(self, term: Term, rule=False, substitution=False):
         if term.is_atom:
             name = self._prefix+term.word if rule else term.word
@@ -249,7 +286,8 @@ class KanrenEngine:
             if type(car(logic)) is Connector:
                 con = car(logic)
                 t = cdr(logic)
-                terms = self.to_list(cdr(logic)) if type(t) is cons else [self.term(t)]
+                is_list = type(t) is cons and not (type(car(t)) is Copula or type(car(t)) is Connector)
+                terms = self.to_list(cdr(logic)) if is_list else [self.term(t)]
                 return Compound(con, *terms)
         return logic # cons
 
@@ -324,7 +362,6 @@ class KanrenEngine:
             if difference == None or difference == -1:
                 return difference
             else:
-                print(":::::", subject)
                 return Statement(subject, c.copula, predicate)
 
         return -1 # no difference was applied
@@ -365,17 +402,33 @@ class KanrenEngine:
 
         task: Task = task_link.target
 
-        # # inference for single-premise rules
-        # is_valid, _, rules_immediate = GeneralEngine.match(task, None, None, task_link_valid, None)
-        # if is_valid:
-        #     Global.States.record_premises(task)
-        #     Global.States.record_rules(rules_immediate)
-        #     tasks = self.inference(task, None, None, task_link_valid, None, rules_immediate)
-        #     tasks_derived.extend(tasks)
-    
+        # inference for single-premise rules
+        if task.is_judgement and not task.immediate_rules_applied: # TODO: handle other cases
+            Global.States.record_premises(task)
+
+            results = self.inference_immediate(task.sentence)
+
+            for term, truth in results:
+                # TODO: how to properly handle stamp for immediate rules?
+                stamp_task: Stamp = task.stamp
+
+                if task.is_judgement: # TODO: hadle other cases
+                    # TODO: calculate budget
+                    sentence_derived = Judgement(term[0], stamp_task, truth)
+                    task_derived = Task(sentence_derived)
+                    # set flags to prevent repeated processing
+                    task_derived.immediate_rules_applied = True
+                    task_derived.processed = True
+                    # normalize the variable indices
+                    task_derived.term._normalize_variables()
+                    tasks_derived.append(task_derived)
+
+            # record immediate rule application for task
+            task.immediate_rules_applied = True
+
         # inference for two-premises rules
         term_links = []
-        # term_link_valid = None
+        term_link_valid = None
         is_valid = False
 
         for _ in range(len(concept.term_links)): # TODO: should limit max number of links to process
@@ -400,28 +453,40 @@ class KanrenEngine:
                 # TODO: here
                 continue
             elif not belief.evidential_base.is_overlaped(task.evidential_base):
-                # term_link_valid = term_link
+                term_link_valid = term_link
                 is_valid = True
                 break
 
         if is_valid:
             Global.States.record_premises(task, belief)
+            
+            # Temporal Projection and Eternalization
+            if belief is not None:
+                # TODO: Hanlde the backward inference.
+                if not belief.is_eternal and (belief.is_judgement or belief.is_goal):
+                    truth_belief = project_truth(task.sentence, belief.sentence)
+                    belief = belief.eternalize(truth_belief)
+                    # beleif_eternalized = belief # TODO: should it be added into the `tasks_derived`?
 
             results = self.inference(task.sentence, belief.sentence)
             # print(">>>", results)
+
             for term, truth in results:
                 stamp_task: Stamp = task.stamp
                 stamp_belief: Stamp = belief.stamp
                 stamp = Stamp_merge(stamp_task, stamp_belief)
 
-                if task.is_judgement: # TODO: hadle other cases
-                    # TODO: calculate budget
+                if task.is_judgement: # TODO: handle other cases
+                    budget = Budget_forward(truth, task_link.budget, term_link_valid.budget)
                     sentence_derived = Judgement(term[0], stamp, truth)
-                    tasks_derived.append(Task(sentence_derived))
+                    task_derived = Task(sentence_derived, budget)
+                    # normalize the variable indices
+                    task_derived.term._normalize_variables()
+                    tasks_derived.append(task_derived)
 
-            # if term_link_valid is not None: # TODO: Check here whether the budget updating is the same as OpenNARS 3.0.4.
-            #     for task in tasks_derived: 
-            #         TermLink.update_budget(term_link_valid.budget, task.budget.quality, belief.budget.priority if belief is not None else concept_target.budget.priority)
+            if term_link is not None: # TODO: Check here whether the budget updating is the same as OpenNARS 3.0.4.
+                for task in tasks_derived: 
+                    TermLink.update_budget(term_link.budget, task.budget.quality, belief.budget.priority if belief is not None else concept_target.budget.priority)
                     
         for term_link in term_links: 
             concept.term_links.put_back(term_link)
@@ -477,9 +542,26 @@ class KanrenEngine:
             # print("Rule application failed.")
             return None
 
+    def inference_immediate(self, t: Sentence):
+        results = []
+
+        l = self.logic(t.term)
+        for rule in self.rules_immediate:
+            (p, c), (r, constraints) = rule[0], rule[1]
+
+            result = run(1, c, eq(p, l), *constraints)
+            # print(result)
+
+            if result:
+                conclusion = self.term(result[0])
+                # print(conclusion)
+                truth = self._truth_functions[r](t.truth)
+                results.append(((conclusion, r), truth))
+            
+        return results
 
 #################################################
-
+'''
 ### EXAMPLES ###
 
 engine = KanrenEngine()
@@ -567,3 +649,4 @@ t1 = parse('<dog <-> pet>.', False)
 # t2 = Sentence(t2, Punctuation.Judgement, Stamp(Global.time, Global.time, None, Base((Global.get_input_id(),)), is_external=False))
 # print(t1, t2)
 print(engine.inference(theorem, t1))
+'''

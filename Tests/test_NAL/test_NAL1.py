@@ -39,7 +39,7 @@ class TEST_NAL1(unittest.TestCase):
         tasks_derived = rule_map_two_premises_(
             '<bird --> swimmer>. %1.00;0.90%',
             '<bird --> swimmer>. %0.10;0.60%',
-            2
+            5
         )
         self.assertTrue(
             output_contains(tasks_derived, '<bird --> swimmer>. %0.87;0.91%')
@@ -98,7 +98,7 @@ class TEST_NAL1(unittest.TestCase):
         tasks_derived = rule_map_two_premises_(
             '<sport --> competition>. %1.00;0.90%', 
             '<chess --> competition>. %0.90;0.90%', 
-            5)
+            10)
         # tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
         self.assertTrue(
             output_contains(tasks_derived, '<sport --> chess>. %1.00;0.42%')
@@ -132,7 +132,7 @@ class TEST_NAL1(unittest.TestCase):
         tasks_derived = rule_map_two_premises_(
             '<swan --> swimmer>. %0.90;0.90%', 
             '<swan --> bird>.  %1.00;0.90%', 
-            5)
+            10)
         # tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
         self.assertTrue(
             output_contains(tasks_derived, '<bird --> swimmer>. %0.90;0.45%')

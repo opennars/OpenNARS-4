@@ -9,7 +9,7 @@ from pynars.Narsese._py.Budget import Budget
 from pynars.Narsese._py.Statement import Statement
 from pynars.Narsese._py.Task import Belief
 from ..DataStructures import Bag, Memory, NarseseChannel, Buffer, Task, Concept
-from ..InferenceEngine import KanrenEngine, TemporalEngine, VariableEngine
+from ..InferenceEngine import GeneralEngine, TemporalEngine, VariableEngine, KanrenEngine
 from pynars import Config
 from pynars.Config import Enable
 from typing import Callable, List, Tuple, Union
@@ -77,7 +77,8 @@ class Reasoner:
 
         # step 3. Process a task in the global experience buffer
         task: Task = self.overall_experience.take()
-        if task is not None:
+        if task is not None and not task.processed:
+            task.processed = True
             # if task.is_goal:
             #     print(task)
             
