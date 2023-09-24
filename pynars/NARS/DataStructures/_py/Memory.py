@@ -39,7 +39,8 @@ class Memory:
         task_revised, goal_derived, answers_question, answer_quest = None, None, None, None
         if task.is_judgement:
             # revised the belief if there has been one, and try to solve question if there has been a corresponding one.
-            task_revised, answers_question = self._accept_judgement(task, concept)
+            task_revised, answers = self._accept_judgement(task, concept)
+            answers_question, answer_quest = answers[Question], answers[Goal]
         elif task.is_goal:
             task_revised, belief_selected, (task_operation_return, task_executed), tasks_derived = self._accept_goal(task, concept)
             # # TODO, ugly!
@@ -86,7 +87,7 @@ class Memory:
     def _accept_judgement(self, task: Task, concept: Concept):
         ''''''
         belief_revised = None
-        answers = None
+        answers = { Question: [], Goal: [] }
         if Enable.operation: raise  # InternalExperienceBuffer.handleOperationFeedback(task, nal);
         if Enable.anticipation: raise  # ProcessAnticipation.confirmAnticipation(task, concept, nal);
 
@@ -123,11 +124,11 @@ class Memory:
             concept.add_belief(task)
 
             # try to solve questions
-            answers = self._solve_judgement(task, concept)
+            answers[Question] = self._solve_judgement(task, concept)
 
             for task_goal in concept.desire_table:
-                answers_goal, _ = self._solve_goal(task_goal, concept, None, task)
-                answers.extend(answers_goal)
+                _, goal_answer = self._solve_goal(task_goal, concept, None, task)
+                if goal_answer is not None: answers[Goal] = [goal_answer]
 
         return belief_revised, answers
 
@@ -366,11 +367,17 @@ class Memory:
             self.global_eval.update_satisfaction(task.achieving_level(), task.budget.priority)
             return tasks, None
         old_best = task.best_solution
+
+        belief = belief or concept.match_belief(task.sentence)
+        if belief is None or belief == old_best:
+            return tasks, None
+
         if old_best is not None:
             quality_new = calculate_solution_quality(task.sentence, belief.sentence, True)
             quality_old = calculate_solution_quality(task.sentence, old_best.sentence, True)
             if (quality_new <= quality_old):
                 return tasks, belief
+
         task.best_solution = belief
         tasks.append(belief) # the task as the new best solution should be added into the internal buffer, so that it would be paid attention
         budget = Budget_evaluate_goal_solution(task.sentence, belief.sentence, task.budget, (task_link.budget if task_link is not None else None))

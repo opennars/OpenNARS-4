@@ -81,7 +81,8 @@ class Reasoner:
 
         # step 3. Process a task in the global experience buffer
         task: Task = self.overall_experience.take()
-        if task is not None:
+        if task is not None and not task.processed:
+            task.processed = True
             # if task.is_goal:
             #     print(task)
             
