@@ -9,6 +9,7 @@ from .Truth import Truth
 class Task(Item):
     input_id = -1
     best_solution: 'Task' = None
+    processed = False
     
     def __init__(self, sentence: Sentence, budget: Budget=None, input_id: int=None) -> None:
         super().__init__(hash(sentence), budget)
