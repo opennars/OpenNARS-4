@@ -6,7 +6,7 @@ This program is used to experiment on some projects of PyNARS and import local N
 # Interface
 from pynars.ConsolePlus import *
 # need to report errors to ** timely detection of ** "invalid statement input" caused by the bug
-from pynars.Interface import NAL_Parse
+from pynars.Narsese import parser as NarseseParser
 
 # PyNARS: Import internal modules
 from pynars.NARS.DataStructures._py.Channel import *
@@ -19,51 +19,51 @@ from random import randint
 
 # information
 
-def infBag(bag: Bag, sep: str = ',', indentCount: int = 1) -> str:
+def show_bag(bag: Bag, sep: str = ',', indent_count: int = 1) -> str:
     '''Relation of extension: Channel -> Buffer -> Bag'''
-    notNoneLevels: list[list] = [
-        levelList for levelList in bag.levels if levelList]
-    if notNoneLevels:
-        sep = sep + '\n' + "\t"*indentCount
-        return f'{repr(bag)} :\n' + "\t"*indentCount + sep.join(
+    not_none_levels: list[list] = [
+        level_list for level_list in bag.levels if level_list]
+    if not_none_levels:
+        sep = sep + '\n' + "\t"*indent_count
+        return f'{repr(bag)} :\n' + "\t"*indent_count + sep.join(
             ','.join(
                 repr(value)
                 for value in level)
-            for level in notNoneLevels)
+            for level in not_none_levels)
     return repr(bag)
 
 
-def infBuffer(buffer: Buffer) -> str:
+def show_buffer(buffer: Buffer) -> str:
     item: Item = buffer.take_max(remove=False)
-    return repr(buffer) + infBag(Bag(buffer)) + f' ->  {item}'
+    return repr(buffer) + show_bag(Bag(buffer)) + f' ->  {item}'
 
 
-def infChannel(channel: Channel) -> str:
+def show_channel(channel: Channel) -> str:
     b = Buffer(channel)
-    return repr(channel) + f'@{repr(infBuffer(buffer=b))}'
+    return repr(channel) + f'@{repr(show_buffer(buffer=b))}'
 
 
-def infMemory(memory: Memory, indentCount: int = 1) -> str:
-    return repr(memory) + f'@{infBag(memory.concepts,indentCount=indentCount)}'
+def show_memory(memory: Memory, indent_count: int = 1) -> str:
+    return repr(memory) + f'@{show_bag(memory.concepts,indent_count=indent_count)}'
 
 
-def infReasoner(reasoner: Reasoner):
+def show_reasoner(reasoner: Reasoner):
     return '\n\t'+"\n\t".join(f"{name}: {inf}" for name, inf in [
-        ('Memory', infMemory(reasoner.memory, indentCount=2)),
+        ('Memory', show_memory(reasoner.memory, indent_count=2)),
         ('Channels', '\r\n\t\t'.join(
-            infChannel(channel)
+            show_channel(channel)
             for channel in reasoner.channels)),
         # this section is a "temporary repository" of the knowledge NARS has acquired from the "channel".
-        ('Overall Experience', infBuffer(reasoner.overall_experience)),
-        ('Internal Experience', infBuffer(reasoner.internal_experience)),
-        ('Sequence Buffer', infBuffer(reasoner.sequence_buffer)),
-        ('Operations Buffer', infBuffer(reasoner.operations_buffer)),
+        ('Overall Experience', show_buffer(reasoner.overall_experience)),
+        ('Internal Experience', show_buffer(reasoner.internal_experience)),
+        ('Sequence Buffer', show_buffer(reasoner.sequence_buffer)),
+        ('Operations Buffer', show_buffer(reasoner.operations_buffer)),
     ])
 
 
-def printInf():
+def show_information():
     print(
-        f'''<{getCurrentReasonerName()}>: {infReasoner(currentNARSInterface.reasoner)}''')
+        f'''<{current_nar_name()}>: {show_reasoner(current_NARS_interface.reasoner)}''')
 
 ## Main program ##
 
@@ -71,13 +71,13 @@ def printInf():
 EXPERIMENTAL_CMDS: dict[tuple[str]:tuple[any, tuple[str]]] = {}
 
 
-def expRegister(*cmdNames: tuple[str]):
-    '''Mimic from `cmdRegister` in "Interface.py"
+def exp_register(*cmd_names: tuple[str]):
+    '''Mimic from `cmd_register` in "Interface.py"
     It's no need of parameters because the experimental functions can utilize all of global variable'''
     def decorator(func):
         # register
         global EXPERIMENTAL_CMDS
-        EXPERIMENTAL_CMDS[cmdNames] = (func, )
+        EXPERIMENTAL_CMDS[cmd_names] = (func, )
         '''
         Core format & Structure: {Name: (handler function, ordinal and default list)}
         ! Tuples can be used as indexes: fixed type
@@ -98,27 +98,27 @@ def expRegister(*cmdNames: tuple[str]):
     return decorator
 
 
-@expRegister('l')
-def listDetails_reasoner() -> None:
-    return reasonerList()
+@exp_register('l')
+def list_details_reasoner() -> None:
+    return reasoner_list()
 
 
-@expRegister('t')
+@exp_register('t')
 def test_simple_output() -> None:
-    execInput('<A --> B>.')
+    execute_input('<A --> B>.')
 
 
-@expRegister('r')
+@exp_register('r')
 def test_random_input_sentence() -> None:
-    execInput(f'<A{randint(1,9)} --> A{randint(1,9)}>.')
+    execute_input(f'<A{randint(1,9)} --> A{randint(1,9)}>.')
 
 
-@expRegister('c')
+@exp_register('c')
 def list_all_concepts() -> None:
-    print(infBag((currentNARSInterface.reasoner.memory.concepts)))
+    print(show_bag((current_NARS_interface.reasoner.memory.concepts)))
 
 
-@expRegister('exec')
+@exp_register('exec')
 def exec_multiline_python_code() -> None:
     while (inp := input('Please input Python code (empty to cancel)')):
         try:
@@ -127,7 +127,7 @@ def exec_multiline_python_code() -> None:
             print(f'Error! {e}')
 
 
-@expRegister('v')
+@exp_register('v')
 def list_variables() -> None:
     print('locals\n\t'+'\n\t'.join(f'{k} : {v}' for k, v in locals().items()),
           'globals\n\t' +
@@ -135,55 +135,55 @@ def list_variables() -> None:
           sep='\n')
 
 
-@expRegister('r')
+@exp_register('r')
 def list_histories() -> None:
-    printHistory('')
-    printHistory('1')
+    print_history('')
+    print_history('1')
 
 
-@expRegister('help')
+@exp_register('help')
 def help_of_experiments() -> None:
     print('''The backslash commands is used for feature experiments.\nto see the supported certain commands, may you should view `Experiments\ExConsole\main.py\_cmdExperiment`.''')
-    help('', searchIn=EXPERIMENTAL_CMDS)
+    help('', search_in=EXPERIMENTAL_CMDS)
 
 
-@expRegister('ch')
+@exp_register('ch')
 def channel_addition_test() -> None:
     # add new channel
     channel: Channel = Channel(capacity=5, n_buckets=5, max_duration=10000)
     # [2023-09-21 23:51:23] PyNARS does not currently have a built-in "add channel" method
-    currentNARSInterface.reasoner.channels.append(channel)
-    print(infChannel(channel=channel))
+    current_NARS_interface.reasoner.channels.append(channel)
+    print(show_channel(channel=channel))
     # test new channel
-    [channel.put(NAL_Parse(testSentence_C))  # auto parse
-        for testSentence_C in [
+    [channel.put(NarseseParser.parse(test_sentence_C))  # auto parse
+        for test_sentence_C in [
             '<cpt_channel_1 --> cpt_channel_2>.',
             '<cpt_channel_2 --> cpt_channel_3>.',
             '<cpt_channel_1 --> cpt_channel_3>?',
     ]
     ]  # ? multiple input at once
-    printInf()
-    execInput('/waitans')
-    printInf()
+    show_information()
+    execute_input('/waitans')
+    show_information()
 
 
-@expRegister('cha')
+@exp_register('cha')
 def shared_channel_test() -> None:
     channel: Channel = NarseseChannel(
         capacity=500, n_buckets=100, max_duration=1000)
     # new reasoner
-    rName1: str = '1'
-    rName2: str = '2'
-    r1: Reasoner = reasonerNew(name=rName1).reasoner
-    r2: Reasoner = reasonerNew(name=rName2).reasoner
+    r_name1: str = '1'
+    r_name2: str = '2'
+    r1: Reasoner = reasoner_new(name=r_name1).reasoner
+    r2: Reasoner = reasoner_new(name=r_name2).reasoner
     r1.narsese_channel = r2.narsese_channel = r1.channels[0] = r2.channels[0] = channel
-    execInput('<A --> B>.')  # enter the NARS statement in r2
-    reasonerGoto(rName1)  # r1 also has channels in it
-    execInput('10')  # enter the NARS statement in r2
-    reasonerList()
+    execute_input('<A --> B>.')  # enter the NARS statement in r2
+    reasoner_goto(r_name1)  # r1 also has channels in it
+    execute_input('10')  # enter the NARS statement in r2
+    reasoner_list()
 
 
-@expRegister('me')
+@exp_register('me')
 def shared_memory_test() -> None:
     memory: Memory = Memory(
         capacity=1000,
@@ -191,53 +191,53 @@ def shared_memory_test() -> None:
     # new reasoner
     rName1: str = '1'
     rName2: str = '2'
-    r1: Reasoner = reasonerNew(name=rName1)._NARS
-    r2: Reasoner = reasonerNew(name=rName2)._NARS
+    r1: Reasoner = reasoner_new(name=rName1)._NARS
+    r2: Reasoner = reasoner_new(name=rName2)._NARS
     r1.memory = r2.memory = memory
     # enter the NARS statement in r2
-    execInput('A --> B.', 'B --> C.', 'A --> C?')
-    reasonerGoto(rName1)  # r1 also has channels in it
-    execInput('1')  # enter the NARS statement in r2
+    execute_input('A --> B.', 'B --> C.', 'A --> C?')
+    reasoner_goto(rName1)  # r1 also has channels in it
+    execute_input('1')  # enter the NARS statement in r2
     print(r1.memory is r2.memory, r1.memory is memory)
-    printInf()
+    show_information()
 
 
-@expRegister('op')
+@exp_register('op')
 def operations_test() -> None:
-    taskOp: Task = NAL_Parse('<antecedent --> result>.')  # auto parse
+    task1: Task = NarseseParser.parse('<antecedent --> result>.')  # auto parse
     # term.type = TermType.STATEMENT # ! Only statements can be actions, not mandatory
-    statementOp = taskOp.term  # term of the task
+    statement1 = task1.term  # term of the task
     # * Force the term involved in the task to be set to "action", if is_executable = True
-    statementOp.is_operation = True
-    print(f'Is operation? {statementOp.is_executable}')
+    statement1.is_operation = True
+    print(f'Is operation? {statement1.is_executable}')
     '''concept Concept: Concept = concept. _conceptualize(  # Generate concept
-        currentNARSInterface.reasoner.memory,
+        current_NARS_interface.reasoner.memory,
         term=statement Operation statement,
         Budget=budget(0.9, 0.9, 0.5)
         )
-        currentNARSInterface.reasoner.memory.concepts.put(concept)
+        current_NARS_interface.reasoner.memory.concepts.put(concept)
         # into the concept, but it does not seem to be associated with the task, the reasoner will not use it.
         # '''
     # placing tasks directly into perceptual channels (Narsese channels can only pass text)
-    currentNARSInterface.reasoner.perception_channel.put(taskOp)
+    current_NARS_interface.reasoner.perception_channel.put(task1)
     # Automatic reasoning five steps, let NAS put "antecedent" and "result" into the memory area
-    execInput('5')
+    execute_input('5')
     # print concept list
-    print(infBag(currentNARSInterface.reasoner.memory.concepts))
+    print(show_bag(current_NARS_interface.reasoner.memory.concepts))
 
 
-@expRegister('far', 'chain', 'chain_inference')
+@exp_register('far', 'chain', 'chain_inference')
 def chain_inference_test() -> None:
     n: int = int(input('Please enter the length of chain:'))
-    [execInput(f'<chainNo{i} --> chainNo{i+1}>.')
+    [execute_input(f'<chain_{i} --> chain_{i+1}>.')
         for i in range(n)
      ]
-    printInf()
-    execInput(f'<chainNo0 --> chainNo{n}>?')
-    execInput('/waitans')
+    show_information()
+    execute_input(f'<chain_0 --> chain_{n}>?')
+    execute_input('/waitans')
 
 
-@expRegister('json')
+@exp_register('json')
 def JSON_test() -> None:
     '''Input a series of numbers and construct a set, allowing NARS to determine ownership'''
     from data2nal import auto2NAL, SIGN_RELATION_BELONG
@@ -245,54 +245,54 @@ def JSON_test() -> None:
     f: set = {x for x in range(n)}
     sN: str = f'Num0to{n}'
     s2: set = {sN, 'element2'}
-    sN2: str = 'bigSet'
-    execInput(*auto2NAL(f, sN), *auto2NAL(f, sN2),
-              f'<(*,{1},{sN2}) --> {SIGN_RELATION_BELONG}>?')
-    printInf()
-    execInput('/waitans')
-    printInf()
+    sN2: str = 'big_set'
+    execute_input(*auto2NAL(f, sN), *auto2NAL(f, sN2),
+                  f'<(*,{1},{sN2}) --> {SIGN_RELATION_BELONG}>?')
+    show_information()
+    execute_input('/waitans')
+    show_information()
 
 
-@expRegister('json')
+@exp_register('json')
 def JSON_test2() -> None:
     '''Enter a custom dictionary and ask for relationships one by one'''
     from data2nal import auto2NAL
     print('JSON Test Part II:')
     dic: dict = {
-        'smallestPositiveInteger': 1,
-        'evenNumberLT10': [
+        'smallest_positive_integer': 1,
+        'even_number_LT_10': [
             2, 4, 6, 8
         ],
-        'is0notNeg': True,
+        'is0not_neg': True,
         1: {
-            'dictName': 'aNameOfDict'
+            'dict_name': 'a_name_of_dict'
         }
     }
-    execInput(*auto2NAL(dic, 'myDict'))
-    printInf()
-    execInput(*auto2NAL(dic, 'myDict', punct=Punctuation.Question))
-    printInf()
-    execInput('/waitans')
+    execute_input(*auto2NAL(dic, 'my_dict'))
+    show_information()
+    execute_input(*auto2NAL(dic, 'my_dict', punct=Punctuation.Question))
+    show_information()
+    execute_input('/waitans')
 
 
-@expRegister('json')
+@exp_register('json')
 def JSON_test3() -> None:
     '''Enter a Config.json object that acts as its own "system parameter"'''
     print('JSON Test Part III')
     from pynars.Interface import DEFAULT_CONFIG
     from data2nal import auto2NAL
-    printInf()
-    execInput(*auto2NAL(DEFAULT_CONFIG, 'systemConfig',
-                        punct=Punctuation.Judgement))
-    printInf()
-    execInput(*auto2NAL(DEFAULT_CONFIG, 'systemConfig',
-                        punct=Punctuation.Question))
-    printInf()
-    execInput('/waitans')
+    show_information()
+    execute_input(*auto2NAL(DEFAULT_CONFIG, 'system_config',
+                            punct=Punctuation.Judgement))
+    show_information()
+    execute_input(*auto2NAL(DEFAULT_CONFIG, 'system_config',
+                            punct=Punctuation.Question))
+    show_information()
+    execute_input('/waitans')
 
 
-@expRegister('eval')
-def pyObject_loadIn() -> None:
+@exp_register('eval')
+def py_object_load_in() -> None:
     '''Load any Python object into NARS'''
     from data2nal import auto2NAL
     obj: any = None
@@ -309,85 +309,85 @@ def pyObject_loadIn() -> None:
     nals: list[str] = auto2NAL(
         obj, punct=punct if punct else '.', name=name if name else None)
     print(f'Input object: {repr(obj)}\nNAL text: \n' + "\n".join(nals))
-    execInput(*nals)
+    execute_input(*nals)
 
 
-@expRegister('mcopyJ')
+@exp_register('mcopyJ')
 def memory_copy_JSON() -> None:
     '''Experiment: Memory copy & Localization retention'''
-    nars = currentNARSInterface.reasoner
+    nars = current_NARS_interface.reasoner
     import jsonpickle as jp  # Use the JSON serialization library jsonpickle
-    copiedMem: Memory = deepcopy(nars.memory)
-    execInput('A-->B.', 'B-->C.', 'A-->C?', '/waitans')
-    print(id(nars.memory), infMemory(nars.memory),
-          'copied:\n', id(copiedMem), infMemory(copiedMem))
-    jpEmem = jp.encode(nars.memory)
-    jpEcopied = jp.encode(copiedMem)
-    print('pickle#Encode:\n', repr(jpEmem), 'copied:\n', repr(jpEcopied))
-    decodedMem: Memory = jp.decode(jpEcopied)
-    print(id(copiedMem), infMemory(copiedMem), 'decoded:\n',
-          id(decodedMem), infMemory(decodedMem))
+    copied_mem: Memory = deepcopy(nars.memory)
+    execute_input('A-->B.', 'B-->C.', 'A-->C?', '/waitans')
+    print(id(nars.memory), show_memory(nars.memory),
+          'copied:\n', id(copied_mem), show_memory(copied_mem))
+    jp_emem = jp.encode(nars.memory)
+    jp_ecopied = jp.encode(copied_mem)
+    print('pickle#Encode:\n', repr(jp_emem), 'copied:\n', repr(jp_ecopied))
+    decoded_mem: Memory = jp.decode(jp_ecopied)
+    print(id(copied_mem), show_memory(copied_mem), 'decoded:\n',
+          id(decoded_mem), show_memory(decoded_mem))
 
 
-@expRegister('rcopyJ')
+@exp_register('rcopyJ')
 def reasoner_copy_JSON() -> None:
     '''Make a deep copy of the entire reasoner'''
-    nars = currentNARSInterface.reasoner
+    nars = current_NARS_interface.reasoner
     import jsonpickle as jp  # Use the JSON serialization library jsonpickle
     import json
-    copiedNar: Reasoner = deepcopy(nars)  # deep copy
-    jpEnar: str = jp.encode(copiedNar)  # serialize to JSON string
-    encodedNar: dict = json.loads(jpEnar)  # JSON string to dict
-    rStrDict: str = repr(encodedNar)  # dict to str
-    decodedNar: Reasoner = jp.decode(
-        json.dumps(encodedNar))  # str to Reasoner
+    copied_nar: Reasoner = deepcopy(nars)  # deep copy
+    jp_enar: str = jp.encode(copied_nar)  # serialize to JSON string
+    encoded_nar: dict = json.loads(jp_enar)  # JSON string to dict
+    rStr_dict: str = repr(encoded_nar)  # dict to str
+    decoded_nar: Reasoner = jp.decode(
+        json.dumps(encoded_nar))  # str to Reasoner
     print(
-        f'Copied:\n{infReasoner(copiedNar)}\nEncoded:\n{rStrDict}\nDecoded:\n{infReasoner(decodedNar)}')
+        f'Copied:\n{show_reasoner(copied_nar)}\nEncoded:\n{rStr_dict}\nDecoded:\n{show_reasoner(decoded_nar)}')
 
 
-@expRegister('copyJ')
+@exp_register('copyJ')
 def copy_JSON() -> None:
     '''Copy the reasoner data to the clipboard'''
-    nars = currentNARSInterface.reasoner
+    nars = current_NARS_interface.reasoner
     # import module
     from pyperclip import copy
     import jsonpickle as jp
     try:
-        jpEnar: str = jp.encode(nars)  # serialize to JSON string
+        jp_enar: str = jp.encode(nars)  # serialize to JSON string
         print(
-            f'Source reasoner:\n{infReasoner(nars)}\n Serialized JSON string:\n{jpEnar}')
-        copy(jpEnar)  # copy to clipboard
+            f'Source reasoner:\n{show_reasoner(nars)}\n Serialized JSON string:\n{jp_enar}')
+        copy(jp_enar)  # copy to clipboard
         print('JSON data copied!')
     except BaseException as e:
         print(f'Save Failed! Error: {e.with_traceback(None) if e else e}')
 
 
-@expRegister('loadJ')
+@exp_register('loadJ')
 def load_JSON() -> None:
     '''load the clipboard reasoner data into the interface'''
     # import module
     import jsonpickle as jp
     try:
-        jsonPath: str = input(
+        json_path: str = input(
             'Please enter your saved reasoner JSON path:')  # get JSON path
         from pathlib import Path
-        jsonPath: Path = Path(jsonPath)
-        with open(jsonPath, mode='r', encoding='utf-8') as jsonFile:
-            jsonStr: str = jsonFile.read()
+        json_path: Path = Path(json_path)
+        with open(json_path, mode='r', encoding='utf-8') as json_file:
+            json_str: str = json_file.read()
         try:
-            decodedNAR: Reasoner = jp.decode(
-                jsonStr)  # deserialize from JSON string
+            decoded_NAR: Reasoner = jp.decode(
+                json_str)  # deserialize from JSON string
             try:
-                interfaceName: str = input(
+                interface_name: str = input(
                     'Please enter a new interface name:')  # accept the reasoner with a new interface
                 interface: NARSInterface = NARSInterface(
-                    NARS=decodedNAR)  # create interface
-                reasoners[interfaceName] = interface  # directly add
-                reasonerGoto(interfaceName)  # goto
+                    NARS=decoded_NAR)  # create interface
+                reasoners[interface_name] = interface  # directly add
+                reasoner_goto(interface_name)  # goto
                 print(
-                    f"Import a reasoner named {interfaceName}, silent {'on' if interface.silentOutput else 'off'}.")
+                    f"Import a reasoner named {interface_name}, silent {'on' if interface.silent_output else 'off'}.")
                 print(
-                    f'Pre-deserialized JSON string:\n{jsonStr}\nNew reasoner:\n{infReasoner(decodedNAR)}')
+                    f'Pre-deserialized JSON string:\n{json_str}\nNew reasoner:\n{show_reasoner(decoded_NAR)}')
             except BaseException as e:
                 print(
                     f'Import failed! \nError: {e.with_traceback(None) if e else e}')
@@ -398,19 +398,19 @@ def load_JSON() -> None:
         print(f'Read failed! \nError: {e.with_traceback(None) if e else e}')
 
 
-@expRegister('copy', 'pickle')
+@exp_register('copy', 'pickle')
 def copy_pickle() -> None:
     '''Save the reasoner data to a file'''
-    nars = currentNARSInterface.reasoner
+    nars = current_NARS_interface.reasoner
     # import module
     import pickle as p
     # start to save
     file_name: str = input(
         'Please enter the file name to save reasoner (default is "[current reasoner name].pickle):')
     try:
-        with open(f'{file_name if file_name else getCurrentReasonerName()}.pickle', 'wb') as file:
+        with open(f'{file_name if file_name else current_nar_name()}.pickle', 'wb') as file:
             print(
-                f'Trying to save the reasoner "{getCurrentReasonerName()}" to file "{file_name}.pickle"...')
+                f'Trying to save the reasoner "{current_nar_name()}" to file "{file_name}.pickle"...')
             # pickle reasoner to file
             p.dump(nars, file)
             print(f'Reasoner data saved as "{file_name}.pickle"!')
@@ -419,7 +419,7 @@ def copy_pickle() -> None:
         # TODO: Failed with error "Can't pickle local object 'Bag.__init__.<locals>.map_priority'"
 
 
-@expRegister('load', 'unpickle')
+@exp_register('load', 'unpickle')
 def load_pickle() -> None:
     '''load the reasoner data into the interface'''
     # import module
@@ -434,19 +434,19 @@ def load_pickle() -> None:
                 print(
                     f'Trying to load reasoner from "{file_path}"...')
                 # deserialize from pickle file
-                decodedNAR: Reasoner = p.load(file)
+                decoded_NAR: Reasoner = p.load(file)
                 try:
                     # accept the reasoner with a new interface
-                    interfaceName: str = input(
+                    interface_name: str = input(
                         'Please enter a new interface name: ')
                     # create interface
-                    interface: NARSInterface = NARSInterface(NARS=decodedNAR)
-                    reasoners[interfaceName] = interface  # directly add
-                    reasonerGoto(interfaceName)  # goto
+                    interface: NARSInterface = NARSInterface(NARS=decoded_NAR)
+                    reasoners[interface_name] = interface  # directly add
+                    reasoner_goto(interface_name)  # goto
                     print(
-                        f"Import a reasoner named {interfaceName}, silent {'on' if interface.silentOutput else 'off'}.")
+                        f"Import a reasoner named {interface_name}, silent {'on' if interface.silent_output else 'off'}.")
                     print(
-                        f'New reasoner:\n{infReasoner(decodedNAR)}')
+                        f'New reasoner:\n{show_reasoner(decoded_NAR)}')
                 except BaseException as e:
                     print(
                         f'Import failed! \nError: {e.with_traceback(None) if e else e}')
@@ -457,19 +457,19 @@ def load_pickle() -> None:
         print(f'Read failed! \nError: {e.with_traceback(None) if e else e}')
 
 
-def _cmdExperiment(cmd: str):
+def _cmd_experiment(cmd: str):
     '''Cmd experiment entry'''
-    nars = currentNARSInterface.reasoner  # current NARS reasoner
+    nars = current_NARS_interface.reasoner  # current NARS reasoner
     # [2023-09-22 16:34:55] Now reuse the multi-patch to run cmd respectfully
-    autoExecuteCmdByName(cmd, [], EXPERIMENTAL_CMDS)
+    auto_execute_cmd_by_name(cmd, [], EXPERIMENTAL_CMDS)
 
 
 # Main
 if __name__ == '__main__':
     while 1:
         # enter preset format prompt "IN"
-        printOutput(PrintType.COMMENT, '',
-                    comment_title='Input', end='')  # force hint
+        print_output(PrintType.COMMENT, '',
+                     comment_title='Input', end='')  # force hint
 
         # get input
         inp: str = input()
@@ -481,15 +481,15 @@ if __name__ == '__main__':
         elif inp[0] == '\\':  # Gives the current interface library information
             cmd: str = inp[1:]
             if not cmd:
-                printInf()
+                show_information()
             else:
-                _cmdExperiment(cmd=cmd)
+                _cmd_experiment(cmd=cmd)
                 continue
 
         # execute input
         if 1:
             pass
-            execInput(inp=inp)
+            execute_input(inp=inp)
         try:
             pass
         except BaseException as e:

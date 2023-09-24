@@ -249,7 +249,7 @@
             ]
         },
         {
-            "name": "Python: Console Experimental Features",
+            "name": "Python: ex-console for experiments",
             "type": "python",
             "request": "launch",
             "module": "Experiments.ExConsole.main",

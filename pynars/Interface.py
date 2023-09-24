@@ -8,7 +8,7 @@ from pathlib import Path
 import argparse  # for cmdline
 
 # pynars
-from pynars.utils.Print import print_out as printOut
+from pynars.utils.Print import print_out as print_out_origin
 from pynars.NARS import Reasoner
 from pynars.Narsese import Task
 from pynars.utils.Print import PrintType
@@ -19,15 +19,7 @@ from copy import deepcopy
 # utils #
 
 
-def NAL_Parse(narsese: str) -> None | Task:
-    '''
-    Responsible for calling the NAL parser to parse statements
-    ! It might raise errors
-    '''
-    return NarseseParser.parse(narsese)
-
-
-def NAL_GrammarParse(narsese: str) -> None | Task:
+def narsese_parse_safe(narsese: str) -> None | Task:
     '''
     Responsible for calling the NAL parser to parse statements
 
@@ -40,7 +32,7 @@ def NAL_GrammarParse(narsese: str) -> None | Task:
     2. Can not parse (error), return a null value (can be used to judge)
     '''
     try:
-        return NAL_Parse(narsese=narsese)
+        return NarseseParser.parse(narsese=narsese)
     except:  # if errors, return `None` that can be identify
         return None
 
@@ -52,7 +44,7 @@ class NARSOutput:
     content: any
     p: float
     q: float
-    commentTitle: str
+    comment_title: str
     end: str
 
     def __init__(self, type: PrintType, content, p: float = None, d: float = None, q: float = None, comment_title: str = None, end: str = None):
@@ -129,36 +121,37 @@ class NARSInterface:
 
     # Print out interface static methods & class variables #
 
-    _showColor: bool = True
+    _show_color: bool = True
     # Try importing, prompt if no package is available and go to a more compatible path (less program dependency)
     try:
-        from sty import bg as _strBackGround, fg as _strForeGround  # Import background class
+        # Import background class
+        from sty import bg as _str_back_ground, fg as _str_fore_ground
     except:
         # No color mode
-        _showColor = None
+        _show_color = None
         print('Unable to import color pack! Automatically switched to `No color mode` and locked!')
 
     @property
-    def showColor(self):
-        return NARSInterface.showColor
+    def show_color(self):
+        return NARSInterface.show_color
 
-    @showColor.setter
-    def showColor(self, value: bool) -> bool | None:
+    @show_color.setter
+    def show_color(self, value: bool) -> bool | None:
         # strictly identify None rather than implicit bool(None) == False
-        if NARSInterface._showColor == None:
+        if NARSInterface._show_color == None:
             return None  # the color display cannot be enabled
-        NARSInterface._showColor = value
-        return NARSInterface._showColor
+        NARSInterface._show_color = value
+        return NARSInterface._show_color
 
-    def floatRestrictStr(x):
+    def float_restrict_str(x):
         '''0 to 1 floating point constraint'''
         return (f'{round(x, 2):.2f}'
                 if isinstance(x, float) and 0 <= x <= 1
                 else '    ')
 
-    def outMessageNoColor(type: PrintType, content,
-                          p: float = None, d: float = None, q: float = None,
-                          comment_title: str = None):
+    def out_message_no_color(type: PrintType, content,
+                            p: float = None, d: float = None, q: float = None,
+                            comment_title: str = None):
         ''''from pynars.utils.Print import out_print'''
         # show_budget = True
         # if isinstance(p, float) and isinstance(d, float) and isinstance(q, float):
@@ -166,24 +159,24 @@ class NARSInterface:
         #         show_budget = False
         # else:
         #     show_budget = False
-        pStr: str = NARSInterface.floatRestrictStr(p)
-        qStr: str = NARSInterface.floatRestrictStr(q)
-        dStr: str = NARSInterface.floatRestrictStr(d)
+        p_str: str = NARSInterface.float_restrict_str(p)
+        q_str: str = NARSInterface.float_restrict_str(q)
+        d_str: str = NARSInterface.float_restrict_str(d)
         if type:
             # ! ↓ The value of this enumeration class comes with a foreground color
             value: str = type.value[5:-1]
             if type is PrintType.COMMENT and comment_title is not None:
                 return f'{comment_title}: {str(content)}'
             elif type is PrintType.INFO:
-                return f'|{pStr}|{dStr}|{qStr}| {value}「{str(content)}」'
+                return f'|{p_str}|{d_str}|{q_str}| {value}「{str(content)}」'
             else:
-                return f'|{pStr}|{dStr}|{qStr}| {value} | {str(content)}'
+                return f'|{p_str}|{d_str}|{q_str}| {value} | {str(content)}'
 
     # modified colored output of Print.py
     @staticmethod
-    def outPrintNoColor(type: PrintType, content, p: float = None, d: float = None, q: float = None, comment_title: str = None, end: str = None):
+    def out_print_no_color(type: PrintType, content, p: float = None, d: float = None, q: float = None, comment_title: str = None, end: str = None):
         print(
-            NARSInterface.outMessageNoColor(
+            NARSInterface.out_message_no_color(
                 type=type, content=content,
                 p=p, d=d, q=q,
                 comment_title=comment_title),
@@ -191,14 +184,14 @@ class NARSInterface:
 
     def _is0to1Float(x): return isinstance(x, float) and 0 <= x <= 1
 
-    def _bgEmbrace(
-        str, bg): return f'{bg}{str}{NARSInterface._strBackGround.rs}'
+    def _bg_embrace(
+        str, bg): return f'{bg}{str}{NARSInterface._str_back_ground.rs}'
 
-    def _fgEmbrace(
-        str, fg): return f'{fg}{str}{NARSInterface._strForeGround.rs}'
+    def _fg_embrace(
+        str, fg): return f'{fg}{str}{NARSInterface._str_fore_ground.rs}'
 
     @staticmethod
-    def outMessageWithColor(type: PrintType, content, p: float = None, d: float = None, q: float = None, comment_title: str = None):
+    def out_message_with_color(type: PrintType, content, p: float = None, d: float = None, q: float = None, comment_title: str = None):
         # show_budget = True
         # if isinstance(p, float) and isinstance(d, float) and isinstance(q, float):
         #     if p<0 or p>1 or q<0 or q>1 or d<0 or d>1:
@@ -210,8 +203,8 @@ class NARSInterface:
         Although the code has become simpler, the actual call has gone through more functions and calculations, but it has become less concise
         '''
 
-        bg, fg = NARSInterface._strBackGround, NARSInterface._strForeGround
-        bge, fge = NARSInterface._bgEmbrace, NARSInterface._fgEmbrace
+        bg, fg = NARSInterface._str_back_ground, NARSInterface._str_fore_ground
+        bge, fge = NARSInterface._bg_embrace, NARSInterface._fg_embrace
 
         if NARSInterface._is0to1Float(p):
             bg1 = bg(min(255, int(255*p/2+10)), 10, 10)
@@ -244,12 +237,12 @@ class NARSInterface:
             )
 
     @staticmethod
-    def printOutWithColor(type: PrintType, content, p: float = None, d: float = None, q: float = None, comment_title: str = None, end: str = None):
-        print(NARSInterface.outMessageWithColor(
+    def print_out_with_color(type: PrintType, content, p: float = None, d: float = None, q: float = None, comment_title: str = None, end: str = None):
+        print(NARSInterface.out_message_with_color(
             type=type, content=content, p=p, d=d, q=q, comment_title=comment_title), end=end)
 
     @staticmethod
-    def changeRandomSeed(seed: int) -> None:
+    def change_random_seed(seed: int) -> None:
         '''[Taken from Console.py and improved] Set random and numpy.random random seeds (global)'''
         # Set random seeds from random and numpy
         '''from importlib import import_module # ! Temporary not use
@@ -261,14 +254,14 @@ class NARSInterface:
         if not 'numpy' in globals():
             import numpy as np
         np.random.seed(seed=seed)
-        printOut(PrintType.COMMENT,
-                 f'Changing random seed={seed}...', comment_title='Setup')
+        print_out_origin(PrintType.COMMENT,
+                         f'Changing random seed={seed}...', comment_title='Setup')
 
-    @staticmethod
-    def loadConfig(content: str) -> None:
-        Config.loadFromStr(content=content)
+    # @staticmethod
+    # def load_config(content: str) -> None:
+    #     Config.loadFromStr(content=content)
 
-    silentOutput: bool = False
+    silent_output: bool = False
 
     # reasoner
     _NARS: Reasoner = None  # ! internal
@@ -280,7 +273,7 @@ class NARSInterface:
     # NARS constructor & initialization #
 
     @staticmethod
-    def constructInterface(seed=-1, memory=100, capacity=100, silent: bool = False):
+    def construct_interface(seed=-1, memory=100, capacity=100, silent: bool = False):
         '''Construct the reasoner using specific construction parameters instead of having to construct the reasoner itself in each constructor'''
         return NARSInterface(seed=seed,
                              NARS=Reasoner(
@@ -292,16 +285,16 @@ class NARSInterface:
         '''init the interface'''
         # random seed
         if seed > 0:
-            NARSInterface.changeRandomSeed(seed)
+            NARSInterface.change_random_seed(seed)
 
         # config
-        self.silentOutput: bool = silent
+        self.silent_output: bool = silent
 
         # reasoner
-        self.printOutput(
+        self.print_output(
             PrintType.COMMENT, f'{"Importing" if NARS else "Creating"} Reasoner...', comment_title='NARS')
         self._NARS = NARS if NARS else Reasoner(100, 100)
-        self.printOutput(
+        self.print_output(
             PrintType.COMMENT, 'Run...', comment_title='NARS')
         ''' TODO?
         Use a Python dictionary instead of "external file address" to input configuration to the reasoner
@@ -311,28 +304,28 @@ class NARSInterface:
     # Interface to the outer interface of the PyNARS part #
 
     @staticmethod
-    def directPrint(type: PrintType, content: any, p: float = None, d: float = None, q: float = None, comment_title: str = None, end: str = None) -> None:
+    def direct_print(type: PrintType, content: any, p: float = None, d: float = None, q: float = None, comment_title: str = None, end: str = None) -> None:
         '''Direct print information by parameters'''
         (
-            NARSInterface.printOutWithColor
-            if NARSInterface.showColor
-            else NARSInterface.outPrintNoColor
+            NARSInterface.print_out_with_color
+            if NARSInterface.show_color
+            else NARSInterface.out_print_no_color
         )(type=type, content=content, p=p, d=d, q=q, comment_title=comment_title, end=end)
 
-    def printOutput(self, type: PrintType, content: any, p: float = None, d: float = None, q: float = None, comment_title: str = None, end: str = None) -> None:
+    def print_output(self, type: PrintType, content: any, p: float = None, d: float = None, q: float = None, comment_title: str = None, end: str = None) -> None:
         # able to be silent
-        if not self.silentOutput:
-            NARSInterface.directPrint(
+        if not self.silent_output:
+            NARSInterface.direct_print(
                 type=type, content=content,
                 p=p, d=d, q=q,
                 comment_title=comment_title,
                 end=end)
 
-    # _eventHandlers: list[function] = [] # ! error: name 'function' is not defined
-    _eventHandlers: list = []
+    # _event_handlers: list[function] = [] # ! error: name 'function' is not defined
+    _event_handlers: list = []
 
     @property  # read only
-    def eventHandlers(self):
+    def event_handlers(self):
         '''Registry of event handlers
             Standard format:
             ```
@@ -340,43 +333,43 @@ class NARSInterface:
                 # your code
             ```
         '''
-        return self._eventHandlers
+        return self._event_handlers
 
-    def _handleNARSOutput(self, out: NARSOutput):
+    def _handle_NARS_output(self, out: NARSOutput):
         '''Internally traverses the event handler registry table, running its internal functions one by one'''
-        for handler in self._eventHandlers:
+        for handler in self._event_handlers:
             try:
                 handler(out)
             except BaseException as e:
                 print(
                     f'Handler "{handler.__name__}" errors when deal NARS output "{out}": {e}')
 
-    def inputNAL(self, lines: str) -> list[NARSOutput]:
+    def input_narsese(self, lines: str) -> list[NARSOutput]:
         '''Interfacing with NARS: Injects input provided by an external program into NARS'''
-        return self._handleLines(lines=lines)
+        return self._handle_lines(lines=lines)
 
-    def executeFile(self, path: str | Path) -> None:
+    def execute_file(self, path: str | Path) -> None:
         '''Handle files'''
         # it's copied directly from Console.py
         if path is not None:
             path: Path = Path(path)
             file_name = path.name
-            self.printOutput(
+            self.print_output(
                 PrintType.COMMENT, f'Run file <{file_name}>.', comment_title='NARS')
             with open(path, 'r') as f:
                 lines = f.read()
-                self._handleLines(lines)
-            self.printOutput(
+                self._handle_lines(lines)
+            self.print_output(
                 PrintType.COMMENT, 'Console.', comment_title='NARS')
 
     # History & Memories #
 
-    _inputHistory: list[str] = []
+    _input_history: list[str] = []
 
     @property  # readonly
-    def inputHistory(self):
+    def input_history(self):
         '''Records texts (statements) entered into the interface'''
-        return self._inputHistory
+        return self._input_history
 
     '''
     # TODO: The `silent` cannot prevent printing the following lines
@@ -386,7 +379,7 @@ class NARSInterface:
                     INFO  : Done. Time-cost: 0.0009992122650146484s.
     '''
 
-    def _handleLines(self, lines: str) -> list[NARSOutput]:
+    def _handle_lines(self, lines: str) -> list[NARSOutput]:
         '''
         Process the input stream of statements, decompose it into multiple statements, and pass each statement to NARS for processing, and finally return the result list of NARS output.
 
@@ -403,7 +396,7 @@ class NARSInterface:
         1. Decompose the input statement flow into multiple statements.
         2. Go through each statement, call "processing statement" to pass the statement to NARS for processing, and add the processing result to the task list.
         3. Traverse the task list, convert the task-related information into NARS output objects, and add them to the out output list.
-        4. Traverse the out output list, call `self.printOutput` to print the output, and call `self._handleNARSOutput` to broadcast the output.
+        4. Traverse the out output list, call `self.print_output` to print the output, and call `self._handle_NARS_output` to broadcast the output.
         5. Return to the out output list.
 
         Possible exceptions:
@@ -418,32 +411,32 @@ class NARSInterface:
 
         # start to handle
 
-        taskList = []
+        task_list = []
         for line in lines.split('\n'):
             if len(line) == 0:
                 continue
 
-            taskLine = self.run_line(reasoner=self._NARS, line=line)
-            self._inputHistory.append(line)
-            if taskLine is not None:
-                taskList.extend(taskLine)
+            task_line = self.run_line(reasoner=self._NARS, line=line)
+            self._input_history.append(line)
+            if task_line is not None:
+                task_list.extend(task_line)
 
         outs: list[NARSOutput] = []
 
-        taskList: List[
+        task_list: List[
             Tuple[
                 List[Task], Task, Task,
                 List[Task], Task,
                 Tuple[Task, Task]
             ]
         ]
-        for taskLine in taskList:
+        for task_line in task_list:
             tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest,\
-                (task_operation_return, task_executed) = taskLine
-            for derivedTask in tasks_derived:
+                (task_operation_return, task_executed) = task_line
+            for derived_task in tasks_derived:
                 outs.append(
                     NARSOutput(
-                        PrintType.OUT, derivedTask.sentence.repr(), *derivedTask.budget)
+                        PrintType.OUT, derived_task.sentence.repr(), *derived_task.budget)
                 )
 
             if judgement_revised is not None:
@@ -467,10 +460,10 @@ class NARSInterface:
             # * print & event patch
             for out in outs:
                 if out:
-                    self.printOutput(type=out.type, content=out.content, p=out.p,
-                                     d=out.d, q=out.q, comment_title=out.comment_title, end=out.end)
+                    self.print_output(type=out.type, content=out.content, p=out.p,
+                                      d=out.d, q=out.q, comment_title=out.comment_title, end=out.end)
                 # broadcast outputs before return
-                self._handleNARSOutput(out=out)
+                self._handle_NARS_output(out=out)
 
         # return outputs
         return outs
@@ -485,11 +478,11 @@ class NARSInterface:
                 line = line[len("''outputMustContain('"):].rstrip("')\n")  #
                 if len(line) == 0:  # no any content
                     return
-                if (check := NAL_GrammarParse(line)):  # verify the input
-                    self.printOutput(
+                if (check := narsese_parse_safe(line)):  # verify the input
+                    self.print_output(
                         PrintType.INFO, f'OutputContains({check.sentence.repr()})')
                 else:
-                    self.printOutput(
+                    self.print_output(
                         PrintType.ERROR, f'parse "{line}" failed!'
                     )
             return
@@ -498,27 +491,27 @@ class NARSInterface:
             return None
         # digit -> run cycle
         elif line.isdigit():
-            nCycles = int(line)
-            self.printOutput(PrintType.INFO, f'Run {nCycles} cycles.')
-            tasksInCycles: list[Task] = []
+            n_cycles = int(line)
+            self.print_output(PrintType.INFO, f'Run {n_cycles} cycles.')
+            tasks_in_cycles: list[Task] = []
             # Get all export statements run during this period, deep copy for backup
-            for _ in range(nCycles):
-                tasksCaught = reasoner.cycle()
-                tasksInCycles.append(deepcopy(tasksCaught))
-            return tasksInCycles
+            for _ in range(n_cycles):
+                tasks_caught = reasoner.cycle()
+                tasks_in_cycles.append(deepcopy(tasks_caught))
+            return tasks_in_cycles
         # narsese
         else:
             line = line.rstrip(' \n')  # ignore spaces and newline
             if 1:
                 success, task, _ = reasoner.input_narsese(line, go_cycle=False)
                 if success:  # input success
-                    self.printOutput(
+                    self.print_output(
                         PrintType.IN, task.sentence.repr(), *task.budget)
                 else:  # input failed
-                    self.printOutput(
+                    self.print_output(
                         PrintType.ERROR, f'Input "{line}" failed.')
-                tasksCaught = reasoner.cycle()  # run cycles
-                return [deepcopy(tasksCaught)]  # Returns a inferred statement
+                tasks_caught = reasoner.cycle()  # run cycles
+                return [deepcopy(tasks_caught)]  # Returns a inferred statement
 
 
 def __main__():
@@ -531,19 +524,19 @@ def __main__():
     filepath: Union[list, None] = args.filepath
     filepath = filepath[0] if filepath else None
     # setup NARS interface
-    interface: NARSInterface = NARSInterface.constructInterface()
+    interface: NARSInterface = NARSInterface.construct_interface()
     # enter console loop
     while True:
-        interface.printOutput(
+        interface.print_output(
             PrintType.COMMENT, '', comment_title='Input', end='')
         lines = input()
         try:
-            interface._handleLines(lines)
+            interface._handle_lines(lines)
         except Exception as e:
-            interface.printOutput(
+            interface.print_output(
                 PrintType.ERROR, f'Errors when input {lines}\n{e}')
 
 
 if __name__ == '__main__':
-    Config.loadFromDict(DEFAULT_CONFIG)
+    # Config.loadFromDict(DEFAULT_CONFIG) # ! deprecated
     __main__()
