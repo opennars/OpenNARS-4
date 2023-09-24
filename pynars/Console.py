@@ -107,30 +107,18 @@ def handle_lines(nars: Reasoner, lines: str):
         Tuple[Task, Task]]]
     for tasks_line in tasks_lines:
         # unpack one of lines of tasks, and then print out
-        (tasks_derived,
-         judgement_revised,
-         goal_revised,
-         answers_question,
-         answers_quest,
-         (task_operation_return, task_executed)) = tasks_line
+        tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest, \
+        (task_operation_return, task_executed) = tasks_line
+    
         # while derived task(s)
-        for task in tasks_derived:
-            print_out(
-                PrintType.OUT,
-                task.sentence.repr(),
-                *task.budget)
+        for task in tasks_derived: print_out(PrintType.OUT, task.sentence.repr(), *task.budget)
+
         # while revising a judgement
-        if judgement_revised is not None:
-            print_out(
-                PrintType.OUT,
-                judgement_revised.sentence.repr(),
-                *judgement_revised.budget)
-        # while revising a goal
-        if goal_revised is not None:
-            print_out(
-                PrintType.OUT,
-                goal_revised.sentence.repr(),
-                *goal_revised.budget)
+        if judgement_revised is not None: print_out(PrintType.OUT, judgement_revised.sentence.repr(),
+                   
+        # while revising a goal                                 *judgement_revised.budget)
+        if goal_revised is not None: print_out(PrintType.OUT, goal_revised.sentence.repr(), *goal_revised.budget)
+
         # while answering a question for truth value
         if answers_question is not None:
             for answer in answers_question:
@@ -140,11 +128,7 @@ def handle_lines(nars: Reasoner, lines: str):
                     *answer.budget)
         # while answering a quest for desire value
         if answers_quest is not None:
-            for answer in answers_quest:
-                print_out(
-                    PrintType.ANSWER,
-                    answers_quest.sentence.repr(),
-                    *answers_quest.budget)
+            for answer in answers_quest: print_out(PrintType.ACHIEVED, answer.sentence.repr(), *answer.budget)
         # while executing an operation
         if task_executed is not None:
             print_out(
