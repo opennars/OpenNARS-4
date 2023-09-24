@@ -12,7 +12,6 @@ from pynars.utils.Print import print_out as print_out_origin
 from pynars.NARS import Reasoner
 from pynars.Narsese import Task
 from pynars.utils.Print import PrintType
-from pynars import Config
 from pynars.Narsese import parser as NarseseParser
 from copy import deepcopy
 
@@ -56,62 +55,6 @@ class NARSOutput:
         self.comment_title = comment_title
         self.end = end
 
-
-## default config ##
-
-DEFAULT_CONFIG: dict = {
-    "PROGRAM": {
-        "VERSION": "0.0.1",
-        "DRIVER": "py"
-    },
-    "HYPER-PARAMS": {
-        "DEFAULT": {
-            "BUDGET": {
-                "PRIORITY_JUDGEMENT": 0.8,
-                "DURABILITY_JUDGEMENT": 0.5,
-                "PRIORITY_QUESTION": 0.9,
-                "DURABILITY_QUESTION": 0.9,
-                "PRIORITY_QUEST": 0.9,
-                "DURABILITY_QUEST": 0.9,
-                "PRIORITY_GOAL": 0.9,
-                "DURABILITY_GOAL": 0.9,
-                "THRESHOLD": 0.01
-            },
-            "NUM_BUCKETS": 100,
-            "TRUTH": {
-                "FREQUENCY": 1.0,
-                "CONFIDENCE": 0.9,
-                "CONFIDENCE_JUDGEMENT": 0.9,
-                "CONFIDENCE_GOAL": 0.9,
-                "K": 1
-            },
-            "MAX_DURATION": 1000,
-            "CONCEPT": {
-                "NUM_LEVELS_TASKLINK_BAG": 1000,
-                "CAPACITY_TASKLINK_BAG": 10000,
-                "NUM_LEVELS_TERMLINK_BAG": 1000,
-                "CAPACITY_TERMLINK_BAG": 10000,
-                "CAPACITY_TABLE": 100
-            },
-            "COMPLEXITY_UNIT": 1.0,  # 1.0 - oo
-            "QUALITY_MIN": 0.3,
-            "CYCLES_PER_DURATION": 5,
-            "NUM_FORGET_DURATIONS": 2,
-            "REVISION_MAX_OCCURRENCE_DISTANCE": 10,
-            # The rate of confidence decrease in mental operations Doubt and Hesitate
-            "RATE_DISCOUNT_CONFIDENCE": 0.5,
-            "RATE_DISCOUNT_PRIORITY_INTERNAL_EXPERIENCE": 0.1,
-            "RATE_DISCOUNT_DURABILITY_INTERNAL_EXPERIENCE": 0.1,
-            "TEMPORAL_DURATION": 5,
-            "NUM_SEQUENCE_ATTEMPTS": 10,
-            "NUM_OP_CONDITION_ATTEMPTS": 10
-        },
-        "TRUTH_EPSILON": 0.01,
-        "BUDGET_EPSILON": 0.0001,
-        "COMPLEXITY_UNIT": 1.0
-    }
-}
-
 ## NARS Interface Main ##
 
 
@@ -150,8 +93,8 @@ class NARSInterface:
                 else '    ')
 
     def out_message_no_color(type: PrintType, content,
-                            p: float = None, d: float = None, q: float = None,
-                            comment_title: str = None):
+                             p: float = None, d: float = None, q: float = None,
+                             comment_title: str = None):
         ''''from pynars.utils.Print import out_print'''
         # show_budget = True
         # if isinstance(p, float) and isinstance(d, float) and isinstance(q, float):
@@ -256,10 +199,6 @@ class NARSInterface:
         np.random.seed(seed=seed)
         print_out_origin(PrintType.COMMENT,
                          f'Changing random seed={seed}...', comment_title='Setup')
-
-    # @staticmethod
-    # def load_config(content: str) -> None:
-    #     Config.loadFromStr(content=content)
 
     silent_output: bool = False
 
@@ -538,5 +477,4 @@ def __main__():
 
 
 if __name__ == '__main__':
-    # Config.loadFromDict(DEFAULT_CONFIG) # ! deprecated
     __main__()
