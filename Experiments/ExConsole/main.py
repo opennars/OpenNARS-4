@@ -21,6 +21,7 @@ from typing import List, Dict, Tuple, Union
 
 # information
 
+
 def show_bag(bag: Bag, sep: str = ',', indent_count: int = 1) -> str:
     '''Relation of extension: Channel -> Buffer -> Bag'''
     not_none_levels: List[list] = [
@@ -70,7 +71,7 @@ def show_information():
 ## Main program ##
 
 
-EXPERIMENTAL_CMDS: Dict[Tuple[str],Tuple[any, Tuple[str]]] = {}
+EXPERIMENTAL_CMDS: Dict[Tuple[str], Tuple[any, Tuple[str]]] = {}
 
 
 def exp_register(*cmd_names: Tuple[str]):
@@ -131,9 +132,9 @@ def exec_multiline_python_code() -> None:
 
 @exp_register('v')
 def list_variables() -> None:
-    print('locals\n\t'+'\n\t'.join(f'{k} : {v}' for k, v in locals().items()),
+    print('locals\n\t'+'\n\t'.join(f'{k} : {v}'for k, v in locals().items()),
           'globals\n\t' +
-          '\n\t'.join(f'{k} : {v}' for k, v in globals().items()),
+          '\n\t'.join(f'{k} : {v}'for k, v in globals().items()),
           sep='\n')
 
 
@@ -242,23 +243,23 @@ def chain_inference_test() -> None:
 @exp_register('json')
 def JSON_test() -> None:
     '''Input a series of numbers and construct a set, allowing NARS to determine ownership'''
-    from Experiments.ExConsole.data2narsese import auto2NAL, SIGN_RELATION_BELONG
+    from Experiments.ExConsole.data2narsese import auto2Narsese, SIGN_RELATION_BELONG
     n: int = int(input('Please enter the number: '))
     f: set = {x for x in range(n)}
     sN: str = f'Num0to{n}'
     s2: set = {sN, 'element2'}
     sN2: str = 'big_set'
-    execute_input(*auto2NAL(f, sN), *auto2NAL(f, sN2),
+    execute_input(*auto2Narsese(f, sN), *auto2Narsese(f, sN2),
                   f'<(*,{1},{sN2}) --> {SIGN_RELATION_BELONG}>?')
     show_information()
     execute_input('/waitans')
     show_information()
 
 
-@exp_register('json')
+@exp_register('json2')
 def JSON_test2() -> None:
     '''Enter a custom dictionary and ask for relationships one by one'''
-    from Experiments.ExConsole.data2narsese import auto2NAL
+    from Experiments.ExConsole.data2narsese import auto2Narsese
     print('JSON Test Part II:')
     dic: dict = {
         'smallest_positive_integer': 1,
@@ -270,47 +271,31 @@ def JSON_test2() -> None:
             'dict_name': 'a_name_of_dict'
         }
     }
-    execute_input(*auto2NAL(dic, 'my_dict'))
+    execute_input(*auto2Narsese(dic, 'my_dict'))
     show_information()
-    execute_input(*auto2NAL(dic, 'my_dict', punct=Punctuation.Question))
-    show_information()
-    execute_input('/waitans')
-
-
-@exp_register('json')
-def JSON_test3() -> None:
-    '''Enter a Config.json object that acts as its own "system parameter"'''
-    print('JSON Test Part III')
-    from pynars.Interface import DEFAULT_CONFIG
-    from Experiments.ExConsole.data2narsese import auto2NAL
-    show_information()
-    execute_input(*auto2NAL(DEFAULT_CONFIG, 'system_config',
-                            punct=Punctuation.Judgement))
-    show_information()
-    execute_input(*auto2NAL(DEFAULT_CONFIG, 'system_config',
-                            punct=Punctuation.Question))
+    execute_input(*auto2Narsese(dic, 'my_dict', punct=Punctuation.Question))
     show_information()
     execute_input('/waitans')
 
 
-@exp_register('eval')
+@exp_register('eval', 'py_object')
 def py_object_load_in() -> None:
     '''Load any Python object into NARS'''
-    from Experiments.ExConsole.data2narsese import auto2NAL
+    from Experiments.ExConsole.data2narsese import auto2Narsese
     obj: any = None
     while not obj:
         try:
-            obj: any = eval(input(' Please input your Python object: '))
+            obj: any = eval(input('Please input your Python object: '))
         except BaseException as e:
             print(
-                f' parsing failed! Error: {e.With_traceback(None) if e else e}')
+                f'parsing failed! Error: {e.with_traceback(None) if e else e}')
     name: str = input(
         'Please enter a name for this object (leave blank for automatic generation): ')
     punct: str = input(
         'Please enter your modality for the object (./?/!) (Leave blank default.): ')
-    nals: List[str] = auto2NAL(
+    nals: List[str] = auto2Narsese(
         obj, punct=punct if punct else '.', name=name if name else None)
-    print(f'Input object: {repr(obj)}\nNAL text: \n' + "\n".join(nals))
+    print(f'Input object: {repr(obj)}\nNarsese: \n' + "\n".join(nals))
     execute_input(*nals)
 
 

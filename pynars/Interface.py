@@ -20,7 +20,7 @@ from copy import deepcopy
 # utils #
 
 
-def narsese_parse_safe(narsese: str) -> Union[None,Task]:
+def narsese_parse_safe(narsese: str) -> Union[None, Task]:
     '''
     Responsible for calling the NAL parser to parse statements
 
@@ -81,7 +81,7 @@ class NARSInterface:
         return NARSInterface.show_color
 
     @show_color.setter
-    def show_color(self, value: bool) -> Union[str,bool]:
+    def show_color(self, value: bool) -> Union[str, bool]:
         # strictly identify None rather than implicit bool(None) == False
         if NARSInterface._show_color == None:
             return None  # the color display cannot be enabled
@@ -289,7 +289,7 @@ class NARSInterface:
         '''Interfacing with NARS: Injects input provided by an external program into NARS'''
         return self._handle_lines(lines=lines)
 
-    def execute_file(self, path: Union[Path,str]) -> None:
+    def execute_file(self, path: Union[Path, str]) -> None:
         '''Handle files'''
         # it's copied directly from Console.py
         if path is not None:
@@ -393,7 +393,7 @@ class NARSInterface:
             if answers_quest is not None:
                 for answer in answers_quest:
                     outs.append(NARSOutput(
-                        PrintType.ACHIEVED, answers_quest.sentence.repr(), *answers_quest.budget))
+                        PrintType.ACHIEVED, answer.sentence.repr(), *answer.budget))
             if task_executed is not None:
                 outs.append(NARSOutput(
                     PrintType.EXE, f'{task_executed.term.repr()} = {str(task_operation_return) if task_operation_return is not None else None}'))

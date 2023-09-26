@@ -1,8 +1,70 @@
-'''Data to Narsese
+'''
+# Data to Narsese
+
 Define a format for converting Python data structures to Narsese
 Core function: <Python data structure>→<Narsese **text**>
 
-'''# compatible type annotation
+# Example
+
+## A Simple Translation
+
+```
+Please input your Python object: {"a":1}
+Please enter a name for this object (leave blank for automatic generation): a       
+Please enter your modality for the object (./?/!) (Leave blank default.): 
+Input object: {'a': 1}
+Narsese:
+<a --> dict>.
+<str_a__a --> str>.
+<int_1 --> int>.
+<(*, a, str_a, int_1) --> obj_property_value>.
+```
+
+## Some complex example uses nearly full JSON
+
+```
+Please input your Python object: {"description": "This is an object", "list": [1,2,3.0], "tuple": (True, False), "set": {None,}} 
+Please enter a name for this object (leave blank for automatic generation): my_object 
+Please enter your modality for the object (./?/!) (Leave blank default.): .
+verify_term_name: failed to verify term name "str_This is an object", skipped...
+verify_term_name: failed to verify term name "This is an object", skipped...
+verify_term_name: failed to verify term name "list_[1, 2, 3.0]", skipped...
+verify_term_name: failed to verify term name "float_3.0", skipped...
+verify_term_name: failed to verify term name "set_{None}", skipped...
+Input object: {'description': 'This is an object', 'list': [1, 2, 3.0], 'tuple': (True, False), 'set': {None}}
+Narsese:
+<my_object --> dict>.
+<str_description__description --> str>.
+<str_1995411977392 --> str>.
+<(*, my_object, str_description, str_1995411977392) --> obj_property_value>.
+<str_list__list --> str>.
+<{list_1995399980096} --> list>.
+<int_1 --> int>.
+<int_0 --> int>.
+<(*, {list_1995399980096}, int_0, int_1) --> obj_property_value>.
+<int_2 --> int>.
+<int_1 --> int>.
+<(*, {list_1995399980096}, int_1, int_2) --> obj_property_value>.
+<float_1995376564784 --> float>.
+<int_2 --> int>.
+<(*, {list_1995399980096}, int_2, float_1995376564784) --> obj_property_value>.
+<(*, my_object, str_list, {list_1995399980096}) --> obj_property_value>.
+<str_tuple__tuple --> str>.
+<{tuple_(True, False)} --> tuple>.
+<bool_True --> bool>.
+<int_0 --> int>.
+<(*, {tuple_(True, False)}, int_0, bool_True) --> obj_property_value>.
+<bool_False --> bool>.
+<int_1 --> int>.
+<(*, {tuple_(True, False)}, int_1, bool_False) --> obj_property_value>.
+<(*, my_object, str_tuple, {tuple_(True, False)}) --> obj_property_value>.
+<str_set__set --> str>.
+<{set_1995373733568} --> set>.
+<(*, NoneType_None, {set_1995373733568}) --> belong>.
+<(*, my_object, str_set, {set_1995373733568}) --> obj_property_value>.
+```
+
+'''  # compatible type annotation
 from typing import List, Dict, Tuple, Union
 
 
@@ -35,28 +97,35 @@ def is_basic_type(obj: any) -> bool:
     return obj == None or t == bool or t == int or t == float or t == str
 
 
-def verify_term_name(name: str) -> Union[str,None]:
+def verify_term_name(name: str) -> Union[str, None]:
     try:
         return (
             name
-            if parser.parse(text=f'< {name} --> {name} >.')
+            if parser.parse(text=f'<{name} --> {name}>.')
             else None)
     except:
+        print(
+            f'verify_term_name: failed to verify term name "{name}", skipped...')
         return None
 
 # term construction
 
 
-def term_rel(A: str, B: str) -> str:
+def term_relation(*atoms: Tuple[str]) -> str:
     '''
-    Construct the term "Relationship between A and B
-    Narsese representation: (*, A, B)
+    Construct the term "Relationship between A and B" by uses "Product" in Narsese
+    Narsese representation: (*, atoms...)
+
+    Example:
+    - ("A", "B", "C") => "(*, A, B, C)"
     "'''
-    return f'(*,{A},{B})'
+    return f'(*, {", ".join(atoms)})'
 
 
 def term_name(A: any) -> str:
-    '''Build term "object name"'''
+    '''
+    Get the valid Narsese term name of an object
+    '''
     t: type = type(A)
     # test whether the object can be directly accepted as a lexical item, if it is attached, if not, no
     instance_wrapper: str = '%s' if is_basic_type(A) else '{%s}'
@@ -73,7 +142,7 @@ def term_name(A: any) -> str:
 # sentence construction
 
 
-def sentence_inheritance(A: str, B: str, punct: Union[Punctuation,str] = Punctuation.Judgement) -> str:
+def sentence_inheritance(A: str, B: str, punct: Union[Punctuation, str] = Punctuation.Judgement) -> str:
     '''
     Building relationships "A is B"
     Narsese representation: <A --> B>
@@ -81,12 +150,15 @@ def sentence_inheritance(A: str, B: str, punct: Union[Punctuation,str] = Punctua
     return f'<{A} --> {B}>{punct.value if isinstance(punct,Punctuation) else punct}'  # <A --> B> default with "."
 
 
-def sentence_rel(A: str, r: str, B: str, punct: Punctuation = Punctuation.Judgement) -> str:
+def sentence_relation(r: str, *terms: Tuple[str], punct: Punctuation = Punctuation.Judgement) -> str:
     '''
-    Construct relation "ArB" i.e. "The relation between A and B" is r"
-    Narsese representation: <(*, A, B) --> r>
+    Construct relation "(r A B ...)" i.e. "The relation between A, B (and so on)" is r"
+    Narsese representation: <(*, A, B, ...) --> r>
     '''
-    return sentence_inheritance(term_rel(A, B), f'{r}', punct=punct)  # <(*,A,B) --> r>. The "relationship" between A and B is r
+    return sentence_inheritance(
+        term_relation(*terms),
+        f'{r}',
+        punct=punct)  # <(*,A,B) --> r>. The "relationship" between A and B is r
 
 
 def sentence_type_sign(name: str, type: type, punct: Punctuation = Punctuation.Judgement) -> str:
@@ -100,7 +172,9 @@ def sentence_tri_rel(obj: str, key: str, value: str, relation: str = SIGN_RELATI
     Building a ternary relationship "Object [key] = value"
     Example: <(*,{object},(*,{attribute},{value})) --> object_attribute_value>
     '''
-    return sentence_rel(obj, relation, term_rel(key, value), punct=punct)  # (*,{obj},(*,{key},{value})) --> relation
+    return sentence_relation(
+        relation, obj, key, value,
+        punct=punct)  # (*,{obj},(*,{key},{value})) --> relation
 
 # Main conversion module #
 
@@ -108,19 +182,19 @@ def sentence_tri_rel(obj: str, key: str, value: str, relation: str = SIGN_RELATI
 
 
 # Use kwargs to automatically pass "punctuation" information
-def none2Narsese(n: None, special_name: str, **kwargs) -> List[str]:
+def none2narsese(n: None, special_name: str, **kwargs) -> List[str]:
     '''None to Narsese'''
     return [sentence_type_sign(special_name, type(n), **kwargs)]
 
 
-def bool2Narsese(b: str, special_name: str, **kwargs) -> List[str]:
+def bool2narsese(b: str, special_name: str, **kwargs) -> List[str]:
     '''boolean to Narsese'''
     result: List[str] = [sentence_type_sign(
         special_name, bool, **kwargs)]  # preset type identification
     return result
 
 
-def int2Narsese(i: int, special_name: str, **kwargs) -> List[str]:
+def int2narsese(i: int, special_name: str, **kwargs) -> List[str]:
     '''Integer to Narsese
         TODO: Build an integer system'''
     result: List[str] = [sentence_type_sign(
@@ -128,7 +202,7 @@ def int2Narsese(i: int, special_name: str, **kwargs) -> List[str]:
     return result
 
 
-def float2Narsese(f: float, special_name: str, **kwargs) -> List[str]:
+def float2narsese(f: float, special_name: str, **kwargs) -> List[str]:
     '''Floating-point number becomes Narsese
     TODO: Build a floating point number system and combine it with an integer system'''
     result: List[str] = [sentence_type_sign(
@@ -136,35 +210,40 @@ def float2Narsese(f: float, special_name: str, **kwargs) -> List[str]:
     return result
 
 
-def str2Narsese(s: str, special_name: str, **kwargs) -> List[str]:
+def str2narsese(s: str, special_name: str, **kwargs) -> List[str]:
     '''Set to Narsese
     TODO: How does distinguish between "name" and "value" of a string?'''
     # tests whether a string can be directly accepted as a term, appended if it is, unappended if it is not
-    # Try to use the string itself as a name for easy identification
+    # try to use the string itself as a name for easy identification
+    # ? [2023-09-26 13:02:03] may I can translate the str into a list of characters? Such as "ab c" => ["char_a", "char_b", "char_u0020", "char_c"]...
     final_name = verify_term_name(s)
     final_name: str = special_name + \
-        (f'「{s}」' if final_name else '')  # Include itself if you can, do not add information otherwise
+        (f'__{s}' if final_name else '')  # Include itself if you can, do not add information otherwise
     # preset type identification
-    result: List[str] = [sentence_type_sign(final_name, str, **kwargs)]
+    result: List[str] = [
+        sentence_type_sign(final_name, str, **kwargs)]
     return result
 
 # containers
 
 
-def set2Narsese(s: set, special_name: str, **kwargs) -> List[str]:
+def set2narsese(s: set, special_name: str, **kwargs) -> List[str]:
     '''Set to Narsese
     Use the relative item "belong"
     Import a collection name as the concept name, and then convert all elements within it to Narsese
     Return: A list of multiple Narsese statements (easy to split)'''
     result: List[str] = [sentence_type_sign(
         special_name, set, **kwargs)]  # preset type identification
-    for item in s:  # TODO: Implementing recursive logic @auto2Narsese(item)
-        result.append(sentence_rel(term_name(item),
-                      SIGN_RELATION_BELONG, special_name, **kwargs))
+    for item in s:  # TODO: Implementing recursive logic @auto2narsese(item)
+        result.append(
+            sentence_relation(
+                SIGN_RELATION_BELONG,
+                term_name(item), special_name,
+                **kwargs))
     return result
 
 
-def lis_tuple2Narsese(array: Union[list,tuple], special_name: str, **kwargs) -> List[str]:
+def list_tuple2narsese(array: Union[list, tuple], special_name: str, **kwargs) -> List[str]:
     '''List/tuple to Narsese: Lists whose keys are integers'''
     result: List[str] = [sentence_type_sign(
         special_name, type(array), **kwargs)]  # preset type identification
@@ -174,8 +253,8 @@ def lis_tuple2Narsese(array: Union[list,tuple], special_name: str, **kwargs) -> 
         iName: str = term_name(i)
         item_name: str = term_name(item)
         # pre-add definitions for keys and values
-        result.extend(auto2Narsese(item, item_name, **kwargs))
-        result.extend(auto2Narsese(i, iName, **kwargs))
+        result.extend(auto2narsese(item, item_name, **kwargs))
+        result.extend(auto2narsese(i, iName, **kwargs))
         # bind objects, keys, and values
         result.append(sentence_tri_rel(
             special_name,
@@ -185,7 +264,7 @@ def lis_tuple2Narsese(array: Union[list,tuple], special_name: str, **kwargs) -> 
     return result
 
 
-def dict2Narsese(d: dict, special_name: str, **kwargs) -> List[str]:
+def dict2narsese(d: dict, special_name: str, **kwargs) -> List[str]:
     '''dict to Narsese
     #! In fact, JSON is a dictionary, to achieve the dictionary↔Narsese conversion, which is equivalent to NARS can read JSON
     TODO models dictionaries using an index system'''
@@ -195,8 +274,8 @@ def dict2Narsese(d: dict, special_name: str, **kwargs) -> List[str]:
         key_name: str = term_name(key)
         value_name: str = term_name(value)
         # pre-add definitions for keys and values
-        result.extend(auto2Narsese(key, key_name, **kwargs))
-        result.extend(auto2Narsese(value, value_name, **kwargs))
+        result.extend(auto2narsese(key, key_name, **kwargs))
+        result.extend(auto2narsese(value, value_name, **kwargs))
         # bind objects, keys, and values
         result.append(sentence_tri_rel(
             special_name,
@@ -206,7 +285,7 @@ def dict2Narsese(d: dict, special_name: str, **kwargs) -> List[str]:
     return result
 
 
-def type2Narsese(t: type, special_name: str, **kwargs) -> List[str]:
+def type2narsese(t: type, special_name: str, **kwargs) -> List[str]:
     '''Type to Narsese
     The "type" itself also needs to become Narsese'''
     return [sentence_type_sign(special_name, type, **kwargs)]  # only type notations
@@ -214,7 +293,7 @@ def type2Narsese(t: type, special_name: str, **kwargs) -> List[str]:
 # default values
 
 
-def default2Narsese(obj: any, special_name: str, **kwargs) -> List[str]:
+def default2narsese(obj: any, special_name: str, **kwargs) -> List[str]:
     '''Other objects become Narsese
     Temporarily occupy the one place, will later be separated from many types'''
     print(f'WARNING: unsupported object {obj} with type {type(obj)}')
@@ -224,22 +303,24 @@ def default2Narsese(obj: any, special_name: str, **kwargs) -> List[str]:
 # Main function: Integrate all parts #
 
 
-CONVERT_FUNCTIONS: Dict[type:any] = {
-    type(None): none2Narsese,
-    int: int2Narsese,
-    float: float2Narsese,
-    bool: bool2Narsese,
-    str: str2Narsese,
-    list: lis_tuple2Narsese,
-    tuple: lis_tuple2Narsese,
-    set: set2Narsese,
-    dict: dict2Narsese,
-    type: type2Narsese,
-    None: default2Narsese,
+CONVERT_FUNCTIONS: Dict[type, any] = {
+    type(None): none2narsese,
+    int: int2narsese,
+    float: float2narsese,
+    bool: bool2narsese,
+    str: str2narsese,
+    list: list_tuple2narsese,
+    tuple: list_tuple2narsese,
+    set: set2narsese,
+    dict: dict2narsese,
+    type: type2narsese,
+    None: default2narsese,
+
+
 }
 
 
-def auto2Narsese(obj: any, name: str = None, punct: Punctuation = Punctuation.Judgement) -> List[str]:
+def auto2narsese(obj: any, name: str = None, punct: Punctuation = Punctuation.Judgement) -> List[str]:
     '''Function integration: Python object →Narsese statement sequence
     Automatically identify the object type and call the corresponding conversion function'''
     # get name
