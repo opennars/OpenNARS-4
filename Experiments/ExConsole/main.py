@@ -16,12 +16,14 @@ from pynars.Narsese import *
 # other native modules
 from random import randint
 
+# compatible type annotation
+from typing import List, Dict, Tuple, Union
 
 # information
 
 def show_bag(bag: Bag, sep: str = ',', indent_count: int = 1) -> str:
     '''Relation of extension: Channel -> Buffer -> Bag'''
-    not_none_levels: list[list] = [
+    not_none_levels: List[list] = [
         level_list for level_list in bag.levels if level_list]
     if not_none_levels:
         sep = sep + '\n' + "\t"*indent_count
@@ -68,10 +70,10 @@ def show_information():
 ## Main program ##
 
 
-EXPERIMENTAL_CMDS: dict[tuple[str]:tuple[any, tuple[str]]] = {}
+EXPERIMENTAL_CMDS: Dict[Tuple[str],Tuple[any, Tuple[str]]] = {}
 
 
-def exp_register(*cmd_names: tuple[str]):
+def exp_register(*cmd_names: Tuple[str]):
     '''Mimic from `cmd_register` in "Interface.py"
     It's no need of parameters because the experimental functions can utilize all of global variable'''
     def decorator(func):
@@ -240,7 +242,7 @@ def chain_inference_test() -> None:
 @exp_register('json')
 def JSON_test() -> None:
     '''Input a series of numbers and construct a set, allowing NARS to determine ownership'''
-    from data2nal import auto2NAL, SIGN_RELATION_BELONG
+    from Experiments.ExConsole.data2narsese import auto2NAL, SIGN_RELATION_BELONG
     n: int = int(input('Please enter the number: '))
     f: set = {x for x in range(n)}
     sN: str = f'Num0to{n}'
@@ -256,7 +258,7 @@ def JSON_test() -> None:
 @exp_register('json')
 def JSON_test2() -> None:
     '''Enter a custom dictionary and ask for relationships one by one'''
-    from data2nal import auto2NAL
+    from Experiments.ExConsole.data2narsese import auto2NAL
     print('JSON Test Part II:')
     dic: dict = {
         'smallest_positive_integer': 1,
@@ -280,7 +282,7 @@ def JSON_test3() -> None:
     '''Enter a Config.json object that acts as its own "system parameter"'''
     print('JSON Test Part III')
     from pynars.Interface import DEFAULT_CONFIG
-    from data2nal import auto2NAL
+    from Experiments.ExConsole.data2narsese import auto2NAL
     show_information()
     execute_input(*auto2NAL(DEFAULT_CONFIG, 'system_config',
                             punct=Punctuation.Judgement))
@@ -294,7 +296,7 @@ def JSON_test3() -> None:
 @exp_register('eval')
 def py_object_load_in() -> None:
     '''Load any Python object into NARS'''
-    from data2nal import auto2NAL
+    from Experiments.ExConsole.data2narsese import auto2NAL
     obj: any = None
     while not obj:
         try:
@@ -306,7 +308,7 @@ def py_object_load_in() -> None:
         'Please enter a name for this object (leave blank for automatic generation): ')
     punct: str = input(
         'Please enter your modality for the object (./?/!) (Leave blank default.): ')
-    nals: list[str] = auto2NAL(
+    nals: List[str] = auto2NAL(
         obj, punct=punct if punct else '.', name=name if name else None)
     print(f'Input object: {repr(obj)}\nNAL text: \n' + "\n".join(nals))
     execute_input(*nals)

@@ -3,9 +3,11 @@ Based on the original interface, an NARS terminal is internally called that can 
 Principle: Not responsible for "advanced command processing" other than basic command line operations
 '''
 
-from typing import Tuple, List, Union
 from pathlib import Path
 import argparse  # for cmdline
+
+# compatible type annotation
+from typing import List, Dict, Tuple, Union
 
 # pynars
 from pynars.utils.Print import print_out as print_out_origin
@@ -18,7 +20,7 @@ from copy import deepcopy
 # utils #
 
 
-def narsese_parse_safe(narsese: str) -> None | Task:
+def narsese_parse_safe(narsese: str) -> Union[None,Task]:
     '''
     Responsible for calling the NAL parser to parse statements
 
@@ -79,7 +81,7 @@ class NARSInterface:
         return NARSInterface.show_color
 
     @show_color.setter
-    def show_color(self, value: bool) -> bool | None:
+    def show_color(self, value: bool) -> Union[str,bool]:
         # strictly identify None rather than implicit bool(None) == False
         if NARSInterface._show_color == None:
             return None  # the color display cannot be enabled
@@ -260,7 +262,7 @@ class NARSInterface:
                 comment_title=comment_title,
                 end=end)
 
-    # _event_handlers: list[function] = [] # ! error: name 'function' is not defined
+    # _event_handlers: List[function] = [] # ! error: name 'function' is not defined
     _event_handlers: list = []
 
     @property  # read only
@@ -283,11 +285,11 @@ class NARSInterface:
                 print(
                     f'Handler "{handler.__name__}" errors when deal NARS output "{out}": {e}')
 
-    def input_narsese(self, lines: str) -> list[NARSOutput]:
+    def input_narsese(self, lines: str) -> List[NARSOutput]:
         '''Interfacing with NARS: Injects input provided by an external program into NARS'''
         return self._handle_lines(lines=lines)
 
-    def execute_file(self, path: str | Path) -> None:
+    def execute_file(self, path: Union[Path,str]) -> None:
         '''Handle files'''
         # it's copied directly from Console.py
         if path is not None:
@@ -303,7 +305,7 @@ class NARSInterface:
 
     # History & Memories #
 
-    _input_history: list[str] = []
+    _input_history: List[str] = []
 
     @property  # readonly
     def input_history(self):
@@ -318,18 +320,18 @@ class NARSInterface:
                     INFO  : Done. Time-cost: 0.0009992122650146484s.
     '''
 
-    def _handle_lines(self, lines: str) -> list[NARSOutput]:
+    def _handle_lines(self, lines: str) -> List[NARSOutput]:
         '''
         Process the input stream of statements, decompose it into multiple statements, and pass each statement to NARS for processing, and finally return the result list of NARS output.
 
         Types of parameters and outputs and their effects:
         - Statement flow: str indicates the input NAL statement flow, which contains multiple NAL statements separated by newlines.
-        - Returned value: list[NARSOutput], a list of output results after NARS processing, each element is an NARS output object.
+        - Returned value: List[NARSOutput], a list of output results after NARS processing, each element is an NARS output object.
 
         Internal variable types, meanings and mutual relations:
         - Task List: List[Tuple], which stores information about tasks processed by NARS. Each element is a task row and contains information about multiple tasks.
         - Task line: Tuple, which contains information about multiple tasks, such as the exported task, modified target, and modified target.
-        - out Output list: list[NARSOutput], stores NARS output results, each element is an NARS output object.
+        - out Output list: List[NARSOutput], stores NARS output results, each element is an NARS output object.
 
         Main operation process:
         1. Decompose the input statement flow into multiple statements.
@@ -360,7 +362,7 @@ class NARSInterface:
             if task_line is not None:
                 task_list.extend(task_line)
 
-        outs: list[NARSOutput] = []
+        outs: List[NARSOutput] = []
 
         task_list: List[
             Tuple[
@@ -432,7 +434,7 @@ class NARSInterface:
         elif line.isdigit():
             n_cycles = int(line)
             self.print_output(PrintType.INFO, f'Run {n_cycles} cycles.')
-            tasks_in_cycles: list[Task] = []
+            tasks_in_cycles: List[Task] = []
             # Get all export statements run during this period, deep copy for backup
             for _ in range(n_cycles):
                 tasks_caught = reasoner.cycle()

@@ -1,3 +1,4 @@
+from typing import List, Dict, Tuple, Union
 from typing import List
 import functools
 import re
@@ -9,6 +10,8 @@ from pynars.Interface import PrintType
 from pynars.Interface import Reasoner
 from pynars.Interface import print_out_origin
 print_output = print_out_origin
+
+# compatible type annotation
 
 
 ## Cmd system ##
@@ -34,7 +37,7 @@ def check_except(handler=None, formatted_message=None):  # -> function
     return decorator
 
 
-def prefix_browse(to_browse: list[str], *keywords: list[str]) -> list[str]:
+def prefix_browse(to_browse: List[str], *keywords: List[str]) -> List[str]:
     '''Matches the content against the string prefix'''
     return [string  # returns cmd names
             # find matching cmds by: do not repeat
@@ -45,7 +48,7 @@ def prefix_browse(to_browse: list[str], *keywords: list[str]) -> list[str]:
                 for prefix in keywords)]
 
 
-def prefix_cmd_browse(cmd_dict: dict[tuple:tuple], *keywords: list[str]) -> list[tuple[str]]:
+def prefix_cmd_browse(cmd_dict: Dict[tuple, tuple], *keywords: List[str]) -> List[Tuple[str]]:
     '''Matches the content against the string prefix'''
     return [alias_indices  # returns cmd names
             # find matching cmds by: do not repeat
@@ -57,10 +60,10 @@ def prefix_cmd_browse(cmd_dict: dict[tuple:tuple], *keywords: list[str]) -> list
                 for keyword in keywords)]  # match the list of all cmds, as long as they match the search results - not necessarily in order
 
 
-def quick_convert_cmd_types(inp: list[str], type_N_default: list[tuple[type, any]]) -> list[str]:
+def quick_convert_cmd_types(inp: List[str], type_N_default: List[Tuple[type, any]]) -> List[str]:
     '''Constructs the parameter set of the final input cmd handler by specifying the type-default parameter list, combined with the input parameter list (using positional parameters)'''
     if type_N_default:
-        result: list[any] = []
+        result: List[any] = []
         lp = len(inp)
         for index in range(len(type_N_default)):  # if has default values
             param_type, default_value = type_N_default[index]
@@ -92,25 +95,25 @@ Main functions of common cmd block:
 
 The main functions of each function, and their respective types and roles of parameters and outputs:
 1. wait_ans try to get the result: try to capture the output of the specified type, and stop when it appears
-- Parameter: paras (list[str]), which contains the output type, maximum tolerance, and interval cmd
-- Output: list[NARSOutput], captured output of the specified type
+- Parameter: paras (List[str]), which contains the output type, maximum tolerance, and interval cmd
+- Output: List[NARSOutput], captured output of the specified type
 2. toggle_silent switches silent mode: Switches the silent mode of the cmd, generally blocking NARSOutput information
-- Parameter: args (list[str]). No parameter is required
+- Parameter: args (List[str]). No parameter is required
 - The output is None
 3. readfile Read files: Call API to read files
-- Parameter: args (list[str]), which contains the file path
+- Parameter: args (List[str]), which contains the file path
 - The output is None
 4. print_history Output history: Output user input history
-- Parameter: args (list[str]), placeholder
+- Parameter: args (List[str]), placeholder
 - The output is None
 5. exec execution command: Directly invoke Python's built-in exec command to execute a single line of code
-- Parameter: args (list[str]), which contains the code to be executed
+- Parameter: args (List[str]), which contains the code to be executed
 - The output is None
 6. parse switch shorthand escape: Switch command "automatic shorthand parsing" function
-- Parameter: args (list[str]). No parameter is required
+- Parameter: args (List[str]). No parameter is required
 - The output is None
 7. help: Display the help document
-- Parameter: args (list[str]), which contains specific commands
+- Parameter: args (List[str]), which contains specific commands
 - The output is None
 
 # Externally defined variable types, meanings and relationships:
@@ -125,10 +128,10 @@ The main functions of each function, and their respective types and roles of par
 6. parse toggle shorthand escape depends on parse_needSlash escape requires slash and out_print output directly
 7. The help help depends on the PRE_CMD_PRESET cmd index and the helpDoc single cmd
 '''
-PRESET_CMDS: dict[tuple:tuple] = {}
+PRESET_CMDS: Dict[tuple, tuple] = {}
 
 
-def cmd_register(cmd_name: str | tuple[str], *type_N_default: list[tuple[type, any]]):
+def cmd_register(cmd_name: Union[str, Tuple[str]], *type_N_default: List[Tuple[type, any]]):
     '''Decorator: Used to encapsulate cmds
     Automatically register cmds at function definition time through the specified Type - Default parameter list
     ! Encapsulated function becomes a "callable object"
@@ -166,13 +169,13 @@ def cmd_register(cmd_name: str | tuple[str], *type_N_default: list[tuple[type, a
 
 
 @cmd_register(('waitans', 'wait-answer', 'w-answer'), (str, 'ANSWER'), (int, 100), (None, '1'))
-def wait_answer(out_type: str, max_listens: int, *cmd_in_interval: str) -> list[NARSOutput]:
+def wait_answer(out_type: str, max_listens: int, *cmd_in_interval: str) -> List[NARSOutput]:
     '''Format: waitans [Output type = ANSWER] [Maximum tolerance = 100] [Interval cmd = '1']
     Attempts to capture output of a specified type and stops when it appears'''
     # Parameter preprocessing: Concatenates cmds separated by Spaces
     cmd_in_interval: str = ' '.join(cmd_in_interval)
     out_type = PrintType.__getattribute__(PrintType, out_type)
-    outs: list[NARSOutput]
+    outs: List[NARSOutput]
     while max_listens < 0 or (max_listens := max_listens-1):
         # Loop execute interval cmd (default is wait statement)
         outs = current_NARS_interface.input_narsese(cmd_in_interval)
@@ -184,7 +187,7 @@ def wait_answer(out_type: str, max_listens: int, *cmd_in_interval: str) -> list[
 
 
 @cmd_register(('waitres', 'wait-result', 'w-result'), (int, 100), (str, '1'), (None, ''))
-def wait_result(max_listens: int, cmd_in_interval: str, *target_sentences: list[str]) -> list[NARSOutput]:
+def wait_result(max_listens: int, cmd_in_interval: str, *target_sentences: List[str]) -> List[NARSOutput]:
     '''Format: waitres [Maximum tolerance = 100] [Interval cmd = '1'] [sentences...]
     Attempts to intercept output that matches the specified sentences (same NAL format) and stops when it appears'''
     from pynars.Narsese import parser
@@ -195,7 +198,7 @@ def wait_result(max_listens: int, cmd_in_interval: str, *target_sentences: list[
     # Using special syntax +NAL parser, reconvert to NAL standard format
     target_sentences: str = parser.parse(target_sentences).sentence.repr()
     # starting wait
-    outs: list[NARSOutput]
+    outs: List[NARSOutput]
     while max_listens < 0 or (max_listens := max_listens-1):
         # Loop execute interval cmd (default is wait statement)
         outs = current_NARS_interface.input_narsese(cmd_in_interval)
@@ -234,7 +237,7 @@ def toggle_color() -> None:
 
 
 @cmd_register('readfile', 'read-file')
-def read_file(*args: list[str]) -> None:
+def read_file(*args: List[str]) -> None:
     '''Format: readfile [... file path]
     Call API to read file'''
     for path in args:
@@ -242,7 +245,7 @@ def read_file(*args: list[str]) -> None:
 
 
 @cmd_register('history')
-def print_history(*args: list[str]) -> None:
+def print_history(*args: List[str]) -> None:
     '''Format: history [... placeholder]
     Output the user's input history
     Default: The Narsese seen at the bottom of the system, not the actual input
@@ -252,14 +255,14 @@ def print_history(*args: list[str]) -> None:
 
 
 @cmd_register(('execute', 'exec'))
-def exec_code(*args: list[str]) -> None:
+def exec_code(*args: List[str]) -> None:
     '''Format: exec <Python code >
     Directly invoke Python's built-in exec cmd to execute a single line of code'''
     exec(' '.join(args))
 
 
 @cmd_register(('evaluate', 'eval'))
-def eval_code(*args: list[str]) -> None:
+def eval_code(*args: List[str]) -> None:
     '''Format: eval <Python code >
     Directly invoke Python's built-in eval cmd to evaluate a single line of code'''
     print(f'eval result: {eval(" ".join(args))}')
@@ -276,13 +279,13 @@ def toggle_simplify_parse() -> None:
 
 
 @cmd_register('help')
-def help(*keywords: list[str], search_in: dict[tuple:tuple] = PRESET_CMDS) -> None:
+def help(*keywords: List[str], search_in: Dict[tuple, tuple] = PRESET_CMDS) -> None:
     '''Format: help [... specific cmd]
     Display this help document, or assist in retrieving help for additional cmds'''
     # Core idea: Empty prefix = all cmds
     keywords = keywords if keywords else ['']
     # find a matching cmd name
-    cmd_name_aliases: list[tuple(str)] = prefix_cmd_browse(
+    cmd_name_aliases: List[tuple(str)] = prefix_cmd_browse(
         search_in, *keywords)
     # display "matching cmds" as follows
     if cmd_name_aliases:
@@ -309,16 +312,16 @@ A macro is a pre-defined set of cmds that can be executed with a simple macro na
 
 # The main functions of each function, and their respective types and roles of parameters and outputs:
 # 1. macro_def Define macros: Define a macro that contains a set of predefined cmds
-# - Parameter: args (list[str]), which contains the macro name and the number of cmds
+# - Parameter: args (List[str]), which contains the macro name and the number of cmds
 # - Output: None
 # 2. macro_query Query macros: Query defined macros and display their internal commands
-# - Argument: args (list[str]), which contains the macro name
+# - Argument: args (List[str]), which contains the macro name
 # - Output: None
 # 3. macro_exec executes macros by name: Executes macros by name
-# - Argument: args (list[str]), which contains the macro name
+# - Argument: args (List[str]), which contains the macro name
 # - Output: None
 # 4. macro_repeat: Repeat the execution of macros by name and number
-# - Parameter: args (list[str]), which contains the macro name and the number of executions
+# - Parameter: args (List[str]), which contains the macro name and the number of executions
 # - Output: None
 
 # Externally defined variable types, meanings and relationships:
@@ -338,7 +341,7 @@ parse toggle shorthand escape depends on parse_need_slash escape requires slash
 # 11. The help_doc individual cmd depends on the index of PRESET_CMDS
 '''
 
-stored_macros: dict[str:list[str]] = {}
+stored_macros: Dict[str, List[str]] = {}
 
 
 @cmd_register(('macro-def', 'm-def'))
@@ -347,7 +350,7 @@ def macro_def(name: str, num_cmds: int) -> None:
     According to the number of subsequent input cmds, 
     input a specified line of cmds, you can define an "cmd series" i.e. macro'''
     # input
-    cmd_list: list[str]
+    cmd_list: List[str]
     if num_cmds:  # limited cmd count
         cmd_list = [
             input(f'Please input cmd #{i+1}: ')
@@ -367,7 +370,7 @@ def macro_show(name: str): return f'Macro {name}: \n' + \
 
 
 @cmd_register(('macro-query', 'm-query'))
-def macro_query(*args: list[str]) -> None:
+def macro_query(*args: List[str]) -> None:
     '''Format: macro-query [... macro name]
     With parameters: Find macros by name and display their internal commands (the number can be stacked indefinitely)
     No arguments: Lists all defined macros and displays their internal commands'''
@@ -384,13 +387,13 @@ def macro_query(*args: list[str]) -> None:
 
 def macro_exec1(name: str) -> None:
     '''Execute 1 macro'''
-    cmds: list[str] = stored_macros[name]
+    cmds: List[str] = stored_macros[name]
     for cmd in cmds:
         execute_input(cmd)
 
 
 @cmd_register(('macro-exec', 'm-exec'))
-def macro_exec(*args: list[str]) -> None:
+def macro_exec(*args: List[str]) -> None:
     '''Format: macro-exec [... macro name]
     Execute macros by name (unlimited number can be stacked)
     If empty, execute macro "" (empty string)'''
@@ -414,7 +417,7 @@ current_NARS_interface: NARSInterface = NARSInterface.construct_interface(
     500, 500,
     silent=False)
 
-reasoners: dict[str:Reasoner] = {'initial': current_NARS_interface}
+reasoners: Dict[str, Reasoner] = {'initial': current_NARS_interface}
 
 
 def current_nar_name() -> str:
@@ -434,12 +437,12 @@ def reasoner_current() -> None:
 
 
 @cmd_register(('reasoner-list', 'r-list'))
-def reasoner_list(*keywords: list[str]) -> None:
+def reasoner_list(*keywords: List[str]) -> None:
     '''Format: reasoner-list [... specific cmd]
     Enumerate existing reasoners; It can be retrieved with parameters'''
     keywords = keywords if keywords else ['']
     # Search for a matching interface name
-    reasoner_names: list[str] = prefix_browse(reasoners, *keywords)
+    reasoner_names: List[str] = prefix_browse(reasoners, *keywords)
     # Displays information about "matched interface"
     if reasoner_names:
         for name in reasoner_names:  # match the list of all cmds, as long as they match the search results - not necessarily in order
@@ -520,7 +523,7 @@ def random_seed(seed: int) -> None:
 
 _parse_need_slash: bool = False
 
-_input_history: list[str] = []
+_input_history: List[str] = []
 
 # Special grammar parser #
 
@@ -576,14 +579,14 @@ def special_narsese_parse(inp: str) -> str:
     return inp
 
 
-def execute_input(inp: str, *other_input: list[str]) -> None:
+def execute_input(inp: str, *other_input: List[str]) -> None:
     '''
     Main functions:
     This code is mainly used to process the user input cmds and NAS statements, and perform the corresponding operations according to the input content.
 
     The types, meanings and relationships of each variable:
     - in "input" (str): A string entered by the user, which may be an cmd or a Nax statement.
-    - cmdHistory "Cmd history" (list[str]): Stores the cmd history entered by the user.
+    - cmdHistory "Cmd history" (List[str]): Stores the cmd history entered by the user.
     - parse_need_slash "Escape requires slash" (bool): Indicates whether slashes are required for short escape.
     - PRESET_CMDS (dict): Index list of preset cmds, used to execute functions based on cmd names.
 
@@ -612,7 +615,7 @@ def execute_input(inp: str, *other_input: list[str]) -> None:
     # pre-jump cmd
     if inp.startswith('/'):
         # the first word is the cmd name, and the following are parameters
-        words: list[str] = inp[1:].split()
+        words: List[str] = inp[1:].split()
         if words:  # if not empty
             cmd_name: str = words[0].lower()  # case insensitive
             auto_execute_cmd_by_name(cmd_name, words[1:])
@@ -629,11 +632,11 @@ def execute_input(inp: str, *other_input: list[str]) -> None:
     current_NARS_interface.input_narsese(inp)
 
 
-def auto_execute_cmd_by_name(cmd_name: str, params: list[str], cmd_dict: dict[tuple:tuple] = PRESET_CMDS) -> bool:
+def auto_execute_cmd_by_name(cmd_name: str, params: List[str], cmd_dict: Dict[tuple, tuple] = PRESET_CMDS) -> bool:
     '''Execute cmd by name with autocompletion
     returns: whether a cmd is chosen and executed successfully'''
     # auto browse & complete
-    name_alias_hints: list[tuple[str]] = prefix_cmd_browse(cmd_dict, cmd_name)
+    name_alias_hints: List[Tuple[str]] = prefix_cmd_browse(cmd_dict, cmd_name)
     # if it have a precise match, directly use it
     for i in range(len(name_alias_hints)):
         name_aliases = name_alias_hints[i]
@@ -650,7 +653,7 @@ def auto_execute_cmd_by_name(cmd_name: str, params: list[str], cmd_dict: dict[tu
         # Cmd execution: Automatically adjust the "parameter requirements" of specific cmds and intercept parameters
         cmd_data = cmd_dict[name_alias_index]
         cmd_handler = cmd_data[0]
-        type_N_default: list[tuple[type, any]] = (
+        type_N_default: List[Tuple[type, any]] = (
             cmd_data[1]
             if len(cmd_data) > 1 else None)
         params: list = quick_convert_cmd_types(params, type_N_default)
