@@ -118,6 +118,15 @@ S |- (--, S) .neg
 <S ==> P> |- <(--, P) ==> (--, S)> .cnt
 '''
 
+conditional_compositional = '''
+{P. S} |- <S ==> P> .ind
+{P. S} |- <P ==> S> .abd
+{P. S} |- <S <=> P> .com
+{T1. T2} |- (&&, T1, T2) .int
+{T1. T2} |- (||, T1, T2) .uni
+{<C ==> P>. S} |- <(&&, C, S) ==> P> .ind
+'''
+
 theorems = '''
 'inheritance
 <(&, T1, T2) --> T1>
@@ -200,18 +209,21 @@ class KanrenEngine:
 
         self.rules_strong = [] # populated by the line below for use in structural inference
         
-        self.rules = [self._convert(rule) for rule in rules]
+        self.rules = [self._convert(r) for r in rules]
 
-        self.rules_immediate = [self._convert_immediate(rule) for rule in split_rules(immediate)]
+        self.rules_immediate = [self._convert_immediate(r) for r in split_rules(immediate)]
+
+        self.rules_conditional_compositional = [self._convert(r, True) for r in split_rules(conditional_compositional)]
 
         self.theorems = [self._convert_theorems(t) for t in split_rules(theorems)]
+
 
 
     #################################################
     ### Conversion between Narsese and miniKanren ###
     #################################################
 
-    def _convert(self, rule):
+    def _convert(self, rule, conditional_compositional=False):
         # convert to logical form
         premises, conclusion = rule.split(" |- ")
 
@@ -236,8 +248,9 @@ class KanrenEngine:
         cond = lambda x, y: x.token.replace('_', '') != y.token.replace('_', '')
         constraints = [neq(c[0], c[1]) for c in var_combinations if cond(c[0], c[1])]
 
-        if r.replace("'", '') in ['ded', 'ana', 'res', 'int', 'uni', 'dif']:
-            self.rules_strong.append(((p1, p2, c), (r, constraints)))
+        if not conditional_compositional: # conditional compositional rules require special treatment
+            if r.replace("'", '') in ['ded', 'ana', 'res', 'int', 'uni', 'dif']:
+                self.rules_strong.append(((p1, p2, c), (r, constraints)))
 
         return ((p1, p2, c), (r, constraints))
     
@@ -557,11 +570,11 @@ class KanrenEngine:
 
         return results
 
-    def apply(self, rule: tuple, t1, t2):
+    def apply(self, rule, l1, l2):
         # print("\nRULE:", rule)
         (p1, p2, c), (r, constraints) = rule[0], rule[1]
 
-        result = run(1, c, eq((p1, p2), (t1, t2)), *constraints)
+        result = run(1, c, eq((p1, p2), (l1, l2)), *constraints)
         # print(result)
 
         if result:
@@ -621,74 +634,30 @@ class KanrenEngine:
     
     '''variable introduction'''
     def inference_compositional(self, t1: Sentence, t2: Sentence):
-        '''
-        P, S |- S ==> P .ind
-        P, S |- P ==> S .abd
-        P, S |- S <=> P .com
-        T1, T2 |- (&&, T1, T2) .int
-        T1, T2 |- (||, T1, T2) .uni
-        C ==> P, S |- (&&, C, S) ==> P .ind
-        '''
         results = []
         
         common = set(t1.term.sub_terms).intersection(t2.term.sub_terms)
 
-        # # from ex. [lock1, {lock1}] keep only [{lock1}]
-        # for term in list(common):
-        #     if term.is_compound and len(term.terms) == 1 \
-        #         and term.connector is Connector.ExtensionalSet \
-        #         or term.connector is Connector.IntensionalSet: 
-        #         component = term[0] # get enclosed term
-        #         if component in common:
-        #             common.remove(component)
-            
-        common = list(common)
-        
-        if len(common) == 0 or t1.truth == None or t2.truth == None:
+        if len(common) == 0:
             return results
         
-        '''P, S |- S ==> P .ind'''
-        conclusion = Statement(t2.term, Copula.Implication, t1.term)
-        substitution = {self.logic(c, True, var_intro=True): var(prefix='$') for c in common}
-        reified = reify(self.logic(conclusion, True, var_intro=True), substitution)
-        result = self.term(reified)
-        truth = self._truth_functions['ind'](t1.truth, t2.truth)
-        results.append(((result, 'ind'), truth))
+        l1 = self.logic(t1.term)
+        l2 = self.logic(t2.term)
+        for rule in self.rules_conditional_compositional:
+            res = self.apply(rule, l1, l2)
+            if res is not None:
+                prefix = '$' if res[0].is_statement else '#'
+                substitution = {self.logic(c, True, var_intro=True): var(prefix=prefix) for c in common}
+                reified = reify(self.logic(res[0], True, var_intro=True), substitution)
 
-        '''P, S |- P ==> S .abd'''
-        result = Statement(result.predicate, Copula.Implication, result.subject)
-        truth = self._truth_functions['abd'](t1.truth, t2.truth)
-        results.append(((result, 'abd'), truth))
+                conclusion = self.term(reified)
 
-        '''P, S |- S <=> P .com'''
-        result = Statement(result.subject, Copula.Equivalence, result.predicate)
-        truth = self._truth_functions['com'](t1.truth, t2.truth)
-        results.append(((result, 'com'), truth))
+                r, _ = rule[1]
+                tr1, tr2 = (t1.truth, t2.truth)
+                truth = self._truth_functions[r](tr1, tr2)
 
-        '''T1, T2 |- (&&, T1, T2) .int'''
-        conclusion = Compound(Connector.Conjunction, t1.term, t2.term)
-        substitution = {self.logic(c, True, var_intro=True): var(prefix='#') for c in common}
-        reified = reify(self.logic(conclusion, True, var_intro=True), substitution)
-        result = self.term(reified)
-        truth = self._truth_functions['int'](t1.truth, t2.truth)
-        results.append(((result, 'int'), truth))
-
-        '''T1, T2 |- (||, T1, T2) .uni'''
-        result = Compound(Connector.Disjunction, *result.terms)
-        truth = self._truth_functions['uni'](t1.truth, t2.truth)
-        results.append(((result, 'uni'), truth))
-
-        '''C ==> P, S |- (&&, C, S) ==> P .ind'''
-        if t1.term.is_statement and t1.term.copula == Copula.Implication:
-            conclusion = Statement(Compound(Connector.Conjunction, t1.term.subject, t2.term), Copula.Implication, t1.term.predicate)
-            substitution = {self.logic(c, True, var_intro=True): var(prefix='$') for c in common}
-
-            reified = reify(self.logic(conclusion, True, var_intro=True), substitution)
-            result = self.term(reified)
-
-            truth = self._truth_functions['ind'](t1.truth, t2.truth)
-            results.append(((result, 'ind'), truth))
-
+                results.append(((conclusion, r), truth))
+        
         return results
 
 
