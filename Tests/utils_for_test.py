@@ -26,7 +26,7 @@ def rule_map_two_premises_(premise1: str, premise2: str, n_cycle: int) -> list[T
 
     tasks_all_cycles = []
 
-    for _ in range(n_cycle):
+    for _ in range(n_cycle*10):
         tasks_all = nars.cycle()
         # print('>>>', tasks_all)
         tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest, (task_operation_return, task_executed) = tasks_all

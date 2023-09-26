@@ -9,7 +9,7 @@ from pynars import Narsese, Global
 from pynars.Narsese import Term, Copula, Connector, Statement, Compound, Variable, VarPrefix, Sentence, Punctuation, Stamp
 
 from pynars.NAL.Functions import *
-from pynars.NARS.DataStructures import Concept, Task, TaskLink, TermLink, Judgement
+from pynars.NARS.DataStructures import Concept, Task, TaskLink, TermLink, Judgement, Question
 from pynars.NAL.Functions.Tools import project_truth, revisible
 
 
@@ -118,6 +118,15 @@ S |- (--, S) .neg
 <S ==> P> |- <(--, P) ==> (--, S)> .cnt
 '''
 
+theorems = '''
+'inheritance
+<(&, T1, T2) --> T1>
+<T1 --> (|, T1, T2)>
+<(-, T1, T2) --> T1>
+<((/, R, _, T) * T) --> R>
+<R --> ((\, R, _, T) * T)>
+'''
+
 def split_rules(rules: str) -> list[str]:
     lines = []
     for line in rules.splitlines():
@@ -188,9 +197,14 @@ class KanrenEngine:
         rules = nal1_rules + nal2_rules + nal3_rules + nal5_rules
 
         self._variables = set() # used as scratchpad while converting
+
+        self.rules_strong = [] # populated by the line below for use in structural inference
+        
         self.rules = [self._convert(rule) for rule in rules]
 
         self.rules_immediate = [self._convert_immediate(rule) for rule in split_rules(immediate)]
+
+        self.theorems = [self._convert_theorems(t) for t in split_rules(theorems)]
 
 
     #################################################
@@ -222,6 +236,9 @@ class KanrenEngine:
         cond = lambda x, y: x.token.replace('_', '') != y.token.replace('_', '')
         constraints = [neq(c[0], c[1]) for c in var_combinations if cond(c[0], c[1])]
 
+        if r.replace("'", '') in ['ded', 'ana', 'res', 'int', 'uni', 'dif']:
+            self.rules_strong.append(((p1, p2, c), (r, constraints)))
+
         return ((p1, p2, c), (r, constraints))
     
     def _convert_immediate(self, rule):
@@ -246,8 +263,15 @@ class KanrenEngine:
         constraints = [neq(c[0], c[1]) for c in var_combinations if cond(c[0], c[1])]
 
         return ((p, c), (r, constraints))
+    
+    def _convert_theorems(self, theorem):
+        # TODO: can we parse statements instead?
+        t = parse(theorem+'.', True)
+        l = self.logic(t, True, True)
+        sub_terms = set(t.sub_terms)
+        return (l, sub_terms)
 
-    def logic(self, term: Term, rule=False, substitution=False):
+    def logic(self, term: Term, rule=False, substitution=False, var_intro=False):
         if term.is_atom:
             name = self._prefix+term.word if rule else term.word
             if type(term) is Variable:
@@ -260,9 +284,15 @@ class KanrenEngine:
                 self._variables.add(var(name))
             return var(name) if rule else term
         if term.is_statement:
-            return cons(term.copula, *[self.logic(t, rule, substitution) for t in term.terms])
+            return cons(term.copula, *[self.logic(t, rule, substitution, var_intro) for t in term.terms])
         if term.is_compound:
-            return cons(term.connector, *[self.logic(t, rule, substitution) for t in term.terms])
+            # when used in variable introduction, treat single component compounds as atoms
+            if rule and var_intro and len(term.terms) == 1 \
+                and term.connector is Connector.ExtensionalSet \
+                or term.connector is Connector.IntensionalSet:
+                    name = self._prefix+term.word
+                    return var(name)
+            return cons(term.connector, *[self.logic(t, rule, substitution, var_intro) for t in term.terms])
 
     def term(self, logic):
         if type(logic) is Term:
@@ -403,10 +433,12 @@ class KanrenEngine:
         task: Task = task_link.target
 
         # inference for single-premise rules
-        if task.is_judgement and not task.immediate_rules_applied: # TODO: handle other cases
+        if task.is_judgement and not task.immediate_structural_rules_applied: # TODO: handle other cases
             Global.States.record_premises(task)
 
             results = self.inference_immediate(task.sentence)
+
+            results.extend(self.inference_structural(task.sentence))
 
             for term, truth in results:
                 # TODO: how to properly handle stamp for immediate rules?
@@ -414,17 +446,17 @@ class KanrenEngine:
 
                 if task.is_judgement: # TODO: hadle other cases
                     # TODO: calculate budget
+                    budget = Budget_forward(truth, task_link.budget, None)
                     sentence_derived = Judgement(term[0], stamp_task, truth)
-                    task_derived = Task(sentence_derived)
-                    # set flags to prevent repeated processing
-                    task_derived.immediate_rules_applied = True
-                    task_derived.processed = True
+                    task_derived = Task(sentence_derived, budget)
+                    # set flag to prevent repeated processing
+                    task_derived.immediate_structural_rules_applied = True
                     # normalize the variable indices
                     task_derived.term._normalize_variables()
                     tasks_derived.append(task_derived)
 
             # record immediate rule application for task
-            task.immediate_rules_applied = True
+            task.immediate_structural_rules_applied = True
 
         # inference for two-premises rules
         term_links = []
@@ -449,26 +481,32 @@ class KanrenEngine:
                 # if task.sentence.punct == belief.sentence.punct:
                 #     is_revision = revisible(task, belief)
                 continue
-            elif task.term.equal(belief.term): 
-                # TODO: here
-                continue
+            # TODO: currently causes infinite recursion with variables
+            # elif task.term.equal(belief.term): 
+            #     # TODO: here
+            #     continue
             elif not belief.evidential_base.is_overlaped(task.evidential_base):
                 term_link_valid = term_link
                 is_valid = True
                 break
 
-        if is_valid:
+        if is_valid \
+            and task.is_judgement: # TODO: handle other cases
+            
             Global.States.record_premises(task, belief)
             
             # Temporal Projection and Eternalization
             if belief is not None:
-                # TODO: Hanlde the backward inference.
+                # TODO: Handle the backward inference.
                 if not belief.is_eternal and (belief.is_judgement or belief.is_goal):
                     truth_belief = project_truth(task.sentence, belief.sentence)
                     belief = belief.eternalize(truth_belief)
                     # beleif_eternalized = belief # TODO: should it be added into the `tasks_derived`?
 
             results = self.inference(task.sentence, belief.sentence)
+
+            results.extend(self.inference_compositional(task.sentence, belief.sentence))
+
             # print(">>>", results)
 
             for term, truth in results:
@@ -476,22 +514,23 @@ class KanrenEngine:
                 stamp_belief: Stamp = belief.stamp
                 stamp = Stamp_merge(stamp_task, stamp_belief)
 
-                if task.is_judgement: # TODO: handle other cases
-                    budget = Budget_forward(truth, task_link.budget, term_link_valid.budget)
-                    sentence_derived = Judgement(term[0], stamp, truth)
-                    task_derived = Task(sentence_derived, budget)
-                    # normalize the variable indices
-                    task_derived.term._normalize_variables()
-                    tasks_derived.append(task_derived)
+                # TODO: calculate budget
+                budget = Budget_forward(truth, task_link.budget, term_link_valid.budget)
+                sentence_derived = Judgement(term[0], stamp, truth)
+                    
+                task_derived = Task(sentence_derived, budget)
+                # normalize the variable indices
+                task_derived.term._normalize_variables()
+                tasks_derived.append(task_derived)
 
             if term_link is not None: # TODO: Check here whether the budget updating is the same as OpenNARS 3.0.4.
                 for task in tasks_derived: 
                     TermLink.update_budget(term_link.budget, task.budget.quality, belief.budget.priority if belief is not None else concept_target.budget.priority)
-                    
+
         for term_link in term_links: 
             concept.term_links.put_back(term_link)
         
-        return tasks_derived
+        return list(filter(lambda t: t.truth.c > 0, tasks_derived))
 
     def inference(self, t1: Sentence, t2: Sentence) -> list:
         results = []
@@ -515,6 +554,7 @@ class KanrenEngine:
                 truth = self._truth_functions[r](tr1, tr2)
                 # results.append(((res, truth), self.term(rule[0][0]), self.term(rule[0][1]), self.term(rule[0][2])))
                 results.append((res, truth))
+
         return results
 
     def apply(self, rule: tuple, t1, t2):
@@ -559,13 +599,127 @@ class KanrenEngine:
                 results.append(((conclusion, r), truth))
             
         return results
+    
+    def inference_structural(self, t: Sentence):
+        results = []
+
+        l1 = self.logic(t.term)
+        for (l2, sub_terms) in self.theorems:
+            for rule in self.rules_strong:
+                res = self.apply(rule, l1, l2)
+                if res is not None:
+                    # ensure no theorem terms in conclusion
+                    if sub_terms.isdisjoint(res[0].sub_terms):
+                        r, _ = rule[1]
+                        inverse = True if r[-1] == "'" else False
+                        r = r.replace("'", '') # remove trailing '
+                        tr1, tr2 = (t.truth, truth_analytic) if not inverse else (truth_analytic, t.truth)
+                        truth = self._truth_functions[r](tr1, tr2)
+                        results.append((res, truth))
+
+        return results
+    
+    '''variable introduction'''
+    def inference_compositional(self, t1: Sentence, t2: Sentence):
+        '''
+        P, S |- S ==> P .ind
+        P, S |- P ==> S .abd
+        P, S |- S <=> P .com
+        T1, T2 |- (&&, T1, T2) .int
+        T1, T2 |- (||, T1, T2) .uni
+        C ==> P, S |- (&&, C, S) ==> P .ind
+        '''
+        results = []
+        
+        common = set(t1.term.sub_terms).intersection(t2.term.sub_terms)
+
+        # # from ex. [lock1, {lock1}] keep only [{lock1}]
+        # for term in list(common):
+        #     if term.is_compound and len(term.terms) == 1 \
+        #         and term.connector is Connector.ExtensionalSet \
+        #         or term.connector is Connector.IntensionalSet: 
+        #         component = term[0] # get enclosed term
+        #         if component in common:
+        #             common.remove(component)
+            
+        common = list(common)
+        
+        if len(common) == 0 or t1.truth == None or t2.truth == None:
+            return results
+        
+        '''P, S |- S ==> P .ind'''
+        conclusion = Statement(t2.term, Copula.Implication, t1.term)
+        substitution = {self.logic(c, True, var_intro=True): var(prefix='$') for c in common}
+        reified = reify(self.logic(conclusion, True, var_intro=True), substitution)
+        result = self.term(reified)
+        truth = self._truth_functions['ind'](t1.truth, t2.truth)
+        results.append(((result, 'ind'), truth))
+
+        '''P, S |- P ==> S .abd'''
+        result = Statement(result.predicate, Copula.Implication, result.subject)
+        truth = self._truth_functions['abd'](t1.truth, t2.truth)
+        results.append(((result, 'abd'), truth))
+
+        '''P, S |- S <=> P .com'''
+        result = Statement(result.subject, Copula.Equivalence, result.predicate)
+        truth = self._truth_functions['com'](t1.truth, t2.truth)
+        results.append(((result, 'com'), truth))
+
+        '''T1, T2 |- (&&, T1, T2) .int'''
+        conclusion = Compound(Connector.Conjunction, t1.term, t2.term)
+        substitution = {self.logic(c, True, var_intro=True): var(prefix='#') for c in common}
+        reified = reify(self.logic(conclusion, True, var_intro=True), substitution)
+        result = self.term(reified)
+        truth = self._truth_functions['int'](t1.truth, t2.truth)
+        results.append(((result, 'int'), truth))
+
+        '''T1, T2 |- (||, T1, T2) .uni'''
+        result = Compound(Connector.Disjunction, *result.terms)
+        truth = self._truth_functions['uni'](t1.truth, t2.truth)
+        results.append(((result, 'uni'), truth))
+
+        '''C ==> P, S |- (&&, C, S) ==> P .ind'''
+        if t1.term.is_statement and t1.term.copula == Copula.Implication:
+            conclusion = Statement(Compound(Connector.Conjunction, t1.term.subject, t2.term), Copula.Implication, t1.term.predicate)
+            substitution = {self.logic(c, True, var_intro=True): var(prefix='$') for c in common}
+
+            reified = reify(self.logic(conclusion, True, var_intro=True), substitution)
+            result = self.term(reified)
+
+            truth = self._truth_functions['ind'](t1.truth, t2.truth)
+            results.append(((result, 'ind'), truth))
+
+        return results
+
 
 #################################################
-'''
 ### EXAMPLES ###
 
-engine = KanrenEngine()
+# engine = KanrenEngine()
 
+# x = map(map(lambda r: r, engine.rules), engine.theorems)
+# print('x:', list(x))
+
+# from time import time
+
+# j1 = parse('<bird --> (&, animal, [flying])>.')
+
+# t = time()
+# print(
+#     engine.inference_structural(j1)
+# )
+# print(time() - t)
+
+# print("\n\n")
+
+# t1 = parse('<bird-->robin>. %1.000;0.474%')
+# t2 = parse('<bird-->animal>. %1.000;0.900%')
+# print(engine.inference_compositional(t1, t2))
+
+# print("\n")
+
+# exit()
+'''
 # CONDITIONAL
 
 t1 = parse('<(&&, A, B, C, D) ==> Z>.')

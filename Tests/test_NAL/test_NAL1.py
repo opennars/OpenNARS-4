@@ -165,7 +165,7 @@ class TEST_NAL1(unittest.TestCase):
             '<bird --> animal>. %1.00;0.90%', 
             10)
         # tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
-        print("::::", tasks_derived)
+
         self.assertTrue(
             output_contains(tasks_derived, '<animal --> robin>. %1.00;0.45%')
         )
