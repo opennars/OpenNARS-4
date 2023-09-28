@@ -129,17 +129,110 @@ conditional_compositional = '''
 
 theorems = '''
 'inheritance
-<(&, T1, T2) --> T1>
-<T1 --> (|, T1, T2)>
-<(-, T1, T2) --> T1>
+<(T1 & T2) --> T1>
+<T1 --> (T1 | T2)>
+<(T1 - T2) --> T1>
 <((/, R, _, T) * T) --> R>
 <R --> ((\, R, _, T) * T)>
+
+'similarity
+<(--, (--, T)) <-> T>
+<(/, (T1 * T2), _, T2) <-> T1>
+<(\, (T1 * T2), _, T2) <-> T1>
+
+'implication
+<<S <-> P> ==> <S --> P>>
+<<S <=> P> ==> <S ==> P>>
+<(&&, S1, S2) ==> S1>
+<(&&, S1, S2) ==> S2>
+<S1 ==> (||, S1, S2)>
+<S2 ==> (||, S1, S2)>
+
+<<S --> P> ==> <(S | M) --> (P | M)>>
+<<S --> P> ==> <(S & M) --> (P & M)>>
+<<S <-> P> ==> <(S | M) <-> (P | M)>>
+<<S <-> P> ==> <(S & M) <-> (P & M)>>
+<<P <-> S> ==> <(S | M) <-> (P | M)>>
+<<P <-> S> ==> <(S & M) <-> (P & M)>>
+
+<<S ==> P> ==> <(S || M) ==> (P || M)>>
+<<S ==> P> ==> <(S && M) ==> (P && M)>>
+<<S <=> P> ==> <(S || M) <=> (P || M)>>
+<<S <=> P> ==> <(S && M) <=> (P && M)>>
+<<P <=> S> ==> <(S || M) <=> (P || M)>>
+<<P <=> S> ==> <(S && M) <=> (P && M)>>
+
+<<S --> P> ==> <(S - M) --> (P - M)>>
+<<S --> P> ==> <(M - P) --> (M - S)>>
+<<S --> P> ==> <(S ~ M) --> (P ~ M)>>
+<<S --> P> ==> <(M ~ P) --> (M ~ S)>>
+
+<<S <-> P> ==> <(S - M) <-> (P - M)>>
+<<S <-> P> ==> <(M - P) <-> (M - S)>>
+<<S <-> P> ==> <(S ~ M) <-> (P ~ M)>>
+<<S <-> P> ==> <(M ~ P) <-> (M ~ S)>>
+<<P <-> S> ==> <(S - M) <-> (P - M)>>
+<<P <-> S> ==> <(M - P) <-> (M - S)>>
+<<P <-> S> ==> <(S ~ M) <-> (P ~ M)>>
+<<P <-> S> ==> <(M ~ P) <-> (M ~ S)>>
+
+<<M --> (T1 - T2)> ==> (--, <M --> T2>)>
+<<(T1 ~ T2) --> M> ==> (--, <T2 --> M>)>
+
+<<S --> P> ==> <(/, S, _, M) --> (/, P, _, M)>>
+<<S --> P> ==> <(\, S, _, M) --> (\, P, _, M)>>
+<<S --> P> ==> <(/, M, _, P) --> (/, M, _, S)>>
+<<S --> P> ==> <(\, M, _, P) --> (\, M, _, S)>>
+
+'equivalence
+<<S <-> P> <=> (&&, <S --> P>, <P --> S>)>
+<<P <-> S> <=> (&&, <S --> P>, <P --> S>)>
+<<S <=> P> <=> (&&, <S ==> P>, <P ==> S>)>
+<<P <=> S> <=> (&&, <S ==> P>, <P ==> S>)>
+
+<<S <-> P> <=> <{S} <-> {P}>>
+<<P <-> S> <=> <{S} <-> {P}>>
+<<S <-> P> <=> <[S] <-> [P]>>
+<<P <-> S> <=> <[S] <-> [P]>>
+
+<<S --> {P}> <=> <S <-> {P}>>
+<<[S] --> P> <=> <[S] <-> P>>
+
+<<(S1 * S2) --> (P1 * P2)> <=> (&&, <S1 --> P1>, <S2 --> P2>)>
+<<(S1 * S2) <-> (P1 * P2)> <=> (&&, <S1 <-> P1>, <S2 <-> P2>)>
+<<(P1 * P2) <-> (S1 * S2)> <=> (&&, <S1 <-> P1>, <S2 <-> P2>)>
+
+<<S --> P> <=> <(M * S) --> (M * P)>>
+<<S --> P> <=> <(S * M) --> (P * M)>>
+<<S <-> P> <=> <(M * S) <-> (M * P)>>
+<<S <-> P> <=> <(S * M) <-> (P * M)>>
+<<P <-> S> <=> <(M * S) <-> (M * P)>>
+<<P <-> S> <=> <(S * M) <-> (P * M)>>
+
+
+<<(T1 * T2) --> R> <=> <T1 --> (/, R, _, T2)>>
+<<(T1 * T2) --> R> <=> <T2 --> (/, R, T1, _)>>
+<<R --> (T1 * T2)> <=> <(\, R, _, T2) --> T1>>
+<<R --> (T1 * T2)> <=> <(\, R, T1, _) --> T2>>
+
+<<S1 ==> <S2 ==> S3>> <=> <(S1 && S2) ==> S3>>
+
+<(--, (S1 && S2)) <=> (||, (--, S1), (--, S2))>
+<(--, (S1 && S2)) <=> (&&, (--, S1), (--, S2))>
+<(--, (S2 && S1)) <=> (||, (--, S1), (--, S2))>
+<(--, (S2 && S1)) <=> (&&, (--, S1), (--, S2))>
+
+<<S1 <=> S2> <=> <(--, S1) <=> (--, S2)>>
+<<S2 <=> S1> <=> <(--, S1) <=> (--, S2)>>
+
+'not in the NAL book but a nice to have
+<<T1 --> (/, R, _, T2)> <=> <T2 --> (/, R, T1, _)>>
 '''
 
 def split_rules(rules: str) -> list[str]:
     lines = []
     for line in rules.splitlines():
-        if len(line) and not line.startswith("'"):
+        if len(line) and not (line.startswith("'") or line.startswith("#")):
             lines.append(line)
     return lines
 
@@ -149,8 +242,6 @@ def parse(narsese: str, rule=False):
 
 
 class KanrenEngine:
-
-    _prefix = '_rule_'
 
     _truth_functions = {
         'ded': Truth_deduction,
@@ -218,7 +309,6 @@ class KanrenEngine:
         self.theorems = [self._convert_theorems(t) for t in split_rules(theorems)]
 
 
-
     #################################################
     ### Conversion between Narsese and miniKanren ###
     #################################################
@@ -280,38 +370,54 @@ class KanrenEngine:
     def _convert_theorems(self, theorem):
         # TODO: can we parse statements instead?
         t = parse(theorem+'.', True)
-        l = self.logic(t, True, True)
+        l = self.logic(t, True, True, prefix='_theorem_')
         sub_terms = set(t.sub_terms)
         return (l, sub_terms)
 
-    def logic(self, term: Term, rule=False, substitution=False, var_intro=False):
+    def logic(self, term: Term, rule=False, substitution=False, var_intro=False, structural=False, prefix='_rule_'):
         if term.is_atom:
-            name = self._prefix+term.word if rule else term.word
+            name = prefix+term.word if rule else term.word
             if type(term) is Variable:
                 vname = term.word + term.name
-                name = self._prefix+vname if rule else vname 
+                name = prefix+vname if rule else vname 
                 if rule and not substitution: # collect rule variable names
                     self._variables.add(var(name))
-                return var(name)
+                return var(name) if not structural else term
             if rule and not substitution: # collect rule variable names
                 self._variables.add(var(name))
             return var(name) if rule else term
         if term.is_statement:
-            return cons(term.copula, *[self.logic(t, rule, substitution, var_intro) for t in term.terms])
+            return cons(term.copula, *[self.logic(t, rule, substitution, var_intro, structural, prefix) for t in term.terms])
         if term.is_compound:
             # when used in variable introduction, treat single component compounds as atoms
             if rule and var_intro and len(term.terms) == 1 \
                 and term.connector is Connector.ExtensionalSet \
                 or term.connector is Connector.IntensionalSet:
-                    name = self._prefix+term.word
+                    name = prefix+term.word
                     return var(name)
-            return cons(term.connector, *[self.logic(t, rule, substitution, var_intro) for t in term.terms])
+            
+            # extensional and intensional images are not composable
+            if term.connector is Connector.ExtensionalImage \
+                or term.connector is Connector.IntensionalImage:
+                return cons(term.connector, *[self.logic(t, rule, substitution, var_intro, structural, prefix) for t in term.terms])
+
+            terms = list(term.terms)
+            multi = []
+            while len(terms) > 2:
+                t = terms.pop(0)
+                multi.append(self.logic(t, rule, substitution, var_intro, structural, prefix))
+                multi.append(term.connector)
+            multi.extend(self.logic(t, rule, substitution, var_intro, structural, prefix) for t in terms)
+            
+            return cons(term.connector, *multi)
 
     def term(self, logic):
         if type(logic) is Term:
             return logic
+        if type(logic) is Variable:
+            return logic
         if type(logic) is var or type(logic) is ConstrainedVar:
-            name = logic.token.replace(self._prefix, '')
+            name = logic.token.replace('_rule_', '').replace('_theorem_', '')
             if name[0] == '$':
                 return Variable(VarPrefix.Independent, name[1:])
             if name[0] == '#':
@@ -565,7 +671,6 @@ class KanrenEngine:
                 r = r.replace("'", '') # remove trailing '
                 tr1, tr2 = (t1.truth, t2.truth) if not inverse else (t2.truth, t1.truth)
                 truth = self._truth_functions[r](tr1, tr2)
-                # results.append(((res, truth), self.term(rule[0][0]), self.term(rule[0][1]), self.term(rule[0][2])))
                 results.append((res, truth))
 
         return results
@@ -616,7 +721,7 @@ class KanrenEngine:
     def inference_structural(self, t: Sentence):
         results = []
 
-        l1 = self.logic(t.term)
+        l1 = self.logic(t.term, structural=True)
         for (l2, sub_terms) in self.theorems:
             for rule in self.rules_strong:
                 res = self.apply(rule, l1, l2)
@@ -665,9 +770,6 @@ class KanrenEngine:
 ### EXAMPLES ###
 
 # engine = KanrenEngine()
-
-# x = map(map(lambda r: r, engine.rules), engine.theorems)
-# print('x:', list(x))
 
 # from time import time
 
