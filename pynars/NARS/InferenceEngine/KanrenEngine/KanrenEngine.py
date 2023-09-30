@@ -300,7 +300,7 @@ class KanrenEngine:
 
         self.rules_strong = [] # populated by the line below for use in structural inference
         
-        self.rules = [self._convert(r) for r in rules]
+        self.rules_syllogistic = [self._convert(r) for r in rules]
 
         self.rules_immediate = [self._convert_immediate(r) for r in split_rules(immediate)]
 
@@ -555,9 +555,9 @@ class KanrenEngine:
         if task.is_judgement and not task.immediate_structural_rules_applied: # TODO: handle other cases
             Global.States.record_premises(task)
 
-            results = self.inference_immediate(task.sentence)
+            results = []#self.inference_immediate(task.sentence)
 
-            results.extend(self.inference_structural(task.sentence))
+            # results.extend(self.inference_structural(task.sentence))
 
             for term, truth in results:
                 # TODO: how to properly handle stamp for immediate rules?
@@ -663,7 +663,7 @@ class KanrenEngine:
 
         l1 = self.logic(t1t)
         l2 = self.logic(t2t)
-        for rule in self.rules:
+        for rule in self.rules_syllogistic:
             res = self.apply(rule, l1, l2)
             if res is not None:
                 r, _ = rule[1]
@@ -769,7 +769,19 @@ class KanrenEngine:
 #################################################
 ### EXAMPLES ###
 
-# engine = KanrenEngine()
+engine = KanrenEngine()
+
+t1 = parse('<(&&,<$y --> lock>,<$x --> key>) ==> <$y --> (/,open,$x,_)>>. %1.00;0.81%').term
+t2 = parse('<(&&,<$2 --> lock>,<$1 --> key>) ==> <$2 --> (/,open,$1,_)>>. %1.00;0.81%').term
+
+print(t1.identical(t2)) # True
+
+# convert to logic and then back to term
+_t1 = engine.term(engine.logic(t1))
+
+print(_t1.equal(t1)) # True
+
+print(_t1.identical(t2)) # False
 
 # from time import time
 
