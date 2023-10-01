@@ -796,7 +796,7 @@ def create_var(name, prefix: VarPrefix):
     if prefix is VarPrefix.Dependent:
         var._vars_dependent.add(idx, [])
     if prefix is VarPrefix.Query:
-        var._vars-quit.add(idx, [])
+        var._vars_query.add(idx, [])
     return var
 
 t1m = Statement(Compound(Connector.Conjunction, 
