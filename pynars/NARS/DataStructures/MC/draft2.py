@@ -1,5 +1,5 @@
 """
-draft.py is just for showing the structure how channels and NARS core communicate
+draft2.py uses wordnet as an example
 """
 
 
@@ -9,6 +9,7 @@ from BufferMC import Buffer
 from SampleChannels.WordNetChannel import WordNetChannel
 from pynars.NARS import Reasoner
 from pynars.Narsese import Task
+from pynars.NARS.DataStructures.MC.util.word2narsese_exAll import words2narsese
 
 
 def nars_core():
@@ -26,6 +27,9 @@ def nars_core():
             ret = nars.cycle()
         else:
             tmp = nars_input.pop(0)
+
+            print("narsese input:", tmp)
+
             if isinstance(tmp, Task):
                 success, task, _, ret = nars.input_narsese(text=str(tmp), go_cycle=True)
             else:
@@ -46,7 +50,9 @@ def wcn_core():
         if len(wch_input) == 0:
             ret = wcn.WordNetQuery()
         else:
-            ret = wcn.WordNetQuery(wch_input.pop(0))
+            tmp = wch_input.pop(0)
+            print("channel input:", tmp)
+            ret = wcn.WordNetQuery(tmp)
         wch_output.append(ret)
         if ret is not None:
             nars_input.append(each)
@@ -54,10 +60,13 @@ def wcn_core():
 
 if __name__ == "__main__":
 
-    apriori_knowledge = ["<Query(WordNet, cat) ==> <cat --> [KNOWN]>>."]
-    # including product as images
+    apriori_knowledge = ["<Query(WordNet, $x) ==> <$x --> [KNOWN]>>.",
+                         "<<$label --> X> ==> <$label --> [pos]>>. %0.6;0.99%",
+                         "<explosion --> X>.",
+                         "<car --> X>.",
+                         "<accident --> X>."]  # note this X is for one single case
 
-    nars = Reasoner(100, 100)
+    nars = Reasoner(1000, 1000)
     for each in apriori_knowledge:
         nars.input_narsese(each, True)
 
@@ -65,7 +74,7 @@ if __name__ == "__main__":
     wcn = WordNetChannel("WCN", buff)
 
     # global data
-    nars_input = ["<cat --> [KNOWN]>!", "<?x --> cat>?"]  # though there is a question here, the answer is not used
+    nars_input = ["<X --> [KNOWN]>!", "<?1 --> [pos]>?"]
     nars_output = []
     wch_input = []
     wch_output = []
