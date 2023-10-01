@@ -11,7 +11,8 @@ from pynars.Narsese import Term, Copula, Connector, Statement, Compound, Variabl
 from pynars.NAL.Functions import *
 from pynars.NARS.DataStructures import Concept, Task, TaskLink, TermLink, Judgement, Question
 from pynars.NAL.Functions.Tools import project_truth, revisible
-
+from collections import defaultdict
+from typing import List
 
 nal1 = '''
 {<M --> P>. <S --> M>} |- <S --> P> .ded
@@ -229,7 +230,7 @@ theorems = '''
 <<T1 --> (/, R, _, T2)> <=> <T2 --> (/, R, T1, _)>>
 '''
 
-def split_rules(rules: str) -> list[str]:
+def split_rules(rules: str) -> List[str]:
     lines = []
     for line in rules.splitlines():
         if len(line) and not (line.startswith("'") or line.startswith("#")):
@@ -783,12 +784,27 @@ print(_t1.equal(t1)) # True
 
 print(_t1.identical(t2)) # False
 
+
+vars_all = defaultdict(lambda: len(vars_all))
+
+def create_var(name, prefix: VarPrefix):
+    vars_all[name]
+    var = Variable(prefix, name)
+    idx = vars_all[name]
+    if prefix is VarPrefix.Independent:
+        var._vars_independent.add(idx, [])
+    if prefix is VarPrefix.Dependent:
+        var._vars_dependent.add(idx, [])
+    if prefix is VarPrefix.Query:
+        var._vars-quit.add(idx, [])
+    return var
+
 t1m = Statement(Compound(Connector.Conjunction, 
-                         Statement(Variable(VarPrefix.Independent, 'y'), Copula.Inheritance, Term('lock')),
-                         Statement(Variable(VarPrefix.Independent, 'x'), Copula.Inheritance, Term('key'))),
+                         Statement(create_var('y', VarPrefix.Independent), Copula.Inheritance, Term('lock')),
+                         Statement(create_var('x', VarPrefix.Independent), Copula.Inheritance, Term('key'))),
                 Copula.Implication,
-                Statement(Variable(VarPrefix.Independent, 'y'), Copula.Inheritance, 
-                          Compound.ExtensionalImage(Term('open'), Variable(VarPrefix.Independent, 'x'), Term('_', True))))
+                Statement(create_var('y', VarPrefix.Independent), Copula.Inheritance, 
+                          Compound.ExtensionalImage(Term('open'), create_var('x', VarPrefix.Independent), Term('_', True))))
 
 print('\n---\n', t1m.identical(t1))
 
