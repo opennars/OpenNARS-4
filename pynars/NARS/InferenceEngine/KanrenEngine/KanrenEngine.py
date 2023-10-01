@@ -783,6 +783,15 @@ print(_t1.equal(t1)) # True
 
 print(_t1.identical(t2)) # False
 
+t1m = Statement(Compound(Connector.Conjunction, 
+                         Statement(Variable(VarPrefix.Independent, 'y'), Copula.Inheritance, Term('lock')),
+                         Statement(Variable(VarPrefix.Independent, 'x'), Copula.Inheritance, Term('key'))),
+                Copula.Implication,
+                Statement(Variable(VarPrefix.Independent, 'y'), Copula.Inheritance, 
+                          Compound.ExtensionalImage(Term('open'), Variable(VarPrefix.Independent, 'x'), Term('_', True))))
+
+print('\n---\n', t1m.identical(t1))
+
 # from time import time
 
 # j1 = parse('<bird --> (&, animal, [flying])>.')
