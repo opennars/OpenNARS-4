@@ -241,6 +241,8 @@ def parse(narsese: str, rule=False):
     task = Narsese.parser.parse(narsese)
     return task.term if rule else task.sentence
 
+# used in converting from logic to Narsese
+_vars_all = defaultdict(lambda: len(_vars_all))
 
 class KanrenEngine:
 
@@ -412,7 +414,21 @@ class KanrenEngine:
             
             return cons(term.connector, *multi)
 
-    def term(self, logic):
+    def term(self, logic, root=True):
+        # additional variable handling
+        if root: _vars_all.clear()
+        def create_var(name, prefix: VarPrefix):
+            _vars_all[name]
+            var = Variable(prefix, name)
+            idx = _vars_all[name]
+            if prefix is VarPrefix.Independent:
+                var._vars_independent.add(idx, [])
+            if prefix is VarPrefix.Dependent:
+                var._vars_dependent.add(idx, [])
+            if prefix is VarPrefix.Query:
+                var._vars_query.add(idx, [])
+            return var
+
         if type(logic) is Term:
             return logic
         if type(logic) is Variable:
@@ -420,11 +436,11 @@ class KanrenEngine:
         if type(logic) is var or type(logic) is ConstrainedVar:
             name = logic.token.replace('_rule_', '').replace('_theorem_', '')
             if name[0] == '$':
-                return Variable(VarPrefix.Independent, name[1:])
+                return create_var(name[1:], VarPrefix.Independent)
             if name[0] == '#':
-                return Variable(VarPrefix.Dependent, name[1:])
+                return create_var(name[1:], VarPrefix.Dependent)
             if name[0] == '?':
-                return Variable(VarPrefix.Query, name[1:])
+                return create_var(name[1:], VarPrefix.Query)
             else:
                 return Term(name)
         if type(logic) is cons:
@@ -432,27 +448,27 @@ class KanrenEngine:
                 sub = car(cdr(logic))
                 cop = car(logic)
                 pre = cdr(cdr(logic))
-                return Statement(self.term(sub), cop, self.term(pre))
+                return Statement(self.term(sub, False), cop, self.term(pre, False))
             if type(car(logic)) is Connector:
                 con = car(logic)
                 t = cdr(logic)
                 is_list = type(t) is cons and not (type(car(t)) is Copula or type(car(t)) is Connector)
-                terms = self.to_list(cdr(logic)) if is_list else [self.term(t)]
+                terms = self.to_list(cdr(logic)) if is_list else [self.term(t, False)]
                 return Compound(con, *terms)
         return logic # cons
 
     def to_list(self, pair) -> list:
-        l = [self.term(car(pair))]
+        l = [self.term(car(pair), False)]
         if type(cdr(pair)) is list and cdr(pair) == []:
             () # empty TODO: there's gotta be a better way to check
         elif type(cdr(pair)) is cons:
-            t = self.term(cdr(pair))
+            t = self.term(cdr(pair), False)
             if type(t) is cons:
                 l.extend(self.to_list(t)) # recurse
             else:
                 l.append(t)
         else:
-            l.append(self.term(cdr(pair))) # atom
+            l.append(self.term(cdr(pair), False)) # atom
         return l
 
     #################################################
@@ -770,43 +786,7 @@ class KanrenEngine:
 #################################################
 ### EXAMPLES ###
 
-engine = KanrenEngine()
-
-t1 = parse('<(&&,<$y --> lock>,<$x --> key>) ==> <$y --> (/,open,$x,_)>>. %1.00;0.81%').term
-t2 = parse('<(&&,<$2 --> lock>,<$1 --> key>) ==> <$2 --> (/,open,$1,_)>>. %1.00;0.81%').term
-
-print(t1.identical(t2)) # True
-
-# convert to logic and then back to term
-_t1 = engine.term(engine.logic(t1))
-
-print(_t1.equal(t1)) # True
-
-print(_t1.identical(t2)) # False
-
-
-vars_all = defaultdict(lambda: len(vars_all))
-
-def create_var(name, prefix: VarPrefix):
-    vars_all[name]
-    var = Variable(prefix, name)
-    idx = vars_all[name]
-    if prefix is VarPrefix.Independent:
-        var._vars_independent.add(idx, [])
-    if prefix is VarPrefix.Dependent:
-        var._vars_dependent.add(idx, [])
-    if prefix is VarPrefix.Query:
-        var._vars_query.add(idx, [])
-    return var
-
-t1m = Statement(Compound(Connector.Conjunction, 
-                         Statement(create_var('y', VarPrefix.Independent), Copula.Inheritance, Term('lock')),
-                         Statement(create_var('x', VarPrefix.Independent), Copula.Inheritance, Term('key'))),
-                Copula.Implication,
-                Statement(create_var('y', VarPrefix.Independent), Copula.Inheritance, 
-                          Compound.ExtensionalImage(Term('open'), create_var('x', VarPrefix.Independent), Term('_', True))))
-
-print('\n---\n', t1m.identical(t1))
+# engine = KanrenEngine()
 
 # from time import time
 

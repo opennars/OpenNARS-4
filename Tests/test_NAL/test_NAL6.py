@@ -797,7 +797,7 @@ class TEST_NAL6(unittest.TestCase):
             output_contains(tasks_derived, '(&&,<#1 --> lock>,<<$2 --> key> ==> <#1 --> (/,open,$2,_)>>). %1.00;0.81%')
         )
         self.assertTrue(
-            output_contains(tasks_derived, '<(&&,<$1 --> key>,<$2 --> lock>) ==> <$2 --> (/,open,$1,_)>>. %1.00;0.45%')
+            output_contains(tasks_derived, '<(&&,<$2 --> lock>,<$1 --> key>) ==> <$2 --> (/,open,$1,_)>>. %1.00;0.45%')
         )
 
         pass
