@@ -75,6 +75,10 @@ class Config:
     projection_decay = 0.1
     decision_threshold = 0.51
 
+    # what this value represents was originally equal to the termlink record length (10), but we may want to adjust it or make it scaled according to duration since it has more to do with time than # of records.  it can probably be increased several times larger since each item should remain in the recording queue for longer than 1 cycle
+    novelty_horizon = 100000
+    term_link_record_length = 10
+
     @classmethod
     def check(cls):
         '''Check if each parameter is valid'''

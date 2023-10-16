@@ -7,6 +7,7 @@ class PrintType(Enum):
     OUT = f'{fg.yellow}OUT   :{fg.rs}'
     ERROR = f'{fg.red}ERROR :{fg.rs}'
     ANSWER = f'{fg.green}ANSWER:{fg.rs}'
+    ACHIEVED = f'{fg.green}ACHIEVED:{fg.rs}'
     EXE = f'{fg.green}EXE   :{fg.rs}'
     INFO = f'{fg.blue}INFO  :{fg.rs}'
     COMMENT = F'{fg.grey}COMMENT:{fg.rs}'
