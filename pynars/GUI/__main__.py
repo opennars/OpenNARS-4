@@ -1,8 +1,9 @@
 import sys
 from PySide6 import QtWidgets
 from qt_material import apply_stylesheet
+import qdarkstyle
 from .MainWindow import NARSWindow
-from .Console import run_nars
+from .Backend import run_nars
 from multiprocessing import Process
 from qasync import QEventLoop
 import asyncio
@@ -14,7 +15,8 @@ loop = QEventLoop(app)
 
 asyncio.set_event_loop(loop)
 # setup stylesheet
-apply_stylesheet(app, theme='dark_teal.xml')
+# apply_stylesheet(app, theme='dark_teal.xml')
+app.setStyleSheet(qdarkstyle.load_stylesheet())
 
 
 
