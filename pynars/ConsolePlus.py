@@ -244,14 +244,25 @@ def read_file(*args: List[str]) -> None:
         current_NARS_interface.execute_file(path)
 
 
-@cmd_register('history')
-def print_history(*args: List[str]) -> None:
+@cmd_register(('history', 'history-input'))
+def print_history_in(*args: List[str]) -> None:
     '''Format: history [... placeholder]
     Output the user's input history
     Default: The Narsese seen at the bottom of the system, not the actual input
     User actual input cmd: input any parameters can be obtained'''
-    global _input_history
-    print('\n'.join(_input_history if args else current_NARS_interface.input_history))
+    global input_history
+    print('\n'.join(input_history if args else current_NARS_interface.input_history))
+
+
+@cmd_register('history-output')
+def print_history_out(*args: List[str]) -> None:
+    '''Format: history-output [... placeholder]
+    Output the console's output history
+    Default: The Narsese seen at the bottom of the system, not the actual input
+    User actual input cmd: input any parameters can be obtained'''
+    global output_history
+    for (interface_name, output_type, content) in output_history:
+        print(f'{interface_name}: [{output_type}]\t{content}')
 
 
 @cmd_register(('execute', 'exec'))
@@ -409,21 +420,50 @@ def macro_repeat(name: str, num_executes: int) -> None:
     for _ in range(num_executes):
         macro_exec1(name=name)
 
+
+interfaces: Dict[str, Reasoner] = {}
+'The dictionary contains all registered NARS interfaces.'
+
 # Reasoner management #
 
 
-current_NARS_interface: NARSInterface = NARSInterface.construct_interface(
+def register_interface(name: str, seed: int = -1, memory: int = 100, capacity: int = 100, silent: bool = False) -> NARSInterface:
+    '''
+    Wrapped from NARSInterface.construct_interface.
+    - It will auto register the new interface to `reasoners`
+    - It will add a output handler(uses lambda) to catch its output into output_history
+    '''
+    # create interface
+    interface = NARSInterface.construct_interface(
+        seed=seed,
+        memory=memory,
+        capacity=capacity,
+        silent=silent)
+    # add handler to catch outputs
+    global output_history
+    interface.output_handlers.append(
+        lambda out: output_history.append(
+            (name,  # Name of interface e.g. 'initial'
+             out.type.name,  # Type of output e.g. 'ANSWER'
+             out.content)  # Content of output e.g. '<A --> B>.'
+        ))
+    # register in dictionary
+    interfaces[name] = interface
+    # return the interface
+    return interface
+
+
+current_NARS_interface: NARSInterface = register_interface(
+    'initial',
     137,
     500, 500,
     silent=False)
 
-reasoners: Dict[str, Reasoner] = {'initial': current_NARS_interface}
-
 
 def current_nar_name() -> str:
     global current_NARS_interface
-    for name in reasoners:
-        if reasoners[name] is current_NARS_interface:
+    for name in interfaces:
+        if interfaces[name] is current_NARS_interface:
             return name
     return None
 
@@ -442,11 +482,11 @@ def reasoner_list(*keywords: List[str]) -> None:
     Enumerate existing reasoners; It can be retrieved with parameters'''
     keywords = keywords if keywords else ['']
     # Search for a matching interface name
-    reasoner_names: List[str] = prefix_browse(reasoners, *keywords)
+    reasoner_names: List[str] = prefix_browse(interfaces, *keywords)
     # Displays information about "matched interface"
     if reasoner_names:
         for name in reasoner_names:  # match the list of all cmds, as long as they match the search results - not necessarily in order
-            interface: NARSInterface = reasoners[name]
+            interface: NARSInterface = interfaces[name]
             information: str = '\n\t'+"\n\t".join(f"{name}: {repr(inf)}" for name, inf in [
                 ('Memory', interface.reasoner.memory),
                 ('Channels', interface.reasoner.channels),
@@ -470,16 +510,17 @@ def reasoner_new(name: str, n_memory: int = 100, capacity: int = 100, silent: bo
     Create a new reasoner and go to the existing reasoner if it exists
     If an empty name is encountered, the default name is "unnamed"'''
     global current_NARS_interface
-    if name in reasoners:
+    if name in interfaces:
         print(
             f'The reasoner exists! Now automatically go to the reasoner "{name}"!')
-        return (current_NARS_interface := reasoners[name])
+        return (current_NARS_interface := interfaces[name])
 
-    reasoners[name] = (current_NARS_interface := NARSInterface.construct_interface(
+    current_NARS_interface = register_interface(
+        name=name,
+        seed=current_NARS_interface.seed,  # keep the seed until directly change
         memory=n_memory,
         capacity=capacity,
-        silent=silent
-    ))
+        silent=silent)
     print(
         f'A reasoner named "{name}" with memory capacity {n_memory}, buffer capacity {capacity}, silent output {" on " if silent else" off "} has been created!')
     return current_NARS_interface
@@ -490,9 +531,9 @@ def reasoner_goto(name: str) -> NARSInterface:
     '''Format: reasoner-goto < name >
     Transfers the current reasoner of the program to the specified reasoner'''
     global current_NARS_interface
-    if name in reasoners:
+    if name in interfaces:
         print(f"Gone to reasoner named '{name}'!")
-        return (current_NARS_interface := reasoners[name])
+        return (current_NARS_interface := interfaces[name])
     print(f"There is no reasoner named '{name}'!")
 
 
@@ -501,12 +542,12 @@ def reasoner_delete(name: str) -> None:
     '''Format: reasoner-select < name >
     Deletes the reasoner with the specified name, but cannot delete the current reasoner'''
     global current_NARS_interface
-    if name in reasoners:
-        if reasoners[name] is current_NARS_interface:
+    if name in interfaces:
+        if interfaces[name] is current_NARS_interface:
             print(
                 f'Unable to delete reasoner "{name}", it is the current reasoner!')
             return
-        del reasoners[name]
+        del interfaces[name]
         print(f'the reasoner named "{name}" has been deleted!')
         return
     print(f'There is no reasoner named "{name}"!')
@@ -522,8 +563,13 @@ def random_seed(seed: int) -> None:
 # Total index and other variables #
 
 _parse_need_slash: bool = False
+'Determines whether the last input is a command'
 
-_input_history: List[str] = []
+input_history: List[str] = []
+'History of inputs'
+
+output_history: List[Tuple[str, str, str]] = []
+'History of outputs. The inner part is (Reasoner Name, PRINT_TYPE, Content)'
 
 # Special grammar parser #
 
@@ -610,7 +656,7 @@ def execute_input(inp: str, *other_input: List[str]) -> None:
 
     # add to history
 
-    _input_history.append(inp)
+    input_history.append(inp)
 
     # pre-jump cmd
     if inp.startswith('/'):

@@ -140,8 +140,8 @@ def list_variables() -> None:
 
 @exp_register('r')
 def list_histories() -> None:
-    print_history('')
-    print_history('1')
+    print_history_in('')
+    print_history_in('1')
 
 
 @exp_register('help')
@@ -369,7 +369,7 @@ def load_JSON() -> None:
                     'Please enter a new interface name:')  # accept the reasoner with a new interface
                 interface: NARSInterface = NARSInterface(
                     NARS=decoded_NAR)  # create interface
-                reasoners[interface_name] = interface  # directly add
+                interfaces[interface_name] = interface  # directly add
                 reasoner_goto(interface_name)  # goto
                 print(
                     f"Import a reasoner named {interface_name}, silent {'on' if interface.silent_output else 'off'}.")
@@ -428,7 +428,7 @@ def load_pickle() -> None:
                         'Please enter a new interface name: ')
                     # create interface
                     interface: NARSInterface = NARSInterface(NARS=decoded_NAR)
-                    reasoners[interface_name] = interface  # directly add
+                    interfaces[interface_name] = interface  # directly add
                     reasoner_goto(interface_name)  # goto
                     print(
                         f"Import a reasoner named {interface_name}, silent {'on' if interface.silent_output else 'off'}.")

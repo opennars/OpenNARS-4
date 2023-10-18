@@ -42,8 +42,9 @@ def narsese_parse_safe(narsese: str) -> Union[None, Task]:
 
 class NARSOutput:
     type: PrintType
-    content: any
+    content: str
     p: float
+    d: float
     q: float
     comment_title: str
     end: str
@@ -214,7 +215,7 @@ class NARSInterface:
     # NARS constructor & initialization #
 
     @staticmethod
-    def construct_interface(seed=-1, memory=100, capacity=100, silent: bool = False):
+    def construct_interface(seed:int=-1, memory:int=100, capacity:int=100, silent: bool = False):
         '''Construct the reasoner using specific construction parameters instead of having to construct the reasoner itself in each constructor'''
         return NARSInterface(seed=seed,
                              NARS=Reasoner(
@@ -263,10 +264,10 @@ class NARSInterface:
                 end=end)
 
     # _event_handlers: List[function] = [] # ! error: name 'function' is not defined
-    _event_handlers: list = []
+    _output_handlers: list = []
 
     @property  # read only
-    def event_handlers(self):
+    def output_handlers(self):
         '''Registry of event handlers
             Standard format:
             ```
@@ -274,11 +275,11 @@ class NARSInterface:
                 # your code
             ```
         '''
-        return self._event_handlers
+        return self._output_handlers
 
-    def _handle_NARS_output(self, out: NARSOutput):
+    def _handle_NARS_output(self, out: NARSOutput) -> None:
         '''Internally traverses the event handler registry table, running its internal functions one by one'''
-        for handler in self._event_handlers:
+        for handler in self._output_handlers:
             try:
                 handler(out)
             except BaseException as e:
@@ -308,7 +309,7 @@ class NARSInterface:
     _input_history: List[str] = []
 
     @property  # readonly
-    def input_history(self):
+    def input_history(self) -> List[str]:
         '''Records texts (statements) entered into the interface'''
         return self._input_history
 
@@ -410,7 +411,7 @@ class NARSInterface:
         return outs
 
     # run line
-    def run_line(self, reasoner: reasoner, line: str):
+    def run_line(self, reasoner: reasoner, line: str) -> Union[None, List[Task]]:
         '''Run one line of input'''
         line = line.strip(' \r\n\t')  # ignore spaces
         # special notations
@@ -426,7 +427,7 @@ class NARSInterface:
                     self.print_output(
                         PrintType.ERROR, f'parse "{line}" failed!'
                     )
-            return
+            return None
         # empty or comments
         elif len(line) == 0 or line.startswith("//") or line.startswith("'"):
             return None
