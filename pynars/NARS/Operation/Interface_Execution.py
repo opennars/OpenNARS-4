@@ -44,3 +44,7 @@ def execute__want(arguments: Iterable[Term], task: Task=None, memory: Memory=Non
     return _execute.want(statement)
     
 
+def execute__register(arguments: Iterable[Term], task: Task=None, memory: Memory=None):
+    '''let a term be used as an operator'''
+    term = arguments[1]
+    return _execute.register(term)

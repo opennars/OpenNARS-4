@@ -1,14 +1,11 @@
-from typing import List, Dict, Tuple, Union
-from typing import List
+from typing import List, Dict, Tuple, Union, Iterable
 import functools
 import re
 from pynars.Interface import narsese_parse_safe
+from pynars.Narsese import Term,Task
+from pynars.NARS.DataStructures import Memory
 
-from pynars.Interface import NARSInterface
-from pynars.Interface import NARSOutput
-from pynars.Interface import PrintType
-from pynars.Interface import Reasoner
-from pynars.Interface import print_out_origin
+from pynars.Interface import NARSInterface,NARSOutput,PrintType,Reasoner,print_out_origin
 print_output = print_out_origin
 
 # compatible type annotation
@@ -258,14 +255,55 @@ def print_history(*args: List[str]) -> None:
 def exec_code(*args: List[str]) -> None:
     '''Format: exec <Python code >
     Directly invoke Python's built-in exec cmd to execute a single line of code'''
-    exec(' '.join(args))
+    code = " ".join(args)
+    print(f'[exec]{code}')
+    try:
+        exec(code)
+    except BaseException as e:
+        print(f'exec failed: {e}')
 
 
 @cmd_register(('evaluate', 'eval'))
 def eval_code(*args: List[str]) -> None:
     '''Format: eval <Python code >
     Directly invoke Python's built-in eval cmd to evaluate a single line of code'''
-    print(f'eval result: {eval(" ".join(args))}')
+    code = " ".join(args)
+    print(f'[eval]{code}')
+    try:
+        print(f'eval result: {eval(code)}')
+    except BaseException as e:
+        print(f'eval failed: {e}')
+
+
+@cmd_register(('register-operation', 'register'))
+def register_operation(*args: List[str]) -> None:
+    '''Format: register-operation <Operation(Term) Name> <"eval"/"exec"> <Python Code>
+    Register an operation to the whole PyNARS instance.
+    function signature:
+        execution_F(arguments: Iterable[Term], task: Task=None, memory: Memory=None) -> Union[Task,None]
+    ! Unsupported: register mental operations
+    '''
+    name = args[0]
+    eType = args[1]
+    code = " ".join(args[2:])
+    if code == '':
+        def execution_F(arguments: Iterable[Term], task: Task=None, memory: Memory=None) -> Union[Task,None]:
+            print(f'executed: arguments={arguments}, task={task}, memory={memory}. the "task" will be returned')
+            return task
+    else:
+        if eType =='exec':
+            def execution_F(arguments: Iterable[Term], task: Task=None, memory: Memory=None) -> Union[Task,None]:
+                return exec(code)
+        else:
+            def execution_F(arguments: Iterable[Term], task: Task=None, memory: Memory=None) -> Union[Task,None]:
+                return eval(code)
+    execution_F.__doc__ = f'''
+        The execution is auto generated from operator {name} in {eType} mode with code={code}
+        '''
+    from pynars.NARS.Operation.Register import register
+    from pynars.NARS.Operation import Operation
+    register(Operation(name), execution_F)
+    print(f'Operation {name} was successfully registered in mode "{eType}" with code={code}')
 
 
 @cmd_register(('simplify-parse', 'parse'))
