@@ -277,10 +277,15 @@ def eval_code(*args: List[str]) -> None:
 
 @cmd_register(('register-operation', 'register'))
 def register_operation(*args: List[str]) -> None:
-    '''Format: register-operation <Operation(Term) Name> <"eval"/"exec"> <Python Code>
-    Register an operation to the whole PyNARS instance.
+    '''Format: register-operation <Operation(Term) Name> <'eval'/'exec'> <Python Code>
+    Register an operation to NARS interface.
+    
     function signature:
         execution_F(arguments: Iterable[Term], task: Task=None, memory: Memory=None) -> Union[Task,None]
+    
+    default fallback of execution_F when code='' is equivalent to:
+        print(f'executed: arguments={arguments}, task={task}, memory={memory}. the "task" will be returned')
+    
     ! Unsupported: register mental operations
     '''
     name = args[0]
@@ -300,9 +305,8 @@ def register_operation(*args: List[str]) -> None:
     execution_F.__doc__ = f'''
         The execution is auto generated from operator {name} in {eType} mode with code={code}
         '''
-    from pynars.NARS.Operation.Register import register
     from pynars.NARS.Operation import Operation
-    register(Operation(name), execution_F)
+    current_NARS_interface.reasoner.register_operation(Operation(name), execution_F)
     print(f'Operation {name} was successfully registered in mode "{eType}" with code={code}')
 
 
