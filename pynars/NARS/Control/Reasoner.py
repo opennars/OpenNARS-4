@@ -85,8 +85,7 @@ class Reasoner:
             # if task.is_goal:
                 # goal_revised = self.process_goal(task, concept)
             judgement_revised, goal_revised, answers_question, answers_quest, (task_operation_return, task_executed), _tasks_derived = self.memory.accept(task)
-            if task_operation_return is not None:
-                tasks_derived.append(task_operation_return)
+            if task_operation_return is not None: tasks_derived.append(task_operation_return)
             # if task_executed is not None: tasks_derived.append(task_executed)
             tasks_derived.extend(_tasks_derived)
             # self.sequence_buffer.put_back(task) # globalBuffer.putBack(task,
