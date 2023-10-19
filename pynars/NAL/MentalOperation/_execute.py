@@ -1,4 +1,4 @@
-from typing import List
+from typing import Callable, List
 from pynars.Config import Config
 from pynars.Narsese._py.Budget import Budget
 from pynars.Narsese._py.Operation import *
@@ -23,7 +23,7 @@ def execute(task: Task):
         return None
 
 def anticipate(task: Task, *args: Term):
-    ''''''
+    '''TODO'''
 
 def believe(statement: Term, term_truth: Term):
     ''''''
@@ -37,7 +37,7 @@ def believe(statement: Term, term_truth: Term):
 def doubt(beliefs: List[Belief]):
     ''''''
     for belief in beliefs:
-        # discount the confidence of the beleif
+        # discount the confidence of the belief
         belief.truth.c = belief.truth.c * Config.rate_discount_c
     return None
 
@@ -74,3 +74,12 @@ def wonder(statement: Term):
     sentence = Question(statement, stamp=stamp)
     return Task(sentence, budget)
 
+
+def register(term: Term, callable: Callable=lambda arguments, task, memory: print(f'operation "{task.term.word}" is executed with arguments {arguments}')):
+    '''let a term  be used as an operator'''
+    try:
+        from pynars.NARS.Operation.Register import register
+        register(term, callable)
+    except BaseException as e:
+        print(e)
+    return None
