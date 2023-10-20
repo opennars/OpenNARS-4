@@ -560,6 +560,69 @@ def random_seed(seed: int) -> None:
     NARSInterface.change_random_seed(seed=seed)
 
 
+@cmd_register(('server', 'server-ws', 'server-websocket'), (str, 'localhost'), (int, 8765))
+def server_websocket(host: str = 'localhost', port: int = 8765) -> None:
+    '''Format: server [host: str = 'localhost'] [port: integer = 8765]
+    Launch a websocket server uses certain host(ip) and port, enables the console to receive input from WS messages.
+    - format of receiving: same as user input
+    - format of sending [{"interface_name": XXX, "output_type": XXX, "content": XXX}, ...]
+    
+    The default address is ws://localhost:8765.
+    ! The server blocks the main process, and the service can only be stopped using Ctrl+C.'''
+    import websockets
+    from json import dumps
+
+    async def handler(websocket, path):
+        print(f"Connected with path={path}!")
+        messages2send:List[str] = []
+        len_outputs:int = 0
+        last_output_json_objs:list = []
+        last_output_json_obj:dict = {}
+        async for message in websocket:
+            try:
+                messages2send.clear()
+                # execute
+                execute_input(message)
+                # handle output using json
+                if len_outputs < len(output_history):
+                    # clear last sent
+                    last_output_json_objs.clear()
+                    # traverse newer outputs
+                    for i in range(len_outputs, len(output_history)):
+                        # data: (interface_name, output_type, content)
+                        # format: [{"interface_name": XXX, "output_type": XXX, "content": XXX}, ...]
+                        (last_output_json_obj['interface_name'],
+                         last_output_json_obj['output_type'],
+                         last_output_json_obj['content']) = output_history[i]
+                        # append
+                        last_output_json_objs.append(last_output_json_obj.copy())
+                    # to be sent
+                    messages2send.append(dumps(last_output_json_objs))
+                # send result if have
+                for message2send in messages2send:
+                    print(f"send: {message} -> {message2send}")
+                    await websocket.send(message2send)
+                # refresh output length
+                len_outputs = len(output_history)
+            # when keyboard interrupt
+            except KeyboardInterrupt as e:
+                raise e
+            # it cannot be interrupted by internal exceptions
+            except BaseException as e:
+                print(f"Error: {e}")
+
+    # Launch
+    import asyncio
+    try:
+        async def main():
+            async with websockets.serve(handler, host, port):
+                print(f'WS server launched on ws://{host}:{port}.')
+                await asyncio.Future()
+        asyncio.run(main())
+    except BaseException as e:
+        print(f'WS server error: {e}')
+
+
 # Total index and other variables #
 
 _parse_need_slash: bool = False
