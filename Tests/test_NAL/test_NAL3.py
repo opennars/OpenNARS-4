@@ -40,11 +40,11 @@ class TEST_NAL3(unittest.TestCase):
         'Swan is a type of swimming bird. 
         ''outputMustContain('<swan --> (&,bird,swimmer)>. %0.72;0.81%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<swan --> swimmer>. %0.90;0.90%', 
             '<swan --> bird>. %0.80;0.90%', 
-            'swan.')
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules]
+            16
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<swan --> (&,bird,swimmer)>. %0.72;0.81%')
         )
@@ -66,11 +66,11 @@ class TEST_NAL3(unittest.TestCase):
         'Swan is a type of bird or a type of swimmer. 
         ''outputMustContain('<swan --> (|,bird,swimmer)>. %0.98;0.81%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<swan --> swimmer>. %0.90;0.90%', 
             '<swan --> bird>. %0.80;0.90%', 
-            'swan.')
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+            16
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<swan --> (|,bird,swimmer)>. %0.98;0.81%')
         )        
@@ -92,11 +92,11 @@ class TEST_NAL3(unittest.TestCase):
         'If something is either chess or sport, then it is a competition.
         ''outputMustContain('<(|,chess,sport) --> competition>. %0.72;0.81%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<sport --> competition>. %0.90;0.90%', 
             '<chess --> competition>. %0.80;0.90%', 
-            'competition.')
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+            16
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<(|,chess,sport) --> competition>. %0.72;0.81%')
         )        
@@ -118,11 +118,11 @@ class TEST_NAL3(unittest.TestCase):
         'If something is both chess and sport, then it is a competition.
         ''outputMustContain('<(&,chess,sport) --> competition>. %0.98;0.81%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<sport --> competition>. %0.90;0.90%', 
             '<chess --> competition>. %0.80;0.90%', 
-            'competition.')
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+            16
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<(&,chess,sport) --> competition>. %0.98;0.81%')
         )        
@@ -145,21 +145,21 @@ class TEST_NAL3(unittest.TestCase):
 
         ''outputMustContain('<robin --> bird>. %1.00;0.81%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<robin --> (|,bird,swimmer)>. %1.00;0.90%', 
             '<robin --> swimmer>. %0.00;0.90%', 
-            'robin.')
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+            32
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<robin --> bird>. %1.00;0.81%')
         )        
 
 
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<robin --> swimmer>. %0.00;0.90%', 
             '<robin --> (|,bird,swimmer)>. %1.00;0.90%', 
-            'robin.')
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+            32
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<robin --> bird>. %1.00;0.81%')
         )        
@@ -181,20 +181,20 @@ class TEST_NAL3(unittest.TestCase):
         'Robin is not a type of mammal.
         ''outputMustContain('<robin --> mammal>. %0.00;0.81%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<robin --> swimmer>. %0.00;0.90%', 
             '<robin --> (-,mammal,swimmer)>. %0.00;0.90%', 
-            'robin.')
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+            32
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<robin --> mammal>. %0.00;0.81%')
         )
 
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<robin --> (-,mammal,swimmer)>. %0.00;0.90%', 
             '<robin --> swimmer>. %0.00;0.90%', 
-            'robin.')
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+            32
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<robin --> mammal>. %0.00;0.81%')
         )       
@@ -220,11 +220,11 @@ class TEST_NAL3(unittest.TestCase):
         'PlanetX is probably Pluto. 
         ''outputMustContain('<planetX --> {Pluto}>. %0.63;0.81%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<planetX --> {Mars,Pluto,Venus}>. %0.90;0.90%', 
             '<planetX --> {Pluto,Saturn}>. %0.70;0.90%', 
-            'planetX.')
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+            32
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<planetX --> {Mars,Pluto,Saturn,Venus}>. %0.97;0.81%')
         )
@@ -253,11 +253,11 @@ class TEST_NAL3(unittest.TestCase):
         'PlanetX is either Mars or Venus.
         ''outputMustContain('<planetX --> {Mars,Venus}>. %0.81;0.81%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<planetX --> {Mars,Pluto,Venus}>. %0.90;0.90%', 
             '<planetX --> {Pluto,Saturn}>. %0.10;0.90%', 
-            'planetX.')
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+            32
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<planetX --> {Mars,Pluto,Saturn,Venus}>. %0.91;0.81%')
         )
@@ -283,24 +283,14 @@ class TEST_NAL3(unittest.TestCase):
         'A swimming bird is probably a type of swimming animal.
         ''outputMustContain('<(&,bird,swimmer) --> (&,animal,swimmer)>. %0.90;0.73%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
-            '<bird --> animal>. %0.90;0.90% ', 
-            '(&,bird,swimmer).', 
-            'bird.', is_belief_term=True)
-        tasks_derived = [rule(task, belief.term, task_link, term_link) for rule in rules] 
+        tasks_derived = process_two_premises(
+            '<bird --> animal>. %0.90;0.90%', 
+            '<(&,bird,swimmer) --> (&,animal,swimmer)>?', 
+            32
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<(&,bird,swimmer) --> (&,animal,swimmer)>. %0.90;0.73%')
         )
-
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
-            '<bird --> animal>. %0.90;0.90% ', 
-            '(&,animal,swimmer).', 
-            'animal.', is_belief_term=True)
-        tasks_derived = [rule(task, belief.term, task_link, term_link) for rule in rules] 
-        self.assertTrue(
-            output_contains(tasks_derived, '<(&,bird,swimmer) --> (&,animal,swimmer)>. %0.90;0.73%')
-        )
-        
         pass
 
 
@@ -319,24 +309,14 @@ class TEST_NAL3(unittest.TestCase):
         'A nonanimal swimmer is probably a type of nonbird swimmer.
         ''outputMustContain('<(-,swimmer,animal) --> (-,swimmer,bird)>. %0.90;0.73%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<bird --> animal>. %0.90;0.90%', 
-            '(-,swimmer,animal).', 
-            'animal.', is_belief_term=True)
-        tasks_derived = [rule(task, belief.term, task_link, term_link) for rule in rules] 
+            '<(-,swimmer,animal) --> (-,swimmer,bird)>?', 
+            32
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<(-,swimmer,animal) --> (-,swimmer,bird)>. %0.90;0.73%')
         )
-
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
-            '<bird --> animal>. %0.90;0.90%', 
-            '(-,swimmer,bird).', 
-            'bird.', is_belief_term=True)
-        tasks_derived = [rule(task, belief.term, task_link, term_link) for rule in rules] 
-        self.assertTrue(
-            output_contains(tasks_derived, '<(-,swimmer,animal) --> (-,swimmer,bird)>. %0.90;0.73%')
-        )
-        
         pass
 
     
@@ -355,11 +335,10 @@ class TEST_NAL3(unittest.TestCase):
         'A swan is probably a type of bird or swimmer. 
         ''outputMustContain('<swan --> (|,bird,swimmer)>. %0.90;0.73%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<swan --> bird>. %0.90;0.90%', 
-            '(|,bird, swimmer).', 
-            'bird.', is_belief_term=True)
-        tasks_derived = [rule(task, belief.term, task_link, term_link) for rule in rules] 
+            '<swan --> (|,bird,swimmer)>?', 
+            32)
         self.assertTrue(
             output_contains(tasks_derived, '<swan --> (|,bird,swimmer)>. %0.90;0.73%')
         )
@@ -382,11 +361,11 @@ class TEST_NAL3(unittest.TestCase):
         'Swimming swan is a type of bird.
         ''outputMustContain('<(&,swan,swimmer) --> bird>. %0.90;0.73%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<swan --> bird>. %0.90;0.90%', 
-            '(&,swan,swimmer).', 
-            'swan.', is_belief_term=True)
-        tasks_derived = [rule(task, belief.term, task_link, term_link) for rule in rules] 
+            '<(&,swan,swimmer) --> bird>?', 
+            32
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<(&,swan,swimmer) --> bird>. %0.90;0.73%')
         )
@@ -409,11 +388,11 @@ class TEST_NAL3(unittest.TestCase):
         'A swan is not a type of nonbird swimmer.
         ''outputMustContain('<swan --> (-,swimmer,bird)>. %0.10;0.73%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<swan --> bird>. %0.90;0.90%', 
-            '(-,swimmer,bird).', 
-            'bird.', is_belief_term=True)
-        tasks_derived = [rule(task, belief.term, task_link, term_link) for rule in rules] 
+            '<swan --> (-,swimmer,bird)>?', 
+            32
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<swan --> (-,swimmer,bird)>. %0.10;0.73%')
         )
@@ -433,11 +412,11 @@ class TEST_NAL3(unittest.TestCase):
         'Robin is a type of bird. 
         ''outputMustContain('<robin --> bird>. %0.90;0.73%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<robin --> (&,bird,swimmer)>. %0.90;0.90%', 
-            'bird.', 
-            '(&,bird,swimmer).', is_belief_term=True)
-        tasks_derived = [rule(task, belief.term, task_link, term_link) for rule in rules] 
+            None,
+            32
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<robin --> bird>. %0.90;0.73%')
         )
@@ -457,25 +436,14 @@ class TEST_NAL3(unittest.TestCase):
         'Robin is a type of bird. 
         ''outputMustContain('<robin --> bird>. %0.90;0.73%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<robin --> (-,bird,swimmer)>. %0.90;0.90% ', 
-            'bird.', 
-            '(-,bird,swimmer).', is_belief_term=True)
-        tasks_derived = [rule(task, belief.term, task_link, term_link) for rule in rules] 
+            None,
+            32
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<robin --> bird>. %0.90;0.73%')
         )
-
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
-            '<robin --> (-,bird,swimmer)>. %0.90;0.90% ', 
-            'swimmer.', 
-            '(-,bird,swimmer).', is_belief_term=True)
-        if rules is not None:
-            tasks_derived = [rule(task, belief.term, task_link, term_link) for rule in rules] 
-            self.assertFalse(
-                output_contains(tasks_derived, '<robin --> swimmer>. %0.90;0.73%')
-            )
-
         pass
 
     def test_uni_decomposition_2(self):
@@ -488,11 +456,11 @@ class TEST_NAL3(unittest.TestCase):
         'Boys are youth.
         ''outputMustContain('<boy --> youth>. %0.90;0.73%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<(|, boy, girl) --> youth>. %0.90;0.90% ', 
-            'boy.', 
-            '(|, boy, girl).', is_belief_term=True)
-        tasks_derived = [rule(task, belief.term, task_link, term_link) for rule in rules] 
+            None,
+            32
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<boy --> youth>. %0.90;0.73%')
         )
@@ -509,11 +477,11 @@ class TEST_NAL3(unittest.TestCase):
         'Boys are strong.
         ''outputMustContain('<boy --> [strong]>. %0.90;0.73%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<(~, boy, girl) --> [strong]>. %0.90;0.90%', 
-            'boy.', 
-            '(~, boy, girl).', is_belief_term=True)
-        tasks_derived = [rule(task, belief.term, task_link, term_link) for rule in rules] 
+            None,
+            32
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<boy --> [strong]>. %0.90;0.73%')
         )

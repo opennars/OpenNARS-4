@@ -17,6 +17,34 @@ nars = Reasoner(100, 100)
 engine: GeneralEngine = nars.inference
 
 
+def process_two_premises(premise1: str, premise2: str, n_cycle: int) -> list[Task]:
+    ''''''
+    # nars.reset() # TODO: uncomment when implemented
+    nars = Reasoner(100, 100)
+
+    tasks_all_cycles = []
+
+    success, task, task_overflow = nars.input_narsese(premise1)
+    tasks_all_cycles.append(task)
+    
+    if premise2 is not None:
+        success, task, task_overflow = nars.input_narsese(premise2)
+        tasks_all_cycles.append(task)
+
+    for tasks_all in nars.cycles(n_cycle):
+        # print('>>>', tasks_all)
+        tasks_derived, judgement_revised, goal_revised, answers_question, \
+            answers_quest, (task_operation_return, task_executed) = tasks_all
+        tasks_all_cycles.extend(tasks_derived)
+        if judgement_revised is not None:
+            tasks_all_cycles.append(judgement_revised)
+        if answers_question is not None:
+            tasks_all_cycles.extend(answers_question)
+        if answers_quest is not None:
+            tasks_all_cycles.extend(answers_quest)
+
+    return tasks_all_cycles
+
 def rule_map_two_premises(premise1: str, premise2: str, term_common: str, inverse: bool=False, is_belief_term: bool=False, index_task=None, index_belief=None) -> Tuple[List[RuleCallable], Task, Belief, Concept, TaskLink, TermLink, Tuple[Task, Task, Task, Task]]:
     ''''''
     nars.reset()

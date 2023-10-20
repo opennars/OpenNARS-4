@@ -46,8 +46,10 @@ class Reasoner:
         # TODO
 
     def cycles(self, n_cycle: int):
+        tasks_all_cycles = []
         for _ in range(n_cycle):
-            self.cycle()
+            tasks_all_cycles.append(self.cycle())
+        return tasks_all_cycles
 
     def input_narsese(self, text, go_cycle: bool = False) -> Tuple[bool, Union[Task, None], Union[Task, None]]:
         success, task, task_overflow = self.narsese_channel.put(text)
