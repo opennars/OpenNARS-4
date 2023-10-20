@@ -115,7 +115,7 @@ def handle_lines(nars: Reasoner, lines: str):
 
         # while revising a judgement
         if judgement_revised is not None: print_out(PrintType.OUT, judgement_revised.sentence.repr(),
-                   
+                   *judgement_revised.budget)
         # while revising a goal                                 *judgement_revised.budget)
         if goal_revised is not None: print_out(PrintType.OUT, goal_revised.sentence.repr(), *goal_revised.budget)
 
