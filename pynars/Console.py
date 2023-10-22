@@ -114,9 +114,9 @@ def handle_lines(nars: Reasoner, lines: str):
         for task in tasks_derived: print_out(PrintType.OUT, task.sentence.repr(), *task.budget)
 
         # while revising a judgement
-        if judgement_revised is not None: print_out(PrintType.OUT, judgement_revised.sentence.repr(),
-                   *judgement_revised.budget)
-        # while revising a goal                                 *judgement_revised.budget)
+        if judgement_revised is not None: print_out(PrintType.OUT, judgement_revised.sentence.repr(),*judgement_revised.budget)
+                   
+        # while revising a goal                                 
         if goal_revised is not None: print_out(PrintType.OUT, goal_revised.sentence.repr(), *goal_revised.budget)
 
         # while answering a question for truth value
