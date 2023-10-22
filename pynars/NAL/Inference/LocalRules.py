@@ -26,7 +26,7 @@ def revision(task: Task, belief: Task, budget_tasklink: Budget=None, budget_term
     premise2: Union[Judgement, Goal] = belief.sentence
     truth1 = premise1.truth
     truth2 = premise2.truth
-    if Enable.temporal_rasoning:
+    if Enable.temporal_reasoning:
         # boolean useNewBeliefTerm = intervalProjection(nal, newBelief.getTerm(), oldBelief.getTerm(), beliefConcept.recent_intervals, newTruth);
         raise 
     truth = Truth_revision(truth1, truth2)

@@ -65,7 +65,7 @@ class Concept(Item):
 
     def get_belief(self) -> Belief:
         ''''''
-        if Enable.temporal_rasoning:
+        if Enable.temporal_reasoning:
             #  final Sentence belief = beliefT.sentence;
             # nal.emit(BeliefSelect.class, belief);
             # nal.setTheNewStamp(taskStamp, belief.stamp, currentTime);
@@ -202,7 +202,7 @@ class Concept(Item):
         If the concept of the task is already in the memory, then merge the concept into the existed one.
         Otherwise, make up a new concept and add it into the memory.
         '''
-        if Enable.temporal_rasoning:
+        if Enable.temporal_reasoning:
             # if(term instanceof Interval) {
             #     return null;
             # }
