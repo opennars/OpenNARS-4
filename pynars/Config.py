@@ -10,7 +10,7 @@ except:
     raise "please install the module by `pip install jstyleson`"
 
 class Enable:
-    temporal_rasoning = False
+    temporal_reasoning = False
     variable = True
     anticipation = False
     operation = False

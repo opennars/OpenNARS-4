@@ -21,6 +21,9 @@ class Truth:
         '''return (f, c, k)'''
         return iter((self.f, self.c, self.k))
 
+    def __hash__(self) -> int:
+        return hash((self.f, self.c, self.k))
+
     def __str__(self) -> str:
         return f'%{self.f:.3f};{self.c:.3f}%'
     

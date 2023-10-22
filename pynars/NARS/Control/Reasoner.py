@@ -96,7 +96,7 @@ class Reasoner:
             # self.sequence_buffer.put_back(task) # globalBuffer.putBack(task,
             # narParameters.GLOBAL_BUFFER_FORGET_DURATIONS, this)
 
-            if Enable.temporal_rasoning:
+            if Enable.temporal_reasoning:
                 # TODO: Temporal Inference
                 # Ref: OpenNARS 3.1.0 line 409~411
                 # if (!task.sentence.isEternal() && !(task.sentence.term instanceof Operation)) {
@@ -129,7 +129,7 @@ class Reasoner:
                 self.memory.put_back(concept)
 
         #   temporal induction in NAL-7
-        if False and task is not None and task.is_judgement and task.is_external_event:
+        if Enable.temporal_reasoning and task is not None and task.is_judgement and task.is_external_event:
             concept_task: Concept = self.memory.take_by_key(task.term, remove=False)
             t1 = time()
             tasks_derived.extend(
@@ -145,7 +145,7 @@ class Reasoner:
             pass  # TODO: select a task from `self.sequence_buffer`?
 
         #   mental operation of NAL-9
-        if False:
+        if Enable.operation: # it should be `Enable.mental_operation`?
             task_operation_return, task_executed, belief_awared = self.mental_operation(task, concept, answers_question,
                                                                                         answers_quest)
             if task_operation_return is not None: tasks_derived.append(task_operation_return)
@@ -158,8 +158,8 @@ class Reasoner:
 
         # handle the sense of time
         Global.time += 1
-        thresh_compexity = 20
-        tasks_derived = [task for task in tasks_derived if task.term.complexity <= thresh_compexity]
+        thresh_complexity = 20
+        tasks_derived = [task for task in tasks_derived if task.term.complexity <= thresh_complexity]
         return tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest, (
             task_operation_return, task_executed)
 

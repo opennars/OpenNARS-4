@@ -1,14 +1,11 @@
-from typing import List, Dict, Tuple, Union
-from typing import List
+from typing import List, Dict, Tuple, Union, Iterable
 import functools
 import re
 from pynars.Interface import narsese_parse_safe
+from pynars.Narsese import Term,Task
+from pynars.NARS.DataStructures import Memory
 
-from pynars.Interface import NARSInterface
-from pynars.Interface import NARSOutput
-from pynars.Interface import PrintType
-from pynars.Interface import Reasoner
-from pynars.Interface import print_out_origin
+from pynars.Interface import NARSInterface,NARSOutput,PrintType,Reasoner,print_out_origin
 print_output = print_out_origin
 
 # compatible type annotation
@@ -244,28 +241,84 @@ def read_file(*args: List[str]) -> None:
         current_NARS_interface.execute_file(path)
 
 
-@cmd_register('history')
-def print_history(*args: List[str]) -> None:
+@cmd_register(('history', 'history-input'))
+def print_history_in(*args: List[str]) -> None:
     '''Format: history [... placeholder]
     Output the user's input history
     Default: The Narsese seen at the bottom of the system, not the actual input
     User actual input cmd: input any parameters can be obtained'''
-    global _input_history
-    print('\n'.join(_input_history if args else current_NARS_interface.input_history))
+    global input_history
+    print('\n'.join(input_history if args else current_NARS_interface.input_history))
+
+
+@cmd_register('history-output')
+def print_history_out(*args: List[str]) -> None:
+    '''Format: history-output [... placeholder]
+    Output the console's output history
+    Default: The Narsese seen at the bottom of the system, not the actual input
+    User actual input cmd: input any parameters can be obtained'''
+    global output_history
+    for (interface_name, output_type, content) in output_history:
+        print(f'{interface_name}: [{output_type}]\t{content}')
 
 
 @cmd_register(('execute', 'exec'))
 def exec_code(*args: List[str]) -> None:
     '''Format: exec <Python code >
     Directly invoke Python's built-in exec cmd to execute a single line of code'''
-    exec(' '.join(args))
+    code = " ".join(args)
+    print(f'[exec]{code}')
+    try:
+        exec(code)
+    except BaseException as e:
+        print(f'exec failed: {e}')
 
 
 @cmd_register(('evaluate', 'eval'))
 def eval_code(*args: List[str]) -> None:
     '''Format: eval <Python code >
     Directly invoke Python's built-in eval cmd to evaluate a single line of code'''
-    print(f'eval result: {eval(" ".join(args))}')
+    code = " ".join(args)
+    print(f'[eval]{code}')
+    try:
+        print(f'eval result: {eval(code)}')
+    except BaseException as e:
+        print(f'eval failed: {e}')
+
+
+@cmd_register(('register-operation', 'register'))
+def register_operation(*args: List[str]) -> None:
+    '''Format: register-operation <Operation(Term) Name> <'eval'/'exec'> <Python Code>
+    Register an operation to NARS interface.
+    
+    function signature:
+        execution_F(arguments: Iterable[Term], task: Task=None, memory: Memory=None) -> Union[Task,None]
+    
+    default fallback of execution_F when code='' is equivalent to:
+        print(f'executed: arguments={arguments}, task={task}, memory={memory}. the "task" will be returned')
+    
+    ! Unsupported: register mental operations
+    '''
+    name = args[0]
+    eType = args[1]
+    code = " ".join(args[2:])
+    if code == '':
+        def execution_F(arguments: Iterable[Term], task: Task=None, memory: Memory=None) -> Union[Task,None]:
+            print(f'executed: arguments={arguments}, task={task}, memory={memory}. the "task" will be returned')
+            return task
+    else:
+        if eType =='exec':
+            def execution_F(arguments: Iterable[Term], task: Task=None, memory: Memory=None) -> Union[Task,None]:
+                return exec(code)
+        else:
+            def execution_F(arguments: Iterable[Term], task: Task=None, memory: Memory=None) -> Union[Task,None]:
+                return eval(code)
+    execution_F.__doc__ = f'''
+        The execution is auto generated from operator {name} in {eType} mode with code={code}
+        '''
+    from pynars.NARS.Operation import Operation
+    current_NARS_interface.reasoner.register_operation(Operation(name), execution_F)
+    print(f'Operation {name} was successfully registered in mode "{eType}" with code={code}')
 
 
 @cmd_register(('simplify-parse', 'parse'))
@@ -409,21 +462,50 @@ def macro_repeat(name: str, num_executes: int) -> None:
     for _ in range(num_executes):
         macro_exec1(name=name)
 
+
+interfaces: Dict[str, Reasoner] = {}
+'The dictionary contains all registered NARS interfaces.'
+
 # Reasoner management #
 
 
-current_NARS_interface: NARSInterface = NARSInterface.construct_interface(
+def register_interface(name: str, seed: int = -1, memory: int = 100, capacity: int = 100, silent: bool = False) -> NARSInterface:
+    '''
+    Wrapped from NARSInterface.construct_interface.
+    - It will auto register the new interface to `reasoners`
+    - It will add a output handler(uses lambda) to catch its output into output_history
+    '''
+    # create interface
+    interface = NARSInterface.construct_interface(
+        seed=seed,
+        memory=memory,
+        capacity=capacity,
+        silent=silent)
+    # add handler to catch outputs
+    global output_history
+    interface.output_handlers.append(
+        lambda out: output_history.append(
+            (name,  # Name of interface e.g. 'initial'
+             out.type.name,  # Type of output e.g. 'ANSWER'
+             out.content)  # Content of output e.g. '<A --> B>.'
+        ))
+    # register in dictionary
+    interfaces[name] = interface
+    # return the interface
+    return interface
+
+
+current_NARS_interface: NARSInterface = register_interface(
+    'initial',
     137,
     500, 500,
     silent=False)
 
-reasoners: Dict[str, Reasoner] = {'initial': current_NARS_interface}
-
 
 def current_nar_name() -> str:
     global current_NARS_interface
-    for name in reasoners:
-        if reasoners[name] is current_NARS_interface:
+    for name in interfaces:
+        if interfaces[name] is current_NARS_interface:
             return name
     return None
 
@@ -442,11 +524,11 @@ def reasoner_list(*keywords: List[str]) -> None:
     Enumerate existing reasoners; It can be retrieved with parameters'''
     keywords = keywords if keywords else ['']
     # Search for a matching interface name
-    reasoner_names: List[str] = prefix_browse(reasoners, *keywords)
+    reasoner_names: List[str] = prefix_browse(interfaces, *keywords)
     # Displays information about "matched interface"
     if reasoner_names:
         for name in reasoner_names:  # match the list of all cmds, as long as they match the search results - not necessarily in order
-            interface: NARSInterface = reasoners[name]
+            interface: NARSInterface = interfaces[name]
             information: str = '\n\t'+"\n\t".join(f"{name}: {repr(inf)}" for name, inf in [
                 ('Memory', interface.reasoner.memory),
                 ('Channels', interface.reasoner.channels),
@@ -470,16 +552,17 @@ def reasoner_new(name: str, n_memory: int = 100, capacity: int = 100, silent: bo
     Create a new reasoner and go to the existing reasoner if it exists
     If an empty name is encountered, the default name is "unnamed"'''
     global current_NARS_interface
-    if name in reasoners:
+    if name in interfaces:
         print(
             f'The reasoner exists! Now automatically go to the reasoner "{name}"!')
-        return (current_NARS_interface := reasoners[name])
+        return (current_NARS_interface := interfaces[name])
 
-    reasoners[name] = (current_NARS_interface := NARSInterface.construct_interface(
+    current_NARS_interface = register_interface(
+        name=name,
+        seed=current_NARS_interface.seed,  # keep the seed until directly change
         memory=n_memory,
         capacity=capacity,
-        silent=silent
-    ))
+        silent=silent)
     print(
         f'A reasoner named "{name}" with memory capacity {n_memory}, buffer capacity {capacity}, silent output {" on " if silent else" off "} has been created!')
     return current_NARS_interface
@@ -490,9 +573,9 @@ def reasoner_goto(name: str) -> NARSInterface:
     '''Format: reasoner-goto < name >
     Transfers the current reasoner of the program to the specified reasoner'''
     global current_NARS_interface
-    if name in reasoners:
+    if name in interfaces:
         print(f"Gone to reasoner named '{name}'!")
-        return (current_NARS_interface := reasoners[name])
+        return (current_NARS_interface := interfaces[name])
     print(f"There is no reasoner named '{name}'!")
 
 
@@ -501,12 +584,12 @@ def reasoner_delete(name: str) -> None:
     '''Format: reasoner-select < name >
     Deletes the reasoner with the specified name, but cannot delete the current reasoner'''
     global current_NARS_interface
-    if name in reasoners:
-        if reasoners[name] is current_NARS_interface:
+    if name in interfaces:
+        if interfaces[name] is current_NARS_interface:
             print(
                 f'Unable to delete reasoner "{name}", it is the current reasoner!')
             return
-        del reasoners[name]
+        del interfaces[name]
         print(f'the reasoner named "{name}" has been deleted!')
         return
     print(f'There is no reasoner named "{name}"!')
@@ -519,11 +602,79 @@ def random_seed(seed: int) -> None:
     NARSInterface.change_random_seed(seed=seed)
 
 
+@cmd_register(('server', 'server-ws', 'server-websocket'), (str, 'localhost'), (int, 8765))
+def server_websocket(host: str = 'localhost', port: int = 8765) -> None:
+    '''Format: server [host: str = 'localhost'] [port: integer = 8765]
+    Launch a websocket server uses certain host(ip) and port, enables the console to receive input from WS messages.
+    - format of receiving: same as user input
+    - format of sending [{"interface_name": XXX, "output_type": XXX, "content": XXX}, ...]
+    
+    The default address is ws://localhost:8765.
+    ! The server blocks the main process, and the service can only be stopped using Ctrl+C.'''
+    import websockets
+    from json import dumps
+
+    async def handler(websocket, path):
+        print(f"Connected with path={path}!")
+        messages2send:List[str] = []
+        len_outputs:int = 0
+        last_output_json_objs:list = []
+        last_output_json_obj:dict = {}
+        async for message in websocket:
+            try:
+                messages2send.clear()
+                # execute
+                execute_input(message)
+                # handle output using json
+                if len_outputs < len(output_history):
+                    # clear last sent
+                    last_output_json_objs.clear()
+                    # traverse newer outputs
+                    for i in range(len_outputs, len(output_history)):
+                        # data: (interface_name, output_type, content)
+                        # format: [{"interface_name": XXX, "output_type": XXX, "content": XXX}, ...]
+                        (last_output_json_obj['interface_name'],
+                         last_output_json_obj['output_type'],
+                         last_output_json_obj['content']) = output_history[i]
+                        # append
+                        last_output_json_objs.append(last_output_json_obj.copy())
+                    # to be sent
+                    messages2send.append(dumps(last_output_json_objs))
+                # send result if have
+                for message2send in messages2send:
+                    print(f"send: {message} -> {message2send}")
+                    await websocket.send(message2send)
+                # refresh output length
+                len_outputs = len(output_history)
+            # when keyboard interrupt
+            except KeyboardInterrupt as e:
+                raise e
+            # it cannot be interrupted by internal exceptions
+            except BaseException as e:
+                print(f"Error: {e}")
+
+    # Launch
+    import asyncio
+    try:
+        async def main():
+            async with websockets.serve(handler, host, port):
+                print(f'WS server launched on ws://{host}:{port}.')
+                await asyncio.Future()
+        asyncio.run(main())
+    except BaseException as e:
+        print(f'WS server error: {e}')
+
+
 # Total index and other variables #
 
 _parse_need_slash: bool = False
+'Determines whether the last input is a command'
 
-_input_history: List[str] = []
+input_history: List[str] = []
+'History of inputs'
+
+output_history: List[Tuple[str, str, str]] = []
+'History of outputs. The inner part is (Reasoner Name, PRINT_TYPE, Content)'
 
 # Special grammar parser #
 
@@ -610,7 +761,7 @@ def execute_input(inp: str, *other_input: List[str]) -> None:
 
     # add to history
 
-    _input_history.append(inp)
+    input_history.append(inp)
 
     # pre-jump cmd
     if inp.startswith('/'):

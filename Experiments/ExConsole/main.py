@@ -17,7 +17,7 @@ from pynars.Narsese import *
 from random import randint
 
 # compatible type annotation
-from typing import List, Dict, Tuple, Union
+from typing import List, Dict, Tuple, Iterable
 
 # information
 
@@ -140,8 +140,8 @@ def list_variables() -> None:
 
 @exp_register('r')
 def list_histories() -> None:
-    print_history('')
-    print_history('1')
+    print_history_in('')
+    print_history_in('1')
 
 
 @exp_register('help')
@@ -207,24 +207,42 @@ def shared_memory_test() -> None:
 
 @exp_register('op')
 def operations_test() -> None:
-    task1: Task = NarseseParser.parse('<antecedent --> result>.')  # auto parse
-    # term.type = TermType.STATEMENT # ! Only statements can be actions, not mandatory
-    statement1 = task1.term  # term of the task
+    # register operation, the register of mental operations can be seen in pynars\NARS\InferenceEngine\GeneralEngine\Rules\NAL9.py
+    from pynars.NARS import Operation
+    def exeF(arguments: Iterable[Term], task: Task=None, memory: Memory=None) -> Union[Task,None]:
+        '''
+        The execution should accepts arguments (terms), task(current) and current memory(to deal mental operations)
+        @return a task(is used to represent the new task generated) or None(no task is processed)
+        '''
+        print(f'executed: arguments={arguments}, task={task}, memory={memory}. the "task" will be returned')
+        return task
+    Operation.register(Operation.Operation('f'), exeF)
+    # build task
+    # task1: Task = NarseseParser.parse('f(x).')  # the same as <(*, x) --> ^f>.
+    # task1: Task = NarseseParser.parse('f(x).')  # the same as <(*, x) --> ^f>.
     # * Force the term involved in the task to be set to "action", if is_executable = True
-    statement1.is_operation = True
-    print(f'Is operation? {statement1.is_executable}')
+    # print(f'Is operation? {task1.is_executable}')
+    # placing tasks directly into perceptual channels (Narsese channels can only pass text)
+    # current_NARS_interface.reasoner.perception_channel.put(task1)
     '''concept Concept: Concept = concept. _conceptualize(  # Generate concept
         current_NARS_interface.reasoner.memory,
         term=statement Operation statement,
         Budget=budget(0.9, 0.9, 0.5)
         )
         current_NARS_interface.reasoner.memory.concepts.put(concept)
-        # into the concept, but it does not seem to be associated with the task, the reasoner will not use it.
-        # '''
-    # placing tasks directly into perceptual channels (Narsese channels can only pass text)
-    current_NARS_interface.reasoner.perception_channel.put(task1)
-    # Automatic reasoning five steps, let NAS put "antecedent" and "result" into the memory area
+    '''
+    # into the concept, but it does not seem to be associated with the task, the reasoner will not use it.
+    # run other cmds
     execute_input('5')
+    execute_input('<A ==> G>.')
+    execute_input('<(^f, x) ==> A>.')
+    execute_input('5')
+    current_NARS_interface.input_narsese('G!')  # avoid to be <G>!
+    # Automatic reasoning five steps, let NAS put "antecedent" and "result" into the memory area
+    execute_input('/waitans ACHIEVED')
+    # * it should be contained with two outputs:
+      # * `EXE   :<(*, x)-->^f> = $0.022;0.225;0.644$ <(*, x)-->^f>! %1.000;0.287% {None: 2, 1, 0}`
+      # * `ACHIEVED:<(*, x)-->^f>. :\: %1.000;0.900%`
     # print concept list
     print(show_bag(current_NARS_interface.reasoner.memory.concepts))
 
@@ -369,7 +387,7 @@ def load_JSON() -> None:
                     'Please enter a new interface name:')  # accept the reasoner with a new interface
                 interface: NARSInterface = NARSInterface(
                     NARS=decoded_NAR)  # create interface
-                reasoners[interface_name] = interface  # directly add
+                interfaces[interface_name] = interface  # directly add
                 reasoner_goto(interface_name)  # goto
                 print(
                     f"Import a reasoner named {interface_name}, silent {'on' if interface.silent_output else 'off'}.")
@@ -428,7 +446,7 @@ def load_pickle() -> None:
                         'Please enter a new interface name: ')
                     # create interface
                     interface: NARSInterface = NARSInterface(NARS=decoded_NAR)
-                    reasoners[interface_name] = interface  # directly add
+                    interfaces[interface_name] = interface  # directly add
                     reasoner_goto(interface_name)  # goto
                     print(
                         f"Import a reasoner named {interface_name}, silent {'on' if interface.silent_output else 'off'}.")
