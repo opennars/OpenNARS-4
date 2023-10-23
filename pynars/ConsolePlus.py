@@ -300,6 +300,7 @@ def register_operation(*args: List[str]) -> None:
     ! Unsupported: register mental operations
     '''
     name = args[0]
+    "The operator's name without `^` as prefix"
     eType = args[1]
     code = " ".join(args[2:])
     if code == '':
@@ -316,8 +317,7 @@ def register_operation(*args: List[str]) -> None:
     execution_F.__doc__ = f'''
         The execution is auto generated from operator {name} in {eType} mode with code={code}
         '''
-    from pynars.NARS.Operation import Operation
-    current_NARS_interface.reasoner.register_operation(Operation(name), execution_F)
+    current_NARS_interface.reasoner.register_operation(name, execution_F)
     print(f'Operation {name} was successfully registered in mode "{eType}" with code={code}')
 
 
