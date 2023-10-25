@@ -60,7 +60,7 @@ class Base:
     
     def extend(self, base: Union[Type['Base'] , None]):
         self._hash = None
-        self._set = self._set.union(base._set)
+        self._set = self._set.union(base._set)[:Config.maximum_evidental_base_length]
         return self
 
     def is_overlaped(self, base: Union[Type['Base'], None]) -> bool:
