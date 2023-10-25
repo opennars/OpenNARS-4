@@ -204,6 +204,10 @@ class NARSInterface:
                          f'Changing random seed={seed}...', comment_title='Setup')
 
     silent_output: bool = False
+    'determines whether the output is hidden or not'
+    
+    silence_value: float = 0.5
+    'determines the level (min threshold of total budget) of output (NARSOutput) generate, only affects the narsese output'
 
     # reasoner
     _NARS: Reasoner = None  # ! internal
@@ -231,6 +235,7 @@ class NARSInterface:
 
         # config
         self.silent_output: bool = silent
+        self.silence_value = 0
 
         # reasoner
         self.print_output(
@@ -375,18 +380,33 @@ class NARSInterface:
         for task_line in task_list:
             tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest,\
                 (task_operation_return, task_executed) = task_line
+            # * only the 'OUT' will be affected by silence level
             for derived_task in tasks_derived:
-                outs.append(
-                    NARSOutput(
-                        PrintType.OUT, derived_task.sentence.repr(), *derived_task.budget)
-                )
+                '''
+                Ref. OpenNARS 3.1.2 Memory.java line 291~294
+                    ```
+                    float s = task.getBudget().totalBudget();
+                    float minSilent = reasoner.getSilenceValue().get() / 100.0f;
+                    if (s > minSilent) {  // only report significant derived Tasks
+                        //generalInfoReport("4");
+                        report(task.getSentence(), false, false);
+                    }
+                    ```
+                '''
+                if derived_task.budget.total > self.silence_value:
+                    outs.append(
+                        NARSOutput(
+                            PrintType.OUT, derived_task.sentence.repr(), *derived_task.budget)
+                    )
 
             if judgement_revised is not None:
-                outs.append(NARSOutput(PrintType.OUT, judgement_revised.sentence.repr(
-                ), *judgement_revised.budget))
+                if judgement_revised.budget.total > self.silence_value:
+                    outs.append(NARSOutput(
+                        PrintType.OUT, judgement_revised.sentence.repr(), *judgement_revised.budget))
             if goal_revised is not None:
-                outs.append(NARSOutput(
-                    PrintType.OUT, goal_revised.sentence.repr(), *goal_revised.budget))
+                if judgement_revised.budget.total > self.silence_value:
+                    outs.append(NARSOutput(
+                        PrintType.OUT, goal_revised.sentence.repr(), *goal_revised.budget))
             if answers_question is not None:
                 for answer in answers_question:
                     outs.append(

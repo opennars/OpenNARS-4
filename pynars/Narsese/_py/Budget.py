@@ -52,3 +52,17 @@ class Budget:
             ```
         '''
         return Budget(self.priority/sqrt((n if n > 0 else 1)), self.durability, self.quality)
+    
+    @property
+    def total(self) -> float:
+        '''
+        To summarize a BudgetValue into a single number in [0, 1]
+        It's used for introduce the 'volume' by comparing with the number of silence level
+        Ref. OpenNARS 3.1.2 BudgetValue.java line 194~200:
+            ```
+            public float totalBudget() {
+                return UtilityFunctions.aveGeo(priority.getValue(), durability.getValue(), quality.getValue());
+            }
+            ```
+        '''
+        return (self.priority * self.durability * self.quality)**(1/3)

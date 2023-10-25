@@ -221,6 +221,19 @@ def toggle_silent() -> None:
         }.''')
 
 
+@cmd_register(('volume'), (int, 100))
+def volume(vol:int) -> None:
+    '''Format: volume [volume:int 0~100]
+    Set the Output Volume of the console to control its output (same as OpenNARS)'''
+    if 0 <= vol <= 100:
+        current_NARS_interface.silence_value = 1 - vol * 0.01 # same as `(100-vol)/100`
+        current_NARS_interface.print_output(
+            type=PrintType.INFO, content=f'''Volume is set to "*volume={vol}".''')
+    else:
+        current_NARS_interface.print_output(
+            type=PrintType.INFO, content=f'''Volume {vol} is out of range 0~100!''')
+
+
 @cmd_register(('toggle-color', 'color'))
 def toggle_color() -> None:
     '''Toggle the color display of cmds (for terminals that do not support custom foreground/background colors)'''
