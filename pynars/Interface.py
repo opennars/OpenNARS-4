@@ -206,7 +206,7 @@ class NARSInterface:
     silent_output: bool = False
     'determines whether the output is hidden or not'
     
-    silence_value: float = 0.5
+    volume_threshold: float = 0.5
     'determines the level (min threshold of total budget) of output (NARSOutput) generate, only affects the narsese output'
 
     # reasoner
@@ -235,7 +235,7 @@ class NARSInterface:
 
         # config
         self.silent_output: bool = silent
-        self.silence_value = 0
+        self.volume_threshold = 0
 
         # reasoner
         self.print_output(
@@ -383,28 +383,32 @@ class NARSInterface:
             # * only the 'OUT' will be affected by silence level
             for derived_task in tasks_derived:
                 '''
-                Ref. OpenNARS 3.1.2 Memory.java line 291~294
+                Ref. OpenNARS 3.1.0 Memory.java line 344~352
                     ```
-                    float s = task.getBudget().totalBudget();
-                    float minSilent = reasoner.getSilenceValue().get() / 100.0f;
-                    if (s > minSilent) {  // only report significant derived Tasks
-                        //generalInfoReport("4");
-                        report(task.getSentence(), false, false);
+                    final float budget = t.budget.summary();
+                    final float noiseLevel = 1.0f - (narParameters.VOLUME / 100.0f);
+                    
+                    if (budget >= noiseLevel) {  // only report significant derived Tasks
+                        emit(OUT.class, t);
+                        if (Debug.PARENTS) {
+                            emit(DEBUG.class, "Parent Belief\t" + t.parentBelief);
+                            emit(DEBUG.class, "Parent Task\t" + t.parentTask + "\n\n");
+                        }
                     }
                     ```
                 '''
-                if derived_task.budget.total > self.silence_value:
+                if derived_task.budget.summary > self.volume_threshold:
                     outs.append(
                         NARSOutput(
                             PrintType.OUT, derived_task.sentence.repr(), *derived_task.budget)
                     )
 
             if judgement_revised is not None:
-                if judgement_revised.budget.total > self.silence_value:
+                if judgement_revised.budget.summary > self.volume_threshold:
                     outs.append(NARSOutput(
                         PrintType.OUT, judgement_revised.sentence.repr(), *judgement_revised.budget))
             if goal_revised is not None:
-                if judgement_revised.budget.total > self.silence_value:
+                if judgement_revised.budget.summary > self.volume_threshold:
                     outs.append(NARSOutput(
                         PrintType.OUT, goal_revised.sentence.repr(), *goal_revised.budget))
             if answers_question is not None:

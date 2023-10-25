@@ -226,7 +226,7 @@ def volume(vol:int) -> None:
     '''Format: volume [volume:int 0~100]
     Set the Output Volume of the console to control its output (same as OpenNARS)'''
     if 0 <= vol <= 100:
-        current_NARS_interface.silence_value = 1 - vol * 0.01 # same as `(100-vol)/100`
+        current_NARS_interface.volume_threshold = 1 - vol * 0.01 # same as `(100-vol)/100`
         current_NARS_interface.print_output(
             type=PrintType.INFO, content=f'''Volume is set to "*volume={vol}".''')
     else:
