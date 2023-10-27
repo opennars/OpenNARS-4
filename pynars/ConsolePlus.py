@@ -338,10 +338,10 @@ def register_operation(*args: List[str]) -> None:
 def toggle_simplify_parse() -> None:
     '''Toggle the "automatic shorthand parsing" function of the cmd (enabled by default),
     If so, the Narsese input are automatically parsed in a simplified format'''
-    global _parse_need_slash
-    _parse_need_slash = not _parse_need_slash
+    global _parse_simplification
+    _parse_simplification = not _parse_simplification
     print(
-        f'Narsese automatic analytic simplification {"closed" if _parse_need_slash else "opened"}.')
+        f'Narsese automatic analytic simplification {"closed" if _parse_simplification else "opened"}.')
 
 
 @cmd_register('help')
@@ -680,8 +680,8 @@ def server_websocket(host: str = 'localhost', port: int = 8765) -> None:
 
 # Total index and other variables #
 
-_parse_need_slash: bool = False
-'Determines whether the last input is a command'
+_parse_simplification: bool = False
+'Determines whether the "Narsese automatic analytic simplification" enabled'
 
 input_history: List[str] = []
 'History of inputs'
@@ -787,7 +787,7 @@ def execute_input(inp: str, *other_input: List[str]) -> None:
 
     # Narsese parsing
     has_slash = False  # usage of backslashes: Enforce/disable "parse simplification"
-    if not _parse_need_slash or (has_slash := inp.startswith('\\')):
+    if _parse_simplification or (has_slash := inp.startswith('\\')):
         if has_slash:  # Remove the slash if there is a backslash
             inp = inp[1:]
         inp = special_narsese_parse(inp=inp)
