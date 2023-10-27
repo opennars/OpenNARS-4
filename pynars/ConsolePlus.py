@@ -572,7 +572,7 @@ def reasoner_new(name: str, n_memory: int = 100, capacity: int = 100, silent: bo
 
     current_NARS_interface = register_interface(
         name=name,
-        seed=current_NARS_interface.seed,  # keep the seed until directly change
+        seed=-1,  # use '-1' to keep the seed until directly change
         memory=n_memory,
         capacity=capacity,
         silent=silent)
