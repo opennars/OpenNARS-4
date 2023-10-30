@@ -301,37 +301,45 @@ def eval_code(*args: List[str]) -> None:
 
 @cmd_register(('register-operation', 'register'))
 def register_operation(*args: List[str]) -> None:
-    '''Format: register-operation <Operation(Term) Name> <'eval'/'exec'> <Python Code>
+    '''Format: register-operation <Operation(Term) Name> [<'eval'/'exec'> <Python Code>]
     Register an operation to NARS interface.
     
     function signature:
         execution_F(arguments: Iterable[Term], task: Task=None, memory: Memory=None) -> Union[Task,None]
     
-    default fallback of execution_F when code='' is equivalent to:
+    default fallback of execution_F when only 1 argument is provided:
         print(f'executed: arguments={arguments}, task={task}, memory={memory}. the "task" will be returned')
     
     ! Unsupported: register mental operations
     '''
     name = args[0]
     "The operator's name without `^` as prefix"
-    eType = args[1]
-    code = " ".join(args[2:])
-    if code == '':
+    if len(args) == 1:
         def execution_F(arguments: Iterable[Term], task: Task=None, memory: Memory=None) -> Union[Task,None]:
             print(f'executed: arguments={arguments}, task={task}, memory={memory}. the "task" will be returned')
             return task
+        execution_F.__doc__ = f'''
+            The execution is auto generated from operator {name} without code
+            '''.strip()
     else:
+        eType = args[1]
+        code = " ".join(args[2:])
         if eType =='exec':
             def execution_F(arguments: Iterable[Term], task: Task=None, memory: Memory=None) -> Union[Task,None]:
                 return exec(code)
         else:
             def execution_F(arguments: Iterable[Term], task: Task=None, memory: Memory=None) -> Union[Task,None]:
                 return eval(code)
-    execution_F.__doc__ = f'''
-        The execution is auto generated from operator {name} in {eType} mode with code={code}
-        '''
-    current_NARS_interface.reasoner.register_operation(name, execution_F)
-    print(f'Operation {name} was successfully registered in mode "{eType}" with code={code}')
+        execution_F.__doc__ = f'''
+            The execution is auto generated from operator {name} in {eType} mode with code={code}
+            '''.strip()
+    if current_NARS_interface.reasoner.register_operation(name, execution_F):
+        print(f'Operation {name} was successfully registered ' + (
+            'without code'
+            if len(args)
+            else f'in mode "{eType}" with code={code}'))
+    else:
+        print(f'The operation {name} was already registered!')
 
 
 @cmd_register(('simplify-parse', 'parse'))
