@@ -20,13 +20,13 @@ from pynars.NAL.Functions.Tools import project_truth, project
 
 class Reasoner:
 
-    def __init__(self, n_memory, capacity, config = './config.json') -> None:
+    def __init__(self, n_memory, capacity, config = './config.json', nal_rules={1,2,3,4,5,6,7,8,9}) -> None:
         # print('''Init...''')
         Config.load(config)
 
-        self.inference = GeneralEngine()
-        self.variable_inference = VariableEngine()
-        self.temporal_inference = TemporalEngine() # for temporal causal reasoning 
+        self.inference = GeneralEngine(add_rules=nal_rules)
+        self.variable_inference = VariableEngine(add_rules=nal_rules)
+        self.temporal_inference = TemporalEngine(add_rules=nal_rules) # for temporal causal reasoning 
 
         self.memory = Memory(n_memory)
         self.overall_experience = Buffer(capacity)
