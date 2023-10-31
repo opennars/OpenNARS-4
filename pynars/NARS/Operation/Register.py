@@ -3,7 +3,7 @@ from pynars.Narsese._py.Operation import *
 
 registered_operations: Dict[Operation, Callable] = {}
 
-def registeredOperationNames():
+def registered_operation_names():
     ''''''
     global registered_operations
     return [registered_operation.word for registered_operation in registered_operations.keys()]
@@ -15,7 +15,7 @@ def register(operation: Operation, callable: Callable):
     registered_operations[operation] = callable
 
 
-def isRegisteredByName(word):
+def is_registered_by_name(word):
     ''''''
     global registered_operations
     for registered_operation in registered_operations.keys():
@@ -24,7 +24,7 @@ def isRegisteredByName(word):
     return False
 
 
-def getRegisteredOperationByName(word):
+def get_registered_operation_by_name(word):
     ''''''
     global registered_operations
     for registered_operation in registered_operations.keys():

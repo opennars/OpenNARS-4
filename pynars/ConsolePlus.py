@@ -305,12 +305,12 @@ def operation_list(*keywords: List[str]) -> None:
     Enumerate existing operations; It can be retrieved with parameters'''
     keywords = keywords if keywords else ['']
     # Search for a matching interface name
-    from pynars.NARS.Operation.Register import registered_operations, getRegisteredOperationByName, registeredOperationNames
-    operation_names: List[str] = prefix_browse(registeredOperationNames(), *keywords)
+    from pynars.NARS.Operation.Register import registered_operations, get_registered_operation_by_name, registered_operation_names
+    operation_names: List[str] = prefix_browse(registered_operation_names(), *keywords)
     # Displays information about "matched interface"
     if operation_names:
         for name in operation_names:  # match the list of all cmds, as long as they match the search results - not necessarily in order
-            op = getRegisteredOperationByName(name)
+            op = get_registered_operation_by_name(name)
             f = registered_operations[op]
             print(f'''<Operation {str(op)}>: {
                 'No function' if f == None else

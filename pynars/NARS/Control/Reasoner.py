@@ -184,7 +184,7 @@ class Reasoner:
 
     def register_operation(self, name_operation: str, callback: Callable):
         '''register an operation and return the operation if successful (otherwise, return None)'''
-        if not Operation.isRegisteredByName(name_operation):
+        if not Operation.is_registered_by_name(name_operation):
             from pynars.Narsese import Operation as Op
             op = Op(name_operation)
             Operation.register(op, callback)
