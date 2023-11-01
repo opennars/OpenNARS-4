@@ -62,7 +62,9 @@ def solution_question(task: Task, belief: Belief, budget_tasklink: Budget=None, 
 
         # de-prioritize the question
         task.budget.priority = min(1-quality, task.budget.priority) # BUG: here, after setting the priority, the level of the task should change within a Bag.
-        
+        # record best solution so far    
+        task.best_solution = answer
+
     return belief if answer is not None else None
 
 def solution_goal(task: Task, belief: Belief, budget_tasklink: Budget=None, budget_termlink: Budget=None):
