@@ -8,7 +8,7 @@ from pynars.Narsese._py.Sentence import Goal, Judgement, Quest, Question, Senten
 from pynars.Narsese._py.Statement import Statement
 from pynars.Narsese._py.Task import Belief, Desire, Task
 from pynars.Narsese._py.Truth import Truth
-from .Register import registered_operations
+from .Register import registered_operators
 from pynars.Narsese import Term
 from pynars.NAL.Functions.Tools import truth_from_term, truth_to_quality
 from pynars.Narsese import Base
@@ -34,9 +34,9 @@ def execute(task: Task, concept: Concept, memory: Memory):
     if task.term != concept.term:
         concept = memory.take_by_key(task.term, remove=False)
     stat: Statement = task.term
-    operation: Operation = stat.predicate
+    operator: Operator = stat.predicate
     args = stat.subject.terms
-    function_op: Callable = registered_operations.get(operation, None)
+    function_op: Callable = registered_operators.get(operator, None)
 
     if function_op is not None: 
         belief = executed_task(task)

@@ -1,5 +1,5 @@
 from pynars.Narsese import Term, Judgement, Tense, Statement, Copula, Truth, Stamp, Interval
-from pynars.Narsese import Base, Operation, Budget, Task, Goal, Punctuation, Question, Quest, Sentence, VarPrefix, Variable, Connector, Compound, SELF
+from pynars.Narsese import Base, Operator, Budget, Task, Goal, Punctuation, Question, Quest, Sentence, VarPrefix, Variable, Connector, Compound, SELF
 from pathlib import Path
 from datetime import datetime
 from pynars import Config, Global
@@ -186,7 +186,7 @@ class TreeToNarsese(Transformer):
     @inline_args
     def op(self, word: Token):
         word = word.value
-        return Operation(word)
+        return Operator(word)
 
     @inline_args
     def interval(self, word: Token):
@@ -213,7 +213,7 @@ class TreeToNarsese(Transformer):
         return statement
 
     @inline_args
-    def statement_operation1(self, op: Operation, *args: str):
+    def statement_operation1(self, op: Operator, *args: str):
         terms = (term for term in args)
         return Statement(Compound(Connector.Product, *terms, is_input=True), Copula.Inheritance, op, is_input=True)
 
@@ -221,7 +221,7 @@ class TreeToNarsese(Transformer):
     def statement_operation2(self, word: Token, *args: str):
         op = word.value
         terms = (term for term in args)
-        return Statement(Compound(Connector.Product, *terms, is_input=True), Copula.Inheritance, Operation(op), is_input=True)
+        return Statement(Compound(Connector.Product, *terms, is_input=True), Copula.Inheritance, Operator(op), is_input=True)
 
     @inline_args
     def inheritance(self):

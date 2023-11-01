@@ -216,7 +216,7 @@ def operations_test() -> None:
         '''
         print(f'executed: arguments={arguments}, task={task}, memory={memory}. the "task" will be returned')
         return task
-    Operation.register(Operation.Operation('f'), exeF)
+    Operation.register(Operation.Operator('f'), exeF)
     # build task
     # task1: Task = NarseseParser.parse('f(x).')  # the same as <(*, x) --> ^f>.
     # task1: Task = NarseseParser.parse('f(x).')  # the same as <(*, x) --> ^f>.

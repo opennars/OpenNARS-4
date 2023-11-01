@@ -299,31 +299,31 @@ def eval_code(*args: List[str]) -> None:
         print(f'eval failed: {e}')
 
 
-@cmd_register(('operation', 'operation-list', 'o-list'))
-def operation_list(*keywords: List[str]) -> None:
-    '''Format: operation-list [*keywords]
-    Enumerate existing operations; It can be retrieved with parameters'''
+@cmd_register(('operator', 'operator-list', 'o-list'))
+def operator_list(*keywords: List[str]) -> None:
+    '''Format: operator-list [*keywords]
+    Enumerate existing operators; It can be retrieved with parameters'''
     keywords = keywords if keywords else ['']
     # Search for a matching interface name
-    from pynars.NARS.Operation.Register import registered_operations, get_registered_operation_by_name, registered_operation_names
-    operation_names: List[str] = prefix_browse(registered_operation_names(), *keywords)
+    from pynars.NARS.Operation.Register import registered_operators, get_registered_operator_by_name, registered_operator_names
+    operator_names: List[str] = prefix_browse(registered_operator_names(), *keywords)
     # Displays information about "matched interface"
-    if operation_names:
-        for name in operation_names:  # match the list of all cmds, as long as they match the search results - not necessarily in order
-            op = get_registered_operation_by_name(name)
-            f = registered_operations[op]
-            print(f'''<Operation {str(op)}>: {
+    if operator_names:
+        for name in operator_names:  # match the list of all cmds, as long as they match the search results - not necessarily in order
+            op = get_registered_operator_by_name(name)
+            f = registered_operators[op]
+            print(f'''<Operator {str(op)}>: {
                 'No function' if f == None else
                 'No description' if f.__doc__.strip() == '' else
                 f.__doc__}''')
         return
-    print(f'No Operation is browsed by "{", ".join(keywords)}"')
+    print(f'No Operator is browsed by "{", ".join(keywords)}"')
 
 
-@cmd_register(('register-operation', 'operation-register', 'o-register', 'register'))
-def operation_register(*args: List[str]) -> None:
-    '''Format: register-operation <Operation(Term) Name> [<'eval'/'exec'> <Python Code>]
-    Register an operation to NARS interface.
+@cmd_register(('register-operator', 'operator-register', 'o-register', 'register'))
+def operator_register(*args: List[str]) -> None:
+    '''Format: register-operator <Operator(Term) Name> [<'eval'/'exec'> <Python Code>]
+    Register an operator to NARS interface.
     
     function signature:
         execution_F(arguments: Iterable[Term], task: Task=None, memory: Memory=None) -> Union[Task,None]
@@ -331,7 +331,7 @@ def operation_register(*args: List[str]) -> None:
     default fallback of execution_F when only 1 argument is provided:
         print(f'executed: arguments={arguments}, task={task}, memory={memory}. the "task" will be returned')
     
-    ! Unsupported: register mental operations
+    ! Unsupported: register mental operators
     '''
     name = args[0]
     "The operator's name without `^` as prefix"
@@ -354,13 +354,13 @@ def operation_register(*args: List[str]) -> None:
         execution_F.__doc__ = f'''
             The execution is auto generated from operator with name={name} in {eType} mode with code={code}
             '''.strip()
-    if (op:=current_NARS_interface.reasoner.register_operation(name, execution_F)) is not None:
-        print(f'Operation {str(op)} was successfully registered ' + (
+    if (op:=current_NARS_interface.reasoner.register_operator(name, execution_F)) is not None:
+        print(f'Operator {str(op)} was successfully registered ' + (
             'without code'
             if len(args) == 1
             else f'in mode "{eType}" with code={code}'))
     else:
-        print(f'The operation with name="{name}" was already registered!')
+        print(f'The operator with name="{name}" was already registered!')
 
 
 @cmd_register(('simplify-parse', 'parse'))

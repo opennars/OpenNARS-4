@@ -240,13 +240,13 @@ class Memory:
             truth = task.truth
         if truth.e > Config.decision_threshold:
             if (task is not None) and task.is_executable and not (desire is not None and desire.evidential_base.contains(task.evidential_base)):
-                    #   execute registered operations 
+                    #   execute with registered operators 
                     stat: Statement = task.term
                     op = stat.predicate
-                    from pynars.NARS.Operation.Register import registered_operations
+                    from pynars.NARS.Operation.Register import registered_operators
                     from pynars.NARS.Operation.Execution import execute
                     # ! if `op` isn't registered, an error "AttributeError: 'NoneType' object has no attribute 'stamp'" from "key: Callable[[Task], Any] = lambda task: (hash(task), hash(task.stamp.evidential_base))" will be raised
-                    if op in registered_operations and not task.is_mental_operation:
+                    if op in registered_operators and not task.is_mental_operation:
                         # to judge whether the goal has been fulfilled
                         task_operation_return, task_executed = execute(task, concept, self)
                         concept_task = self.take_by_key(task.term, remove=False)

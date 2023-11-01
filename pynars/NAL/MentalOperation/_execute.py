@@ -6,7 +6,7 @@ from pynars.Narsese._py.Sentence import Goal, Judgement, Quest, Question, Senten
 from pynars.Narsese._py.Statement import Statement
 from pynars.Narsese._py.Task import Belief, Desire, Task
 from pynars.Narsese._py.Truth import Truth
-from ._register import registered_operations
+from ._register import registered_operators
 from pynars.Narsese import Term
 from ..Functions.Tools import truth_from_term, truth_to_quality
 from pynars.Narsese import Base
@@ -16,9 +16,9 @@ def execute(task: Task):
     ''''''
     stat: Statement = task.term
     if stat.is_executable:
-        operation: Operation = stat.predicate
+        operator: Operator = stat.predicate
         args = stat.terms
-        return registered_operations[operation](task, *args)
+        return registered_operators[operator](task, *args)
     else:
         return None
 
