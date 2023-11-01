@@ -185,7 +185,7 @@ def wait_answer(out_type: str, max_listens: int, *cmd_in_interval: str) -> List[
 
 @cmd_register(('waitres', 'wait-result', 'w-result'), (int, 100), (str, '1'), (None, ''))
 def wait_result(max_listens: int, cmd_in_interval: str, *target_sentences: List[str]) -> List[NARSOutput]:
-    '''Format: waitres [Maximum tolerance = 100] [Interval cmd = '1'] [sentences...]
+    '''Format: waitres [Maximum tolerance = 100] [Interval cmd = '1'] [*sentences]
     Attempts to intercept output that matches the specified sentences (same NAL format) and stops when it appears'''
     from pynars.Narsese import parser
     # Parameter preprocessing ' '.join(str target statement)
@@ -248,7 +248,7 @@ def toggle_color() -> None:
 
 @cmd_register('readfile', 'read-file')
 def read_file(*args: List[str]) -> None:
-    '''Format: readfile [... file path]
+    '''Format: readfile [*file_paths]
     Call API to read file'''
     for path in args:
         current_NARS_interface.execute_file(path)
@@ -256,7 +256,7 @@ def read_file(*args: List[str]) -> None:
 
 @cmd_register(('history', 'history-input'))
 def print_history_in(*args: List[str]) -> None:
-    '''Format: history [... placeholder]
+    '''Format: history [*placeholder]
     Output the user's input history
     Default: The Narsese seen at the bottom of the system, not the actual input
     User actual input cmd: input any parameters can be obtained'''
@@ -266,7 +266,7 @@ def print_history_in(*args: List[str]) -> None:
 
 @cmd_register('history-output')
 def print_history_out(*args: List[str]) -> None:
-    '''Format: history-output [... placeholder]
+    '''Format: history-output [*placeholder]
     Output the console's output history
     Default: The Narsese seen at the bottom of the system, not the actual input
     User actual input cmd: input any parameters can be obtained'''
@@ -299,54 +299,83 @@ def eval_code(*args: List[str]) -> None:
         print(f'eval failed: {e}')
 
 
-@cmd_register(('register-operation', 'register'))
-def register_operation(*args: List[str]) -> None:
-    '''Format: register-operation <Operation(Term) Name> <'eval'/'exec'> <Python Code>
+@cmd_register(('operation', 'operation-list', 'o-list'))
+def operation_list(*keywords: List[str]) -> None:
+    '''Format: operation-list [*keywords]
+    Enumerate existing operations; It can be retrieved with parameters'''
+    keywords = keywords if keywords else ['']
+    # Search for a matching interface name
+    from pynars.NARS.Operation.Register import registered_operations, get_registered_operation_by_name, registered_operation_names
+    operation_names: List[str] = prefix_browse(registered_operation_names(), *keywords)
+    # Displays information about "matched interface"
+    if operation_names:
+        for name in operation_names:  # match the list of all cmds, as long as they match the search results - not necessarily in order
+            op = get_registered_operation_by_name(name)
+            f = registered_operations[op]
+            print(f'''<Operation {str(op)}>: {
+                'No function' if f == None else
+                'No description' if f.__doc__.strip() == '' else
+                f.__doc__}''')
+        return
+    print(f'No Operation is browsed by "{", ".join(keywords)}"')
+
+
+@cmd_register(('register-operation', 'operation-register', 'o-register', 'register'))
+def operation_register(*args: List[str]) -> None:
+    '''Format: register-operation <Operation(Term) Name> [<'eval'/'exec'> <Python Code>]
     Register an operation to NARS interface.
     
     function signature:
         execution_F(arguments: Iterable[Term], task: Task=None, memory: Memory=None) -> Union[Task,None]
     
-    default fallback of execution_F when code='' is equivalent to:
+    default fallback of execution_F when only 1 argument is provided:
         print(f'executed: arguments={arguments}, task={task}, memory={memory}. the "task" will be returned')
     
     ! Unsupported: register mental operations
     '''
     name = args[0]
     "The operator's name without `^` as prefix"
-    eType = args[1]
-    code = " ".join(args[2:])
-    if code == '':
+    if len(args) == 1:
         def execution_F(arguments: Iterable[Term], task: Task=None, memory: Memory=None) -> Union[Task,None]:
             print(f'executed: arguments={arguments}, task={task}, memory={memory}. the "task" will be returned')
             return task
+        execution_F.__doc__ = f'''
+            The execution is auto generated from operator with name={name} without code
+            '''.strip()
     else:
+        eType = args[1]
+        code = " ".join(args[2:])
         if eType =='exec':
             def execution_F(arguments: Iterable[Term], task: Task=None, memory: Memory=None) -> Union[Task,None]:
                 return exec(code)
         else:
             def execution_F(arguments: Iterable[Term], task: Task=None, memory: Memory=None) -> Union[Task,None]:
                 return eval(code)
-    execution_F.__doc__ = f'''
-        The execution is auto generated from operator {name} in {eType} mode with code={code}
-        '''
-    current_NARS_interface.reasoner.register_operation(name, execution_F)
-    print(f'Operation {name} was successfully registered in mode "{eType}" with code={code}')
+        execution_F.__doc__ = f'''
+            The execution is auto generated from operator with name={name} in {eType} mode with code={code}
+            '''.strip()
+    if (op:=current_NARS_interface.reasoner.register_operation(name, execution_F)) is not None:
+        print(f'Operation {str(op)} was successfully registered ' + (
+            'without code'
+            if len(args) == 1
+            else f'in mode "{eType}" with code={code}'))
+    else:
+        print(f'The operation with name="{name}" was already registered!')
 
 
 @cmd_register(('simplify-parse', 'parse'))
 def toggle_simplify_parse() -> None:
     '''Toggle the "automatic shorthand parsing" function of the cmd (enabled by default),
     If so, the Narsese input are automatically parsed in a simplified format'''
-    global _parse_need_slash
-    _parse_need_slash = not _parse_need_slash
+    global _parse_simplification
+    _parse_simplification = not _parse_simplification
     print(
-        f'Narsese automatic analytic simplification {"closed" if _parse_need_slash else "opened"}.')
+        f'Narsese automatic analytic simplification {"closed" if _parse_simplification else "opened"}.')
 
 
 @cmd_register('help')
 def help(*keywords: List[str], search_in: Dict[tuple, tuple] = PRESET_CMDS) -> None:
-    '''Format: help [... specific cmd]
+    '''Format: help [*keywords]
     Display this help document, or assist in retrieving help for additional cmds'''
     # Core idea: Empty prefix = all cmds
     keywords = keywords if keywords else ['']
@@ -437,7 +466,7 @@ def macro_show(name: str): return f'Macro {name}: \n' + \
 
 @cmd_register(('macro-query', 'm-query'))
 def macro_query(*args: List[str]) -> None:
-    '''Format: macro-query [... macro name]
+    '''Format: macro-query [*keywords]
     With parameters: Find macros by name and display their internal commands (the number can be stacked indefinitely)
     No arguments: Lists all defined macros and displays their internal commands'''
     if args:  # find by names
@@ -460,7 +489,7 @@ def macro_exec1(name: str) -> None:
 
 @cmd_register(('macro-exec', 'm-exec'))
 def macro_exec(*args: List[str]) -> None:
-    '''Format: macro-exec [... macro name]
+    '''Format: macro-exec [*keywords]
     Execute macros by name (unlimited number can be stacked)
     If empty, execute macro "" (empty string)'''
     args = args if args else ['']
@@ -523,17 +552,18 @@ def current_nar_name() -> str:
     return None
 
 
-@cmd_register(('reasoner-current', 'r-current'))
+@cmd_register(('reasoner-current', 'r-current', 'info'))
 def reasoner_current() -> None:
-    '''Gets the name of the current reasoner'''
+    '''Gets the name and info of the current reasoner'''
     name = current_nar_name()
     if name != None:
-        print(f'The name of the current reasoner is "{name}".')
+        print('Current NARS interface:')
+        print(get_interface_info(name, interfaces[name]))
 
 
-@cmd_register(('reasoner-list', 'r-list'))
+@cmd_register(('reasoner-list', 'r-list', 'list'))
 def reasoner_list(*keywords: List[str]) -> None:
-    '''Format: reasoner-list [... specific cmd]
+    '''Format: reasoner-list [*keywords]
     Enumerate existing reasoners; It can be retrieved with parameters'''
     keywords = keywords if keywords else ['']
     # Search for a matching interface name
@@ -541,18 +571,22 @@ def reasoner_list(*keywords: List[str]) -> None:
     # Displays information about "matched interface"
     if reasoner_names:
         for name in reasoner_names:  # match the list of all cmds, as long as they match the search results - not necessarily in order
-            interface: NARSInterface = interfaces[name]
-            information: str = '\n\t'+"\n\t".join(f"{name}: {repr(inf)}" for name, inf in [
-                ('Memory', interface.reasoner.memory),
-                ('Channels', interface.reasoner.channels),
-                ('Overall Experience', interface.reasoner.overall_experience),
-                ('Internal Experience', interface.reasoner.internal_experience),
-                ('Sequence Buffer', interface.reasoner.sequence_buffer),
-                ('Operations Buffer', interface.reasoner.operations_buffer),
-            ])
-            print(f'<{name}>: {information}')
+            print(get_interface_info(name, interfaces[name]))
         return
     print(f'No reasoner is browsed by "{", ".join(keywords)}"')
+
+
+def get_interface_info(name:str, interface: NARSInterface) -> str:
+    '''print the information of an NARS interface'''
+    information: str = '\n\t'+"\n\t".join(f"{name}: {repr(inf)}" for name, inf in [
+        ('Memory', interface.reasoner.memory),
+        ('Channels', interface.reasoner.channels),
+        ('Overall Experience', interface.reasoner.overall_experience),
+        ('Internal Experience', interface.reasoner.internal_experience),
+        ('Sequence Buffer', interface.reasoner.sequence_buffer),
+        ('Operations Buffer', interface.reasoner.operations_buffer),
+    ])
+    return f'<{name}>: {information}'
 
 
 @cmd_register(('reasoner-new', 'r-new'),
@@ -572,7 +606,7 @@ def reasoner_new(name: str, n_memory: int = 100, capacity: int = 100, silent: bo
 
     current_NARS_interface = register_interface(
         name=name,
-        seed=current_NARS_interface.seed,  # keep the seed until directly change
+        seed=-1,  # use '-1' to keep the seed until directly change
         memory=n_memory,
         capacity=capacity,
         silent=silent)
@@ -680,8 +714,8 @@ def server_websocket(host: str = 'localhost', port: int = 8765) -> None:
 
 # Total index and other variables #
 
-_parse_need_slash: bool = False
-'Determines whether the last input is a command'
+_parse_simplification: bool = False
+'Determines whether the "Narsese automatic analytic simplification" enabled'
 
 input_history: List[str] = []
 'History of inputs'
@@ -787,7 +821,7 @@ def execute_input(inp: str, *other_input: List[str]) -> None:
 
     # Narsese parsing
     has_slash = False  # usage of backslashes: Enforce/disable "parse simplification"
-    if not _parse_need_slash or (has_slash := inp.startswith('\\')):
+    if _parse_simplification or (has_slash := inp.startswith('\\')):
         if has_slash:  # Remove the slash if there is a backslash
             inp = inp[1:]
         inp = special_narsese_parse(inp=inp)
@@ -831,7 +865,7 @@ def auto_execute_cmd_by_name(cmd_name: str, params: List[str], cmd_dict: Dict[tu
             return False
     else:
         hint = 'Are you looking for "' + \
-            "\"|\"".join('/'.join(alias) for alias in name_alias_hints) + \
+            "\" | \"".join('/'.join(alias) for alias in name_alias_hints) + \
             '"?' if name_alias_hints else ''
         print(f'Unknown cmd {cmd_name}. {hint}')
         return False
