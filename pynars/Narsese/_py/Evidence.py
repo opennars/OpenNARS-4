@@ -44,14 +44,24 @@ class Base:
 
         # TODO: Ref: OpenNARS 3.1.0 Stamp.java line 178~187.
         # TODO: Optimize this loop with cython.
-        # while (j < baseLength) {
-        #     if(i2 < secondLength) {
-        #         evidentialBase[j++] = secondBase[i2++];
-        #     }
-        #     if(i1 < firstLength) {
-        #         evidentialBase[j++] = firstBase[i1++];
-        #     }
-        # }
+        b1 = len(base1)
+        b2 = len(base2)
+        base_length = min(b1 + b2, Config.maximum_evidental_base_length)
+        evidential_base: Set[int] = OrderedSet()
+
+        i1 = i2 = j = 0
+
+        while j < base_length:
+            if i2 < b2:
+                evidential_base.add(base2[i2])
+                j += 1
+                i2 += 1
+            if i1 < b1:
+                evidential_base.add(base1[i1])
+                j += 1
+                i1 += 1
+
+        return evidential_base
 
     def add(self, id_evidence: int):
         self._hash = None
@@ -60,7 +70,7 @@ class Base:
     
     def extend(self, base: Union[Type['Base'] , None]):
         self._hash = None
-        self._set = self._set.union(base._set)
+        self._set = self.interleave(self._set, base)
         return self
 
     def is_overlaped(self, base: Union[Type['Base'], None]) -> bool:
