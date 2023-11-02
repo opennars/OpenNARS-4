@@ -26,10 +26,10 @@ class Agent:
         #     self.dont_move()
         # elif operation == '^fire':
         #     self.fire()
-        self.core.register_operation('left', self.move_left)
-        self.core.register_operation('right', self.move_right)
-        self.core.register_operation('deactivate', self.dont_move)
-        self.core.register_operation('fire', self.fire)
+        self.core.register_operator('left', self.move_left)
+        self.core.register_operator('right', self.move_right)
+        self.core.register_operator('deactivate', self.dont_move)
+        self.core.register_operator('fire', self.fire)
         self.inference_cycle_frequency = 5
 
 

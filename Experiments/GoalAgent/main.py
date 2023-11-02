@@ -19,7 +19,7 @@ np.random.seed(seed)
 def main():
     Config.projection_decay = 1e-4
     nars = Reasoner(100, 100)
-    nars.register_operation("say_hello", say_hello)
+    nars.register_operator("say_hello", say_hello)
 
     # task1 = Narsese.parse("<{SELF}-->[good]>! :|:")
     # task2 = Narsese.parse("<{SELF}-->[good]>! :|:")

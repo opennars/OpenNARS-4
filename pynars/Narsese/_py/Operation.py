@@ -1,8 +1,8 @@
 from .Term import Term
 
-class Operation(Term):
+class Operator(Term):
     
-    is_operation = True
+    is_operation = True # ? If it changed the type of statements also need to change, but if rename it, two properties with different names will occur. Same as 'is_mental_operation'
 
     def __init__(self, word, do_hashing=False, is_mental_operation=False) -> None:
         super().__init__(word, do_hashing=do_hashing)
@@ -22,69 +22,69 @@ class Operation(Term):
         self._hash_value = hash(str(self))
         return self._hash_value
 
-Anticipate = Operation('anticipate', True, is_mental_operation=True)
-Evaluate   = Operation('evaluate',   True, is_mental_operation=True)
+Anticipate = Operator('anticipate', True, is_mental_operation=True)
+Evaluate   = Operator('evaluate',   True, is_mental_operation=True)
 
 # With reference to book NAL(2012)
-Observe   = Operation('observe',     True, is_mental_operation=True)
+Observe   = Operator('observe',     True, is_mental_operation=True)
 '''get an active task from the task buffer'''
 
-Expect    = Operation('expect',      True, is_mental_operation=True)
+Expect    = Operator('expect',      True, is_mental_operation=True)
 '''check the input for a given statement'''
 
-Know      = Operation('know',        True, is_mental_operation=True)
+Know      = Operator('know',        True, is_mental_operation=True)
 '''find the truth-value of a statement'''
 
-Assess    = Operation('assess',      True, is_mental_operation=True)
+Assess    = Operator('assess',      True, is_mental_operation=True)
 '''find the desire-value of a statement'''
 
-Believe   = Operation('believe',     True, is_mental_operation=True)
+Believe   = Operator('believe',     True, is_mental_operation=True)
 '''turn a statement into a task containing a judgment'''
 
-Want      = Operation('want',        True, is_mental_operation=True)
+Want      = Operator('want',        True, is_mental_operation=True)
 '''turn a statement into a task containing a goal'''
 
-Wonder    = Operation('wonder',      True, is_mental_operation=True)
+Wonder    = Operator('wonder',      True, is_mental_operation=True)
 '''turn a statement into a task containing a question'''
 
-Remember  = Operation('remember',    True, is_mental_operation=True)
+Remember  = Operator('remember',    True, is_mental_operation=True)
 '''turn a statement into a belief'''
 
-Consider  = Operation('consider',    True, is_mental_operation=True)
+Consider  = Operator('consider',    True, is_mental_operation=True)
 '''do inference on a concept'''
 
-Remind    = Operation('remind',      True, is_mental_operation=True)
+Remind    = Operator('remind',      True, is_mental_operation=True)
 '''activate a concept'''
 
-Doubt     = Operation('doubt',       True, is_mental_operation=True)
+Doubt     = Operator('doubt',       True, is_mental_operation=True)
 '''decrease the confidence of a belief'''
 
-Hesitate  = Operation('hesitate',    True, is_mental_operation=True)
+Hesitate  = Operator('hesitate',    True, is_mental_operation=True)
 '''decrease the confidence of a goal'''
 
-Assume    = Operation('assume',      True, is_mental_operation=True)
+Assume    = Operator('assume',      True, is_mental_operation=True)
 '''temporarily take a statement as a belief'''
 
-Name      = Operation('name',        True, is_mental_operation=True)
+Name      = Operator('name',        True, is_mental_operation=True)
 '''create a simple internal ID to a useful compound term'''
 
-Wait      = Operation('wait',        True, is_mental_operation=True)
+Wait      = Operator('wait',        True, is_mental_operation=True)
 '''pause the system’s action for a given number of working cycles'''
 
-Repeat    = Operation('repeat',      True, is_mental_operation=True)
+Repeat    = Operator('repeat',      True, is_mental_operation=True)
 '''execute an action repeatedly under a given condition'''
 
-Tell      = Operation('tell',        True, is_mental_operation=True)
+Tell      = Operator('tell',        True, is_mental_operation=True)
 '''produce an outgoing task containing a judgment'''
 
-Demand    = Operation('demand',      True, is_mental_operation=True)
+Demand    = Operator('demand',      True, is_mental_operation=True)
 '''produce an outgoing task containing a goal'''
 
-Ask       = Operation('ask',         True, is_mental_operation=True)
+Ask       = Operator('ask',         True, is_mental_operation=True)
 '''produce an outgoing task containing a question'''
 
-Check     = Operation('check',       True, is_mental_operation=True)
+Check     = Operator('check',       True, is_mental_operation=True)
 '''produce an outgoing task containing a query'''
 
-Register  = Operation('register',    True, is_mental_operation=True)
+Register  = Operator('register',    True, is_mental_operation=True)
 '''let a term be used as an operator'''

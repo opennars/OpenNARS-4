@@ -182,11 +182,11 @@ class Reasoner:
 
         return task_operation_return, task_executed, belief_awared
 
-    def register_operation(self, name_operation: str, callback: Callable):
-        '''register an operation and return the operation if successful (otherwise, return None)'''
-        if not Operation.is_registered_by_name(name_operation):
-            from pynars.Narsese import Operation as Op
-            op = Op(name_operation)
+    def register_operator(self, name_operator: str, callback: Callable):
+        '''register an operator and return the operator if successful (otherwise, return None)'''
+        if not Operation.is_registered_by_name(name_operator):
+            from pynars.Narsese import Operator as Op
+            op = Op(name_operator)
             Operation.register(op, callback)
             return op
         return None
