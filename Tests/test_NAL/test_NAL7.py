@@ -27,14 +27,14 @@ class TEST_NAL7(unittest.TestCase):
         'If someone enter room_101, he should hold key_101 before
         ''outputMustContain('<<(*,$1,room_101) --> enter> =\> <(*,$1,key_101) --> hold>>. %0.72;0.58%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<<(*, $x, room_101) --> enter> =\> <(*, $x, door_101) --> open>>. %0.90;0.90%',
             '<<(*, $y, door_101) --> open> =\> <(*, $y, key_101) --> hold>>. %0.80;0.90%',
-            '<(*, $y, door_101) --> open>.'
+            100
         )
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+
         self.assertTrue(
-            output_contains(tasks_derived, '<<(*,$1,room_101) --> enter> =\> <(*,$1,key_101) --> hold>>. %0.72;0.58%')
+            output_contains(tasks_derived, '<<(*,$0,room_101) --> enter> =\> <(*,$0,key_101) --> hold>>. %0.72;0.58%')
         )
         pass
         
@@ -53,14 +53,13 @@ class TEST_NAL7(unittest.TestCase):
         'If someone enter room_101, he should hold key_101 before
         ''outputMustContain('<<(*,$1,key_101) --> hold> =/> <(*,$1,room_101) --> enter>>. %1.00;0.37%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<<(*, $x, room_101) --> enter> =\> <(*, $x, door_101) --> open>>. %0.90;0.90%',
             '<<(*, $y, door_101) --> open> =\> <(*, $y, key_101) --> hold>>. %0.80;0.90%',
-            '<(*, $y, door_101) --> open>.'
+            100
         )
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
         self.assertTrue(
-            output_contains(tasks_derived, '<<(*,$1,key_101) --> hold> =/> <(*,$1,room_101) --> enter>>. %1.00;0.37%')
+            output_contains(tasks_derived, '<<(*,$0,key_101) --> hold> =/> <(*,$0,room_101) --> enter>>. %1.00;0.37%')
         )
         pass
 
@@ -81,17 +80,17 @@ class TEST_NAL7(unittest.TestCase):
         'If someone enter room_101, he should hold key_101 before
         ''outputMustContain('<<(*,$1,room_101) --> enter> =\> <(*,$1,key_101) --> hold>>. %0.80;0.42%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<<(*, $x, door_101) --> open> =/> <(*, $x, room_101) --> enter>>. %0.90;0.90%',
             '<<(*, $y, door_101) --> open> =\> <(*, $y, key_101) --> hold>>. %0.80;0.90%',
-            '<(*, $y, door_101) --> open>.'
+            100
         )
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+
         self.assertTrue(
-            output_contains(tasks_derived, '<<(*,$1,key_101) --> hold> =/> <(*,$1,room_101) --> enter>>. %0.90;0.39%')
+            output_contains(tasks_derived, '<<(*,$0,key_101) --> hold> =/> <(*,$0,room_101) --> enter>>. %0.90;0.39%')
         )
         self.assertTrue(
-            output_contains(tasks_derived, '<<(*,$1,room_101) --> enter> =\> <(*,$1,key_101) --> hold>>. %0.80;0.42%')
+            output_contains(tasks_derived, '<<(*,$0,room_101) --> enter> =\> <(*,$0,key_101) --> hold>>. %0.80;0.42%')
         )
         pass
 
@@ -112,17 +111,17 @@ class TEST_NAL7(unittest.TestCase):
         'If someone enter room_101, he should hold key_101 before
         ''outputMustContain('<<(*,$1,room_101) --> enter> =\> <(*,$1,key_101) --> hold>>. %0.80;0.42%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<<(*, $y, door_101) --> open> =\> <(*, $y, key_101) --> hold>>. %0.80;0.90%',
             '<<(*, $x, door_101) --> open> =/> <(*, $x, room_101) --> enter>>. %0.90;0.90%',
-            '<(*, $y, door_101) --> open>.'
+            100
         )
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+
         self.assertTrue(
-            output_contains(tasks_derived, '<<(*,$1,key_101) --> hold> =/> <(*,$1,room_101) --> enter>>. %0.90;0.39%')
+            output_contains(tasks_derived, '<<(*,$0,key_101) --> hold> =/> <(*,$0,room_101) --> enter>>. %0.90;0.39%')
         )
         self.assertTrue(
-            output_contains(tasks_derived, '<<(*,$1,room_101) --> enter> =\> <(*,$1,key_101) --> hold>>. %0.80;0.42%')
+            output_contains(tasks_derived, '<<(*,$0,room_101) --> enter> =\> <(*,$0,key_101) --> hold>>. %0.80;0.42%')
         )
         pass
 
@@ -142,14 +141,14 @@ class TEST_NAL7(unittest.TestCase):
         'If someone hold key_101, it means he will enter room_101
         ''outputMustContain('<<(*,$1,key_101) --> hold> </> <(*,$1,room_101) --> enter>>. %0.73;0.44%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<<(*, $x, door_101) --> open> =/> <(*, $x, room_101) --> enter>>. %0.90;0.90%',
             '<<(*, $y, door_101) --> open> =\> <(*, $y, key_101) --> hold>>. %0.80;0.90%',
-            '<(*, $y, door_101) --> open>.'
+            100
         )
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+
         self.assertTrue(
-            output_contains(tasks_derived, '<<(*,$1,key_101) --> hold> </> <(*,$1,room_101) --> enter>>. %0.73;0.44%')
+            output_contains(tasks_derived, '<<(*,$0,key_101) --> hold> </> <(*,$0,room_101) --> enter>>. %0.73;0.44%')
         )
         pass
 
@@ -168,14 +167,14 @@ class TEST_NAL7(unittest.TestCase):
         'If someone hold key_101, it means he will enter room_101
         ''outputMustContain('<<(*,$1,key_101) --> hold> </> <(*,$1,room_101) --> enter>>. %0.73;0.44%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<<(*, $y, door_101) --> open> =\> <(*, $y, key_101) --> hold>>. %0.80;0.90%',
             '<<(*, $x, door_101) --> open> =/> <(*, $x, room_101) --> enter>>. %0.90;0.90%',
-            '<(*, $y, door_101) --> open>.'
+            100
         )
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+
         self.assertTrue(
-            output_contains(tasks_derived, '<<(*,$1,key_101) --> hold> </> <(*,$1,room_101) --> enter>>. %0.73;0.44%')
+            output_contains(tasks_derived, '<<(*,$0,key_101) --> hold> </> <(*,$0,room_101) --> enter>>. %0.73;0.44%')
         )
         pass
 
@@ -194,14 +193,14 @@ class TEST_NAL7(unittest.TestCase):
         'If someone hold key_101, it means he will enter room_101
         ''outputMustContain('<<(*,$1,room_101) --> enter> </> <(*,$1,key_101) --> hold>>. %0.73;0.44%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<<(*, $x, room_101) --> enter> =/> <(*, $x, door_101) --> open>>. %0.90;0.90%',
             '<<(*, $y, key_101) --> hold> =\> <(*, $y, door_101) --> open>>. %0.80;0.90%',
-            '<(*, $y, door_101) --> open>.'
+            100
         )
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+
         self.assertTrue(
-            output_contains(tasks_derived, '<<(*,$1,room_101) --> enter> </> <(*,$1,key_101) --> hold>>. %0.73;0.44%')
+            output_contains(tasks_derived, '<<(*,$0,room_101) --> enter> </> <(*,$0,key_101) --> hold>>. %0.73;0.44%')
         )
         pass
 
@@ -220,14 +219,14 @@ class TEST_NAL7(unittest.TestCase):
         'If someone hold key_101, it means he will enter room_101
         ''outputMustContain('<<(*,$1,room_101) --> enter> </> <(*,$1,key_101) --> hold>>. %0.73;0.44%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<<(*, $y, key_101) --> hold> =\> <(*, $y, door_101) --> open>>. %0.80;0.90%',
             '<<(*, $x, room_101) --> enter> =/> <(*, $x, door_101) --> open>>. %0.90;0.90%',
-            '<(*, $y, door_101) --> open>.'
+            100
         )
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+
         self.assertTrue(
-            output_contains(tasks_derived, '<<(*,$1,room_101) --> enter> </> <(*,$1,key_101) --> hold>>. %0.73;0.44%')
+            output_contains(tasks_derived, '<<(*,$0,room_101) --> enter> </> <(*,$0,key_101) --> hold>>. %0.73;0.44%')
         )
         pass
 
@@ -244,12 +243,12 @@ class TEST_NAL7(unittest.TestCase):
         ''outputMustContain('<A =/> C>. %0.80;0.42%')
         ''outputMustContain('<C =\> A>. %0.90;0.39%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<A =/> B>. %0.80;0.90%',
             '<C =\> B>. %0.90;0.90%',
-            'B.'
+            100
         )
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+
         self.assertTrue(
             output_contains(tasks_derived, '<A =/> C>. %0.80;0.42%')
         )
@@ -274,12 +273,12 @@ class TEST_NAL7(unittest.TestCase):
         'John will enter the room_101
         ''outputMustContain('<(*,John,room_101) --> enter>. :!5: %1.00;0.81%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<(*,John,key_101) --> hold>. :|: %1.00;0.90%',
             '<<(*,John,key_101) --> hold> =/> <(*,John,room_101) --> enter>>. %1.00;0.90%',
-            '<(*,John,key_101) --> hold>.'
+            20
         )
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+
         self.assertTrue(
             output_contains(tasks_derived, '<(*,John,room_101) --> enter>. :!5: %1.00;0.81%')
         )
@@ -300,12 +299,12 @@ class TEST_NAL7(unittest.TestCase):
 
         ''outputMustContain('<(*,John,key_101) --> hold>. :!-10: %1.00;0.45%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<(*,John,room_101) --> enter>. :\: %1.00;0.90%',
             '<<(*,John,key_101) --> hold> =/> <(*,John,room_101) --> enter>>. %1.00;0.90%',
-            '<(*,John,room_101) --> enter>.'
+            10
         )
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+
         self.assertTrue(
             output_contains(tasks_derived, '<(*,John,key_101) --> hold>. :!-10: %1.00;0.45%')
         )
@@ -326,12 +325,12 @@ class TEST_NAL7(unittest.TestCase):
 
         ''outputMustContain('<(*,John,key_101) --> hold>. %1.00;0.30%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<<(*,John,key_101) --> hold> =/> <(*,John,room_101) --> enter>>. %1.00;0.90%',
             '<(*,John,room_101) --> enter>. :\: %1.00;0.90%',
-            'enter.'
+            10
         )
-        tasks_derived = GeneralEngine.inference(task, belief, belief.term, task_link, term_link, rules)
+
         self.assertTrue(
             output_contains(tasks_derived, '<(*,John,key_101) --> hold>. %1.00;0.30%')
         )
@@ -365,12 +364,17 @@ class TEST_NAL7(unittest.TestCase):
 
         10
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
-            '<John --> (/,open,_,door_101)>. :|: ',
-            '<John --> (/,enter,_,room_101)>. :|: ',
-            'John.'
+        tasks_derived = process_two_premises(
+            '<John --> (/,open,_,door_101)>. :|:',
+            None,
+            6
         )
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+        tasks_derived.extend(process_two_premises(
+            '<John --> (/,enter,_,room_101)>. :|:',
+            None,
+            20
+        ))
+
         self.assertTrue(
             output_contains(tasks_derived, '<<John --> (/,enter,_,room_101)> =\> (&/,<John --> (/,open,_,door_101)>,+6)>. :!6: %1.00;0.45%')
         )
@@ -463,14 +467,14 @@ class TEST_NAL7(unittest.TestCase):
         'If someone open door_101, he will leave corridor_100
         ''outputMustContain('<<(*,$1,door_101) --> open> =/> <(*,$1,corridor_100) --> leave>>. %0.95;0.81%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<<(*, $x, door_101) --> open> =/> <(*, $x, room_101) --> enter>>. %0.95;0.90%',
             '<<(*, $x, room_101) --> enter> <|> <(*, $x, corridor_100) --> leave>>. %1.00;0.90%',
-            '<(*, $x, room_101) --> enter>.'
+            40
         )
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+
         self.assertTrue(
-            output_contains(tasks_derived, '<<(*,$1,door_101) --> open> =/> <(*,$1,corridor_100) --> leave>>. %0.95;0.81%')
+            output_contains(tasks_derived, '<<(*,$0,door_101) --> open> =/> <(*,$0,corridor_100) --> leave>>. %0.95;0.81%')
         )
         pass
 
@@ -492,10 +496,10 @@ class TEST_NAL7(unittest.TestCase):
 
         'this one is working, but throws an exception
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<(*, John, key_101) --> hold>. :\: %1.00;0.90%',
             '<(&/,<(*, John, key_101) --> hold>,+100) =/> <(*, John, room_101) --> enter>>. %1.00;0.90%',
-            'hold.'
+            200
         )
         tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
         self.assertTrue(
@@ -618,12 +622,12 @@ class TEST_NAL7(unittest.TestCase):
         ' a + 2 = c
         ''outputMustContain('<(&/,a,+2) =/> c>. %1.00;0.81%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<(&/, a, +1) =/> b>. %1.00;0.90%',
             '<(&/, b, +1) =/> c>. %1.00;0.90%',
-            'b.'
+            10
         )
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+
         self.assertTrue(
             output_contains(tasks_derived, '<(&/,a,+2) =/> c>. %1.00;0.81%')
         )
@@ -634,27 +638,25 @@ class TEST_NAL7_ANALOGY(unittest.TestCase):
         '''
         
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<A=/>B>. %1.00;0.90%',
             '<A</>C>. %1.00;0.90%',
-            'A.'
+            10
         )
-        if rules is not None:
-            tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
-            self.assertFalse(
-                output_contains(tasks_derived, '<C=/>B>. %1.00;0.81%')
-            )
+        self.assertFalse(
+            output_contains(tasks_derived, '<C=/>B>. %1.00;0.81%')
+        )
     
     def test_analogy_0_0__1(self):
         '''
         
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<A=/>B>. %1.00;0.90%',
             '<A<|>C>. %1.00;0.90%',
-            'A.'
+            10
         )
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+
         self.assertTrue(
             output_contains(tasks_derived, '<C=/>B>. %1.00;0.81%')
         )
@@ -663,12 +665,12 @@ class TEST_NAL7_ANALOGY(unittest.TestCase):
         '''
         
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<A=\>B>. %1.00;0.90%',
             '<A</>C>. %1.00;0.90%',
-            'A.'
+            10
         )
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+
         self.assertTrue(
             output_contains(tasks_derived, '<B=/>C>. %1.00;0.81%')
         )
@@ -677,12 +679,12 @@ class TEST_NAL7_ANALOGY(unittest.TestCase):
         '''
         
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<A=\>B>. %1.00;0.90%',
             '<A<|>C>. %1.00;0.90%',
-            'A.'
+            10
         )
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+
         self.assertTrue(
             output_contains(tasks_derived, '<B=/>C>. %1.00;0.81%')
         )
@@ -691,12 +693,12 @@ class TEST_NAL7_ANALOGY(unittest.TestCase):
         '''
         
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<A=|>B>. %1.00;0.90%',
             '<A</>C>. %1.00;0.90%',
-            'A.'
+            10
         )
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+
         self.assertTrue(
             output_contains(tasks_derived, '<C=\>B>. %1.00;0.81%')
         )
@@ -705,12 +707,12 @@ class TEST_NAL7_ANALOGY(unittest.TestCase):
         '''
         
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<A=|>B>. %1.00;0.90%',
             '<A<|>C>. %1.00;0.90%',
-            'A.'
+            10
         )
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+
         self.assertTrue(
             output_contains(tasks_derived, '<C=|>B>. %1.00;0.81%')
         )
@@ -733,12 +735,12 @@ class TEST_NAL7_ANALOGY(unittest.TestCase):
         '''
         
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<A=/>B>. %1.00;0.90%',
             '<C<|>A>. %1.00;0.90%',
-            'A.'
+            10
         )
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+
         self.assertTrue(
             output_contains(tasks_derived, '<C=/>B>. %1.00;0.81%')
         )
@@ -747,27 +749,24 @@ class TEST_NAL7_ANALOGY(unittest.TestCase):
         '''
         
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<A=\>B>. %1.00;0.90%',
             '<C</>A>. %1.00;0.90%',
-            'A.'
+            10
         )
-        if rules is not None:
-            tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
-            self.assertFalse(
-                output_contains(tasks_derived, '<C=/>B>. %1.00;0.81%')
-            )
+        self.assertFalse(
+            output_contains(tasks_derived, '<C=/>B>. %1.00;0.81%')
+        )
         
     def test_analogy_0_1__3(self):
         '''
         
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<A=\>B>. %1.00;0.90%',
             '<C<|>A>. %1.00;0.90%',
-            'A.'
+            10
         )
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
         self.assertTrue(
             output_contains(tasks_derived, '<B=/>C>. %1.00;0.81%')
         )
@@ -776,12 +775,11 @@ class TEST_NAL7_ANALOGY(unittest.TestCase):
         '''
         
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<A=|>B>. %1.00;0.90%',
             '<C</>A>. %1.00;0.90%',
-            'A.'
+            10
         )
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
         self.assertTrue(
             output_contains(tasks_derived, '<C=/>B>. %1.00;0.81%')
         )
@@ -790,12 +788,11 @@ class TEST_NAL7_ANALOGY(unittest.TestCase):
         '''
         
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<A=|>B>. %1.00;0.90%',
             '<C<|>A>. %1.00;0.90%',
-            'A.'
+            10
         )
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
         self.assertTrue(
             output_contains(tasks_derived, '<C=|>B>. %1.00;0.81%')
         )
@@ -804,12 +801,11 @@ class TEST_NAL7_ANALOGY(unittest.TestCase):
         '''
         
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<A=/>B>. %1.00;0.90%',
             '<B</>C>. %1.00;0.90%',
-            'B.'
+            10
         )
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
         self.assertTrue(
             output_contains(tasks_derived, '<A=/>C>. %1.00;0.81%')
         )
@@ -818,12 +814,11 @@ class TEST_NAL7_ANALOGY(unittest.TestCase):
         '''
         
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<A=/>B>. %1.00;0.90%',
             '<B<|>C>. %1.00;0.90%',
-            'B.'
+            10
         )
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
         self.assertTrue(
             output_contains(tasks_derived, '<A=/>C>. %1.00;0.81%')
         )
@@ -832,27 +827,24 @@ class TEST_NAL7_ANALOGY(unittest.TestCase):
         '''
         
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<A=\>B>. %1.00;0.90%',
             '<B</>C>. %1.00;0.90%',
-            'B.'
+            10
         )
-        if rules is not None:
-            tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
-            self.assertFalse(
-                output_contains(tasks_derived, '<A=/>C>. %1.00;0.81%')
-            )
+        self.assertFalse(
+            output_contains(tasks_derived, '<A=/>C>. %1.00;0.81%')
+        )
     
     def test_analogy_1_0__3(self):
         '''
         
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<A=\>B>. %1.00;0.90%',
             '<B<|>C>. %1.00;0.90%',
-            'B.'
+            10
         )
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
         self.assertTrue(
             output_contains(tasks_derived, '<C=/>A>. %1.00;0.81%')
         )
@@ -861,12 +853,11 @@ class TEST_NAL7_ANALOGY(unittest.TestCase):
         '''
         
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<A=|>B>. %1.00;0.90%',
             '<B</>C>. %1.00;0.90%',
-            'B.'
+            10
         )
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
         self.assertTrue(
             output_contains(tasks_derived, '<A=/>C>. %1.00;0.81%')
         )
@@ -875,12 +866,11 @@ class TEST_NAL7_ANALOGY(unittest.TestCase):
         '''
         
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<A=|>B>. %1.00;0.90%',
             '<B<|>C>. %1.00;0.90%',
-            'B.'
+            10
         )
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
         self.assertTrue(
             output_contains(tasks_derived, '<A=|>C>. %1.00;0.81%')
         )
@@ -889,27 +879,24 @@ class TEST_NAL7_ANALOGY(unittest.TestCase):
         '''
         
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<A=/>B>. %1.00;0.90%',
             '<C</>B>. %1.00;0.90%',
-            'B.'
+            10
         )
-        if rules is not None:
-            tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
-            self.assertTrue(
-                output_contains(tasks_derived, '<A=/>C>. %1.00;0.81%')
-            )
+        self.assertTrue(
+            output_contains(tasks_derived, '<A=/>C>. %1.00;0.81%')
+        )
 
     def test_analogy_1_1__1(self):
         '''
         
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<A=/>B>. %1.00;0.90%',
             '<C<|>B>. %1.00;0.90%',
-            'B.'
+            10
         )
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
         self.assertTrue(
             output_contains(tasks_derived, '<A=/>C>. %1.00;0.81%')
         )
@@ -918,12 +905,11 @@ class TEST_NAL7_ANALOGY(unittest.TestCase):
         '''
         
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<A=\>B>. %1.00;0.90%',
             '<C</>B>. %1.00;0.90%',
-            'B.'
+            10
         )
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
         self.assertTrue(
             output_contains(tasks_derived, '<C=/>A>. %1.00;0.81%')
         )
@@ -932,12 +918,11 @@ class TEST_NAL7_ANALOGY(unittest.TestCase):
         '''
         
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<A=\>B>. %1.00;0.90%',
             '<C<|>B>. %1.00;0.90%',
-            'B.'
+            10
         )
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
         self.assertTrue(
             output_contains(tasks_derived, '<C=/>A>. %1.00;0.81%')
         )
@@ -946,12 +931,11 @@ class TEST_NAL7_ANALOGY(unittest.TestCase):
         '''
         
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<A=|>B>. %1.00;0.90%',
             '<C</>B>. %1.00;0.90%',
-            'B.'
+            10
         )
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
         self.assertTrue(
             output_contains(tasks_derived, '<A=\>C>. %1.00;0.81%')
         )
@@ -960,12 +944,11 @@ class TEST_NAL7_ANALOGY(unittest.TestCase):
         '''
         
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<A=|>B>. %1.00;0.90%',
             '<C<|>B>. %1.00;0.90%',
-            'B.'
+            10
         )
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
         self.assertTrue(
             output_contains(tasks_derived, '<A=|>C>. %1.00;0.81%')
         )
