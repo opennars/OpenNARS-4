@@ -17,7 +17,7 @@ nars = Reasoner(100, 100)
 engine: GeneralEngine = nars.inference
 
 
-def process_two_premises(premise1: str, premise2: str, n_cycle: int) -> list[Task]:
+def process_two_premises(premise1: str, premise2: str, n_cycle: int) -> List[Task]:
     ''''''
     # nars.reset() # TODO: uncomment when implemented
     nars = Reasoner(100, 100)
@@ -127,8 +127,9 @@ def output_contains(outputs: List[Task], target: str):
         if output.truth is None:
             flag_contain &= target.truth is None
         else:
-            flag_contain &= round(output.truth.f, 2) == round(target.truth.f, 2)
-            flag_contain &= round(output.truth.c, 2) == round(target.truth.c, 2)
+            if target.truth is not None:
+                flag_contain &= round(output.truth.f, 2) == round(target.truth.f, 2)
+                flag_contain &= round(output.truth.c, 2) == round(target.truth.c, 2)
             flag_contain &= target.sentence.is_eternal == output.sentence.is_eternal
             # compare the time stamp
             if not target.sentence.is_eternal:

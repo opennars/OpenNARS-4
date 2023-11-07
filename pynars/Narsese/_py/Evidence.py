@@ -32,8 +32,7 @@ class Base:
         self._set: Set[int] = OrderedSet(terms)
         self._hash = None
     
-    @classmethod
-    def interleave(self, base1, base2) -> Type['Base']:
+    def interleave(self, base2: Type['Base']) -> Set[int]:
         '''interleave two bases'''
         # TODO: DOUBT --
         # What if some evidence is lost (because of forgetting)?
@@ -44,6 +43,10 @@ class Base:
 
         # TODO: Ref: OpenNARS 3.1.0 Stamp.java line 178~187.
         # TODO: Optimize this loop with cython.
+
+        base1 = self._set
+        base2 = base2._set
+
         b1 = len(base1)
         b2 = len(base2)
         base_length = min(b1 + b2, Config.maximum_evidental_base_length)
@@ -70,7 +73,7 @@ class Base:
     
     def extend(self, base: Union[Type['Base'] , None]):
         self._hash = None
-        self._set = self.interleave(self._set, base)
+        self._set = self.interleave(base)
         return self
 
     def is_overlaped(self, base: Union[Type['Base'], None]) -> bool:
