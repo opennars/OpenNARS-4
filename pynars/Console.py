@@ -163,7 +163,7 @@ def run_nars(filepath: str, seed: int = 137, n_memory: int = 100, capacity: int 
     rand_seed(seed)
     print_out(PrintType.COMMENT, f'rand_seed={seed}', comment_title='Setup')
     nars = Reasoner(n_memory, capacity)
-    nars.register_operation('left', lambda *args: print('execute left.'))
+    nars.register_operator('left', lambda *args: print('execute left.'))
     # try to run file if exists
     print_out(PrintType.COMMENT, 'Init...', comment_title='NARS')
     print_out(PrintType.COMMENT, 'Run...', comment_title='NARS')

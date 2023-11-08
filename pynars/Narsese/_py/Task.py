@@ -16,21 +16,22 @@ class Task(Item):
         self.sentence: Sentence = sentence
         self.input_id = self.input_id if input_id is None else input_id
 
+    @property
+    def h(self):
+        truth_belief = self.best_solution.truth if self.best_solution is not None else None
+        return self.achieving_level(truth_belief)
+
     def achieving_level(self, truth_belief: Truth=None):
-        if self.is_judgement:
-            e_belief = truth_belief.e if truth_belief is not None else 0.5
-            judgement: Judgement=self.sentence
-            return 1-abs(judgement.truth.e-e_belief)
-        elif self.is_goal:
-            e_belief = truth_belief.e if truth_belief is not None else 0.5
-            goal: Goal=self.sentence
-            return 1-abs(goal.truth.e-e_belief)
-        elif self.is_question:
-            question: Question = self.sentence
-            return truth_belief.e if question.is_query else truth_belief.c
-        elif self.is_quest:
-            quest: Quest = self.sentence
-            return truth_belief.e if quest.is_query else truth_belief.c
+        if self.is_judgement or self.is_goal:
+            if truth_belief is not None:
+                return 1 - abs(self.truth.e - truth_belief.e)
+            else: # no previous belief
+                return abs(self.truth.e - 0.5)
+        elif self.is_question or self.is_quest:
+            if truth_belief is not None:
+                return truth_belief.e if self.is_query else truth_belief.c
+            else: # no previous belief
+                return 0
         else:
             raise f'Invalid type! {type(self.sentence)}'
 

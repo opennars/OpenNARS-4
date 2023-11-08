@@ -14,7 +14,7 @@ class Enable:
     variable = True
     anticipation = False
     operation = False
-    debug = True
+    debug = False
 
 class Config:
     priority: float=0.8
@@ -79,6 +79,8 @@ class Config:
     novelty_horizon = 100000
     term_link_record_length = 10
 
+    maximum_evidental_base_length = 20000
+
     @classmethod
     def check(cls):
         '''Check if each parameter is valid'''
@@ -100,14 +102,17 @@ def load(file_path: str):
 
     valid = True
     if not file_path.exists():
-        print(f"The file `{file_path}` does not exist.")
+        if Enable.debug:
+            print(f"The file `{file_path}` does not exist.")
         valid = False
     if file_path.suffix != '.json':
-        print(f"The file `{file_path}` should be `*.json`.")
+        if Enable.debug:
+            print(f"The file `{file_path}` should be `*.json`.")
         valid = False
     if not valid:
         file_path = Path(__file__).parent/'config.json'
-        print(f'Loaded config file: {file_path}')
+        if Enable.debug:
+            print(f'Loaded config file: {file_path}')
     try:
         with open(file_path, 'r') as f:
             content = json.load(f)

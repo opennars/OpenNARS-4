@@ -22,15 +22,15 @@ from ..GlobalEval import GlobalEval
 
 class Reasoner:
 
-    def __init__(self, n_memory, capacity, config = './config.json') -> None:
+    def __init__(self, n_memory, capacity, config = './config.json', nal_rules={1,2,3,4,5,6,7,8,9}) -> None:
         # print('''Init...''')
         Config.load(config)
 
         self.global_eval = GlobalEval()
 
-        self.inference = GeneralEngine()
-        self.variable_inference = VariableEngine()
-        self.temporal_inference = TemporalEngine() # for temporal causal reasoning 
+        self.inference = GeneralEngine(add_rules=nal_rules)
+        self.variable_inference = VariableEngine(add_rules=nal_rules)
+        self.temporal_inference = TemporalEngine(add_rules=nal_rules) # for temporal causal reasoning 
 
         self.memory = Memory(n_memory, global_eval=self.global_eval)
         self.overall_experience = Buffer(capacity)
@@ -51,8 +51,10 @@ class Reasoner:
         # TODO
 
     def cycles(self, n_cycle: int):
+        tasks_all_cycles = []
         for _ in range(n_cycle):
-            self.cycle()
+            tasks_all_cycles.append(self.cycle())
+        return tasks_all_cycles
 
     def input_narsese(self, text, go_cycle: bool = False) -> Tuple[bool, Union[Task, None], Union[Task, None]]:
         success, task, task_overflow = self.narsese_channel.put(text)
@@ -187,9 +189,12 @@ class Reasoner:
 
         return task_operation_return, task_executed, belief_awared
 
-    def register_operation(self, name_operation: str, callback: Callable):
-        ''''''
-        from pynars.Narsese import Operation as Op
-        op = Op(name_operation)
-        Operation.register(op, callback)
+    def register_operator(self, name_operator: str, callback: Callable):
+        '''register an operator and return the operator if successful (otherwise, return None)'''
+        if not Operation.is_registered_by_name(name_operator):
+            from pynars.Narsese import Operator as Op
+            op = Op(name_operator)
+            Operation.register(op, callback)
+            return op
+        return None
 

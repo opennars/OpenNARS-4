@@ -9,6 +9,8 @@ Tests/*.png
 lab.ipynb
 .DS_Store
 cache
+_trash
+temp
 
 # C extensions
 *.so
