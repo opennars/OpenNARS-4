@@ -18,8 +18,10 @@ def run_line(nars: Reasoner, line: str):
     ''''''
 
     ret = []
-    satisfactions = []
-    busynesses = []
+    satisfaction = []
+    busyness = []
+    alertness = []
+    wellness = []
 
     def handle_line(tasks_line: Tuple[List[Task], Task, Task, List[Task], Task, Tuple[Task, Task]]):
         tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest, (
@@ -48,8 +50,10 @@ def run_line(nars: Reasoner, line: str):
         n_cycle = int(line)
         for _ in range(n_cycle):
             tasks_all = nars.cycle()
-            satisfactions.append(nars.global_eval.S)
-            busynesses.append(nars.global_eval.B)
+            satisfaction.append(nars.global_eval.S)
+            busyness.append(nars.global_eval.B)
+            alertness.append(nars.global_eval.A)
+            wellness.append(nars.global_eval.W)
             handle_line(tasks_all)
     else:
         line = line.rstrip(' \n')
@@ -63,28 +67,33 @@ def run_line(nars: Reasoner, line: str):
                 ret.append(f':Invalid input! Failed to parse: {line}')
 
             tasks_all = nars.cycle()
-            satisfactions.append(nars.global_eval.S)
-            busynesses.append(nars.global_eval.B)
+            satisfaction.append(nars.global_eval.S)
+            busyness.append(nars.global_eval.B)
+            alertness.append(nars.global_eval.A)
+            wellness.append(nars.global_eval.W)
             handle_line(tasks_all)
         except Exception as e:
             ret.append(f':Unknown error: {line}. \n{e}')
-    return ret, (satisfactions, busynesses)
+    return ret, (satisfaction, busyness, alertness, wellness)
 
 
 def handle_lines(nars: Reasoner, lines: str):
     ret = []
-    satisfactions = []
-    busynesses = []
+    satisfaction = []
+    busyness = []
+    alertness = []
+    wellness = []
     for line in lines.split('\n'):
         if len(line) == 0:
             continue
 
-        ret_line, (satisfactions_line, busynesses_line) = run_line(nars, line)
+        ret_line, (satisfaction_line, busynesse_line, alertness_line, wellbeing_line) = run_line(nars, line)
         ret.extend(ret_line)
-        satisfactions.extend(satisfactions_line)
-        busynesses.extend(busynesses_line)
-
-    return '\n'.join(ret), (satisfactions, busynesses)
+        satisfaction.extend(satisfaction_line)
+        busyness.extend(busynesse_line)
+        alertness.extend(alertness_line)
+        wellness.extend(wellbeing_line)
+    return '\n'.join(ret), (satisfaction, busyness, alertness, wellness)
 
 
 def run_nars(capacity_mem=1000, capacity_buff=1000):

@@ -216,11 +216,13 @@ class NARSWindow(QMainWindow):
             print(err)
             self.text_output.append(':Error')
         else:
-            text, (satisfactions, busynesses) = out
+            text, (satisfaction, busyness, alertness, wellbeing) = out
             # print(satisfactions)
-            if len(satisfactions) > 0:
-                self.plot_satisfaction.update_values(satisfactions)
-                self.plot_busyness.update_values(busynesses)
+            if len(satisfaction) > 0:
+                self.plot_satisfaction.update_values(satisfaction)
+                self.plot_busyness.update_values(busyness)
+                self.plot_alertness.update_values(alertness)
+                self.plot_wellbeing.update_values(wellbeing)
             if len(text) > 0:
                 self.text_output.append(text)
         # self.text_output.append('\n')
