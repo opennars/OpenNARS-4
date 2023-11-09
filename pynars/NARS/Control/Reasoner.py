@@ -212,6 +212,8 @@ class Reasoner:
         if task is not None and task.is_executable:
             task_operation_return, task_executed = Operation.execute(
                 task, concept, self.memory)
+            
+            # update well-being
             self.global_eval.update_wellbeing(task_executed.truth.e)
 
         return task_operation_return, task_executed, belief_awared
