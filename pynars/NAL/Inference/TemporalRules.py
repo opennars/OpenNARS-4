@@ -54,7 +54,7 @@ def deduction_sequence_eliminate(task: Task, belief: Belief, budget_tasklink: Bu
 
 
     if task.is_judgement:
-        truth = Truth_deduction(premise1.truth, premise2.truth)
+        truth = Truth_deduction(premise1.truth_value, premise2.truth_value)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     elif task.is_goal:
@@ -105,7 +105,7 @@ def deduction_sequence_replace(task: Task, belief: Belief, budget_tasklink: Budg
 
     stamp = Stamp_merge(stamp_task, stamp_belief)
     if task.is_judgement:
-        truth = Truth_deduction(premise1.truth, premise2.truth)
+        truth = Truth_deduction(premise1.truth_value, premise2.truth_value)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     elif task.is_goal:
@@ -161,7 +161,7 @@ def abduction(task: Task, belief: Belief, budget_tasklink: Budget=None, budget_t
     stamp = Stamp_merge(stamp_task, stamp_belief, stat1.copula, reverse_order=True, t_bias=t_bias)
 
     if task.is_judgement:
-        truth = Truth_abduction(premise1.truth, premise2.truth)
+        truth = Truth_abduction(premise1.truth_value, premise2.truth_value)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     elif task.is_goal:
@@ -238,12 +238,12 @@ def analogy(task: Task, belief: Belief, budget_tasklink: Budget=None, budget_ter
             
 
     if task.is_judgement:
-        truth = Truth_analogy(premise1.truth, premise2.truth)
+        truth = Truth_analogy(premise1.truth_value, premise2.truth_value)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     elif task.is_goal:
         Desire_function = Desire_weak if task.term.is_commutative else Desire_strong
-        truth = Desire_function(premise1.truth, premise2.truth)
+        truth = Desire_function(premise1.truth_value, premise2.truth_value)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
         sentence_derived = Goal(statement, stamp, truth)
     elif task.is_question:
@@ -305,7 +305,7 @@ def sequence(task: Task, belief: Belief, budget_tasklink: Budget=None, budget_te
     stamp = Stamp_merge(stamp_task, stamp_belief)
 
     if task.is_judgement:
-        truth = Truth_deduction(premise1.truth, premise2.truth)
+        truth = Truth_deduction(premise1.truth_value, premise2.truth_value)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     elif task.is_goal:
@@ -415,7 +415,7 @@ def sequence_predictive_implication(task: Task, belief: Belief, budget_tasklink:
     stamp = Stamp_merge(stamp_task, stamp_belief)
 
     if task.is_judgement:
-        truth = Truth_deduction(premise1.truth, premise2.truth)
+        truth = Truth_deduction(premise1.truth_value, premise2.truth_value)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     elif task.is_goal:
@@ -441,7 +441,7 @@ def immediate_goal_deriviation(task: Task, belief: Belief, budget_tasklink: Budg
     stamp = copy(premise.stamp)
 
     if task.is_goal:
-        truth = Truth_deduction(premise.truth, truth_analytic)
+        truth = Truth_deduction(premise.truth_value, truth_analytic)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
         sentence_derived = Goal(statement, stamp, truth)
     else: raise "Invalid case."
@@ -496,7 +496,7 @@ def induction_implication(task: Task, belief: Belief, budget_tasklink: Budget=No
         stamp = Stamp_merge(premise1.stamp, premise2.stamp)
 
     if task.is_judgement:
-        truth = Truth_induction(premise1.truth, premise2.truth)
+        truth = Truth_induction(premise1.truth_value, premise2.truth_value)
         budget = Budget_forward(truth, budget_tasklink if budget_tasklink is not None else task.budget, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     else: raise "Invalid case."
@@ -542,7 +542,7 @@ def induction_equivalence(task: Task, belief: Belief, budget_tasklink: Budget=No
         stamp = Stamp_merge(premise1.stamp, premise2.stamp)
 
     if task.is_judgement:
-        truth = Truth_induction(premise1.truth, premise2.truth)
+        truth = Truth_induction(premise1.truth_value, premise2.truth_value)
         budget = Budget_forward(truth, budget_tasklink if budget_tasklink is not None else task.budget, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     else: raise "Invalid case."
@@ -589,7 +589,7 @@ def induction_composition(task: Task, belief: Belief, budget_tasklink: Budget=No
         stamp = Stamp_merge(premise1.stamp, premise2.stamp)
 
     if task.is_judgement:
-        truth = Truth_induction(premise1.truth, premise2.truth)
+        truth = Truth_induction(premise1.truth_value, premise2.truth_value)
         budget = Budget_forward(truth, budget_tasklink if budget_tasklink is not None else task.budget, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     else: raise "Invalid case."
@@ -652,7 +652,7 @@ def induction_predictive_implication_composition(task: Task, belief: Belief, bud
     statement = Statement(subject, copula, predicate)
 
     if task.is_judgement:
-        truth = Truth_induction(premise1.truth, premise2.truth)
+        truth = Truth_induction(premise1.truth_value, premise2.truth_value)
         budget = Budget_forward(truth, budget_tasklink if budget_tasklink is not None else task.budget, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     else: raise "Invalid case."
@@ -712,7 +712,7 @@ def induction_retrospective_implication_composition(task: Task, belief: Belief, 
     statement = Statement(subject, copula, predicate)
 
     if task.is_judgement:
-        truth = Truth_induction(premise1.truth, premise2.truth)
+        truth = Truth_induction(premise1.truth_value, premise2.truth_value)
         budget = Budget_forward(truth, budget_tasklink if budget_tasklink is not None else task.budget, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     else: raise "Invalid case."
@@ -774,7 +774,7 @@ def induction_predictive_equivalance_composition(task: Task, belief: Belief, bud
     statement = Statement(subject, copula, predicate)
 
     if task.is_judgement:
-        truth = Truth_induction(premise1.truth, premise2.truth)
+        truth = Truth_induction(premise1.truth_value, premise2.truth_value)
         budget = Budget_forward(truth, budget_tasklink if budget_tasklink is not None else task.budget, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     else: raise "Invalid case."
@@ -834,7 +834,7 @@ def induction_retrospective_equivalance_composition(task: Task, belief: Belief, 
     statement = Statement(subject, copula, predicate)
 
     if task.is_judgement:
-        truth = Truth_induction(premise1.truth, premise2.truth)
+        truth = Truth_induction(premise1.truth_value, premise2.truth_value)
         budget = Budget_forward(truth, budget_tasklink if budget_tasklink is not None else task.budget, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     else: raise "Invalid case."

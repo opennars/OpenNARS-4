@@ -165,9 +165,9 @@ class InputBufferMC(object):
                 each_compound_term = [each.term for each in each_compound]
                 term = Compound.ParallelEvents(*each_compound_term)
                 # truth, using truth-induction function (TODO, may subject to change)
-                truth = each_compound[0].truth
+                truth = each_compound[0].truth_value
                 for each in each_compound[1:]:
-                    truth = Truth_induction(truth, each.truth)
+                    truth = Truth_induction(truth, each.truth_value)
                 # stamp, using stamp-merge function (TODO, may subject to change)
                 stamp = each_compound[0].stamp
                 for each in each_compound[1:]:
@@ -279,7 +279,7 @@ class InputBufferMC(object):
                     # term generation
                     term = each_prediction.term.predicate
                     # truth, using truth-deduction function (TODO, may subject to change)
-                    truth = Truth_deduction(each_prediction.truth, each_event[1].truth)
+                    truth = Truth_deduction(each_prediction.truth_value, each_event[1].truth_value)
                     # stamp, using stamp-merge function (TODO, may subject to change)
                     stamp = Stamp_merge(each_prediction.stamp, each_event[1].stamp)
                     # budget, using budget-merge function (TODO, may subject to change)
@@ -334,8 +334,8 @@ class InputBufferMC(object):
                     copula = Copula.PredictiveImplication  # =/>
                     term = Statement(subject, copula, predicate)
                     # truth, using truth-induction function (TODO, may subject to change)
-                    truth = Truth_induction(self.slots[i].candidate.truth,
-                                            self.slots[self.present].candidate.truth)
+                    truth = Truth_induction(self.slots[i].candidate.truth_value,
+                                            self.slots[self.present].candidate.truth_value)
                     # stamp, using stamp-merge function (TODO, may subject to change)
                     stamp = Stamp_merge(self.slots[i].candidate.stamp,
                                         self.slots[self.present].candidate.stamp)

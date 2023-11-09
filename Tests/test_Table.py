@@ -17,21 +17,21 @@ class TEST_Table(unittest.TestCase):
 
         line = '<robin-->bird>. %0.5;0.5%'
         task = Narsese.parser.parse(line)
-        table.add(task, task.sentence.truth.e)
+        table.add(task, task.sentence.truth_value.e)
         task1 = task
         
         line = '<robin-->bird>. %0.7;0.7%'
         task = Narsese.parser.parse(line)
-        table.add(task, task.sentence.truth.e)
+        table.add(task, task.sentence.truth_value.e)
 
         line = '<robin-->bird>. %0.9;0.9%'
         task = Narsese.parser.parse(line)
-        table.add(task, task.sentence.truth.e)
+        table.add(task, task.sentence.truth_value.e)
         task2 = task
 
         line = '<robin-->bird>. %0.9;0.9%'
         task = Narsese.parser.parse(line)
-        table.add(task, task.sentence.truth.e)
+        table.add(task, task.sentence.truth_value.e)
 
         self.assertEqual(table.first(), task2)
         self.assertEqual(table.last(), task1)

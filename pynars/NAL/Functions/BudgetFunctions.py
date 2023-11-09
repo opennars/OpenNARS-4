@@ -158,7 +158,7 @@ def Budget_evaluate_goal_solution(problem: Goal, solution: Judgment, budget_prob
     budget = Budget(
         Or(budget_problem.priority, quality), 
         budget_problem.durability, 
-        truth_to_quality(solution.truth)
+        truth_to_quality(solution.truth_value)
     )
 
     budget_problem.priority = min(1-quality, budget_problem.quality)

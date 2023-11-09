@@ -17,12 +17,12 @@ class TEST_Parser(unittest.TestCase):
     def test_truthvalue(self):
         line = '<robin-->bird>. %1.0; 0.9%'
         content: Judgment = Narsese.parser.parse(line).sentence
-        self.assertEqual(content.truth.f, 1.0)
-        self.assertEqual(content.truth.c, 0.9)
+        self.assertEqual(content.truth_value.f, 1.0)
+        self.assertEqual(content.truth_value.c, 0.9)
         line = '<robin-->bird>. %0.5; 0.4%'
         content = Narsese.parser.parse(line).sentence
-        self.assertEqual(content.truth.f, 0.5)
-        self.assertEqual(content.truth.c, 0.4)
+        self.assertEqual(content.truth_value.f, 0.5)
+        self.assertEqual(content.truth_value.c, 0.4)
 
     def test_first_order_copula_1(self):
         line = '<robin-->bird>.'

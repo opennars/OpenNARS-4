@@ -27,7 +27,7 @@ def intersection_extension(task: Task, belief: Belief, budget_tasklink: Budget=N
     statement = Statement(stat1.subject, Copula.Inheritance, compound)
 
     if task.is_judgement:
-        truth = Truth_intersection(premise1.truth, premise2.truth)
+        truth = Truth_intersection(premise1.truth_value, premise2.truth_value)
         budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     else: raise "Invalid case."
@@ -54,7 +54,7 @@ def union_extension(task: Task, belief: Belief, budget_tasklink: Budget=None, bu
     statement = Statement(stat1.subject, Copula.Inheritance, compound)
 
     if task.is_judgement:
-        truth = Truth_union(premise1.truth, premise2.truth)
+        truth = Truth_union(premise1.truth_value, premise2.truth_value)
         budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     else: raise "Invalid case."
@@ -81,7 +81,7 @@ def difference_extension(task: Task, belief: Belief, budget_tasklink: Budget=Non
     statement = Statement(stat1.subject, Copula.Inheritance, compound)
 
     if task.is_judgement:
-        truth = Truth_difference(premise1.truth, premise2.truth)
+        truth = Truth_difference(premise1.truth_value, premise2.truth_value)
         budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     else: raise "Invalid case."
@@ -119,7 +119,7 @@ def intersection_intension(task: Task, belief: Belief, budget_tasklink: Budget=N
     statement = Statement(compound, Copula.Inheritance, stat1.predicate)
 
     if task.is_judgement:
-        truth = Truth_intersection(premise1.truth, premise2.truth)
+        truth = Truth_intersection(premise1.truth_value, premise2.truth_value)
         budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     else: raise "Invalid case."
@@ -146,7 +146,7 @@ def union_intension(task: Task, belief: Belief, budget_tasklink: Budget=None, bu
     statement = Statement(compound, Copula.Inheritance, stat1.predicate)
 
     if task.is_judgement:
-        truth = Truth_union(premise1.truth, premise2.truth)
+        truth = Truth_union(premise1.truth_value, premise2.truth_value)
         budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     else: raise "Invalid case."
@@ -173,7 +173,7 @@ def difference_intension(task: Task, belief: Belief, budget_tasklink: Budget=Non
     statement = Statement(compound, Copula.Inheritance, stat1.predicate)
 
     if task.is_judgement:
-        truth = Truth_difference(premise1.truth, premise2.truth)
+        truth = Truth_difference(premise1.truth_value, premise2.truth_value)
         budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     else: raise "Invalid case."
@@ -212,7 +212,7 @@ def conjunction_extension(task: Task, belief: Belief, budget_tasklink: Budget=No
     statement = Statement(stat1.subject, Copula.Implication, compound)
 
     if task.is_judgement:
-        truth = Truth_intersection(premise1.truth, premise2.truth)
+        truth = Truth_intersection(premise1.truth_value, premise2.truth_value)
         budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     else: raise "Invalid case."
@@ -239,7 +239,7 @@ def disjunction_extension(task: Task, belief: Belief, budget_tasklink: Budget=No
     statement = Statement(stat1.subject, Copula.Implication, compound)
 
     if task.is_judgement:
-        truth = Truth_union(premise1.truth, premise2.truth)
+        truth = Truth_union(premise1.truth_value, premise2.truth_value)
         budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     else: raise "Invalid case."
@@ -267,7 +267,7 @@ def disjunction_intension(task: Task, belief: Belief, budget_tasklink: Budget=No
     statement = Statement(compound, Copula.Implication, stat1.predicate)
 
     if task.is_judgement:
-        truth = Truth_intersection(premise1.truth, premise2.truth)
+        truth = Truth_intersection(premise1.truth_value, premise2.truth_value)
         budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     else: raise "Invalid case."
@@ -294,7 +294,7 @@ def conjunction_intension(task: Task, belief: Belief, budget_tasklink: Budget=No
     statement = Statement(compound, Copula.Implication, stat1.predicate)
 
     if task.is_judgement:
-        truth = Truth_union(premise1.truth, premise2.truth)
+        truth = Truth_union(premise1.truth_value, premise2.truth_value)
         budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     else: raise "Invalid case."
@@ -321,7 +321,7 @@ def conjunstion_composition(task: Task, belief: Belief, budget_tasklink: Budget=
     statement = Compound.Conjunction(stat1.subject, stat2.subject)
 
     if task.is_judgement:
-        truth = Truth_intersection(premise1.truth, premise2.truth)
+        truth = Truth_intersection(premise1.truth_value, premise2.truth_value)
         budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     else: raise "Invalid case."
@@ -347,7 +347,7 @@ def disjunction_composition(task: Task, belief: Belief, budget_tasklink: Budget=
     statement = Compound.Disjunction(stat1, stat2)
 
     if task.is_judgement:
-        truth = Truth_union(premise1.truth, premise2.truth)
+        truth = Truth_union(premise1.truth_value, premise2.truth_value)
         budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     else: raise "Invalid case."

@@ -48,7 +48,7 @@ def project_truth(premise1: Union[Judgment, Goal, Question, Quest], premise2: Un
 
     The two methods seem different. I adopt the second one.
     '''
-    truth = premise2.truth
+    truth = premise2.truth_value
     if not premise2.is_eternal:
         if not premise1.is_eternal:
             t_target = premise1.stamp.t_occurrence
@@ -103,7 +103,7 @@ def calculate_solution_quality(s_in: Sentence, s_solution: Sentence, rate_by_con
     ):
         return 0.0
     
-    truth = s_solution.truth
+    truth = s_solution.truth_value
 
     t_occur_in = s_in.stamp.t_occurrence
     t_occur_solution = s_solution.stamp.t_occurrence

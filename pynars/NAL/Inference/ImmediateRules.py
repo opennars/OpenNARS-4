@@ -21,11 +21,11 @@ def negation(task: Task, term_concept: Term, budget_tasklink: Budget=None, budge
 
     stamp = stamp_task
     if premise.is_judgement:
-        truth = Truth_negation(premise.truth)
+        truth = Truth_negation(premise.truth_value)
         sentence_derived = Judgment(term_neg, stamp, truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
     elif premise.is_goal:
-        truth = Truth_negation(premise.truth)
+        truth = Truth_negation(premise.truth_value)
         sentence_derived = Goal(term_neg, stamp, truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
     elif premise.is_question:
@@ -54,7 +54,7 @@ def conversion(task: Task, term_concept: Term, budget_tasklink: Budget=None, bud
 
     stamp = stamp_task
     if premise.is_judgement:
-        truth = Truth_conversion(premise.truth)
+        truth = Truth_conversion(premise.truth_value)
         sentence_derived = Judgment(statement, stamp, truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
     # elif premise.is_goal:
@@ -86,11 +86,11 @@ def contraposition(task: Task, term_concept: Term, budget_tasklink: Budget=None,
 
     stamp = stamp_task
     if premise.is_judgement:
-        truth = Truth_contraposition(premise.truth)
+        truth = Truth_contraposition(premise.truth_value)
         sentence_derived = Judgment(statement, stamp, truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
     elif premise.is_goal:
-        truth = Truth_negation(premise.truth)
+        truth = Truth_negation(premise.truth_value)
         sentence_derived = Goal(term_concept, stamp, truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
     elif premise.is_question or premise.is_quest:

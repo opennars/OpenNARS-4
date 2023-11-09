@@ -145,7 +145,7 @@ class RuleMap:
         rules = []
 
         term_task: Statement = task.term
-        truth_task = task.sentence.truth
+        truth_task = task.sentence.truth_value
         copula_task = term_task.copula
         copula_belief = term_belief.copula
         connector_task_subject = term_task.subject.copula if term_task.type == TermType.STATEMENT and term_task.subject.type == TermType.COMPOUND else None
@@ -214,7 +214,7 @@ class RuleMap:
         rules = []
 
         term_task: Statement = task.term
-        truth_task = task.sentence.truth
+        truth_task = task.sentence.truth_value
         copula_task = term_task.copula
         copula_belief = term_belief.copula
 
@@ -421,7 +421,7 @@ class RuleMap:
         Given a task and a belief, find the matched rules for one step inference.
         ''' 
         rule_map: RuleMapCallable = self.type_map[task_link.type.value, term_link.type.value]
-        rules = rule_map(task, belief.term, belief.truth, task_link, term_link)
+        rules = rule_map(task, belief.term, belief.truth_value, task_link, term_link)
         return rules
     
 

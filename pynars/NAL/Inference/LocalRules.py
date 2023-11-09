@@ -24,8 +24,8 @@ def revision(task: Task, belief: Task, budget_tasklink: Budget=None, budget_term
     '''
     premise1: Union[Judgment, Goal] = task.sentence
     premise2: Union[Judgment, Goal] = belief.sentence
-    truth1 = premise1.truth
-    truth2 = premise2.truth
+    truth1 = premise1.truth_value
+    truth2 = premise2.truth_value
     if Enable.temporal_reasoning:
         # boolean useNewBeliefTerm = intervalProjection(nal, newBelief.getTerm(), oldBelief.getTerm(), beliefConcept.recent_intervals, newTruth);
         raise 
@@ -57,8 +57,8 @@ def solution_question(task: Task, belief: Belief, budget_tasklink: Budget=None, 
     if answer is not None and question.best_answer is answer:
         quality = calculate_solution_quality(question, answer, question.term.has_qvar)
         # reward the belief
-        budget_answer = Budget(Or(task.budget.priority, quality), task.budget.durability, truth_to_quality(answer.truth))
-        belief = Belief(Judgment(answer.term, answer.stamp, answer.truth), budget_answer)
+        budget_answer = Budget(Or(task.budget.priority, quality), task.budget.durability, truth_to_quality(answer.truth_value))
+        belief = Belief(Judgment(answer.term, answer.stamp, answer.truth_value), budget_answer)
 
         # de-prioritize the question
         task.budget.priority = min(1-quality, task.budget.priority) # BUG: here, after setting the priority, the level of the task should change within a Bag.
@@ -81,8 +81,8 @@ def solution_goal(task: Task, belief: Belief, budget_tasklink: Budget=None, budg
     if answer is not None and question.best_answer is answer:
         quality = calculate_solution_quality(question, answer, question.term.has_qvar)
         # reward the belief
-        budget_answer = Budget(Or(task.budget.priority, quality), task.budget.durability, truth_to_quality(answer.truth))
-        belief = Belief(Judgment(answer.term, answer.stamp, answer.truth), budget_answer)
+        budget_answer = Budget(Or(task.budget.priority, quality), task.budget.durability, truth_to_quality(answer.truth_value))
+        belief = Belief(Judgment(answer.term, answer.stamp, answer.truth_value), budget_answer)
 
         # de-prioritize the question
         task.budget.priority = min(1-quality, task.budget.priority) # BUG: here, after setting the priority, the level of the task should change within a Bag.
