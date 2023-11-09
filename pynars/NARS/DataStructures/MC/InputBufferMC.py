@@ -11,7 +11,7 @@ from pynars.NAL.Functions import Stamp_merge, Budget_merge, Truth_induction, Tru
 from pynars.NARS.DataStructures import Memory
 from pynars.NARS.DataStructures.MC.AnticipationMC import AnticipationMC
 from pynars.NARS.DataStructures.MC.SlotMC import SlotMC
-from pynars.Narsese import Compound, Task, Judgement, Interval, Statement, Copula
+from pynars.Narsese import Compound, Task, Judgment, Interval, Statement, Copula
 
 
 # the priority value of predictions (predictive implications)
@@ -177,7 +177,7 @@ class InputBufferMC(object):
                 for each in each_compound[1:]:
                     budget = Budget_merge(budget, each.budget)
                 # sentence composition
-                sentence = Judgement(term, stamp, truth)
+                sentence = Judgment(term, stamp, truth)
                 # task generation
                 task = Task(sentence, budget)
                 self.slots[self.present].update_events(task)
@@ -254,7 +254,7 @@ class InputBufferMC(object):
                             # budget, using budget-merge function (TODO, may subject to change)
                             budget = Budget_merge(budget, each.budget)
                     # sentence composition
-                    sentence = Judgement(term, stamp, truth)
+                    sentence = Judgment(term, stamp, truth)
                     # task generation
                     task = Task(sentence, budget)
                     self.slots[self.present].update_events(task)
@@ -285,7 +285,7 @@ class InputBufferMC(object):
                     # budget, using budget-merge function (TODO, may subject to change)
                     budget = Budget_merge(each_prediction.budget, each_event[1].budget)
                     # sentence composition
-                    sentence = Judgement(term, stamp, truth)
+                    sentence = Judgment(term, stamp, truth)
                     # task generation
                     task = Task(sentence, budget)
                     # anticipation generation
@@ -343,7 +343,7 @@ class InputBufferMC(object):
                     budget = Budget_merge(self.slots[i].candidate.budget,
                                           self.slots[self.present].candidate.budget)
                     # sentence composition
-                    sentence = Judgement(term, stamp, truth)
+                    sentence = Judgment(term, stamp, truth)
                     # task generation
                     prediction = Task(sentence, budget)
                     self.update_prediction(prediction)

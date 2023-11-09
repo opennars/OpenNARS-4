@@ -2,7 +2,7 @@ from pynars.Narsese import Budget
 import unittest
 
 from pynars.NARS.DataStructures import Bag, Task
-from pynars.Narsese import Judgement, Term, Statement, Copula, Truth   
+from pynars.Narsese import Judgment, Term, Statement, Copula, Truth
 import Narsese
 from pynars.NARS.DataStructures import Concept
 from pynars.Narsese import Copula

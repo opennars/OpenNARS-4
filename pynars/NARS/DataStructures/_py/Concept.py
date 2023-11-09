@@ -1,7 +1,7 @@
 from typing import Tuple, Type, List, Union
 from pynars.NAL.Functions.Tools import calculate_solution_quality, distribute_budget_among_links
 from pynars.NAL.Functions.BudgetFunctions import Budget_merge
-from pynars.Narsese import Belief, Task, Item, Budget, Sentence, Term, Task, Judgement, Goal
+from pynars.Narsese import Belief, Task, Item, Budget, Sentence, Term, Task, Judgment, Goal
 from pynars.Narsese._py.Sentence import Quest, Question
 # from .Link import Link, TermLink, TaskLink, LinkType
 from .Link import *
@@ -87,7 +87,7 @@ class Concept(Item):
     #     else:
     #         raise "Invalid type." # TODO: What about question and quest?
 
-    def match_belief(self, sentence: Union[Judgement, Question, Goal]) -> Belief:
+    def match_belief(self, sentence: Union[Judgment, Question, Goal]) -> Belief:
         '''
         Select a belief with highest quality, within the belief_table, according to the task
         '''
@@ -97,11 +97,11 @@ class Concept(Item):
         _, item_max = max(qualities, key=lambda quality: quality[0])
         return item_max
         
-    def add_belief(self, task: Task) -> Union[Judgement, None]:
+    def add_belief(self, task: Task) -> Union[Judgment, None]:
         ''''''
         self.belief_table.add(task, task.truth.c)
     
-    def get_desire(self, task: Task) -> Union[Judgement, None]:
+    def get_desire(self, task: Task) -> Union[Judgment, None]:
         ''''''
         self.desire_table.first(task, task.truth.c)
 

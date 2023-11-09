@@ -2,7 +2,7 @@
 In this file, some more generalized functions of transform are implemented, though with a little differences in terms of parameters.
 '''
 from typing import List
-from pynars.Narsese import Copula, Statement, Compound, Connector, Term, Judgement, Truth, Task, Belief, Budget, Stamp, Goal, Quest, Question
+from pynars.Narsese import Copula, Statement, Compound, Connector, Term, Judgment, Truth, Task, Belief, Budget, Stamp, Goal, Quest, Question
 from pynars.Narsese import place_holder
 from pynars.Narsese._py.Sentence import Sentence
 
@@ -37,7 +37,7 @@ def product_to_image(task: Task, term_concept: Term, budget_tasklink: Budget=Non
 
     if task.is_judgement:
         truth = task.truth
-        sentence_derived = Judgement(stat_image, stamp, truth)
+        sentence_derived = Judgment(stat_image, stamp, truth)
     elif task.is_goal:
         truth = task.truth
         sentence_derived = Goal(stat_image, stamp, truth)
@@ -77,7 +77,7 @@ def image_to_product(task: Task, term_concept: Term, budget_tasklink: Budget=Non
 
     if task.is_judgement:
         truth = task.truth
-        sentence_derived = Judgement(stat_image, stamp, truth)
+        sentence_derived = Judgment(stat_image, stamp, truth)
     elif task.is_goal:
         truth = task.truth
         sentence_derived = Goal(stat_image, stamp, truth)
@@ -113,7 +113,7 @@ def image_to_image(task: Task, term_concept: Term, budget_tasklink: Budget=None,
 
     if task.is_judgement:
         truth = task.truth
-        sentence_derived = Judgement(stat_image, stamp, truth)
+        sentence_derived = Judgment(stat_image, stamp, truth)
     elif task.is_goal:
         truth = task.truth
         sentence_derived = Goal(stat_image, stamp, truth)

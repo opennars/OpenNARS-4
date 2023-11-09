@@ -2,7 +2,7 @@ from pynars.Narsese import Budget
 import unittest
 
 from pynars.NARS.DataStructures import Bag, Task, Concept
-from pynars.Narsese import Judgement, Term, Statement, Copula, Truth   
+from pynars.Narsese import Judgment, Term, Statement, Copula, Truth
 
 import matplotlib.pyplot as plt
 
@@ -13,7 +13,7 @@ class TEST_Bag(unittest.TestCase):
     def test_bag_put_task(self):
         ''''''
         bag = Bag(1000, 100)
-        task = Task(Judgement(Statement(Term('robin'), Copula.Inheritance, Term('bird'))))
+        task = Task(Judgment(Statement(Term('robin'), Copula.Inheritance, Term('bird'))))
         self.assertEqual(len(bag), bag.count())
         self.assertEqual(len(bag), 0)
         bag.put(task)
@@ -24,14 +24,14 @@ class TEST_Bag(unittest.TestCase):
 
     def test_bag_put_task_merge(self):
         bag = Bag(1000, 100)
-        task = Task(Judgement(Statement(Term('robin'), Copula.Inheritance, Term('bird'))), Budget(0.5, 0.5, 0.5))
+        task = Task(Judgment(Statement(Term('robin'), Copula.Inheritance, Term('bird'))), Budget(0.5, 0.5, 0.5))
         self.assertEqual(len(bag), bag.count())
         self.assertEqual(len(bag), 0)
         bag.put(task)
         self.assertIn(task, bag)
         self.assertEqual(len(bag), bag.count())
         self.assertEqual(len(bag), 1)
-        task = Task(Judgement(Statement(Term('robin'), Copula.Inheritance, Term('bird'))), Budget(1.0, 1.0, 1.0))
+        task = Task(Judgment(Statement(Term('robin'), Copula.Inheritance, Term('bird'))), Budget(1.0, 1.0, 1.0))
         bag.put(task)
         self.assertIn(task, bag)
         self.assertEqual(len(bag), bag.count())
@@ -40,7 +40,7 @@ class TEST_Bag(unittest.TestCase):
         self.assertEqual(task.budget.priority, 1.0)
         self.assertEqual(task.budget.durability, 1.0)
         self.assertEqual(task.budget.quality, 1.0)
-        task = Task(Judgement(Statement(Term('robin'), Copula.Inheritance, Term('bird'))), Budget(0.9, 0.9, 0.9))        
+        task = Task(Judgment(Statement(Term('robin'), Copula.Inheritance, Term('bird'))), Budget(0.9, 0.9, 0.9))
         # bag.put(task, merge=False)
         # self.assertIn(task, bag)
         # self.assertEqual(len(bag), bag.count())
@@ -53,8 +53,8 @@ class TEST_Bag(unittest.TestCase):
     def test_bag_take_task_by_key(self):
         ''''''
         bag = Bag(1000, 100)
-        task1 = Task(Judgement(Statement(Term('robin'), Copula.Inheritance, Term('bird'))))
-        task2 = Task(Judgement(Statement(Term('bird'), Copula.Inheritance, Term('animal'))))
+        task1 = Task(Judgment(Statement(Term('robin'), Copula.Inheritance, Term('bird'))))
+        task2 = Task(Judgment(Statement(Term('bird'), Copula.Inheritance, Term('animal'))))
         self.assertEqual(len(bag), bag.count())
         bag.put(task1)
         self.assertEqual(len(bag), bag.count())
@@ -75,8 +75,8 @@ class TEST_Bag(unittest.TestCase):
     def test_bag_take_task(self):
         '''take a task using the priority'''
         bag = Bag(1000, 100)
-        task1 = Task(Judgement(Statement(Term('robin'), Copula.Inheritance, Term('bird'))), Budget(0.9, 0.5, 0.5))
-        task2 = Task(Judgement(Statement(Term('bird'), Copula.Inheritance, Term('animal'))), Budget(0.5, 0.6, 0.6))
+        task1 = Task(Judgment(Statement(Term('robin'), Copula.Inheritance, Term('bird'))), Budget(0.9, 0.5, 0.5))
+        task2 = Task(Judgment(Statement(Term('bird'), Copula.Inheritance, Term('animal'))), Budget(0.5, 0.6, 0.6))
         bag.put(task1)
         bag.put(task2)
         self.assertEqual(len(bag), bag.count())
@@ -97,7 +97,7 @@ class TEST_Bag(unittest.TestCase):
         self.assertEqual(len(bag), 0)
         for i in range(0, 100):
             p = i/100
-            task = Task(Judgement(Statement(Term(f'robin_{i}'), Copula.Inheritance, Term('bird'))), Budget(p, 0.5, 0.5))
+            task = Task(Judgment(Statement(Term(f'robin_{i}'), Copula.Inheritance, Term('bird'))), Budget(p, 0.5, 0.5))
             bag.put(task)
         
         self.assertEqual(len(bag), 100)

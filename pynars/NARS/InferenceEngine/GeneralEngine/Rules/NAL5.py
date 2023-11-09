@@ -325,120 +325,120 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
     '''
 
     add_rule(sparse_lut, structure,
-        Interface_CompositionalRules._compositional__conjunction_extension__0_0, 
-        LinkType1 = [
-            LinkType.COMPOUND_CONDITION,
-            LinkType.COMPOUND_STATEMENT
-        ], 
-        LinkType2 = [
+             Interface_CompositionalRules._compositional__conjunction_extension__0_0,
+             LinkType1 = [
             LinkType.COMPOUND_CONDITION,
             LinkType.COMPOUND_STATEMENT
         ],
-        has_common_id = True,
-        Copula1 = Copula.Implication,
-        Copula2 = Copula.Implication,
-        match_reverse = False,
-        common_id = CommonId(0, 0),
-        sentence_type = class_sentence_to_list(Judgement),
-        is_belief_valid = True,
-    )
+             LinkType2 = [
+            LinkType.COMPOUND_CONDITION,
+            LinkType.COMPOUND_STATEMENT
+        ],
+             has_common_id = True,
+             Copula1 = Copula.Implication,
+             Copula2 = Copula.Implication,
+             match_reverse = False,
+             common_id = CommonId(0, 0),
+             sentence_type = class_sentence_to_list(Judgment),
+             is_belief_valid = True,
+             )
 
     add_rule(sparse_lut, structure,
-        Interface_CompositionalRules._compositional__conjunction_intension__1_1, 
-        LinkType1 = [
-            LinkType.COMPOUND_CONDITION,
-            LinkType.COMPOUND_STATEMENT
-        ], 
-        LinkType2 = [
+             Interface_CompositionalRules._compositional__conjunction_intension__1_1,
+             LinkType1 = [
             LinkType.COMPOUND_CONDITION,
             LinkType.COMPOUND_STATEMENT
         ],
-        has_common_id = True,
-        Copula1 = Copula.Implication,
-        Copula2 = Copula.Implication,
-        match_reverse = False,
-        common_id = CommonId(1, 1),
-        sentence_type = class_sentence_to_list(Judgement),
-        is_belief_valid = True,
-    )
+             LinkType2 = [
+            LinkType.COMPOUND_CONDITION,
+            LinkType.COMPOUND_STATEMENT
+        ],
+             has_common_id = True,
+             Copula1 = Copula.Implication,
+             Copula2 = Copula.Implication,
+             match_reverse = False,
+             common_id = CommonId(1, 1),
+             sentence_type = class_sentence_to_list(Judgment),
+             is_belief_valid = True,
+             )
 
     add_rule(sparse_lut, structure,
-        Interface_CompositionalRules._compositional__disjunction_extension__0_0, 
-        LinkType1 = [
-            LinkType.COMPOUND_CONDITION,
-            LinkType.COMPOUND_STATEMENT
-        ], 
-        LinkType2 = [
+             Interface_CompositionalRules._compositional__disjunction_extension__0_0,
+             LinkType1 = [
             LinkType.COMPOUND_CONDITION,
             LinkType.COMPOUND_STATEMENT
         ],
-        has_common_id = True,
-        Copula1 = Copula.Implication,
-        Copula2 = Copula.Implication,
-        match_reverse = False,
-        common_id = CommonId(0, 0),
-        sentence_type = class_sentence_to_list(Judgement),
-        is_belief_valid = True,
-    )
+             LinkType2 = [
+            LinkType.COMPOUND_CONDITION,
+            LinkType.COMPOUND_STATEMENT
+        ],
+             has_common_id = True,
+             Copula1 = Copula.Implication,
+             Copula2 = Copula.Implication,
+             match_reverse = False,
+             common_id = CommonId(0, 0),
+             sentence_type = class_sentence_to_list(Judgment),
+             is_belief_valid = True,
+             )
 
     add_rule(sparse_lut, structure,
-        Interface_CompositionalRules._compositional__disjunction_intension__1_1, 
-        LinkType1 = [
-            LinkType.COMPOUND_CONDITION,
-            LinkType.COMPOUND_STATEMENT
-        ], 
-        LinkType2 = [
+             Interface_CompositionalRules._compositional__disjunction_intension__1_1,
+             LinkType1 = [
             LinkType.COMPOUND_CONDITION,
             LinkType.COMPOUND_STATEMENT
         ],
-        has_common_id = True,
-        Copula1 = Copula.Implication,
-        Copula2 = Copula.Implication,
-        match_reverse = False,
-        common_id = CommonId(1, 1),
-        sentence_type = class_sentence_to_list(Judgement),
-        is_belief_valid = True,
-    )
+             LinkType2 = [
+            LinkType.COMPOUND_CONDITION,
+            LinkType.COMPOUND_STATEMENT
+        ],
+             has_common_id = True,
+             Copula1 = Copula.Implication,
+             Copula2 = Copula.Implication,
+             match_reverse = False,
+             common_id = CommonId(1, 1),
+             sentence_type = class_sentence_to_list(Judgment),
+             is_belief_valid = True,
+             )
 
     '''
     Decompositional Rules
     '''
     '''conjunction'''
     add_rule(sparse_lut, structure,
-        Interface_DecompositionalRules._decompositional__decomposition_theorem2__0_0, 
-        LinkType1 = [LinkType.COMPOUND_STATEMENT, LinkType.COMPOUND_CONDITION], 
-        LinkType2 = [LinkType.COMPOUND_STATEMENT, LinkType.COMPOUND_CONDITION], 
-        has_common_id = True,
-        Copula1 = Copula.Implication,
-        Copula2 = Copula.Implication,
-        match_reverse = False,
-        common_id = CommonId(0, 0),
-        sentence_type = class_sentence_to_list(Judgement),
-        the_other_compound_has_common = True,
-        the_other_compound_p1_at_p2 = False,
-        the_other_compound_p2_at_p1 = True,
-        Connector1 = Connector.Conjunction,
-        Connector2 = Any,
-        is_belief_valid = True,
-    )
+             Interface_DecompositionalRules._decompositional__decomposition_theorem2__0_0,
+             LinkType1 = [LinkType.COMPOUND_STATEMENT, LinkType.COMPOUND_CONDITION],
+             LinkType2 = [LinkType.COMPOUND_STATEMENT, LinkType.COMPOUND_CONDITION],
+             has_common_id = True,
+             Copula1 = Copula.Implication,
+             Copula2 = Copula.Implication,
+             match_reverse = False,
+             common_id = CommonId(0, 0),
+             sentence_type = class_sentence_to_list(Judgment),
+             the_other_compound_has_common = True,
+             the_other_compound_p1_at_p2 = False,
+             the_other_compound_p2_at_p1 = True,
+             Connector1 = Connector.Conjunction,
+             Connector2 = Any,
+             is_belief_valid = True,
+             )
 
     add_rule(sparse_lut, structure,
-        Interface_DecompositionalRules._decompositional__decomposition_theorem2__0_0_prime, 
-        LinkType1 = [LinkType.COMPOUND_STATEMENT, LinkType.COMPOUND_CONDITION], 
-        LinkType2 = [LinkType.COMPOUND_STATEMENT, LinkType.COMPOUND_CONDITION],  
-        has_common_id = True,
-        Copula1 = Copula.Implication,
-        Copula2 = Copula.Implication,
-        match_reverse = False,
-        common_id = CommonId(0, 0),
-        sentence_type = class_sentence_to_list(Judgement),
-        the_other_compound_has_common = True,
-        the_other_compound_p1_at_p2 = True,
-        the_other_compound_p2_at_p1 = False,
-        Connector1 = Any,
-        Connector2 = Connector.Conjunction,
-        is_belief_valid = True,
-    )
+             Interface_DecompositionalRules._decompositional__decomposition_theorem2__0_0_prime,
+             LinkType1 = [LinkType.COMPOUND_STATEMENT, LinkType.COMPOUND_CONDITION],
+             LinkType2 = [LinkType.COMPOUND_STATEMENT, LinkType.COMPOUND_CONDITION],
+             has_common_id = True,
+             Copula1 = Copula.Implication,
+             Copula2 = Copula.Implication,
+             match_reverse = False,
+             common_id = CommonId(0, 0),
+             sentence_type = class_sentence_to_list(Judgment),
+             the_other_compound_has_common = True,
+             the_other_compound_p1_at_p2 = True,
+             the_other_compound_p2_at_p1 = False,
+             Connector1 = Any,
+             Connector2 = Connector.Conjunction,
+             is_belief_valid = True,
+             )
     
 
     
@@ -824,7 +824,7 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         Connector1 = Connector.Disjunction,
         p2_at_p1 = True,
         is_belief_valid = True,
-        sentence_type = class_sentence_to_list(Judgement)
+        sentence_type = class_sentence_to_list(Judgment)
     )
 
     add_rule(sparse_lut, structure,
@@ -834,7 +834,7 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         Connector1 = Connector.Disjunction,
         p2_at_p1 = True,
         is_belief_valid = True,
-        sentence_type = class_sentence_to_list(Judgement)
+        sentence_type = class_sentence_to_list(Judgment)
     )
 
     add_rule(sparse_lut, structure,
@@ -844,7 +844,7 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         Connector2 = Connector.Disjunction,
         p1_at_p2 = True,
         is_belief_valid = True,
-        sentence_type = class_sentence_to_list(Judgement)
+        sentence_type = class_sentence_to_list(Judgment)
     )
 
     add_rule(sparse_lut, structure,
@@ -854,7 +854,7 @@ def add_rules__NAL5(sparse_lut: SparseLUT, structure: OrderedDict):
         Connector2 = Connector.Disjunction,
         p1_at_p2 = True,
         is_belief_valid = True,
-        sentence_type = class_sentence_to_list(Judgement)
+        sentence_type = class_sentence_to_list(Judgment)
     )
 
 

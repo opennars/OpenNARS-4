@@ -1,4 +1,4 @@
-from pynars.Narsese import Term, Judgement, Tense, Statement, Copula, Truth, Stamp, Interval
+from pynars.Narsese import Term, Judgment, Tense, Statement, Copula, Truth, Stamp, Interval
 from pynars.Narsese import Base, Operator, Budget, Task, Goal, Punctuation, Question, Quest, Sentence, VarPrefix, Variable, Connector, Compound, SELF
 from pathlib import Path
 from datetime import datetime
@@ -60,7 +60,7 @@ class TreeToNarsese(Transformer):
         priority, durability, quality = budget or (None, None, None)
         if budget is None or durability is None or quality is None:
             if sentence.punct ==  Punctuation.Judgement: # judgement
-                judgement: Judgement = sentence
+                judgement: Judgment = sentence
                 p = priority or self.p_judgement
                 d = durability or self.d_judgement
                 q = quality or Budget.quality_from_truth(judgement.truth)
@@ -103,7 +103,7 @@ class TreeToNarsese(Transformer):
         base = Base((Global.get_input_id(),))
         kwargs['truth'] = Truth(f,c,k)
         kwargs['stamp'] =  Stamp(Global.time, tense, None, base)
-        return ('sentence', Judgement(statement, **kwargs))
+        return ('sentence', Judgment(statement, **kwargs))
 
     @inline_args
     def question(self, statement: 'Term|Statement|Compound', *args):

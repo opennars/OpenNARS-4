@@ -42,117 +42,117 @@ def add_rules__NAL4(sparse_lut: SparseLUT, structure: OrderedDict):
     '''bi-composition'''
 
     add_rule(sparse_lut, structure,
-        Interface_CompositionalRules._structural__bi_composition__0,
-        LinkType1 = LinkType.COMPOUND_STATEMENT, 
-        LinkType2 = LinkType.COMPOUND, 
-        has_common_id = True,
-        Copula1 = Copula.Inheritance,
-        Copula2 = None,
-        match_reverse = False,
-        sentence_type = class_sentence_to_list(Judgement),
-        Connector1 = None,
-        Connector2 = Connector.Product,
-        has_compound_common_id = True,
-        compound_common_id = CommonId(0),
-        is_belief_valid = False,
-        # at_compound_pos = 0
-    )
+             Interface_CompositionalRules._structural__bi_composition__0,
+             LinkType1 = LinkType.COMPOUND_STATEMENT,
+             LinkType2 = LinkType.COMPOUND,
+             has_common_id = True,
+             Copula1 = Copula.Inheritance,
+             Copula2 = None,
+             match_reverse = False,
+             sentence_type = class_sentence_to_list(Judgment),
+             Connector1 = None,
+             Connector2 = Connector.Product,
+             has_compound_common_id = True,
+             compound_common_id = CommonId(0),
+             is_belief_valid = False,
+             # at_compound_pos = 0
+             )
 
     add_rule(sparse_lut, structure,
-        Interface_CompositionalRules._structural__bi_composition__1,
-        LinkType1 = LinkType.COMPOUND_STATEMENT, 
-        LinkType2 = LinkType.COMPOUND, 
-        has_common_id = True,
-        Copula1 = Copula.Inheritance,
-        Copula2 = None,
-        match_reverse = False,
-        sentence_type = class_sentence_to_list(Judgement),
-        Connector1 = None,
-        Connector2 = Connector.Product,
-        has_compound_common_id = True,
-        compound_common_id = CommonId(1),
-        is_belief_valid = False,
-        # at_compound_pos = 0
-    )
+             Interface_CompositionalRules._structural__bi_composition__1,
+             LinkType1 = LinkType.COMPOUND_STATEMENT,
+             LinkType2 = LinkType.COMPOUND,
+             has_common_id = True,
+             Copula1 = Copula.Inheritance,
+             Copula2 = None,
+             match_reverse = False,
+             sentence_type = class_sentence_to_list(Judgment),
+             Connector1 = None,
+             Connector2 = Connector.Product,
+             has_compound_common_id = True,
+             compound_common_id = CommonId(1),
+             is_belief_valid = False,
+             # at_compound_pos = 0
+             )
 
     add_rule(sparse_lut, structure,
-        Interface_CompositionalRules._structural__bi_composition__0,
-        LinkType1 = LinkType.COMPOUND_STATEMENT, 
-        LinkType2 = LinkType.COMPOUND, 
-        has_common_id = True,
-        Copula1 = Copula.Inheritance,
-        Copula2 = None,
-        match_reverse = False,
-        sentence_type = class_sentence_to_list(Judgement),
-        Connector1 = None,
-        Connector2 = [
+             Interface_CompositionalRules._structural__bi_composition__0,
+             LinkType1 = LinkType.COMPOUND_STATEMENT,
+             LinkType2 = LinkType.COMPOUND,
+             has_common_id = True,
+             Copula1 = Copula.Inheritance,
+             Copula2 = None,
+             match_reverse = False,
+             sentence_type = class_sentence_to_list(Judgment),
+             Connector1 = None,
+             Connector2 = [
             # Connector.Product,
             Connector.ExtensionalImage,
             Connector.IntensionalImage
         ],
-        has_compound_common_id = True,
-        compound_common_id = CommonId(0),
-        is_belief_valid = False,
-        at_compound_pos = 0
-    )
+             has_compound_common_id = True,
+             compound_common_id = CommonId(0),
+             is_belief_valid = False,
+             at_compound_pos = 0
+             )
 
     add_rule(sparse_lut, structure,
-        Interface_CompositionalRules._structural__bi_composition__1,
-        LinkType1 = LinkType.COMPOUND_STATEMENT, 
-        LinkType2 = LinkType.COMPOUND, 
-        has_common_id = True,
-        Copula1 = Copula.Inheritance,
-        Copula2 = None,
-        match_reverse = False,
-        sentence_type = class_sentence_to_list(Judgement),
-        Connector1 = None,
-        Connector2 = [
+             Interface_CompositionalRules._structural__bi_composition__1,
+             LinkType1 = LinkType.COMPOUND_STATEMENT,
+             LinkType2 = LinkType.COMPOUND,
+             has_common_id = True,
+             Copula1 = Copula.Inheritance,
+             Copula2 = None,
+             match_reverse = False,
+             sentence_type = class_sentence_to_list(Judgment),
+             Connector1 = None,
+             Connector2 = [
             # Connector.Product,
             Connector.ExtensionalImage,
             Connector.IntensionalImage
         ],
-        has_compound_common_id = True,
-        compound_common_id = CommonId(1),
-        is_belief_valid = False,
-        at_compound_pos = 0
-    )
+             has_compound_common_id = True,
+             compound_common_id = CommonId(1),
+             is_belief_valid = False,
+             at_compound_pos = 0
+             )
 
     add_rule(sparse_lut, structure,
-        Interface_CompositionalRules._structural__bi_composition__0_prime,
-        LinkType1 = LinkType.COMPOUND_STATEMENT, 
-        LinkType2 = LinkType.COMPOUND, 
-        has_common_id = True,
-        Copula1 = Copula.Inheritance,
-        Copula2 = None,
-        match_reverse = False,
-        sentence_type = class_sentence_to_list(Judgement),
-        Connector1 = None,
-        Connector2 = [
+             Interface_CompositionalRules._structural__bi_composition__0_prime,
+             LinkType1 = LinkType.COMPOUND_STATEMENT,
+             LinkType2 = LinkType.COMPOUND,
+             has_common_id = True,
+             Copula1 = Copula.Inheritance,
+             Copula2 = None,
+             match_reverse = False,
+             sentence_type = class_sentence_to_list(Judgment),
+             Connector1 = None,
+             Connector2 = [
             Connector.ExtensionalImage,
             Connector.IntensionalImage
         ],
-        has_compound_common_id = True,
-        compound_common_id = CommonId(0),
-        is_belief_valid = False,
-        at_compound_pos = 1
-    )
+             has_compound_common_id = True,
+             compound_common_id = CommonId(0),
+             is_belief_valid = False,
+             at_compound_pos = 1
+             )
 
     add_rule(sparse_lut, structure,
-        Interface_CompositionalRules._structural__bi_composition__1_prime,
-        LinkType1 = LinkType.COMPOUND_STATEMENT, 
-        LinkType2 = LinkType.COMPOUND, 
-        has_common_id = True,
-        Copula1 = Copula.Inheritance,
-        Copula2 = None,
-        match_reverse = False,
-        sentence_type = class_sentence_to_list(Judgement),
-        Connector1 = None,
-        Connector2 = [
+             Interface_CompositionalRules._structural__bi_composition__1_prime,
+             LinkType1 = LinkType.COMPOUND_STATEMENT,
+             LinkType2 = LinkType.COMPOUND,
+             has_common_id = True,
+             Copula1 = Copula.Inheritance,
+             Copula2 = None,
+             match_reverse = False,
+             sentence_type = class_sentence_to_list(Judgment),
+             Connector1 = None,
+             Connector2 = [
             Connector.ExtensionalImage,
             Connector.IntensionalImage
         ],
-        has_compound_common_id = True,
-        compound_common_id = CommonId(1),
-        is_belief_valid = False,
-        at_compound_pos = 1
-    )
+             has_compound_common_id = True,
+             compound_common_id = CommonId(1),
+             is_belief_valid = False,
+             at_compound_pos = 1
+             )

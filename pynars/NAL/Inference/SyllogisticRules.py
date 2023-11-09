@@ -17,7 +17,7 @@ from pynars.NAL.Functions.DesireValueFunctions import Desire_strong, Desire_weak
 from pynars.NAL.Functions.TruthValueFunctions import *
 from pynars.NAL.Functions.BudgetFunctions import Budget_backward_weak, Budget_forward, Budget_inference, Budget_backward
 from pynars.Narsese import Term, Copula, Statement, Truth, Task, Belief, Budget, Stamp
-from pynars.Narsese import Punctuation, Sentence, Judgement, Goal, Question, Quest
+from pynars.Narsese import Punctuation, Sentence, Judgment, Goal, Question, Quest
 from ..Functions import F_deduction, fc_to_w_minus, fc_to_w_plus
 from copy import deepcopy
 from ..Functions.StampFunctions import *
@@ -57,7 +57,7 @@ def deduction(task: Task, belief: Belief, budget_tasklink: Budget=None, budget_t
     if task.is_judgement:
         truth = Truth_deduction(premise1.truth, premise2.truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
-        sentence_derived = Judgement(statement, stamp, truth)
+        sentence_derived = Judgment(statement, stamp, truth)
     elif task.is_goal:
         truth = Desire_weak(premise1.truth, premise2.truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
@@ -139,7 +139,7 @@ def analogy(task: Task, belief: Belief, budget_tasklink: Budget=None, budget_ter
     if punct_task.is_judgement:
         truth = Truth_analogy(premise1.truth, premise2.truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
-        sentence_derived = Judgement(statement, stamp, truth)
+        sentence_derived = Judgment(statement, stamp, truth)
     elif punct_task.is_goal:
         Desire_function = Desire_weak if task.term.is_commutative else Desire_strong
         truth = Desire_function(premise1.truth, premise2.truth)
@@ -234,7 +234,7 @@ def resemblance(task: Task, belief: Belief, budget_tasklink: Budget=None, budget
     if punct_task.is_judgement:
         truth = Truth_resemblance(premise1.truth, premise2.truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
-        sentence_derived = Judgement(statement, stamp, truth)
+        sentence_derived = Judgment(statement, stamp, truth)
     elif punct_task.is_goal:
         truth = Desire_strong(premise1.truth, premise2.truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
@@ -295,7 +295,7 @@ def abduction(task: Task, belief: Belief, budget_tasklink: Budget=None, budget_t
     if punct_task.is_judgement:
         truth = Truth_abduction(premise1.truth, premise2.truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
-        sentence_derived = Judgement(statement, stamp, truth)
+        sentence_derived = Judgment(statement, stamp, truth)
     elif punct_task.is_goal:
         Desire_function = Desire_strong if not inverse_premise else Desire_weak
         truth = Desire_function(premise1.truth, premise2.truth)
@@ -355,7 +355,7 @@ def induction(task: Task, belief: Belief, budget_tasklink: Budget=None, budget_t
     if task.is_judgement:
         truth = Truth_induction(premise1.truth, premise2.truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
-        sentence_derived = Judgement(statement, stamp, truth)
+        sentence_derived = Judgment(statement, stamp, truth)
     elif task.is_goal:
         Desire_function = Desire_strong if not inverse_premise else Desire_weak
         truth = Desire_function(premise1.truth, premise2.truth)
@@ -410,7 +410,7 @@ def exemplification(task: Task, belief: Belief, budget_tasklink: Budget=None, bu
     if punct_task.is_judgement:
         truth = Truth_exemplification(premise1.truth, premise2.truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
-        sentence_derived = Judgement(statement, stamp, truth)
+        sentence_derived = Judgment(statement, stamp, truth)
     elif punct_task.is_goal:
         truth = Desire_weak(premise1.truth, premise2.truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
@@ -464,7 +464,7 @@ def comparison(task: Task, belief: Belief, budget_tasklink: Budget=None, budget_
     if punct_task.is_judgement:
         truth = Truth_comparison(premise1.truth, premise2.truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
-        sentence_derived = Judgement(statement, stamp, truth)
+        sentence_derived = Judgment(statement, stamp, truth)
     elif punct_task.is_goal:
         truth = Desire_strong(premise1.truth, premise2.truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
@@ -539,12 +539,12 @@ def reversion(task: Task, belief: Belief, budget_tasklink: Budget=None, budget_t
         statement = Statement(stat2.subject, stat1.copula.symmetrize(), stat1.subject)
         truth = Truth_intersection(premise1.truth, premise2.truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
-        sentence_derived = Judgement(statement, stamp, truth)
+        sentence_derived = Judgment(statement, stamp, truth)
     elif task.is_goal or task.is_question or task.is_quest: 
         statement = task.term
         truth = Truth_conversion(belief.truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
-        sentence_derived = Judgement(statement, stamp, truth)
+        sentence_derived = Judgment(statement, stamp, truth)
     else: raise "Invalid case."
 
     return Task(sentence_derived, budget)

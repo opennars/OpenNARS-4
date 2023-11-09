@@ -1,6 +1,6 @@
 from copy import copy
 from typing import Type, Union
-from .Sentence import Sentence, Judgement, Goal, Quest, Question, Stamp
+from .Sentence import Sentence, Judgment, Goal, Quest, Question, Stamp
 from .Item import Item
 from .Budget import Budget
 from .Term import Term

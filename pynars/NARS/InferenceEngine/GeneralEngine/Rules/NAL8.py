@@ -69,16 +69,16 @@ def add_rules__NAL8(sparse_lut: SparseLUT, structure: OrderedDict):
     (&/, B, C).
     '''
     add_rule(sparse_lut, structure,
-        Interface_TemporalRules._temporal__sequence, 
-        LinkType1 = [LinkType.COMPOUND, LinkType.SELF], 
-        LinkType2 = [LinkType.COMPONENT, LinkType.COMPOUND_STATEMENT, LinkType.TRANSFORM],
-        has_common_id = True,
-        p2_at_p1 = True,
-        sentence_type = class_sentence_to_list(Judgement),
-        Connector1 = Connector.SequentialEvents,
-        match_reverse = False,
-        is_belief_valid = True
-    )
+             Interface_TemporalRules._temporal__sequence,
+             LinkType1 = [LinkType.COMPOUND, LinkType.SELF],
+             LinkType2 = [LinkType.COMPONENT, LinkType.COMPOUND_STATEMENT, LinkType.TRANSFORM],
+             has_common_id = True,
+             p2_at_p1 = True,
+             sentence_type = class_sentence_to_list(Judgment),
+             Connector1 = Connector.SequentialEvents,
+             match_reverse = False,
+             is_belief_valid = True
+             )
     # add_rule(sparse_lut, structure,
     #     Interface_TemporalRules._temporal__sequence_prime, 
     #     LinkType1 = [LinkType.COMPONENT, LinkType.COMPOUND_STATEMENT, LinkType.SELF], 

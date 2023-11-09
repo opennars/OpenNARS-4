@@ -2,7 +2,7 @@ from typing import Callable, List
 from pynars.Config import Config
 from pynars.Narsese._py.Budget import Budget
 from pynars.Narsese._py.Operation import *
-from pynars.Narsese._py.Sentence import Goal, Judgement, Quest, Question, Sentence, Stamp
+from pynars.Narsese._py.Sentence import Goal, Judgment, Quest, Question, Sentence, Stamp
 from pynars.Narsese._py.Statement import Statement
 from pynars.Narsese._py.Task import Belief, Desire, Task
 from pynars.Narsese._py.Truth import Truth
@@ -30,7 +30,7 @@ def believe(statement: Term, term_truth: Term):
     truth = truth_from_term(term_truth)
     budget = Budget(Config.p_judgement, Config.d_judgement, truth_to_quality(truth))
     stamp = Stamp(Global.time, Global.time, None, Base((Global.get_input_id(),)), is_external=False)
-    sentence = Judgement(statement, stamp=stamp, truth=truth)
+    sentence = Judgment(statement, stamp=stamp, truth=truth)
     return Task(sentence, budget)
 
 

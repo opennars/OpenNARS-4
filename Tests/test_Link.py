@@ -5,7 +5,7 @@ import unittest
 from pynars.NARS.DataStructures import Bag, Task, Concept, Link
 from pynars.NARS.DataStructures._py.Link import LinkType, TaskLink, TermLink
 from pynars.NARS.DataStructures._py.Memory import Memory
-from pynars.Narsese import Judgement, Term, Statement, Copula, Truth, Connector
+from pynars.Narsese import Judgment, Term, Statement, Copula, Truth, Connector
 
 from pathlib import Path
 import Narsese

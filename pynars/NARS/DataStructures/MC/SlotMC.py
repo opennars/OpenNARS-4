@@ -1,5 +1,5 @@
 import numpy as np
-from pynars.Narsese import Task, Budget, Term, Judgement
+from pynars.Narsese import Task, Budget, Term, Judgment
 from pynars.NARS.DataStructures.MC import AnticipationMC, InputBufferMC
 
 
@@ -63,7 +63,7 @@ class SlotMC:
 
     def update_operations(self, term: Term):
         if len(self.operations) < self.num_operation:
-            (Judgement(term), Budget(0.9, 0.9, 0.5))
+            (Judgment(term), Budget(0.9, 0.9, 0.5))
 
     def check_anticipation(self, buffer: InputBufferMC, mode_unexpected = False):
         """

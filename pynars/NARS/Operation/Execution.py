@@ -4,7 +4,7 @@ from pynars.NARS.DataStructures._py.Concept import Concept
 from pynars.NARS.DataStructures._py.Memory import Memory
 from pynars.Narsese._py.Budget import Budget
 from pynars.Narsese._py.Operation import *
-from pynars.Narsese._py.Sentence import Goal, Judgement, Quest, Question, Sentence, Stamp
+from pynars.Narsese._py.Sentence import Goal, Judgment, Quest, Question, Sentence, Stamp
 from pynars.Narsese._py.Statement import Statement
 from pynars.Narsese._py.Task import Belief, Desire, Task
 from pynars.Narsese._py.Truth import Truth
@@ -23,7 +23,7 @@ def executed_task(task: Task):
     stamp = Stamp(Global.time, Global.time, None, Base((input_id,)))
     budget = Budget(Config.p_feedback, Config.d_feedback, truth_to_quality(task.truth))
     
-    return Task(Judgement(task.term, stamp, truth), budget, input_id)
+    return Task(Judgment(task.term, stamp, truth), budget, input_id)
 
 
 

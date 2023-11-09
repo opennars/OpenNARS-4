@@ -3,7 +3,7 @@ from pynars.NAL.Inference.LocalRules import solve_query, solution_query, solutio
 from pynars.NAL.MetaLevelInference.VariableSubstitution import get_elimination__var_const
 
 from pynars.NARS.DataStructures._py.Link import TaskLink
-from pynars.Narsese._py.Sentence import Goal, Judgement, Question
+from pynars.Narsese._py.Sentence import Goal, Judgment, Question
 from pynars.Narsese import Statement, Term, Sentence, Budget, Task, Truth
 from pynars.Narsese._py.Task import Belief, Desire
 from .Concept import Concept

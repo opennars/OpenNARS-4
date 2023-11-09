@@ -1,6 +1,6 @@
 
 from pynars.Narsese import Copula, Statement, Compound, Connector, Term, Truth, Task, Belief, Budget
-from pynars.Narsese import Judgement, Goal, Quest, Question
+from pynars.Narsese import Judgment, Goal, Quest, Question
 from pynars.Narsese import truth_analytic
 from ..Functions import *
 
@@ -55,7 +55,7 @@ def decomposition_theorem1(task: Task, belief: Belief, budget_tasklink: Budget=N
     if task.is_judgement:
         truth = Truth_negation(Truth_deduction(Truth_intersection(Truth_negation(premise1.truth), premise2.truth), truth_analytic))
         budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
-        sentence_derived = Judgement(statement, stamp, truth)
+        sentence_derived = Judgment(statement, stamp, truth)
     else: raise "Invalid case."
 
     return Task(sentence_derived, budget)
@@ -93,7 +93,7 @@ def decomposition_theorem2(task: Task, belief: Belief, budget_tasklink: Budget=N
         # truth = Truth_deduction(Truth_intersection(premise1.truth, Truth_negation(premise2.truth)), truth_analytic)
         truth = Truth_intersection(premise1.truth, Truth_negation(premise2.truth))
         budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
-        sentence_derived = Judgement(statement, stamp, truth)
+        sentence_derived = Judgment(statement, stamp, truth)
     else: raise "Invalid case."
 
     return Task(sentence_derived, budget)
@@ -120,7 +120,7 @@ def decomposition_theorem3(task: Task, belief: Belief, budget_tasklink: Budget=N
     if task.is_judgement:
         truth = Truth_intersection(Truth_negation(premise1.truth), premise2.truth)
         budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
-        sentence_derived = Judgement(statement, stamp, truth)
+        sentence_derived = Judgment(statement, stamp, truth)
     else: raise "Invalid case."
 
     return Task(sentence_derived, budget)
@@ -147,7 +147,7 @@ def decomposition_theorem4(task: Task, belief: Belief, budget_tasklink: Budget=N
     if task.is_judgement:
         truth = Truth_negation(Truth_intersection(Truth_negation(premise1.truth), Truth_negation(premise2.truth)))
         budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
-        sentence_derived = Judgement(statement, stamp, truth)
+        sentence_derived = Judgment(statement, stamp, truth)
     else: raise "Invalid case."
 
     return Task(sentence_derived, budget)
@@ -170,7 +170,7 @@ def decomposition_theorem5(task: Task, belief: Belief, budget_tasklink: Budget=N
     if task.is_judgement:
         truth = Truth_deduction(Truth_intersection(premise1.truth, premise2.truth), truth_analytic)
         budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
-        sentence_derived = Judgement(statement, stamp, truth)
+        sentence_derived = Judgment(statement, stamp, truth)
     else: raise "Invalid case."
 
     return Task(sentence_derived, budget)
@@ -194,7 +194,7 @@ def decomposition_theorem6(task: Task, belief: Belief, budget_tasklink: Budget=N
     if task.is_judgement:
         truth = Truth_deduction(Truth_intersection(premise1.truth, premise2.truth), truth_analytic)
         budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
-        sentence_derived = Judgement(statement, stamp, truth)
+        sentence_derived = Judgment(statement, stamp, truth)
     else: raise "Invalid case."
 
     return Task(sentence_derived, budget)
@@ -218,7 +218,7 @@ def decomposition_theorem7(task: Task, belief: Belief, budget_tasklink: Budget=N
     if task.is_judgement:
         truth = Truth_deduction(Truth_intersection(premise1.truth, premise2.truth), truth_analytic)
         budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
-        sentence_derived = Judgement(statement, stamp, truth)
+        sentence_derived = Judgment(statement, stamp, truth)
     else: raise "Invalid case."
 
     return Task(sentence_derived, budget)
@@ -242,7 +242,7 @@ def decomposition_theorem8(task: Task, belief: Belief, budget_tasklink: Budget=N
     if task.is_judgement:
         truth = Truth_deduction(Truth_intersection(premise1.truth, premise2.truth), truth_analytic)
         budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
-        sentence_derived = Judgement(statement, stamp, truth)
+        sentence_derived = Judgment(statement, stamp, truth)
     else: raise "Invalid case."
 
     return Task(sentence_derived, budget)
@@ -269,7 +269,7 @@ def decomposition_theorem9(task: Task, belief: Belief, budget_tasklink: Budget=N
     if task.is_judgement:
         truth = Truth_negation(Truth_intersection(Truth_negation(premise1.truth), premise2.truth))
         budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
-        sentence_derived = Judgement(statement, stamp, truth)
+        sentence_derived = Judgment(statement, stamp, truth)
     else: raise "Invalid case."
 
     return Task(sentence_derived, budget)
@@ -296,7 +296,7 @@ def decomposition_theorem10(task: Task, belief: Belief, budget_tasklink: Budget=
     if task.is_judgement:
         truth = Truth_intersection(premise1.truth, Truth_negation(premise2.truth))
         budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
-        sentence_derived = Judgement(statement, stamp, truth)
+        sentence_derived = Judgment(statement, stamp, truth)
     else: raise "Invalid case."
 
     return Task(sentence_derived, budget)

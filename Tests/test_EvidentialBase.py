@@ -2,7 +2,7 @@ from pynars.Narsese import Budget
 import unittest
 
 from pynars.NARS.DataStructures import Bag, Task, Concept
-from pynars.Narsese import Judgement, Term, Statement, Copula, Truth   
+from pynars.Narsese import Judgment, Term, Statement, Copula, Truth
 
 from pynars.Narsese import Base, Task
 
@@ -12,9 +12,9 @@ class TEST_Base(unittest.TestCase):
 
     def test_add_evidence_1(self):
         ''''''
-        task1 = Task(Judgement(Statement(Term('robin'), Copula.Inheritance, Term('bird'))))
-        task2 = Task(Judgement(Statement(Term('bird'), Copula.Inheritance, Term('animal'))))
-        task3 = Task(Judgement(Statement(Term('robin'), Copula.Inheritance, Term('animal'))))
+        task1 = Task(Judgment(Statement(Term('robin'), Copula.Inheritance, Term('bird'))))
+        task2 = Task(Judgment(Statement(Term('bird'), Copula.Inheritance, Term('animal'))))
+        task3 = Task(Judgment(Statement(Term('robin'), Copula.Inheritance, Term('animal'))))
         base = Base()
         base.add(task1)
         base.add(task2)
@@ -25,27 +25,27 @@ class TEST_Base(unittest.TestCase):
 
     def test_overlap_1(self):
         ''''''
-        task1 = Task(Judgement(Statement(Term('robin'), Copula.Inheritance, Term('bird'))))
-        task2 = Task(Judgement(Statement(Term('bird'), Copula.Inheritance, Term('animal'))))
-        task3 = Task(Judgement(Statement(Term('robin'), Copula.Inheritance, Term('animal'))))
+        task1 = Task(Judgment(Statement(Term('robin'), Copula.Inheritance, Term('bird'))))
+        task2 = Task(Judgment(Statement(Term('bird'), Copula.Inheritance, Term('animal'))))
+        task3 = Task(Judgment(Statement(Term('robin'), Copula.Inheritance, Term('animal'))))
         base1 = Base((task1, task2))
         base2 = Base((task2, task3))
         self.assertTrue(base1.is_overlaped(base2))
     
     def test_overlap_1(self):
         ''''''
-        task1 = Task(Judgement(Statement(Term('robin'), Copula.Inheritance, Term('bird'))))
-        task2 = Task(Judgement(Statement(Term('bird'), Copula.Inheritance, Term('animal'))))
-        task3 = Task(Judgement(Statement(Term('robin'), Copula.Inheritance, Term('animal'))))
+        task1 = Task(Judgment(Statement(Term('robin'), Copula.Inheritance, Term('bird'))))
+        task2 = Task(Judgment(Statement(Term('bird'), Copula.Inheritance, Term('animal'))))
+        task3 = Task(Judgment(Statement(Term('robin'), Copula.Inheritance, Term('animal'))))
         base1 = Base((task1, task2))
         base2 = Base((task2, task3))
         self.assertFalse(base1==base2)
         
     def test_add_base_1(self):
         ''''''
-        task1 = Task(Judgement(Statement(Term('robin'), Copula.Inheritance, Term('bird'))))
-        task2 = Task(Judgement(Statement(Term('bird'), Copula.Inheritance, Term('animal'))))
-        task3 = Task(Judgement(Statement(Term('robin'), Copula.Inheritance, Term('animal'))))
+        task1 = Task(Judgment(Statement(Term('robin'), Copula.Inheritance, Term('bird'))))
+        task2 = Task(Judgment(Statement(Term('bird'), Copula.Inheritance, Term('animal'))))
+        task3 = Task(Judgment(Statement(Term('robin'), Copula.Inheritance, Term('animal'))))
         base1 = Base((task1, task2))
         base2 = Base((task2, task3))
         base3 = base1 | base2
@@ -58,9 +58,9 @@ class TEST_Base(unittest.TestCase):
         pass
         
     def test_hash_1(self):
-        task1 = Task(Judgement(Statement(Term('robin'), Copula.Inheritance, Term('bird'))))
-        task2 = Task(Judgement(Statement(Term('bird'), Copula.Inheritance, Term('animal'))))
-        task3 = Task(Judgement(Statement(Term('robin'), Copula.Inheritance, Term('animal'))))
+        task1 = Task(Judgment(Statement(Term('robin'), Copula.Inheritance, Term('bird'))))
+        task2 = Task(Judgment(Statement(Term('bird'), Copula.Inheritance, Term('animal'))))
+        task3 = Task(Judgment(Statement(Term('robin'), Copula.Inheritance, Term('animal'))))
         base = Base((task1, task2))
         self.assertIsNone(base._hash)
         h1 = hash(base)

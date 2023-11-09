@@ -5,7 +5,7 @@ from pynars.Narsese import Budget
 import unittest
 
 from pynars.NARS.DataStructures import Bag, Task, Concept
-from pynars.Narsese import Judgement, Term, Statement, Copula, Truth   
+from pynars.Narsese import Judgment, Term, Statement, Copula, Truth
 
 from sparse_lut import SparseLUT, Any
 # from pynars.utils.tools import get_size

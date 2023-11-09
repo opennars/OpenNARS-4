@@ -5,7 +5,7 @@ from ..Functions.BudgetFunctions import *
 
 from ..Functions import F_negation, F_conversion, F_contraposition, \
     fc_to_w_minus, fc_to_w_plus, w_to_f, w_to_c
-from pynars.Narsese import Judgement, Truth, Goal, Quest, Question
+from pynars.Narsese import Judgment, Truth, Goal, Quest, Question
 
 # TODO: <S --> P> |- <S <-> P> OpenNARS 3.0.4 LocalRules.java line 424~441
 
@@ -22,7 +22,7 @@ def negation(task: Task, term_concept: Term, budget_tasklink: Budget=None, budge
     stamp = stamp_task
     if premise.is_judgement:
         truth = Truth_negation(premise.truth)
-        sentence_derived = Judgement(term_neg, stamp, truth)
+        sentence_derived = Judgment(term_neg, stamp, truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
     elif premise.is_goal:
         truth = Truth_negation(premise.truth)
@@ -55,7 +55,7 @@ def conversion(task: Task, term_concept: Term, budget_tasklink: Budget=None, bud
     stamp = stamp_task
     if premise.is_judgement:
         truth = Truth_conversion(premise.truth)
-        sentence_derived = Judgement(statement, stamp, truth)
+        sentence_derived = Judgment(statement, stamp, truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
     # elif premise.is_goal:
     #     truth = Truth_negation(premise.truth)
@@ -87,7 +87,7 @@ def contraposition(task: Task, term_concept: Term, budget_tasklink: Budget=None,
     stamp = stamp_task
     if premise.is_judgement:
         truth = Truth_contraposition(premise.truth)
-        sentence_derived = Judgement(statement, stamp, truth)
+        sentence_derived = Judgment(statement, stamp, truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
     elif premise.is_goal:
         truth = Truth_negation(premise.truth)

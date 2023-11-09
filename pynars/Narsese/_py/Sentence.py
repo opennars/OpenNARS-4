@@ -155,7 +155,7 @@ class Sentence:
         return not self.is_eternal and self.stamp.is_external
 
 
-class Judgement(Sentence):
+class Judgment(Sentence):
     def __init__(self, term: Term, stamp: Stamp = None, truth: Truth = None) -> None:
         ''''''
         stamp = stamp if stamp is not None else Stamp(Global.time, None, None, None)
@@ -171,7 +171,7 @@ class Judgement(Sentence):
 
 
 class Goal(Sentence):
-    best_solution: 'Judgement' = None
+    best_solution: 'Judgment' = None
 
     def __init__(self, term: Term, stamp: Stamp = None, desire: Truth = None) -> None:
         ''''''
@@ -187,7 +187,7 @@ class Goal(Sentence):
 
 
 class Question(Sentence):
-    best_answer: 'Judgement' = None
+    best_answer: 'Judgment' = None
 
     def __init__(self, term: Term, stamp: Stamp = None, curiosiry: Truth = None) -> None:
         ''''''
