@@ -21,15 +21,15 @@ class Task(Item):
         truth_belief = self.best_solution.truth if self.best_solution is not None else None
         return self.achieving_level(truth_belief)
 
-    def achieving_level(self, truth_belief: Truth=None):
+    def achieving_level(self, previous_belief: Truth=None):
         if self.is_judgement or self.is_goal:
-            if truth_belief is not None:
-                return 1 - abs(self.truth.e - truth_belief.e)
+            if previous_belief is not None:
+                return 1 - abs(self.truth.e - previous_belief.e)
             else: # no previous belief
                 return abs(self.truth.e - 0.5)
         elif self.is_question or self.is_quest:
-            if truth_belief is not None:
-                return truth_belief.e if self.is_query else truth_belief.c
+            if previous_belief is not None:
+                return previous_belief.e if self.is_query else previous_belief.c
             else: # no previous belief
                 return 0
         else:
