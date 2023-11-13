@@ -112,7 +112,8 @@ class GeneralEngine(Engine):
             if task == belief:
                 if task.sentence.punct == belief.sentence.punct:
                     is_revision = revisible(task, belief)
-            elif task.term.equal(belief.term): 
+            elif task.term.identical(belief.term): 
+            # elif task.term.equal(belief.term): 
                 # TODO: here
                 pass
             elif not belief.evidential_base.is_overlaped(task.evidential_base):
