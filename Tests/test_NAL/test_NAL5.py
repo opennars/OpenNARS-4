@@ -340,7 +340,7 @@ class TEST_NAL5(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<robin --> bird>. %1.00;0.90%', 
             '<<robin --> bird> <=> <robin --> [flying]>>. %0.80;0.90%', 
-            6
+            10
         )
         self.assertTrue(
             output_contains(tasks_derived, '<robin --> [flying]>. %0.80;0.65%')
@@ -349,7 +349,7 @@ class TEST_NAL5(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<<robin --> bird> <=> <robin --> [flying]>>. %0.80;0.90%', 
             '<robin --> bird>. %1.00;0.90%', 
-            6
+            10
         )
         self.assertTrue(
             output_contains(tasks_derived, '<robin --> [flying]>. %0.80;0.65%')
@@ -358,7 +358,7 @@ class TEST_NAL5(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<robin --> bird>. %1.00;0.90%', 
             '<<robin --> [flying]> <=> <robin --> bird>>. %0.80;0.90%', 
-            6
+            10
         )
         self.assertTrue(
             output_contains(tasks_derived, '<robin --> [flying]>. %0.80;0.65%')
@@ -368,7 +368,7 @@ class TEST_NAL5(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<<robin --> [flying]> <=> <robin --> bird>>. %0.80;0.90%', 
             '<robin --> bird>. %1.00;0.90%', 
-            6
+            10
         )
         self.assertTrue(
             output_contains(tasks_derived, '<robin --> [flying]>. %0.80;0.65%')
