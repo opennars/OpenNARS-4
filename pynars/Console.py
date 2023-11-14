@@ -49,6 +49,8 @@ def run_line(nars: Reasoner, line: str):
                     PrintType.ERROR,
                     f'Invalid input! Failed to parse: {line}')
                 # print_out(PrintType.ERROR, f'{file}, line {i}, {line}')
+        elif line == "''reset":
+            nars.reset()
         return
     # `'` comment
     elif line.startswith("'"):
