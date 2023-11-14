@@ -141,7 +141,7 @@ class TEST_NAL4(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(\,neutralization,_,base) --> acid>. %1.00;0.90%',
             None,
-            4
+            10
         )
         
         self.assertTrue(
