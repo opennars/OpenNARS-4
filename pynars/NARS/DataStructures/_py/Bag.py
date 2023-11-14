@@ -131,10 +131,13 @@ class Bag:
         item_popped = None
         old_item: Item = self.take_by_key(key, remove=False)
         if old_item is not None:
+            # merge duplicate items
             Budget_merge(old_item.budget, item.budget)
             return item_popped
         pointer_new = self.map_priority(item.budget.priority)
+
         if len(self.item_lut) >= self.capacity:
+            # if the capacity is exceeded, remove the lowest-priority item
             pointer = self._get_min_nonempty_level()
             if pointer_new >= pointer:
                 bucket = self.levels[self.pointer]
