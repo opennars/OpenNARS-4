@@ -43,7 +43,16 @@ class Reasoner:
 
     def reset(self):
         ''''''
-        # TODO
+        self.memory.reset()
+        self.overall_experience.reset()
+        self.internal_experience.reset()
+        self.narsese_channel.reset()
+        self.perception_channel.reset()
+        for channel in self.channels:
+            channel.reset()
+
+        self.sequence_buffer.reset()
+        self.operations_buffer.reset()
 
     def cycles(self, n_cycle: int):
         tasks_all_cycles = []

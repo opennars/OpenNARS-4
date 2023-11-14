@@ -36,6 +36,11 @@ class Bag:
 
         def __len__(self):
             return len(self.lut)
+        
+        def clear(self):
+            ''''''
+            self.lut.clear()
+
 
     def __init__(self, capacity: int, n_buckets: int = None, take_in_order: bool = True, key: Callable[[Item], Any]=None) -> None:
         '''
@@ -218,6 +223,13 @@ class Bag:
 
     def _move_upward_to_next_level(self):
         self.pointer = (self.pointer + 1) % self.n_levels
+
+    def reset(self):
+        self.item_lut.clear()
+        for level in self.levels:
+            level.clear()
+        self.pointer = 0
+
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__}: #items={len(self)}, #levels={len(self.levels)}, capacity={self.capacity}>"
