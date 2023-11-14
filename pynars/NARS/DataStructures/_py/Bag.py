@@ -38,7 +38,6 @@ class Bag:
             return len(self.lut)
         
         def clear(self):
-            ''''''
             self.lut.clear()
 
 

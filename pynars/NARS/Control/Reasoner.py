@@ -42,7 +42,6 @@ class Reasoner:
         self.operations_buffer = Buffer(capacity)
 
     def reset(self):
-        ''''''
         self.memory.reset()
         self.overall_experience.reset()
         self.internal_experience.reset()
