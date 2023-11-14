@@ -404,6 +404,9 @@ class Memory:
     def put_back(self, concept: Concept):
         return self.concepts.put_back(concept)
 
+    def reset(self):
+        self.concepts.reset()
+
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__}: #items={len(self.concepts)}, #buckets={len(self.concepts.levels)}>"
 

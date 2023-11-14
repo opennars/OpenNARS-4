@@ -32,7 +32,7 @@ class TEST_NAL8(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<{t001} --> [opened]>! %1.00;0.90%',
             '<(&/,<(*,SELF,{t002}) --> hold>,<(*,SELF,{t001}) --> at>,<(*,{t001}) --> ^open>) =/> <{t001} --> [opened]>>. %1.00;0.90%',
-            20
+            100
         )
 
         self.assertTrue(

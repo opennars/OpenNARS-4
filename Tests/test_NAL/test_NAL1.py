@@ -184,7 +184,7 @@ class TEST_NAL1(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<bird --> swimmer>. %1.00;0.90%', 
             '<swimmer --> bird>?', 
-            6
+            10
         )
         self.assertTrue(
             output_contains(tasks_derived, '<swimmer --> bird>. %1.00;0.47%')
@@ -299,7 +299,7 @@ class TEST_NAL1(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<bird --> swimmer>. %1.00;0.80%', 
             '<?x --> swimmer>?', 
-            6
+            10
         )
         self.assertTrue(
             output_contains(tasks_derived, '<?1 --> bird>?')
