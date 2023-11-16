@@ -165,9 +165,9 @@ class InputBufferMC(object):
                 each_compound_term = [each.term for each in each_compound]
                 term = Compound.ParallelEvents(*each_compound_term)
                 # truth, using truth-induction function (TODO, may subject to change)
-                truth = each_compound[0].truth_value
+                truth = each_compound[0].truth
                 for each in each_compound[1:]:
-                    truth = Truth_induction(truth, each.truth_value)
+                    truth = Truth_induction(truth, each.truth)
                 # stamp, using stamp-merge function (TODO, may subject to change)
                 stamp = each_compound[0].stamp
                 for each in each_compound[1:]:
