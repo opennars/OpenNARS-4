@@ -23,7 +23,7 @@ class Term:
     type = TermType.ATOM
     copula: Copula = None
     connector: Connector = None
-    _complexity: float = 1.0 # The complexity of the term. Read only.
+    _complexity: int = 1 # The complexity of the term. Read only.
     has_var: bool = False # Whether the term contains variable(s).
     has_ivar: bool = False # Whether the term contains independent variable(s).
     has_dvar: bool = False # Whether the term contains dependent variable(s).
