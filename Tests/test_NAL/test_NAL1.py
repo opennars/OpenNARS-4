@@ -18,6 +18,8 @@ from Tests.utils_for_test import *
 # utils_for_test.engine = RuleMap()
 
 class TEST_NAL1(unittest.TestCase):
+    def setUp(self):
+        nars.reset()
 
     def test_revision(self):
         '''

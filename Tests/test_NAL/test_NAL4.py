@@ -21,6 +21,9 @@ from pynars.NARS.RuleMap import Interface_TransformRules
 
 
 class TEST_NAL4(unittest.TestCase):
+    def setUp(self):
+        nars.reset()
+
     ''''''
 
     def test_structural_transformation_0(self):

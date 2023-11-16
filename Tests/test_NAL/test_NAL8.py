@@ -11,6 +11,9 @@ from Tests.utils_for_test import *
 
 
 class TEST_NAL8(unittest.TestCase):
+    def setUp(self):
+        nars.reset()
+
     ''''''
     def test_1_0(self):
         '''

@@ -7,6 +7,9 @@ from Tests.utils_for_test import *
 
 
 class TEST_NAL2(unittest.TestCase):
+    def setUp(self):
+        nars.reset()
+
     ''''''
     
     def test_revision(self):

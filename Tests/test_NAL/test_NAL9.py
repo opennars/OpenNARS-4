@@ -10,6 +10,9 @@ from pynars.NAL.MentalOperation import execute
 nars = utils_for_test.nars
 
 class TEST_NAL9(unittest.TestCase):
+    def setUp(self):
+        nars.reset()
+
     ''''''
     def test_anticipate_0(self):
         '''
@@ -76,6 +79,8 @@ class TEST_NAL9(unittest.TestCase):
             100
         )
 
+        nars.reset()
+        
         tasks_derived = process_two_premises(
             '<a --> b>?',
             None,
