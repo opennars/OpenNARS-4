@@ -1,3 +1,5 @@
+from pynars.NAL.Functions import BudgetFunctions
+
 from pynars.Config import Enable, Config
 from pynars.NAL.Inference.LocalRules import solve_query, solution_query, solution_question
 from pynars.NAL.MetaLevelInference.VariableSubstitution import get_elimination__var_const
@@ -29,8 +31,12 @@ class Memory:
         '''
         tasks_derived = []
         task_operation_return, task_executed = None, None
-        # merging the new task as a concept into the memory
-        concept: Concept = Concept._conceptualize(self, task.term, task.budget)
+
+        conceptualize_budget = Budget(priority=task.budget.priority,
+                                      durability=task.budget.durability,
+                                      quality=task.term.simplicity)
+        # merge the task as a concept into the memory
+        concept: Concept = Concept._conceptualize(self.concepts, task.term, conceptualize_budget)
         if concept is None: return None  # The memroy is full. The concept fails to get into the memory.
 
         # then process each task according to its type
