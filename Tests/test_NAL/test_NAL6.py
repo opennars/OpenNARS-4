@@ -10,6 +10,9 @@ from pynars.utils.Print import PrintType, print_out
 from pynars.NARS.InferenceEngine.VariableEngine.VariableEngine import VariableEngine
 
 class TEST_NAL6(unittest.TestCase):
+    def setUp(self):
+        nars.reset()
+
     ''''''
 
     def test_unification_0(self):
