@@ -114,7 +114,7 @@ def calculate_solution_quality(s_in: Sentence, s_solution: Sentence, rate_by_con
     if not rate_by_confidence:
         # Just some function that decreases quality of solution if it is complex, and increases if it has a high truth expecation        
         # raise "what does `Config.complexity_unit` mean?"
-        return truth.e / sqrt(sqrt(sqrt(s_solution.term.complexity*Config.complexity_unit)))
+        return truth.e / sqrt(sqrt(sqrt(s_solution.term.complexity * Config.r_term_complexity_unit)))
     else:
         return truth.c
 

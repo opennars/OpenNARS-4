@@ -1,6 +1,6 @@
 from pynars.Narsese._py.Connector import Connector
 from .Copula import Copula
-from pynars.Config import Enable
+from pynars.Config import Enable, Config
 from typing import Iterable, List, Set, Type
 from enum import Enum
 from pynars.utils.IndexVar import IndexVar
@@ -72,6 +72,10 @@ class Term:
         '''the number of sub-terms (including this term itself)'''
         return len(self._components)+1 if self._components is not None else 1
 
+
+    @property
+    def simplicity(self):
+        return self._complexity ** -Config.r_term_complexity_unit
 
     @property
     def complexity(self):

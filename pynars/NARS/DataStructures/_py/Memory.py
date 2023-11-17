@@ -238,7 +238,7 @@ class Memory:
             truth = project(task.truth, task.stamp.t_occurrence, Global.time, Global.time)
         else:
             truth = task.truth
-        if truth.e > Config.decision_threshold:
+        if truth.e > Config.Td_decision_threshold:
             if (task is not None) and task.is_executable and not (desire is not None and desire.evidential_base.contains(task.evidential_base)):
                     #   execute with registered operators 
                     stat: Statement = task.term

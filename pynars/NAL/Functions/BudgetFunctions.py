@@ -85,13 +85,13 @@ def Budget_backward_weak(truth_new_task: Truth, budget_tasklink: Budget, budget_
 
 def Budget_forward_compound(content: Term, truth_new_task: Truth, budget_tasklink: Budget, budget_termlink: Budget=None):
     '''Ref. OpenNARS 3.1.0 BudgetFunctions.java line 254~257.'''
-    return Budget_inference(truth_to_quality(truth_new_task), budget_tasklink, budget_termlink, Config.complexity_unit if content is None else Config.complexity_unit*content.complexity)
+    return Budget_inference(truth_to_quality(truth_new_task), budget_tasklink, budget_termlink, Config.r_term_complexity_unit if content is None else Config.r_term_complexity_unit * content.complexity)
 
 def Budget_backward_compound(content: Term, budget_tasklink: Budget, budget_termlink: Budget=None):
-    return Budget_inference(1.0, budget_tasklink, budget_termlink, Config.complexity_unit*content.complexity)
+    return Budget_inference(1.0, budget_tasklink, budget_termlink, Config.r_term_complexity_unit * content.complexity)
 
 def Budget_backward_weak_compound(content: Term, budget_tasklink: Budget, budget_termlink: Budget=None):
-    return Budget_inference(w_to_c(1, Config.k), budget_tasklink, budget_termlink, Config.complexity_unit*content.complexity)
+    return Budget_inference(w_to_c(1, Config.k), budget_tasklink, budget_termlink, Config.r_term_complexity_unit * content.complexity)
 
 
 '''Bag'''
