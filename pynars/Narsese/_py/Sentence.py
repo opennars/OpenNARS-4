@@ -11,6 +11,7 @@ from .Evidence import *
 
 from pynars.Config import Config, Enable
 from pynars import Global
+from ...NAL.Functions import F_expectation
 
 
 class Punctuation(Enum):
@@ -103,6 +104,11 @@ class Sentence:
     @property
     def directness(self):
         return len(self.stamp.evidential_base) ** -Config.t_sentence_directness_unit
+
+    @property
+    def sharpness(self):
+        if self.truth_value is None: return None
+        else: return 2 * abs(self.truth_value.e - 0.5)
 
     # @property
     # def temporal_order(self):
