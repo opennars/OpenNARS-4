@@ -124,20 +124,9 @@ def Budget_merge(budget_base: Budget, budget_merged: Budget, replace=True):
     Here the implementation is accordant to the description in the Conceptual Design.
     '''
     if not replace: budget_base = deepcopy(budget_base)
-    # # implementation in the Conceptual Design.
-    # budget_base.priority = max(budget_base.priority, budget_merged.priority)
-    # budget_base.durability = Or(budget_base.durability, budget_merged.durability)
-    # budget_base.quality = Or(budget_base.quality, budget_merged.quality)
-
-    # implementation in OpenNARS 3.1.0 or 3.0.4:
     budget_base.priority = Or(budget_base.priority, budget_merged.priority)
-    budget_base.durability = Average(budget_base.durability, budget_merged.durability)
-    budget_base.quality = budget_base.quality
-
-    # TODO: which implementation is better?
-    # Note (2021.1.25):
-    # I find that if I adopt the former one, which is consistent with the conceptual design, the budget of a term will be very large, because when build term links, there will be several times to call this function. Hence, if we choose the first one, `Concept._build_term_links(...)` and `Concept._build_task_links(...)` should be modified.
-    
+    budget_base.durability = Or(budget_base.durability, budget_merged.durability)
+    budget_base.quality = max(budget_base.quality, budget_merged.quality)
     return budget_base
 
 
