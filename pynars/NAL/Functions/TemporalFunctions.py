@@ -21,10 +21,7 @@ def project(truth: Truth, t_source: int, t_current: int, t_target: int):
 
             $$c_{new} = (1 - k_c) * c_{old}$$
     '''
-    a = 100000.0 * Config.projection_decay
-
-    k_c = abs(t_source - t_target) / (abs(t_source - t_current) + abs(t_target - t_current) + a)
-    c_new = (1 - k_c) * truth.c
+    c_new = truth.c * (t_current - t_source + 1) ** Config.projection_decay
     return Truth(truth.f, c_new, truth.k)
 
 

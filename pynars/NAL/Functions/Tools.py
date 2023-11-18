@@ -16,7 +16,7 @@ from pynars.Narsese import TRUE, FALSE, UNSURE
 from pynars.Narsese import Goal, Quest, Question
 
 def truth_to_quality(truth: Truth) -> float:
-    return max(truth.e, (1 - truth.e)*0.75); 
+    return max(truth.e, (1 - truth.e)*0.75);
     
 def distribute_budget_among_links(budget: Budget, n_links: int) -> Budget:
     return Budget(budget.priority/sqrt(n_links), budget.durability, budget.quality)
@@ -52,8 +52,7 @@ def project_truth(premise1: Union[Judgment, Goal, Question, Quest], premise2: Un
     if not premise2.is_eternal:
         if not premise1.is_eternal:
             t_target = premise1.stamp.t_occurrence
-            t_source = premise2.stamp.t_occurrence
-            truth = project(truth, t_source, Global.time, t_target)
+            truth = project(truth, Global.time, t_target)
         truth = eternalize(truth)
     return truth
 
