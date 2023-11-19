@@ -58,6 +58,7 @@ class Bag:
             return idx if idx < self.n_levels else self.n_levels - 1
 
         self.map_priority = map_priority
+        self.busyness = 0.5
 
     def take(self, remove = True) -> Item:
         if len(self) == 0: return None

@@ -25,6 +25,10 @@ class Memory:
         self.concepts = Bag(capacity, n_buckets=n_buckets, take_in_order=take_in_order)
         self.output_buffer = output_buffer
 
+    @property
+    def busyness(self):
+        return self.concepts.busyness
+
     def accept(self, task: Task):
         '''
         **Accept task**: Accept a task from the `Overall Experience`, and link it from all directly related concepts. Ref: *The Conceptual Design of OpenNARS 3.1.0*.

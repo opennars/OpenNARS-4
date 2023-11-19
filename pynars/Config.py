@@ -17,7 +17,7 @@ class Enable:
     debug = False
 
 class Config:
-    r_top_level_attention = 0.5
+    r_top_level_attention_adjust = 0.5
 
     priority: float=0.8
     durability: float=0.8

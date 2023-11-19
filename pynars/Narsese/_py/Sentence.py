@@ -11,7 +11,6 @@ from .Evidence import *
 
 from pynars.Config import Config, Enable
 from pynars import Global
-from ...NAL.Functions import F_expectation
 
 
 class Punctuation(Enum):

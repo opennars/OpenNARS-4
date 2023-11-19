@@ -42,6 +42,8 @@ class Reasoner:
         self.sequence_buffer = Buffer(capacity)
         self.operations_buffer = Buffer(capacity)
 
+        self.u_top_level_attention = 0.5
+
     def reset(self):
         ''''''
         # TODO
@@ -71,10 +73,16 @@ class Reasoner:
 
         random_number: float = random.random()
 
-        if random_number < Config.Config.r_top_level_attention:
+        data_structure_accessed_busyness = None
+        if random_number < self.u_top_level_attention:
             judgement_revised, goal_revised, answers_question, answers_quest = self.observe(tasks_derived)
+            data_structure_accessed_busyness = self.overall_experience.busyness
         else:
             self.consider(tasks_derived)
+            data_structure_accessed_busyness = self.memory.busyness
+
+        self.u_top_level_attention = Config.Config.r_top_level_attention_adjust * data_structure_accessed_busyness \
+                                     + (1 - Config.Config.r_top_level_attention_adjust) * self.u_top_level_attention
 
         #   temporal induction in NAL-7
         if Enable.temporal_reasoning and task is not None and task.is_judgement and task.is_external_event:
