@@ -53,7 +53,7 @@ class Task(Item):
     
     @property
     def truth(self) -> Truth:
-        return self.sentence.truth_value
+        return self.sentence.truth
     
     @property
     def is_judgement(self) -> bool:

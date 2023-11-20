@@ -65,7 +65,7 @@ def deduction(task: Task, belief: Belief, budget_tasklink: Budget=None, budget_t
     statement = stat1.predicate
 
     if task.is_judgement:
-        truth = Truth_deduction(premise1.truth_value, premise2.truth_value)
+        truth = Truth_deduction(premise1.truth, premise2.truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     elif task.is_goal:
@@ -104,7 +104,7 @@ def abduction(task: Task, belief: Belief, budget_tasklink: Budget=None, budget_t
     statement = stat1.subject
 
     if task.is_judgement:
-        truth = Truth_abduction(premise1.truth_value, premise2.truth_value)
+        truth = Truth_abduction(premise1.truth, premise2.truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     elif task.is_goal:
@@ -143,7 +143,7 @@ def induction(task: Task, belief: Belief, budget_tasklink: Budget=None, budget_t
     statement = Statement(stat2, Copula.Implication, stat1)
 
     if task.is_judgement:
-        truth = Truth_induction(premise1.truth_value, premise2.truth_value)
+        truth = Truth_induction(premise1.truth, premise2.truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     elif task.is_goal:
@@ -181,7 +181,7 @@ def analogy(task: Task, belief: Belief, budget_tasklink: Budget=None, budget_ter
     statement = stat2.predicate if not inverse_copula else stat2.subject
 
     if task.is_judgement:
-        truth = Truth_analogy(premise1.truth_value, premise2.truth_value)
+        truth = Truth_analogy(premise1.truth, premise2.truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     elif task.is_goal:
@@ -220,7 +220,7 @@ def comparison(task: Task, belief: Belief, budget_tasklink: Budget=None, budget_
     statement = Statement(stat1, Copula.Equivalence, stat2)
 
     if task.is_judgement:
-        truth = Truth_comparison(premise1.truth_value, premise2.truth_value)
+        truth = Truth_comparison(premise1.truth, premise2.truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     elif task.is_goal:
@@ -263,7 +263,7 @@ def deduction_compound_eliminate(task: Task, belief: Belief, budget_tasklink: Bu
     statement = Statement(compound, Copula.Implication, stat1.predicate)
 
     if task.is_judgement:
-        truth = Truth_deduction(premise1.truth_value, premise2.truth_value)
+        truth = Truth_deduction(premise1.truth, premise2.truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     elif task.is_goal:
@@ -304,7 +304,7 @@ def deduction_compound_replace(task: Task, belief: Belief, budget_tasklink: Budg
     statement = Statement(compound, Copula.Implication, stat1.predicate)
 
     if task.is_judgement:
-        truth = Truth_deduction(premise1.truth_value, premise2.truth_value)
+        truth = Truth_deduction(premise1.truth, premise2.truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     elif task.is_goal:
@@ -344,7 +344,7 @@ def abduction_compound_eliminate(task: Task, belief: Belief, budget_tasklink: Bu
     statement = compound - stat2.subject
 
     if task.is_judgement:
-        truth = Truth_abduction(premise1.truth_value, premise2.truth_value)
+        truth = Truth_abduction(premise1.truth, premise2.truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     elif task.is_goal:
@@ -385,7 +385,7 @@ def abduction_compound_eliminate2(task: Task, belief: Belief, budget_tasklink: B
     statement = Statement(compound2-compound1, Copula.Implication, compound1-compound2)
 
     if task.is_judgement:
-        truth = Truth_abduction(premise1.truth_value, premise2.truth_value)
+        truth = Truth_abduction(premise1.truth, premise2.truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     elif task.is_goal:
@@ -425,7 +425,7 @@ def induction_compound_compose(task: Task, belief: Belief, budget_tasklink: Budg
     statement = Statement(compound, Copula.Implication, stat1.predicate)
 
     if task.is_judgement:
-        truth = Truth_induction(premise1.truth_value, premise2.truth_value)
+        truth = Truth_induction(premise1.truth, premise2.truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     elif task.is_goal:
@@ -467,7 +467,7 @@ def induction_compound_replace(task: Task, belief: Belief, budget_tasklink: Budg
 
     
     if task.is_judgement:
-        truth = Truth_induction(premise1.truth_value, premise2.truth_value)
+        truth = Truth_induction(premise1.truth, premise2.truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     elif task.is_goal:
@@ -508,12 +508,12 @@ def analogy_compound_eliminate(task: Task, belief: Belief, budget_tasklink: Budg
     statement = Statement(compound, stat2.copula, stat2.predicate)
 
     if task.is_judgement:
-        truth = Truth_analogy(premise1.truth_value, premise2.truth_value)
+        truth = Truth_analogy(premise1.truth, premise2.truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     elif task.is_goal: 
         raise # TODO: if inverse the premises, the Desire function may diverse.
-        truth = Desire_deduction(task.truth_value, belief.truth_value)
+        truth = Desire_deduction(task.truth, belief.truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
         sentence_derived = Goal(statement, stamp, truth)
     elif task.is_question:

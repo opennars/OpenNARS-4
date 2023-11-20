@@ -279,7 +279,7 @@ class InputBufferMC(object):
                     # term generation
                     term = each_prediction.term.predicate
                     # truth, using truth-deduction function (TODO, may subject to change)
-                    truth = Truth_deduction(each_prediction.truth_value, each_event[1].truth_value)
+                    truth = Truth_deduction(each_prediction.truth, each_event[1].truth)
                     # stamp, using stamp-merge function (TODO, may subject to change)
                     stamp = Stamp_merge(each_prediction.stamp, each_event[1].stamp)
                     # budget, using budget-merge function (TODO, may subject to change)
@@ -334,8 +334,8 @@ class InputBufferMC(object):
                     copula = Copula.PredictiveImplication  # =/>
                     term = Statement(subject, copula, predicate)
                     # truth, using truth-induction function (TODO, may subject to change)
-                    truth = Truth_induction(self.slots[i].candidate.truth_value,
-                                            self.slots[self.present].candidate.truth_value)
+                    truth = Truth_induction(self.slots[i].candidate.truth,
+                                            self.slots[self.present].candidate.truth)
                     # stamp, using stamp-merge function (TODO, may subject to change)
                     stamp = Stamp_merge(self.slots[i].candidate.stamp,
                                         self.slots[self.present].candidate.stamp)

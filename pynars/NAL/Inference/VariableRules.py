@@ -59,7 +59,7 @@ def independent_variable_introduction__induction(task: Task, belief: Belief, bud
 
     stamp = Stamp_merge(stamp_task, stamp_belief)
     if task.is_judgement:
-        truth = Truth_induction(premise1.truth_value, premise2.truth_value)
+        truth = Truth_induction(premise1.truth, premise2.truth)
         budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     else: raise "Invalid case."
@@ -92,7 +92,7 @@ def independent_variable_introduction__implication__induction(task: Task, belief
 
     stamp = Stamp_merge(stamp_task, stamp_belief)
     if task.is_judgement:
-        truth = Truth_induction(premise1.truth_value, premise2.truth_value)
+        truth = Truth_induction(premise1.truth, premise2.truth)
         budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     else: raise "Invalid case."
@@ -133,7 +133,7 @@ def independent_variable_introduction__conjunction__induction(task: Task, belief
 
     stamp = Stamp_merge(stamp_task, stamp_belief)
     if task.is_judgement:
-        truth = Truth_induction(premise1.truth_value, premise2.truth_value)
+        truth = Truth_induction(premise1.truth, premise2.truth)
         budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     else: raise "Invalid case."
@@ -164,7 +164,7 @@ def independent_variable_introduction__abduction(task: Task, belief: Belief, bud
 
     stamp = Stamp_merge(stamp_task, stamp_belief)
     if task.is_judgement:
-        truth = Truth_abduction(premise1.truth_value, premise2.truth_value)
+        truth = Truth_abduction(premise1.truth, premise2.truth)
         budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     else: raise "Invalid case."
@@ -201,7 +201,7 @@ def independent_variable_introduction__comparison(task: Task, belief: Belief, bu
 
     stamp = Stamp_merge(stamp_task, stamp_belief)
     if task.is_judgement:
-        truth = Truth_comparison(premise1.truth_value, premise2.truth_value)
+        truth = Truth_comparison(premise1.truth, premise2.truth)
         budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     else: raise "Invalid case."
@@ -237,7 +237,7 @@ def dependent_variable_introduction__intersection(task: Task, belief: Belief, bu
 
     stamp = Stamp_merge(stamp_task, stamp_belief)
     if task.is_judgement:
-        truth = Truth_intersection(premise1.truth_value, premise2.truth_value)
+        truth = Truth_intersection(premise1.truth, premise2.truth)
         budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     else: raise "Invalid case."
@@ -271,7 +271,7 @@ def independent_variable_introduction__implication0__intersection(task: Task, be
     stamp = Stamp_merge(stamp_task, stamp_belief)
 
     if task.is_judgement:
-        truth = Truth_intersection(premise1.truth_value, premise2.truth_value)
+        truth = Truth_intersection(premise1.truth, premise2.truth)
         budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     else: raise "Invalid case."
@@ -302,7 +302,7 @@ def independent_variable_introduction__implication1__intersection(task: Task, be
 
     stamp = Stamp_merge(stamp_task, stamp_belief)
     if task.is_judgement:
-        truth = Truth_intersection(premise1.truth_value, premise2.truth_value)
+        truth = Truth_intersection(premise1.truth, premise2.truth)
         budget = Budget_forward_compound(compound, truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(compound, stamp, truth)
     else: raise "Invalid case."
@@ -343,7 +343,7 @@ def dependent_variable_introduction__conjunction__intersection(task: Task, belie
 
     stamp = Stamp_merge(stamp_task, stamp_belief)
     if task.is_judgement:
-        truth = Truth_intersection(premise1.truth_value, premise2.truth_value)
+        truth = Truth_intersection(premise1.truth, premise2.truth)
         budget = Budget_forward_compound(compound, truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(compound, stamp, truth)
     else: raise "Invalid case."
@@ -391,7 +391,7 @@ def dependent_variable_elimination__conjunction(task: Task, belief: Belief, budg
 
     stamp = Stamp_merge(stamp_task, stamp_belief)
     if task.is_judgement:
-        truth = Truth_anonymous_analogy(premise1.truth_value, premise2.truth_value)
+        truth = Truth_anonymous_analogy(premise1.truth, premise2.truth)
         budget = Budget_forward_compound(compound, truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(compound, stamp, truth)
     else: raise "Invalid case."
@@ -438,7 +438,7 @@ def dependent_variable_elimination__implication1(task: Task, belief: Belief, bud
 
     stamp = Stamp_merge(stamp_task, stamp_belief)
     if task.is_judgement:
-        truth = Truth_anonymous_analogy(premise1.truth_value, premise2.truth_value)
+        truth = Truth_anonymous_analogy(premise1.truth, premise2.truth)
         budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     else: raise "Invalid case."
@@ -485,7 +485,7 @@ def dependent_variable_elimination__implication0__inheritance(task: Task, belief
 
     stamp = Stamp_merge(stamp_task, stamp_belief)
     if task.is_judgement:
-        truth = Truth_deduction(premise1.truth_value, premise2.truth_value) # why?
+        truth = Truth_deduction(premise1.truth, premise2.truth) # why?
         budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     else: raise "Invalid case."
@@ -532,7 +532,7 @@ def dependent_variable_elimination__implication0__implication(task: Task, belief
 
     stamp = Stamp_merge(stamp_task, stamp_belief)
     if task.is_judgement:
-        truth = Truth_abduction(premise1.truth_value, premise2.truth_value) # why?
+        truth = Truth_abduction(premise1.truth, premise2.truth) # why?
         budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
         sentence_derived = Judgment(statement, stamp, truth)
     else: raise "Invalid case."

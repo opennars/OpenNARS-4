@@ -83,7 +83,7 @@ Doubt that are Question and Quest have got a tense?
 
 
 class Sentence:
-    truth_value: Truth = None
+    truth: Truth = None
 
     def __init__(self, term: Term, punct: Punctuation, stamp: Stamp, do_hashing: bool = False) -> None:
         ''''''
@@ -116,14 +116,14 @@ class Sentence:
     def eternalize(self, truth: Truth = None):
         sentence = copy(self)
         if truth is not None:
-            sentence.truth_value = truth
+            sentence.truth = truth
         stamp = copy(sentence.stamp)
         stamp.eternalize()
         sentence.stamp = stamp
         return sentence
 
     def __hash__(self) -> int:
-        return hash((self.term, self.punct, self.truth_value))
+        return hash((self.term, self.punct, self.truth))
 
     def __str__(self) -> str:
         return self.word
@@ -169,14 +169,14 @@ class Judgment(Sentence):
         ''''''
         stamp = stamp if stamp is not None else Stamp(Global.time, None, None, None)
         Sentence.__init__(self, term, Punctuation.Judgement, stamp)
-        self.truth_value = truth if truth is not None else Truth(Config.f, Config.c, Config.k)
+        self.truth = truth if truth is not None else Truth(Config.f, Config.c, Config.k)
 
     def __str__(self) -> str:
-        return f'{self.word}{(" " + str(self.tense.value)) if self.tense != Tense.Eternal else ""} {self.truth_value}'
+        return f'{self.word}{(" " + str(self.tense.value)) if self.tense != Tense.Eternal else ""} {self.truth}'
 
 
     def repr(self,is_input=False):
-        return f'{self.term.repr()}{self.punct.value}{(" " + str(self.tense.value)) if self.tense != Tense.Eternal else ""} {self.truth_value}'
+        return f'{self.term.repr()}{self.punct.value}{(" " + str(self.tense.value)) if self.tense != Tense.Eternal else ""} {self.truth}'
 
 
 class Goal(Sentence):
@@ -186,13 +186,13 @@ class Goal(Sentence):
         ''''''
         stamp = stamp if stamp is not None else Stamp(Global.time, None, None, None, None)
         Sentence.__init__(self, term, Punctuation.Goal, stamp)
-        self.truth_value = desire if desire is not None else Truth(Config.f, Config.c, Config.k)
+        self.truth = desire if desire is not None else Truth(Config.f, Config.c, Config.k)
 
     def __str__(self) -> str:
-        return f'{self.word}{(" " + str(self.tense.value)) if self.tense != Tense.Eternal else ""} {str(self.truth_value)}'
+        return f'{self.word}{(" " + str(self.tense.value)) if self.tense != Tense.Eternal else ""} {str(self.truth)}'
 
     def repr(self, is_input = False):
-        return f'{self.term.repr() + self.punct.value}{(" " + str(self.tense.value)) if self.tense != Tense.Eternal else ""} {str(self.truth_value)}'
+        return f'{self.term.repr() + self.punct.value}{(" " + str(self.tense.value)) if self.tense != Tense.Eternal else ""} {str(self.truth)}'
 
 
 class Question(Sentence):

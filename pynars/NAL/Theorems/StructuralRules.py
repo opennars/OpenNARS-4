@@ -24,7 +24,7 @@ def uni_composition(task: Task, term_concept: Term, budget_tasklink: Budget=None
     subject = term_concept if not inverse_copula else stat.subject
     predicate = stat.predicate if not inverse_copula else term_concept
 
-    truth = Truth_deduction(premise.truth_value, truth_analytic)
+    truth = Truth_deduction(premise.truth, truth_analytic)
     statement = Statement(subject, stat.copula, predicate)
     budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
     stamp = stamp_task
@@ -47,7 +47,7 @@ def uni_composition_prime(task: Task, term_concept: Term, budget_tasklink: Budge
     subject = term_concept if not inverse_copula else stat.subject
     predicate = stat.predicate if not inverse_copula else term_concept
 
-    truth = Truth_negation(Truth_deduction(premise.truth_value, truth_analytic))
+    truth = Truth_negation(Truth_deduction(premise.truth, truth_analytic))
     statement = Statement(subject, stat.copula, predicate)
     budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
     stamp = stamp_task
@@ -95,7 +95,7 @@ def uni_decomposition(task: Task, term_concept: Term, budget_tasklink: Budget=No
     subject: Union[Compound, Term] = stat.subject if not inverse_copula else term_concept
     predicate: Union[Compound, Term] = term_concept if not inverse_copula else stat.predicate
 
-    truth = Truth_deduction(premise.truth_value, truth_analytic)
+    truth = Truth_deduction(premise.truth, truth_analytic)
     statement = Statement(subject, stat.copula, predicate)
     budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
     stamp = stamp_task
@@ -121,7 +121,7 @@ def bi_composition(task: Task, term_concept: Term, budget_tasklink: Budget=None,
     predicate = compound.replace(stat.subject, stat.predicate) if not inverse_copula else compound
 
     statement = Statement(subject, stat.copula, predicate)
-    truth = Truth_deduction(premise.truth_value, truth_analytic)
+    truth = Truth_deduction(premise.truth, truth_analytic)
     budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
     stamp = stamp_task
     sentence_derived = Judgment(statement, stamp, truth)
@@ -150,7 +150,7 @@ def bi_composition_prime(task: Task, term_concept: Term, budget_tasklink: Budget
     predicate = compound.replace(stat.subject, stat.predicate) if not inverse_copula else compound
 
     statement = Statement(predicate, stat.copula, subject)
-    truth = Truth_deduction(premise.truth_value, truth_analytic)
+    truth = Truth_deduction(premise.truth, truth_analytic)
     budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
     stamp = stamp_task
     sentence_derived = Judgment(statement, stamp, truth)
@@ -177,7 +177,7 @@ def bi_decomposition(task: Task, term_concept: Term, budget_tasklink: Budget=Non
     predicate = compound_predicate - compound_subject
     statement = Statement(subject, stat.copula, predicate)
 
-    truth = Truth_deduction(premise.truth_value, truth_analytic)
+    truth = Truth_deduction(premise.truth, truth_analytic)
     if premise.is_judgement or premise.is_goal:
         budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
     elif premise.is_question or premise.is_quest:
@@ -207,7 +207,7 @@ def transform_product_to_image(task: Task, term_concept: Term, budget_tasklink: 
     predicate = Compound.ExtensionalImage(term_concept, stat.predicate, compound_product=stat.subject) if not inverse_copula else term_concept
     statement = Statement(subject, stat.copula, predicate)
 
-    truth = premise.truth_value
+    truth = premise.truth
     if premise.is_judgement or premise.is_goal:
         budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
     elif premise.is_question or premise.is_quest:
@@ -248,7 +248,7 @@ def transform_image_to_product(task: Task, term_concept: Term, budget_tasklink: 
     predicate = compound_subject[0] if not inverse_copula else Compound.Product(stat.predicate, compound_product=compound_subject)
 
     statement = Statement(subject, stat.copula, predicate)
-    truth = premise.truth_value
+    truth = premise.truth
     if premise.is_judgement or premise.is_goal:
         budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
     elif premise.is_question or premise.is_quest:
@@ -604,7 +604,7 @@ def implication_theorem1(task: Task, term_concept: Term, budget_tasklink: Budget
     statement = Statement(subject, stat.copula, predicate)
     stamp = stamp_task
     if premise.is_judgement:
-        truth = Truth_deduction(premise.truth_value, truth_analytic)
+        truth = Truth_deduction(premise.truth, truth_analytic)
         sentence_derived = Judgment(statement, stamp, truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
     # elif premise.is_goal:
@@ -638,11 +638,11 @@ def implication_theorem3(task: Task, term_concept: Term, budget_tasklink: Budget
 
     stamp = stamp_task
     if premise.is_judgement:
-        truth = Truth_deduction(premise.truth_value, truth_analytic)
+        truth = Truth_deduction(premise.truth, truth_analytic)
         sentence_derived = Judgment(term_concept, stamp, truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
     elif premise.is_goal:
-        truth = Truth_deduction(premise.truth_value, truth_analytic)
+        truth = Truth_deduction(premise.truth, truth_analytic)
         sentence_derived = Goal(term_concept, stamp, truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
     elif premise.is_question:
@@ -668,11 +668,11 @@ def implication_theorem4(task: Task, term_concept: Term, budget_tasklink: Budget
 
     stamp = stamp_task
     if premise.is_judgement:
-        truth = Truth_deduction(premise.truth_value, truth_analytic)
+        truth = Truth_deduction(premise.truth, truth_analytic)
         sentence_derived = Judgment(term_concept, stamp, truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
     elif premise.is_goal:
-        truth = Truth_deduction(premise.truth_value, truth_analytic)
+        truth = Truth_deduction(premise.truth, truth_analytic)
         sentence_derived = Goal(term_concept, stamp, truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
     elif premise.is_question:
@@ -949,7 +949,7 @@ def equivalence_theorem3(task: Task, term_concept: Term, budget_tasklink: Budget
     stamp_task: Stamp = task.stamp
     premise: Judgment = task.sentence
     stat: Statement = premise.term
-    truth = premise.truth_value
+    truth = premise.truth
     copula = stat.copula
 
     if not inverse_copula:
@@ -981,7 +981,7 @@ def equivalence_theorem4(task: Task, term_concept: Term, budget_tasklink: Budget
     stamp_task: Stamp = task.stamp
     premise: Judgment = task.sentence
     stat: Statement = premise.term
-    truth = premise.truth_value
+    truth = premise.truth
     copula = stat.copula
 
     
@@ -1014,7 +1014,7 @@ def equivalence_theorem5(task: Task, term_concept: Term, budget_tasklink: Budget
     stamp_task: Stamp = task.stamp
     premise: Judgment = task.sentence
     stat: Statement = premise.term
-    truth = premise.truth_value
+    truth = premise.truth
     if not inverse_copula:
         copula = Copula.Similarity 
         subject = stat.subject
@@ -1051,7 +1051,7 @@ def equivalence_theorem6(task: Task, term_concept: Term, budget_tasklink: Budget
     stamp_task: Stamp = task.stamp
     premise: Judgment = task.sentence
     stat: Statement = premise.term
-    truth = premise.truth_value
+    truth = premise.truth
     if not inverse_copula:
         copula = Copula.Similarity 
         subject = stat.subject

@@ -34,8 +34,8 @@ class GlobalBufferMC(InputBufferMC):
                     copula = Copula.PredictiveImplication  # =/>
                     term = Statement(subject, copula, predicate)
                     # truth, using truth-induction function (TODO, may subject to change)
-                    truth = Truth_induction(self.slots[i].candidate.truth_value,
-                                            self.slots[self.present].candidate.truth_value)
+                    truth = Truth_induction(self.slots[i].candidate.truth,
+                                            self.slots[self.present].candidate.truth)
                     # stamp, using stamp-merge function (TODO, may subject to change)
                     stamp = Stamp_merge(self.slots[i].candidate.stamp,
                                         self.slots[self.present].candidate.stamp)
@@ -58,8 +58,8 @@ class GlobalBufferMC(InputBufferMC):
                 copula = Copula.ConcurrentImplication  # =|>
                 term = Statement(subject, copula, predicate)
                 # truth, using truth-induction function (TODO, may subject to change)
-                truth = Truth_induction(self.slots[self.present].events[i][1].truth_value,
-                                        self.slots[self.present].candidate.truth_value)
+                truth = Truth_induction(self.slots[self.present].events[i][1].truth,
+                                        self.slots[self.present].candidate.truth)
                 # stamp, using stamp-merge function (TODO, may subject to change)
                 stamp = Stamp_merge(self.slots[self.present].events[i][1].stamp,
                                     self.slots[self.present].candidate.stamp)

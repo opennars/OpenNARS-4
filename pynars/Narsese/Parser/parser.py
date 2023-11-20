@@ -63,7 +63,7 @@ class TreeToNarsese(Transformer):
                 judgement: Judgment = sentence
                 p = priority or self.p_judgement
                 d = durability or self.d_judgement
-                q = quality or Budget.quality_from_truth(judgement.truth_value)
+                q = quality or Budget.quality_from_truth(judgement.truth)
             elif sentence.punct ==  Punctuation.Question: # question
                 p = priority or self.p_question
                 d = durability or self.d_question
@@ -76,7 +76,7 @@ class TreeToNarsese(Transformer):
                 goal: Goal = sentence
                 p = priority or self.p_goal
                 d = durability or self.d_goal
-                q = quality or Budget.quality_from_truth(goal.truth_value)
+                q = quality or Budget.quality_from_truth(goal.truth)
         else:
             p, d, q = priority, durability, quality
 
