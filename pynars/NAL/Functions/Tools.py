@@ -52,7 +52,8 @@ def project_truth(premise1: Union[Judgement, Goal, Question, Quest], premise2: U
     if not premise2.is_eternal:
         if not premise1.is_eternal:
             t_target = premise1.stamp.t_occurrence
-            truth = project(truth, Global.time, t_target)
+            t_source = premise2.stamp.t_occurrence
+            truth = project(truth, t_source, Global.time, t_target)
         truth = eternalize(truth)
     return truth
 
