@@ -2,7 +2,7 @@ from pynars import NARS, Narsese
 import unittest
 
 from pynars.NARS.DataStructures import Bag, Task, Concept, Link
-from pynars.Narsese import Judgment, Term, Statement, Copula, Truth, Connector
+from pynars.Narsese import Judgement, Term, Statement, Copula, Truth, Connector
 
 from pathlib import Path
 from pynars.Narsese._py.Compound import Compound

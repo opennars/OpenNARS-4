@@ -2,7 +2,7 @@ from pynars.NAL.Functions import Truth_induction, Stamp_merge, Budget_merge
 from pynars.NARS.DataStructures import Memory
 from pynars.NARS.DataStructures.MC.InputBufferMC import InputBufferMC
 from pynars.NARS.DataStructures.MC.SlotMC import SlotMC
-from pynars.Narsese import Judgment, Task, Copula, Statement, Compound, Interval
+from pynars.Narsese import Judgement, Task, Copula, Statement, Compound, Interval
 
 
 class GlobalBufferMC(InputBufferMC):
@@ -43,7 +43,7 @@ class GlobalBufferMC(InputBufferMC):
                     budget = Budget_merge(self.slots[i].candidate.budget,
                                           self.slots[self.present].candidate.budget)
                     # sentence composition
-                    sentence = Judgment(term, stamp, truth)
+                    sentence = Judgement(term, stamp, truth)
                     # task generation
                     prediction = Task(sentence, budget)
                     self.update_prediction(prediction)
@@ -67,7 +67,7 @@ class GlobalBufferMC(InputBufferMC):
                 budget = Budget_merge(self.slots[self.present].events[i][1].budget,
                                       self.slots[self.present].candidate.budget)
                 # sentence composition
-                sentence = Judgment(term, stamp, truth)
+                sentence = Judgement(term, stamp, truth)
                 # task generation
                 prediction = Task(sentence, budget)
                 self.update_prediction(prediction)

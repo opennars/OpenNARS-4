@@ -11,8 +11,8 @@ from pynars.NARS import Reasoner as Reasoner
 from pynars.NARS.DataStructures import Bag, Concept, Table, Task
 from pynars.NARS.DataStructures._py.Link import TaskLink, TermLink
 from pynars.NARS.RuleMap import RuleMap
-from pynars.Narsese import (Compound, Connector, Copula, Judgment, Statement, Term,
-                            Truth, Variable, VarPrefix)
+from pynars.Narsese import (Compound, Connector, Copula, Judgement, Statement, Term,
+                     Truth, Variable, VarPrefix)
 from Tests.utils_for_test import *
 
 # utils_for_test.rule_map = RuleMap_v2()

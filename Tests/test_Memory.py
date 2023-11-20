@@ -3,7 +3,7 @@ import unittest
 
 from pynars.NARS.DataStructures import Bag, Task, Memory, Concept
 from pynars.NARS.DataStructures._py.Concept import Concept
-from pynars.Narsese import Judgment, Term, Statement, Copula, Truth
+from pynars.Narsese import Judgement, Term, Statement, Copula, Truth   
 
 from pathlib import Path
 import Narsese

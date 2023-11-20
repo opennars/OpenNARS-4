@@ -478,14 +478,14 @@ class GeneralEngine(Engine):
         task_subst, task_elimn, task_intro = None, None, None
         if subst is not None and subst.is_valid:
             term_task = subst.apply()
-            if task.is_judgement: sentence = Judgment(term_task, task.stamp, task.truth)
+            if task.is_judgement: sentence = Judgement(term_task, task.stamp, task.truth)
             elif task.is_goal: sentence = Goal(term_task, task.stamp, task.truth)
             elif task.is_question: sentence = Question(term_task, task.stamp)
             elif task.is_quest: sentence = Quest(term_task, task.stamp)
             task = Task(sentence, task.budget)
         if elimn is not None and elimn.is_ivar_valid:
             term_task = elimn.apply(type_var={VarPrefix.Independent})
-            if task.is_judgement: sentence = Judgment(term_task, task.stamp, task.truth)
+            if task.is_judgement: sentence = Judgement(term_task, task.stamp, task.truth)
             elif task.is_goal: sentence = Goal(term_task, task.stamp, task.truth)
             elif task.is_question: sentence = Question(term_task, task.stamp)
             elif task.is_quest: sentence = Quest(term_task, task.stamp)

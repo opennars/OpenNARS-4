@@ -11,7 +11,7 @@ from pynars.Narsese._py.Statement import Statement
 from pynars.Narsese._py.Task import Belief
 from pynars.Narsese._py.Term import Term
 from pynars.NAL.MentalOperation import execute
-from pynars.Narsese import Sentence, Judgment, Quest, Question, Goal
+from pynars.Narsese import Sentence, Judgement, Quest, Question, Goal
 from pynars.Config import Config, Enable
 
 nars = Reasoner(100, 100)

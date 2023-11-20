@@ -14,7 +14,7 @@ from pynars.Config import Enable
 from pynars.NARS.RuleMap.Interface import Interface_CompositionalRules, Interface_SyllogisticRules, Interface_DecompositionalRules, Interface_TransformRules, Interface_ConditionalRules, Interface_TemporalRules, Interface_VariableRules
 from pynars.Narsese import Copula, Task
 from pynars.Narsese._py.Connector import Connector
-from pynars.Narsese._py.Sentence import Goal, Judgment, Quest, Question
+from pynars.Narsese._py.Sentence import Goal, Judgement, Quest, Question
 from pynars.Narsese._py.Statement import Statement
 from pynars.Narsese._py.Term import Term
 from pynars.Narsese import Belief, Term, Truth, Compound, Budget
@@ -58,7 +58,7 @@ def task_type_id(task: Task):
     else: raise "Invalid case."
 
 _class_convert = {
-    Judgment: 0,
+    Judgement: 0,
     Goal: 1,
     Question: 2,
     Quest: 3

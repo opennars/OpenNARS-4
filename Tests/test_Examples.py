@@ -2,7 +2,7 @@ from typing import List
 import unittest
 
 from pynars.NARS.DataStructures import Bag, Task, Concept
-from pynars.Narsese import Judgment, Term, Statement, Copula, Truth
+from pynars.Narsese import Judgement, Term, Statement, Copula, Truth   
 
 from pathlib import Path
 from pynars import Narsese, NARS

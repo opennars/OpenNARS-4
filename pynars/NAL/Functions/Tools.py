@@ -7,7 +7,7 @@ from pynars import Global
 from pynars.Config import Config, Enable
 from pynars.NAL.Functions.TemporalFunctions import eternalize, project
 from pynars.Narsese import Budget
-from pynars.Narsese import Sentence, Judgment, Truth, Task
+from pynars.Narsese import Sentence, Judgement, Truth, Task
 from copy import deepcopy
 # import Config, Global
 from math import sqrt
@@ -21,7 +21,7 @@ def truth_to_quality(truth: Truth) -> float:
 def distribute_budget_among_links(budget: Budget, n_links: int) -> Budget:
     return Budget(budget.priority/sqrt(n_links), budget.durability, budget.quality)
 
-def project_truth(premise1: Union[Judgment, Goal, Question, Quest], premise2: Union[Judgment, Goal]):
+def project_truth(premise1: Union[Judgement, Goal, Question, Quest], premise2: Union[Judgement, Goal]):
     '''
     project the truth of the belief to that of the task.
     Ref:

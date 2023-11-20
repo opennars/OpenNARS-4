@@ -7,7 +7,7 @@ from pynars.Narsese._py.Budget import Budget
 from pynars.Narsese._py.Sentence import Goal, Quest, Question
 from pynars.Narsese._py.Task import Belief
 from ..Functions import Truth_revision
-from pynars.Narsese import Sentence, Judgment, Truth
+from pynars.Narsese import Sentence, Judgement, Truth
 # from .TemporalRules import matching_order
 from copy import deepcopy
 from pynars import Global
@@ -22,8 +22,8 @@ def revision(task: Task, belief: Task, budget_tasklink: Budget=None, budget_term
     |-
     S. %F_rev%
     '''
-    premise1: Union[Judgment, Goal] = task.sentence
-    premise2: Union[Judgment, Goal] = belief.sentence
+    premise1: Union[Judgement, Goal] = task.sentence
+    premise2: Union[Judgement, Goal] = belief.sentence
     truth1 = premise1.truth
     truth2 = premise2.truth
     if Enable.temporal_reasoning:
@@ -36,7 +36,7 @@ def revision(task: Task, belief: Task, budget_tasklink: Budget=None, budget_term
     # stamp.evidential_base.extend(premise2.evidential_base)
     stamp: Stamp = Stamp_merge(premise1.stamp, premise2.stamp)
     if task.is_judgement:
-        task = Task(Judgment(term, stamp, truth), budget)
+        task = Task(Judgement(term, stamp, truth), budget)
     elif task.is_goal:
         task = Task(Goal(term, stamp, truth), budget)
     else:
@@ -45,7 +45,7 @@ def revision(task: Task, belief: Task, budget_tasklink: Budget=None, budget_term
 
 def solution_question(task: Task, belief: Belief, budget_tasklink: Budget=None, budget_termlink: Budget=None):
     question: Union[Question, Quest] = task.sentence
-    answer: Union[Judgment, Goal] = belief.sentence
+    answer: Union[Judgement, Goal] = belief.sentence
     answer_best =  question.best_answer
     if answer_best is None: question.best_answer = answer
     else:
@@ -58,7 +58,7 @@ def solution_question(task: Task, belief: Belief, budget_tasklink: Budget=None, 
         quality = calculate_solution_quality(question, answer, question.term.has_qvar)
         # reward the belief
         budget_answer = Budget(Or(task.budget.priority, quality), task.budget.durability, truth_to_quality(answer.truth))
-        belief = Belief(Judgment(answer.term, answer.stamp, answer.truth), budget_answer)
+        belief = Belief(Judgement(answer.term, answer.stamp, answer.truth), budget_answer)
 
         # de-prioritize the question
         task.budget.priority = min(1-quality, task.budget.priority) # BUG: here, after setting the priority, the level of the task should change within a Bag.
@@ -69,7 +69,7 @@ def solution_question(task: Task, belief: Belief, budget_tasklink: Budget=None, 
 
 def solution_goal(task: Task, belief: Belief, budget_tasklink: Budget=None, budget_termlink: Budget=None):
     question: Union[Question, Quest] = task.sentence
-    answer: Union[Judgment, Goal] = belief.sentence
+    answer: Union[Judgement, Goal] = belief.sentence
     answer_best =  question.best_answer
     if answer_best is None: question.best_answer = answer
     else:
@@ -82,7 +82,7 @@ def solution_goal(task: Task, belief: Belief, budget_tasklink: Budget=None, budg
         quality = calculate_solution_quality(question, answer, question.term.has_qvar)
         # reward the belief
         budget_answer = Budget(Or(task.budget.priority, quality), task.budget.durability, truth_to_quality(answer.truth))
-        belief = Belief(Judgment(answer.term, answer.stamp, answer.truth), budget_answer)
+        belief = Belief(Judgement(answer.term, answer.stamp, answer.truth), budget_answer)
 
         # de-prioritize the question
         task.budget.priority = min(1-quality, task.budget.priority) # BUG: here, after setting the priority, the level of the task should change within a Bag.

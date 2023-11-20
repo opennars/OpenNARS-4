@@ -6,7 +6,7 @@ from pynars.Narsese._py.Budget import Budget
 from pynars.Narsese._py.Compound import Compound
 from pynars.Narsese._py.Connector import Connector
 from pynars.Narsese._py.Operation import *
-from pynars.Narsese._py.Sentence import Goal, Judgment, Quest, Question, Sentence, Stamp
+from pynars.Narsese._py.Sentence import Goal, Judgement, Quest, Question, Sentence, Stamp
 from pynars.Narsese._py.Statement import Statement
 from pynars.Narsese._py.Task import Belief, Desire, Task
 from pynars.Narsese._py.Truth import Truth
@@ -27,11 +27,11 @@ def _aware(statement: Statement, stamp: Stamp, budget_task: Budget=None):
     else:
         budget = Budget(budget_task.priority*Config.rate_discount_p_internal_exp, budget_task.durability*Config.rate_discount_d_internal_exp, truth_to_quality(truth_aware))
 
-    sentence = Judgment(statement, stamp, truth_aware)
+    sentence = Judgement(statement, stamp, truth_aware)
     return Task(sentence, budget)
 
 
-def believe(judgement: Judgment, truth: Truth, budget_task: Budget=None):
+def believe(judgement: Judgement, truth: Truth, budget_task: Budget=None):
     ''''''
     stat_aware = Statement.Inheritance(Compound(Connector.Product, SELF, judgement.term, truth_to_term(truth)), Believe)
     return _aware(stat_aware, judgement.stamp, budget_task)

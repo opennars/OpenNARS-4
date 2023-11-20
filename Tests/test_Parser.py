@@ -5,10 +5,10 @@ from pynars import Narsese
 from pynars.Narsese import Budget
 from pynars.Narsese import Compound, Connector
 import unittest
-from pynars.Narsese import Question, Quest, Judgment, Goal
+from pynars.Narsese import Question, Quest, Judgement, Goal
 
 from pynars.NARS.DataStructures import Bag, Task, Concept
-from pynars.Narsese import Judgment, Term, Statement, Copula, Truth
+from pynars.Narsese import Judgement, Term, Statement, Copula, Truth   
 
 class TEST_Parser(unittest.TestCase):
     def __init__(self, methodName: str = ...) -> None:
@@ -16,7 +16,7 @@ class TEST_Parser(unittest.TestCase):
 
     def test_truthvalue(self):
         line = '<robin-->bird>. %1.0; 0.9%'
-        content: Judgment = Narsese.parser.parse(line).sentence
+        content: Judgement = Narsese.parser.parse(line).sentence
         self.assertEqual(content.truth.f, 1.0)
         self.assertEqual(content.truth.c, 0.9)
         line = '<robin-->bird>. %0.5; 0.4%'
@@ -71,7 +71,7 @@ class TEST_Parser(unittest.TestCase):
     def test_compound_multi_3(self): 
         line = '(IsFlyer || IsSwimmer && IsSinger).'
         # (||, IsFlyer, (&&, IsSwimmer, IsSinger)).
-        content: Judgment = Narsese.parser.parse(line).sentence
+        content: Judgement = Narsese.parser.parse(line).sentence
         cmpd: Compound = content.term
         self.assertEqual(cmpd.connector, Connector.Disjunction)
         self.assertTrue(cmpd[0].word == 'IsFlyer')
@@ -83,7 +83,7 @@ class TEST_Parser(unittest.TestCase):
         line = '(IsFlyer && IsSwimmer || IsSinger).'
         content = Narsese.parser.parse(line).sentence
         # (||, (&&, IsFlyer, IsSwimmer), IsSinger).
-        content: Judgment = Narsese.parser.parse(line).sentence
+        content: Judgement = Narsese.parser.parse(line).sentence
         cmpd: Compound = content.term
         self.assertEqual(cmpd.connector, Connector.Disjunction)
         self.assertTrue(cmpd[1].word == 'IsSinger')
@@ -114,7 +114,7 @@ class TEST_Parser(unittest.TestCase):
 
     def test_compound_multi_6(self): 
         line = '<(A * B|C * D)-->R>.'
-        content: Judgment = Narsese.parser.parse(line).sentence
+        content: Judgement = Narsese.parser.parse(line).sentence
         # <(*, A, (|, B, C), D)-->R>. 
         stat: Statement = content.term
         cmpd: Compound = stat.subject
@@ -171,7 +171,7 @@ class TEST_Parser(unittest.TestCase):
 
     def test_compound_negation(self):
         line = '(--, A).'
-        content: Judgment = Narsese.parser.parse(line).sentence
+        content: Judgement = Narsese.parser.parse(line).sentence
         cmpd: Compound = content.term
         self.assertIsInstance(cmpd, Compound)
         self.assertEqual(len(cmpd), 1)
@@ -187,14 +187,14 @@ class TEST_Parser(unittest.TestCase):
 
     def test_compound_single_1(self):
         line = '(A-B).'
-        content: Judgment = Narsese.parser.parse(line).sentence
+        content: Judgement = Narsese.parser.parse(line).sentence
         cmpd: Compound = content.term
         self.assertIsInstance(cmpd, Compound)
         self.assertEqual(len(cmpd), 2)
         self.assertEqual(cmpd.connector, Connector.ExtensionalDifference)
 
         line = '(A~B).'
-        content: Judgment = Narsese.parser.parse(line).sentence
+        content: Judgement = Narsese.parser.parse(line).sentence
         cmpd: Compound = content.term
         self.assertIsInstance(cmpd, Compound)
         self.assertEqual(len(cmpd), 2)
@@ -202,7 +202,7 @@ class TEST_Parser(unittest.TestCase):
 
     def test_compound_single_2(self):
         line = '(A*B-C*D).'
-        content: Judgment = Narsese.parser.parse(line).sentence
+        content: Judgement = Narsese.parser.parse(line).sentence
         cmpd: Compound = content.term
         self.assertIsInstance(cmpd, Compound)
         self.assertEqual(cmpd.count(), 2)
@@ -231,18 +231,18 @@ class TEST_Parser(unittest.TestCase):
 
     def test_variable_1(self):
         line = '<$x-->A>.'
-        content: Judgment = Narsese.parser.parse(line).sentence
+        content: Judgement = Narsese.parser.parse(line).sentence
         stat: Statement = content.term
         self.assertIsInstance(stat.subject, Variable)
         self.assertEqual(stat.subject.prefix, VarPrefix.Independent)
         line = '<#x-->A>.'
-        content: Judgment = Narsese.parser.parse(line).sentence
+        content: Judgement = Narsese.parser.parse(line).sentence
         stat: Statement = content.term
         self.assertIsInstance(stat.subject, Variable)
         self.assertEqual(stat.subject.prefix, VarPrefix.Dependent)
 
         line = '<?1 --> (&,[red],apple)>?'
-        content: Judgment = Narsese.parser.parse(line).sentence
+        content: Judgement = Narsese.parser.parse(line).sentence
         stat: Statement = content.term
         self.assertIsInstance(stat.subject, Variable)
         self.assertEqual(stat.subject.prefix, VarPrefix.Query)

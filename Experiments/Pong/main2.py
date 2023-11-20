@@ -19,7 +19,7 @@ from atariari.benchmark.wrapper import AtariARIWrapper
 from time import sleep
 from pynars.NARS.DataStructures._py.Memory import Memory
 
-from pynars.Narsese import Task, Judgment, Term, Stamp, Base
+from pynars.Narsese import Task, Judgement, Term, Stamp, Base
 from pynars import Global
 from pynars.NARS import Reasoner
 from pynars.Console import handle_lines, run_file
@@ -80,10 +80,10 @@ class Perceptron:
         word_change_x = f'dist_x_{change_x}'
         word_change_y = f'dist_y_{change_y}'
             
-        dist_x = Task(Judgment(Term(word_dist_x), Stamp(Global.time, Global.time, None, Base((Global.get_input_id(),)))))
-        dist_y = Task(Judgment(Term(word_dist_y), Stamp(Global.time, Global.time, None, Base((Global.get_input_id(),)))))
-        change_x = Task(Judgment(Term(word_change_x), Stamp(Global.time, Global.time, None, Base((Global.get_input_id(),)))))
-        change_y = Task(Judgment(Term(word_change_y), Stamp(Global.time, Global.time, None, Base((Global.get_input_id(),)))))
+        dist_x = Task(Judgement(Term(word_dist_x), Stamp(Global.time, Global.time, None, Base((Global.get_input_id(),)))))
+        dist_y = Task(Judgement(Term(word_dist_y), Stamp(Global.time, Global.time, None, Base((Global.get_input_id(),)))))
+        change_x = Task(Judgement(Term(word_change_x), Stamp(Global.time, Global.time, None, Base((Global.get_input_id(),)))))
+        change_y = Task(Judgement(Term(word_change_y), Stamp(Global.time, Global.time, None, Base((Global.get_input_id(),)))))
         return dist_x, dist_y, change_x, change_y
 
 
@@ -155,10 +155,10 @@ def policy_nars(env: gym.Env):
             handle_lines(nars, '10')
             # nars.cycles(10)
         else:
-            game_reset = Task(Judgment(Statement.Inheritance(Compound.Instance(Term('game')), Compound.Property(Term('reset'))), Stamp(Global.time, Global.time, None, Base((Global.get_input_id(),)))))
+            game_reset = Task(Judgement(Statement.Inheritance(Compound.Instance(Term('game')), Compound.Property(Term('reset'))), Stamp(Global.time, Global.time, None, Base((Global.get_input_id(), )))))
             nars.perception_channel.put(game_reset)
         if i_step % 4 == 0:
-            goal = Task(Judgment(Term('ball_holded'), Stamp(Global.time, Global.time, None, Base((Global.get_input_id(),))), truth=Truth(1.00, 0.99, 1))) # remind the system the goal every 4 steps.
+            goal = Task(Judgement(Term('ball_holded'), Stamp(Global.time, Global.time, None, Base((Global.get_input_id(), ))), truth=Truth(1.00, 0.99, 1))) # remind the system the goal every 4 steps.
             nars.perception_channel.put(goal)
 
         action_last = action

@@ -1,5 +1,5 @@
 from typing import List
-from pynars.Narsese import Copula, Statement, Compound, Connector, Term, Judgment, Truth, Task, Belief, Budget, Stamp, Goal, Quest, Question
+from pynars.Narsese import Copula, Statement, Compound, Connector, Term, Judgement, Truth, Task, Belief, Budget, Stamp, Goal, Quest, Question
 from pynars.Narsese import place_holder, truth_analytic
 
 from ..Functions.TruthValueFunctions import *
@@ -18,7 +18,7 @@ def uni_composition(task: Task, term_concept: Term, budget_tasklink: Budget=None
     <(|, P, Q) --> S>.  (inverse_copula: <S --> (&, P, Q)>.)
     '''
     stamp_task: Stamp = task.stamp
-    premise: Judgment = task.sentence
+    premise: Judgement = task.sentence
     stat: Statement = premise.term
     
     subject = term_concept if not inverse_copula else stat.subject
@@ -28,7 +28,7 @@ def uni_composition(task: Task, term_concept: Term, budget_tasklink: Budget=None
     statement = Statement(subject, stat.copula, predicate)
     budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
     stamp = stamp_task
-    sentence_derived = Judgment(statement, stamp, truth)
+    sentence_derived = Judgement(statement, stamp, truth)
 
     return Task(sentence_derived, budget)
 
@@ -41,7 +41,7 @@ def uni_composition_prime(task: Task, term_concept: Term, budget_tasklink: Budge
     <(~, Q, P) --> S>.  (inverse_copula: <S --> (-, Q, P)>.)
     '''
     stamp_task: Stamp = task.stamp
-    premise: Judgment = task.sentence
+    premise: Judgement = task.sentence
     stat: Statement = premise.term
     
     subject = term_concept if not inverse_copula else stat.subject
@@ -51,7 +51,7 @@ def uni_composition_prime(task: Task, term_concept: Term, budget_tasklink: Budge
     statement = Statement(subject, stat.copula, predicate)
     budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
     stamp = stamp_task
-    sentence_derived = Judgment(statement, stamp, truth)
+    sentence_derived = Judgement(statement, stamp, truth)
 
     return Task(sentence_derived, budget)
 
@@ -89,7 +89,7 @@ def uni_decomposition(task: Task, term_concept: Term, budget_tasklink: Budget=No
     <S --> P>.              (inverse_copula: <P --> S>.)
     '''
     stamp_task: Stamp = task.stamp
-    premise: Judgment = task.sentence
+    premise: Judgement = task.sentence
     stat: Statement = premise.term
     
     subject: Union[Compound, Term] = stat.subject if not inverse_copula else term_concept
@@ -99,7 +99,7 @@ def uni_decomposition(task: Task, term_concept: Term, budget_tasklink: Budget=No
     statement = Statement(subject, stat.copula, predicate)
     budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
     stamp = stamp_task
-    sentence_derived = Judgment(statement, stamp, truth)
+    sentence_derived = Judgement(statement, stamp, truth)
 
     return Task(sentence_derived, budget)
 
@@ -113,7 +113,7 @@ def bi_composition(task: Task, term_concept: Term, budget_tasklink: Budget=None,
     <(|, S, M) --> (|, P, M)>. (inverse_copula: <(|, P, M) --> (|, S, M)>.)
     '''
     stamp_task: Stamp = task.stamp
-    premise: Judgment = task.sentence
+    premise: Judgement = task.sentence
     stat: Statement = premise.term
     compound: Compound = term_concept
         
@@ -124,7 +124,7 @@ def bi_composition(task: Task, term_concept: Term, budget_tasklink: Budget=None,
     truth = Truth_deduction(premise.truth, truth_analytic)
     budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
     stamp = stamp_task
-    sentence_derived = Judgment(statement, stamp, truth)
+    sentence_derived = Judgement(statement, stamp, truth)
 
     return Task(sentence_derived, budget)
 
@@ -142,7 +142,7 @@ def bi_composition_prime(task: Task, term_concept: Term, budget_tasklink: Budget
     <(/, M1, M2, _ P) --> (/, M1, M2, _ S)>. (inverse_copula: <(/, M1, M2, _ S) --> (/, M1, M2, _ P)>.)
     '''
     stamp_task: Stamp = task.stamp
-    premise: Judgment = task.sentence
+    premise: Judgement = task.sentence
     stat: Statement = premise.term
     compound: Compound = term_concept
         
@@ -153,7 +153,7 @@ def bi_composition_prime(task: Task, term_concept: Term, budget_tasklink: Budget
     truth = Truth_deduction(premise.truth, truth_analytic)
     budget = Budget_forward_compound(statement, truth, budget_tasklink, budget_termlink)
     stamp = stamp_task
-    sentence_derived = Judgment(statement, stamp, truth)
+    sentence_derived = Judgement(statement, stamp, truth)
 
     return Task(sentence_derived, budget)
 
@@ -168,7 +168,7 @@ def bi_decomposition(task: Task, term_concept: Term, budget_tasklink: Budget=Non
     <S --> P>.          (inverse_copula: <P --> S>.)
     '''
     stamp_task: Stamp = task.stamp
-    premise: Judgment = task.sentence
+    premise: Judgement = task.sentence
     stat: Statement = premise.term
     compound_subject: Compound = stat.subject
     compound_predicate: Compound = stat.predicate
@@ -184,7 +184,7 @@ def bi_decomposition(task: Task, term_concept: Term, budget_tasklink: Budget=Non
         budget = Budget_backward_compound(truth, budget_tasklink, budget_termlink)
 
     stamp = stamp_task
-    sentence_derived = Judgment(statement, stamp, truth)
+    sentence_derived = Judgement(statement, stamp, truth)
 
     return Task(sentence_derived, budget)
 
@@ -200,7 +200,7 @@ def transform_product_to_image(task: Task, term_concept: Term, budget_tasklink: 
         <R --> (*, T1, T2)> |- <(\, R, T1, _) --> T2>
     '''
     stamp_task: Stamp = task.stamp
-    premise: Judgment = task.sentence
+    premise: Judgement = task.sentence
     stat: Statement = premise.term
     
     subject = term_concept if not inverse_copula else Compound.IntensionalImage(term_concept, stat.subject, compound_product=stat.predicate)
@@ -214,7 +214,7 @@ def transform_product_to_image(task: Task, term_concept: Term, budget_tasklink: 
         budget = Budget_backward_compound(truth, budget_tasklink, budget_termlink)
 
     stamp = stamp_task
-    sentence_derived = Judgment(statement, stamp, truth)
+    sentence_derived = Judgement(statement, stamp, truth)
 
     return Task(sentence_derived, budget)
 
@@ -239,7 +239,7 @@ def transform_image_to_product(task: Task, term_concept: Term, budget_tasklink: 
         <(\, R, T1, _) --> T2> |- <R --> (*, T1, T2)>                 
     '''
     stamp_task: Stamp = task.stamp
-    premise: Judgment = task.sentence
+    premise: Judgement = task.sentence
     stat: Statement = premise.term
     
     compound_subject: Compound = stat.subject
@@ -255,7 +255,7 @@ def transform_image_to_product(task: Task, term_concept: Term, budget_tasklink: 
         budget = Budget_backward_compound(truth, budget_tasklink, budget_termlink)
 
     stamp = stamp_task
-    sentence_derived = Judgment(statement, stamp, truth)
+    sentence_derived = Judgement(statement, stamp, truth)
 
     return Task(sentence_derived, budget)
 
@@ -350,7 +350,7 @@ def inheritance_theorem5(task: Task, term_concept: Term, budget_tasklink: Budget
     '''
     <(*, (/, R, _, T), T) --> R>.
     '''
-    return Judgment(
+    return Judgement(
         Statement(
             Compound(
                 Connector.Product, 
@@ -370,7 +370,7 @@ def inheritance_theorem6(task: Task, term_concept: Term, budget_tasklink: Budget
     '''
     <R --> (*, (\, R, _, T), T)>.
     '''
-    return Judgment(
+    return Judgement(
         Statement(
             R,
             Copula.Inheritance,
@@ -404,7 +404,7 @@ def similarity_theorem1(R: Term, T: Term):
     '''
     <(--, (--, T)) <-> T>.
     '''
-    return Judgment(
+    return Judgement(
         Statement(
             Compound(Connector.Negation, Compound(Connector.Negation, T)),
             Copula.Inheritance,
@@ -425,7 +425,7 @@ def similarity_theorem2_1(T1: Term, T2: Term, *Ts: Term):
     term1 = Compound(Connector.IntensionalIntersection, *Ts)
     term2 = Compound(Connector.ExtensionalSet, *(T[0] for T in Ts))
 
-    return Judgment(
+    return Judgement(
         Statement(
             term1,
             Copula.Similarity,
@@ -443,7 +443,7 @@ def similarity_theorem2_2(T1: Term, T2: Term, *Ts: Term):
     term1 = Compound(Connector.IntensionalIntersection,  *(Compound(Connector.ExtensionalSet, T) for T in Ts))
     term2 = Compound(Connector.ExtensionalSet, *Ts)
 
-    return Judgment(
+    return Judgement(
         Statement(
             term1,
             Copula.Similarity,
@@ -462,7 +462,7 @@ def similarity_theorem3_1(T1: Term, T2: Term, *Ts: Term):
     term1 = Compound(Connector.ExtensionalIntersection, *Ts)
     term2 = Compound(Connector.IntensionalSet, *(T[0] for T in Ts))
 
-    return Judgment(
+    return Judgement(
         Statement(
             term1,
             Copula.Similarity,
@@ -478,7 +478,7 @@ def similarity_theorem3_2(T1: Term, T2: Term, *Ts: Term):
     term1 = Compound(Connector.ExtensionalIntersection,  *(Compound(Connector.IntensionalSet, T) for T in Ts))
     term2 = Compound(Connector.IntensionalSet, *Ts)
 
-    return Judgment(
+    return Judgement(
         Statement(
             term1,
             Copula.Similarity,
@@ -497,7 +497,7 @@ def similarity_theorem4(T1: Term, T2: Term, *Ts: Term):
     term1 = Compound(Connector.ExtensionalDifference, Compound(Connector.ExtensionalSet, *Ts), Compound(Connector.ExtensionalSet, Tn))
     term2 = Compound(Connector.ExtensionalSet, *Ts)
 
-    return Judgment(
+    return Judgement(
         Statement(
             term1,
             Copula.Similarity,
@@ -516,7 +516,7 @@ def similarity_theorem5(T1: Term, T2: Term, *Ts: Term):
     term1 = Compound(Connector.IntensionalDifference, Compound(Connector.IntensionalSet, *Ts), Compound(Connector.IntensionalSet, Tn))
     term2 = Compound(Connector.IntensionalSet, *Ts)
 
-    return Judgment(
+    return Judgement(
         Statement(
             term1,
             Copula.Similarity,
@@ -532,7 +532,7 @@ def similarity_theorem6(T1: Term, T2: Term):
     term1 = Compound(Connector.ExtensionalImage, Compound(Connector.Product, T1, T2), place_holder, T2)
     term2 = T1
 
-    return Judgment(
+    return Judgement(
         Statement(
             term1,
             Copula.Similarity,
@@ -548,7 +548,7 @@ def similarity_theorem7(T1: Term, T2: Term):
     term1 = Compound(Connector.IntensionalImage, Compound(Connector.Product, T1, T2), place_holder, T2)
     term2 = T1
 
-    return Judgment(
+    return Judgement(
         Statement(
             term1,
             Copula.Similarity,
@@ -596,7 +596,7 @@ def implication_theorem1(task: Task, term_concept: Term, budget_tasklink: Budget
     <<S <-> P> ==> <S --> P>>.
     '''
     stamp_task: Stamp = task.stamp
-    premise: Judgment = task.sentence
+    premise: Judgement = task.sentence
     stat: Statement = premise.term
 
     subject = stat.subject if not inverse_copula else stat.predicate
@@ -605,7 +605,7 @@ def implication_theorem1(task: Task, term_concept: Term, budget_tasklink: Budget
     stamp = stamp_task
     if premise.is_judgement:
         truth = Truth_deduction(premise.truth, truth_analytic)
-        sentence_derived = Judgment(statement, stamp, truth)
+        sentence_derived = Judgement(statement, stamp, truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
     # elif premise.is_goal:
     #     truth = Truth_deduction(premise.truth, truth_analytic)
@@ -634,12 +634,12 @@ def implication_theorem3(task: Task, term_concept: Term, budget_tasklink: Budget
     <(&&, S1, S2) ==> S1>.
     '''
     stamp_task: Stamp = task.stamp
-    premise: Judgment = task.sentence
+    premise: Judgement = task.sentence
 
     stamp = stamp_task
     if premise.is_judgement:
         truth = Truth_deduction(premise.truth, truth_analytic)
-        sentence_derived = Judgment(term_concept, stamp, truth)
+        sentence_derived = Judgement(term_concept, stamp, truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
     elif premise.is_goal:
         truth = Truth_deduction(premise.truth, truth_analytic)
@@ -664,12 +664,12 @@ def implication_theorem4(task: Task, term_concept: Term, budget_tasklink: Budget
     <S1 ==> (||, S1, S2)>.
     '''
     stamp_task: Stamp = task.stamp
-    premise: Judgment = task.sentence
+    premise: Judgement = task.sentence
 
     stamp = stamp_task
     if premise.is_judgement:
         truth = Truth_deduction(premise.truth, truth_analytic)
-        sentence_derived = Judgment(term_concept, stamp, truth)
+        sentence_derived = Judgement(term_concept, stamp, truth)
         budget = Budget_forward(truth, budget_tasklink, budget_termlink)
     elif premise.is_goal:
         truth = Truth_deduction(premise.truth, truth_analytic)
@@ -806,7 +806,7 @@ def implication_theorem21(M: Term, T1: Term, T2: Term):
     '''
     <<M --> (-, T1, T2)> ==> (--, <M --> T2>)>.
     '''
-    return Judgment(
+    return Judgement(
         Statement(
             Statement(M, Copula.Inheritance, Compound(Connector.ExtensionalDifference, T1, T2)),
             Copula.Implication,
@@ -819,7 +819,7 @@ def implication_theorem22(M: Term, T1: Term, T2: Term):
     '''
     <<(~, T1, T2) --> M> ==> (--, <T2 --> M>)>.
     '''
-    return Judgment(
+    return Judgement(
         Statement(
             Statement(Compound(Connector.IntensionalDifference, T1, T2), Copula.Inheritance, M),
             Copula.Implication,
@@ -833,7 +833,7 @@ def implication_theorem23(task: Task, term_concept: Term, budget_tasklink: Budge
     '''
     <<S --> P> ==> <(/, S, M) --> (/, P, M)>>.
     '''
-    return Judgment(
+    return Judgement(
         Statement(
             Statement(S, Copula.Inheritance, P),
             Copula.Implication,
@@ -847,7 +847,7 @@ def implication_theorem24(task: Task, term_concept: Term, budget_tasklink: Budge
     '''
     <<S --> P> ==> <(\, S, M) --> (\, P, M)>>.
     '''
-    return Judgment(
+    return Judgement(
         Statement(
             Statement(S, Copula.Inheritance, P),
             Copula.Implication,
@@ -861,7 +861,7 @@ def implication_theorem25(task: Task, term_concept: Term, budget_tasklink: Budge
     '''
     <<S --> P> ==> <(/, M, P) --> (/, M, S)>>.
     '''
-    return Judgment(
+    return Judgement(
         Statement(
             Statement(S, Copula.Inheritance, P),
             Copula.Implication,
@@ -875,7 +875,7 @@ def implication_theorem26(task: Task, term_concept: Term, budget_tasklink: Budge
     '''
     <<S --> P> ==> <(\, M, P) --> (\, M, S)>>.
     '''
-    return Judgment(
+    return Judgement(
         Statement(
             Statement(S, Copula.Inheritance, P),
             Copula.Implication,
@@ -917,7 +917,7 @@ def equivalence_theorem1(task: Task, term_concept: Term, budget_tasklink: Budget
     '''
     <<S <-> P> <=> (&&, <S --> P>, <P --> S>)>.
     '''
-    return Judgment(
+    return Judgement(
         Statement(
             Statement(S, Copula.Similarity, P),
             Copula.Equivalence,
@@ -930,7 +930,7 @@ def equivalence_theorem2(S: Term, P: Term):
     '''
     <<S <=> P> <=> (&&, <S ==> P>, <P ==> S>)>.
     '''
-    return Judgment(
+    return Judgement(
         Statement(
             Statement(S, Copula.Equivalence, P),
             Copula.Equivalence,
@@ -947,7 +947,7 @@ def equivalence_theorem3(task: Task, term_concept: Term, budget_tasklink: Budget
     <<S <-> P> <=> <({, S) <-> ({, P)>>.
     '''
     stamp_task: Stamp = task.stamp
-    premise: Judgment = task.sentence
+    premise: Judgement = task.sentence
     stat: Statement = premise.term
     truth = premise.truth
     copula = stat.copula
@@ -969,7 +969,7 @@ def equivalence_theorem3(task: Task, term_concept: Term, budget_tasklink: Budget
         budget = Budget_backward_compound(truth, budget_tasklink, budget_termlink)
 
     stamp = stamp_task
-    sentence_derived = Judgment(statement, stamp, truth)
+    sentence_derived = Judgement(statement, stamp, truth)
 
     return Task(sentence_derived, budget)
 
@@ -979,7 +979,7 @@ def equivalence_theorem4(task: Task, term_concept: Term, budget_tasklink: Budget
     <<S <-> P> <=> <({, S) <-> ({, P)>>.
     '''
     stamp_task: Stamp = task.stamp
-    premise: Judgment = task.sentence
+    premise: Judgement = task.sentence
     stat: Statement = premise.term
     truth = premise.truth
     copula = stat.copula
@@ -1002,7 +1002,7 @@ def equivalence_theorem4(task: Task, term_concept: Term, budget_tasklink: Budget
 
     
     stamp = stamp_task
-    sentence_derived = Judgment(statement, stamp, truth)
+    sentence_derived = Judgement(statement, stamp, truth)
 
     return Task(sentence_derived, budget)
 
@@ -1012,7 +1012,7 @@ def equivalence_theorem5(task: Task, term_concept: Term, budget_tasklink: Budget
     <<S --> {P}> <=> <S <-> {P}>>.
     '''
     stamp_task: Stamp = task.stamp
-    premise: Judgment = task.sentence
+    premise: Judgement = task.sentence
     stat: Statement = premise.term
     truth = premise.truth
     if not inverse_copula:
@@ -1039,7 +1039,7 @@ def equivalence_theorem5(task: Task, term_concept: Term, budget_tasklink: Budget
 
     statement = Statement(subject, copula, predicate)
     stamp = stamp_task
-    sentence_derived = Judgment(statement, stamp, truth)
+    sentence_derived = Judgement(statement, stamp, truth)
 
     return Task(sentence_derived, budget)
 
@@ -1049,7 +1049,7 @@ def equivalence_theorem6(task: Task, term_concept: Term, budget_tasklink: Budget
     <<[S] --> P> <=> <[S] <-> P>>.
     '''
     stamp_task: Stamp = task.stamp
-    premise: Judgment = task.sentence
+    premise: Judgement = task.sentence
     stat: Statement = premise.term
     truth = premise.truth
     if not inverse_copula:
@@ -1075,7 +1075,7 @@ def equivalence_theorem6(task: Task, term_concept: Term, budget_tasklink: Budget
         budget = Budget_backward_compound(truth, budget_tasklink, budget_termlink)
 
     stamp = stamp_task
-    sentence_derived = Judgment(statement, stamp, truth)
+    sentence_derived = Judgement(statement, stamp, truth)
 
     return Task(sentence_derived, budget)
 
@@ -1086,7 +1086,7 @@ def equivalence_theorem7(S1: Term, S2: Term, P1: Term, P2: Term):
     '''
     <<(*, S1, S2) --> (*, P1, P2)> <=> (&&, <S1 --> P1>, <S2 --> P2>)>.
     '''
-    return Judgment(
+    return Judgement(
         Statement(
             Statement(Compound(Connector.Product, S1, S2), Copula.Inheritance, Compound(Connector.Product, P1, P2)),
             Copula.Equivalence,
@@ -1099,7 +1099,7 @@ def equivalence_theorem8(S1: Term, S2: Term, P1: Term, P2: Term):
     '''
     <<(*, S1, S2) <-> (*, P1, P2)> <=>(&&, <S1 <-> P1>, <S2 <-> P2>)>.
     '''
-    return Judgment(
+    return Judgement(
         Statement(
             Statement(Compound(Connector.Product, S1, S2), Copula.Similarity, Compound(Connector.Product, P1, P2)),
             Copula.Equivalence,
@@ -1174,7 +1174,7 @@ def equivalence_theorem17(S1: Term, S2: Term, S3: Term):
     <<S1 ==> <S2 ==> S3>> <=> <(&&, S1, S2) ==> S3>>.
     '''
     assert isinstance(S1, Statement) and isinstance(S2, Statement) and isinstance(S3, Statement)
-    return Judgment(
+    return Judgement(
         Statement(
             Statement(S1, Copula.Implication, Statement(S2, Copula.Implication, S3)),
             Copula.Equivalence,
@@ -1188,7 +1188,7 @@ def equivalence_theorem18(S1: Term, S2: Term):
     <(--, (&&, S1, S2)) <=> (||, (--, S1), (--, S2))>.
     '''
     assert isinstance(S1, Statement) and isinstance(S2, Statement)
-    return Judgment(
+    return Judgement(
         Statement(
             Compound(Connector.Negation, Compound(Connector.Conjunction, S1, S2)),
             Copula.Equivalence,
@@ -1202,7 +1202,7 @@ def equivalence_theorem19(S1: Term, S2: Term):
     <(--, (||, S1, S2)) <=> (&&, (--, S1), (--, S2))>.
     '''
     assert isinstance(S1, Statement) and isinstance(S2, Statement)
-    return Judgment(
+    return Judgement(
         Statement(
             Compound(Connector.Negation, Compound(Connector.Disjunction, S1, S2)),
             Copula.Equivalence,
@@ -1216,7 +1216,7 @@ def equivalence_theorem20(S1: Term, S2: Term):
     <<S1 <=> S2> <=> <(--, S1) <=> (--, S2)>>.
     '''
     assert isinstance(S1, Statement) and isinstance(S2, Statement)
-    return Judgment(
+    return Judgement(
         Statement(
             Statement(S1, Copula.Equivalence, S2),
             Copula.Equivalence,

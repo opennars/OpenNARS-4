@@ -1,6 +1,6 @@
 # from pynars.NARS.DataStructures._py.Link import TermLink
 from math import log2
-from pynars.Narsese import Budget, Truth, Term, Task, Goal, Judgment
+from pynars.Narsese import Budget, Truth, Term, Task, Goal, Judgement
 from pynars.Config import Config
 from .ExtendedBooleanFunctions import *
 from copy import deepcopy
@@ -137,7 +137,7 @@ def Budget_merge(budget_base: Budget, budget_merged: Budget, replace=True):
 '''Belief and Desire'''
 '''Processing Units'''
 '''Goal Evaluations'''
-def Budget_evaluate_goal_solution(problem: Goal, solution: Judgment, budget_problem: Budget, budget_tasklink: Budget=None) -> Budget:
+def Budget_evaluate_goal_solution(problem: Goal, solution: Judgement, budget_problem: Budget, budget_tasklink: Budget=None) -> Budget:
     '''
     Evaluate the quality of a belief as a solution to a problem, then reward the belief and de-prioritize the problem
     '''
