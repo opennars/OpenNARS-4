@@ -60,7 +60,7 @@ class Config:
     truth_epsilon = 0.01
     budget_epsilon = 0.0001
 
-    r_term_complexity_unit = 1.0
+    r_term_complexity_unit = 0.5
     t_sentence_directness_unit = 1.0
 
 
