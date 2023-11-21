@@ -74,13 +74,13 @@ def Budget_inference(quality: float, budget_tasklink: Budget, budget_termlink: B
 
 
 def Budget_forward(truth_new_task: Truth, budget_tasklink: Budget, budget_termlink: Budget=None):
-    return Budget_inference(truth_to_quality(truth_new_task), budget_tasklink, budget_termlink, 1.0 ** -Config.r_term_complexity_unit)
+    return Budget_inference(truth_to_quality(truth_new_task), budget_tasklink, budget_termlink, 1.0)
 
 def Budget_backward(truth_new_task: Truth, budget_tasklink: Budget, budget_termlink: Budget=None):
-    return Budget_inference(truth_to_quality(truth_new_task), budget_tasklink, budget_termlink, 1.0 ** -Config.r_term_complexity_unit)
+    return Budget_inference(truth_to_quality(truth_new_task), budget_tasklink, budget_termlink, 1.0)
 
 def Budget_backward_weak(truth_new_task: Truth, budget_tasklink: Budget, budget_termlink: Budget=None):
-    return Budget_inference(w_to_c(1, Config.k)*truth_to_quality(truth_new_task), budget_tasklink, budget_termlink, 1.0 ** -Config.r_term_complexity_unit)
+    return Budget_inference(w_to_c(1, Config.k)*truth_to_quality(truth_new_task), budget_tasklink, budget_termlink, 1.0)
 
 def Budget_forward_compound(content: Term, truth_new_task: Truth, budget_tasklink: Budget, budget_termlink: Budget=None):
     '''Ref. OpenNARS 3.1.0 BudgetFunctions.java line 254~257.'''
