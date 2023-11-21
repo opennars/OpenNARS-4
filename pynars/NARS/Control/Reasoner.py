@@ -20,13 +20,13 @@ from pynars.NAL.Functions.Tools import project_truth, project
 
 class Reasoner:
 
-    def __init__(self, n_memory, capacity, config = './config.json') -> None:
+    def __init__(self, n_memory, capacity, config = './config.json', nal_rules={1,2,3,4,5,6,7,8,9}) -> None:
         # print('''Init...''')
         Config.load(config)
 
-        self.inference = GeneralEngine()
-        self.variable_inference = VariableEngine()
-        self.temporal_inference = TemporalEngine() # for temporal causal reasoning 
+        self.inference = GeneralEngine(add_rules=nal_rules)
+        self.variable_inference = VariableEngine(add_rules=nal_rules)
+        self.temporal_inference = TemporalEngine(add_rules=nal_rules) # for temporal causal reasoning 
 
         self.memory = Memory(n_memory)
         self.overall_experience = Buffer(capacity)
@@ -42,12 +42,22 @@ class Reasoner:
         self.operations_buffer = Buffer(capacity)
 
     def reset(self):
-        ''''''
-        # TODO
+        self.memory.reset()
+        self.overall_experience.reset()
+        self.internal_experience.reset()
+        self.narsese_channel.reset()
+        self.perception_channel.reset()
+        for channel in self.channels:
+            channel.reset()
+
+        self.sequence_buffer.reset()
+        self.operations_buffer.reset()
 
     def cycles(self, n_cycle: int):
+        tasks_all_cycles = []
         for _ in range(n_cycle):
-            self.cycle()
+            tasks_all_cycles.append(self.cycle())
+        return tasks_all_cycles
 
     def input_narsese(self, text, go_cycle: bool = False) -> Tuple[bool, Union[Task, None], Union[Task, None]]:
         success, task, task_overflow = self.narsese_channel.put(text)
@@ -91,7 +101,7 @@ class Reasoner:
             # self.sequence_buffer.put_back(task) # globalBuffer.putBack(task,
             # narParameters.GLOBAL_BUFFER_FORGET_DURATIONS, this)
 
-            if Enable.temporal_rasoning:
+            if Enable.temporal_reasoning:
                 # TODO: Temporal Inference
                 # Ref: OpenNARS 3.1.0 line 409~411
                 # if (!task.sentence.isEternal() && !(task.sentence.term instanceof Operation)) {
@@ -124,7 +134,7 @@ class Reasoner:
                 self.memory.put_back(concept)
 
         #   temporal induction in NAL-7
-        if False and task is not None and task.is_judgement and task.is_external_event:
+        if Enable.temporal_reasoning and task is not None and task.is_judgement and task.is_external_event:
             concept_task: Concept = self.memory.take_by_key(task.term, remove=False)
             t1 = time()
             tasks_derived.extend(
@@ -140,7 +150,7 @@ class Reasoner:
             pass  # TODO: select a task from `self.sequence_buffer`?
 
         #   mental operation of NAL-9
-        if False:
+        if Enable.operation: # it should be `Enable.mental_operation`?
             task_operation_return, task_executed, belief_awared = self.mental_operation(task, concept, answers_question,
                                                                                         answers_quest)
             if task_operation_return is not None: tasks_derived.append(task_operation_return)
@@ -153,8 +163,8 @@ class Reasoner:
 
         # handle the sense of time
         Global.time += 1
-        thresh_compexity = 20
-        tasks_derived = [task for task in tasks_derived if task.term.complexity <= thresh_compexity]
+        thresh_complexity = 20
+        tasks_derived = [task for task in tasks_derived if task.term.complexity <= thresh_complexity]
         return tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest, (
             task_operation_return, task_executed)
 
@@ -182,9 +192,12 @@ class Reasoner:
 
         return task_operation_return, task_executed, belief_awared
 
-    def register_operation(self, name_operation: str, callback: Callable):
-        ''''''
-        from pynars.Narsese import Operation as Op
-        op = Op(name_operation)
-        Operation.register(op, callback)
+    def register_operator(self, name_operator: str, callback: Callable):
+        '''register an operator and return the operator if successful (otherwise, return None)'''
+        if not Operation.is_registered_by_name(name_operator):
+            from pynars.Narsese import Operator as Op
+            op = Op(name_operator)
+            Operation.register(op, callback)
+            return op
+        return None
 

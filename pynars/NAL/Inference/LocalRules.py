@@ -26,7 +26,7 @@ def revision(task: Task, belief: Task, budget_tasklink: Budget=None, budget_term
     premise2: Union[Judgement, Goal] = belief.sentence
     truth1 = premise1.truth
     truth2 = premise2.truth
-    if Enable.temporal_rasoning:
+    if Enable.temporal_reasoning:
         # boolean useNewBeliefTerm = intervalProjection(nal, newBelief.getTerm(), oldBelief.getTerm(), beliefConcept.recent_intervals, newTruth);
         raise 
     truth = Truth_revision(truth1, truth2)
@@ -62,7 +62,9 @@ def solution_question(task: Task, belief: Belief, budget_tasklink: Budget=None, 
 
         # de-prioritize the question
         task.budget.priority = min(1-quality, task.budget.priority) # BUG: here, after setting the priority, the level of the task should change within a Bag.
-        
+        # record best solution so far    
+        task.best_solution = answer
+
     return belief if answer is not None else None
 
 def solution_goal(task: Task, belief: Belief, budget_tasklink: Budget=None, budget_termlink: Budget=None):

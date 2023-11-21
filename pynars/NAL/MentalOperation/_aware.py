@@ -10,7 +10,7 @@ from pynars.Narsese._py.Sentence import Goal, Judgement, Quest, Question, Senten
 from pynars.Narsese._py.Statement import Statement
 from pynars.Narsese._py.Task import Belief, Desire, Task
 from pynars.Narsese._py.Truth import Truth
-from ._register import registered_operations
+from ._register import registered_operators
 from pynars.Narsese import Term
 from ..Functions.Tools import truth_from_term, truth_to_quality, truth_to_term
 from pynars.Narsese import Base

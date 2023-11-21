@@ -74,7 +74,7 @@ class Memory:
         # Build the concepts corresponding to the terms of those components within the task.
         concept.accept(task, self.concepts, conceptualize=False)
 
-        if Enable.temporal_rasoning or Enable.operation:
+        if Enable.temporal_reasoning or Enable.operation:
             # if (!task.sentence.isEternal() && !(task.sentence.term instanceof Operation)) {
             #     globalBuffer.eventInference(task, cont, false); //can be triggered by Buffer itself in the future
             # }
@@ -94,7 +94,7 @@ class Memory:
         if belief is not None:
             # j2: Judgement = belief.sentence
             if revisible(task, belief):
-                if Enable.temporal_rasoning:
+                if Enable.temporal_reasoning:
                     '''
                     nal.setTheNewStamp(newStamp, oldStamp, nal.time.time());
                     final Sentence projectedBelief = oldBelief.projection(nal.time.time(), newStamp.getOccurrenceTime(), concept.memory);
@@ -240,13 +240,13 @@ class Memory:
             truth = task.truth
         if truth.e > Config.decision_threshold:
             if (task is not None) and task.is_executable and not (desire is not None and desire.evidential_base.contains(task.evidential_base)):
-                    #   execute registered operations 
+                    #   execute with registered operators 
                     stat: Statement = task.term
                     op = stat.predicate
-                    from pynars.NARS.Operation.Register import registered_operations
+                    from pynars.NARS.Operation.Register import registered_operators
                     from pynars.NARS.Operation.Execution import execute
-                    if op in registered_operations and not task.is_mental_operation:
-                        
+                    # ! if `op` isn't registered, an error "AttributeError: 'NoneType' object has no attribute 'stamp'" from "key: Callable[[Task], Any] = lambda task: (hash(task), hash(task.stamp.evidential_base))" will be raised
+                    if op in registered_operators and not task.is_mental_operation:
                         # to judge whether the goal has been fulfilled
                         task_operation_return, task_executed = execute(task, concept, self)
                         concept_task = self.take_by_key(task.term, remove=False)
@@ -403,6 +403,9 @@ class Memory:
 
     def put_back(self, concept: Concept):
         return self.concepts.put_back(concept)
+
+    def reset(self):
+        self.concepts.reset()
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__}: #items={len(self.concepts)}, #buckets={len(self.concepts.levels)}>"

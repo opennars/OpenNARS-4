@@ -10,6 +10,9 @@ from pynars.NAL.MentalOperation import execute
 nars = utils_for_test.nars
 
 class TEST_NAL9(unittest.TestCase):
+    def setUp(self):
+        nars.reset()
+
     ''''''
     def test_anticipate_0(self):
         '''
@@ -50,12 +53,11 @@ class TEST_NAL9(unittest.TestCase):
         ''outputMustContain('<cat --> animal>. :!0: %0.00;0.90%')
         '''
         
-        premise1 = '(^believe,{SELF},<cat --> animal>,FALSE)!'
-
-        nars.reset()
-        premise1: Task = Narsese.parse(premise1)
-        tasks_derived = [execute_one_premise(premise1)]
-
+        tasks_derived = process_two_premises(
+            '(^believe,{SELF},<cat --> animal>,FALSE)!',
+            None,
+            10
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<cat --> animal>. :!0: %0.00;0.90%')
         )
@@ -71,11 +73,23 @@ class TEST_NAL9(unittest.TestCase):
         ''outputMustContain('<a --> b>. %1.00;0.45%')
 
         '''
-        premise1 = '(^doubt,{SELF},<a --> b>)! %1.00;0.90%'
-        
+        process_two_premises(
+            '<a --> b>. %1.00;0.90%',
+            '(^doubt,{SELF},<a --> b>)! %1.00;0.90%',
+            100
+        )
+
         nars.reset()
-        premise1: Task = Narsese.parse(premise1)
-        tasks_derived = [execute_one_premise(premise1)]
+        
+        tasks_derived = process_two_premises(
+            '<a --> b>?',
+            None,
+            100
+        )
+
+        self.assertTrue(
+            output_contains(tasks_derived, '<a --> b>. %1.00;0.45%')
+        )
 
 
 if __name__ == '__main__':

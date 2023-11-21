@@ -10,6 +10,9 @@ from pynars.utils.Print import PrintType, print_out
 from pynars.NARS.InferenceEngine.VariableEngine.VariableEngine import VariableEngine
 
 class TEST_NAL6(unittest.TestCase):
+    def setUp(self):
+        nars.reset()
+
     ''''''
 
     def test_unification_0(self):
@@ -27,9 +30,10 @@ class TEST_NAL6(unittest.TestCase):
         'If something is a bird, then usually, it is a flyer. 
         ''outputMustContain('<<$1 --> bird> ==> <$1 --> flyer>>. %0.79;0.92%')
         '''
-        tasks_derived = memory_accept_revision(
+        tasks_derived = process_two_premises(
             '<<$x --> bird> ==> <$x --> flyer>>. %1.00;0.90%',
-            '<<$y --> bird> ==> <$y --> flyer>>. %0.00;0.70%'
+            '<<$y --> bird> ==> <$y --> flyer>>. %0.00;0.70%',
+            20
         )
         self.assertTrue(
             output_contains(tasks_derived, '<<$1 --> bird> ==> <$1 --> flyer>>. %0.79;0.92%')
@@ -55,27 +59,20 @@ class TEST_NAL6(unittest.TestCase):
         'I guess that if something is a animal, then it is a robin. 
         ''outputMustContain('<<$1 --> animal> ==> <$1 --> robin>>. %1.00;0.45%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<<$x --> bird> ==> <$x --> animal>>. %1.00;0.90%',
             '<<$y --> robin> ==> <$y --> bird>>. %1.00;0.90%',
-            '<$x --> bird>.', index_task=(0,), index_belief=(1,)
-        )
-        self.assertNotEqual(rules, None)
-
-        subst_var = get_substitution__var_var(task.term, belief.term, [0], [1]) # to find possible replacement.
-        subst_var.apply(task.term, belief.term)
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
-
-        repr(tasks_derived[0].term)
-        self.assertTrue(
-            output_contains(tasks_derived, '<<$1 --> robin> ==> <$1 --> animal>>. %1.00;0.81%')
+            20
         )
         self.assertTrue(
-            output_contains(tasks_derived, '<<$1 --> animal> ==> <$1 --> robin>>. %1.00;0.45%')
+            output_contains(tasks_derived, '<<$0 --> robin> ==> <$0 --> animal>>. %1.00;0.81%')
+        )
+        self.assertTrue(
+            output_contains(tasks_derived, '<<$0 --> animal> ==> <$0 --> robin>>. %1.00;0.45%')
         )
 
         self.assertTrue(
-            not output_contains(tasks_derived, '<<$1 --> animal> ==> <$2 --> robin>>. %1.00;0.45%')
+            not output_contains(tasks_derived, '<<$0 --> animal> ==> <$1 --> robin>>. %1.00;0.45%')
         )
         pass
 
@@ -108,32 +105,26 @@ class TEST_NAL6(unittest.TestCase):
         ''outputMustContain('<<$1 --> bird> <=> <$1 --> swimmer>>. %0.80;0.42%')
         '''
 
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<<$x --> swan> ==> <$x --> bird>>. %1.00;0.80% ',
             '<<$y --> swan> ==> <$y --> swimmer>>. %0.80;0.90%',
-            '<$x --> swan>.'
+            20
         )
-        self.assertNotEqual(rules, None)
-
-        subst_var = get_substitution__var_var(task.term, belief.term, [0], [0]) # to find possible replacement.
-        subst_var.apply(task.term, belief.term)
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
-
 
         self.assertTrue(
-            output_contains(tasks_derived, '<<$1 --> swan> ==> (||,<$1 --> bird>,<$1 --> swimmer>)>. %1.00;0.72%')
+            output_contains(tasks_derived, '<<$0 --> swan> ==> (||,<$0 --> bird>,<$0 --> swimmer>)>. %1.00;0.72%')
         )
         self.assertTrue(
-            output_contains(tasks_derived, '<<$1 --> swan> ==> (&&,<$1 --> bird>,<$1 --> swimmer>)>. %0.80;0.72%')
+            output_contains(tasks_derived, '<<$0 --> swan> ==> (&&,<$0 --> bird>,<$0 --> swimmer>)>. %0.80;0.72%')
         )
         self.assertTrue(
-            output_contains(tasks_derived, '<<$1 --> swimmer> ==> <$1 --> bird>>. %1.00;0.37%')
+            output_contains(tasks_derived, '<<$0 --> swimmer> ==> <$0 --> bird>>. %1.00;0.37%')
         )
         self.assertTrue(
-            output_contains(tasks_derived, '<<$1 --> bird> ==> <$1 --> swimmer>>. %0.80;0.42%')
+            output_contains(tasks_derived, '<<$0 --> bird> ==> <$0 --> swimmer>>. %0.80;0.42%')
         )
         self.assertTrue(
-            output_contains(tasks_derived, '<<$1 --> bird> <=> <$1 --> swimmer>>. %0.80;0.42%')
+            output_contains(tasks_derived, '<<$0 --> bird> <=> <$0 --> swimmer>>. %0.80;0.42%')
         )
         pass
 
@@ -165,31 +156,26 @@ class TEST_NAL6(unittest.TestCase):
         'I guess bird and swimmer share most properties.
         ''outputMustContain('<<bird --> $1> <=> <swimmer --> $1>>. %0.70;0.45%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<<bird --> $x> ==> <robin --> $x>>. %1.00;0.90%',
             '<<swimmer --> $y> ==> <robin --> $y>>. %0.70;0.90%',
-            '<robin --> $x>.'
+            20
         )
-        self.assertNotEqual(rules, None)
-
-        subst_var = get_substitution__var_var(task.term, belief.term, [1], [1]) # to find possible replacement.
-        subst_var.apply(task.term, belief.term)
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
-
+        
         self.assertTrue(
-            output_contains(tasks_derived, '<(&&,<bird --> $1>,<swimmer --> $1>) ==> <robin --> $1>>. %1.00;0.81%')
+            output_contains(tasks_derived, '<(&&,<bird --> $0>,<swimmer --> $0>) ==> <robin --> $0>>. %1.00;0.81%')
         )
         self.assertTrue(
-            output_contains(tasks_derived, '<(||,<bird --> $1>,<swimmer --> $1>) ==> <robin --> $1>>. %0.70;0.81%')
+            output_contains(tasks_derived, '<(||,<bird --> $0>,<swimmer --> $0>) ==> <robin --> $0>>. %0.70;0.81%')
         )
         self.assertTrue(
-            output_contains(tasks_derived, '<<bird --> $1> ==> <swimmer --> $1>>. %1.00;0.36%')
+            output_contains(tasks_derived, '<<bird --> $0> ==> <swimmer --> $0>>. %1.00;0.36%')
         )
         self.assertTrue(
-            output_contains(tasks_derived, '<<swimmer --> $1> ==> <bird --> $1>>. %0.70;0.45%')
+            output_contains(tasks_derived, '<<swimmer --> $0> ==> <bird --> $0>>. %0.70;0.45%')
         )
         self.assertTrue(
-            output_contains(tasks_derived, '<<bird --> $1> <=> <swimmer --> $1>>. %0.70;0.45%')
+            output_contains(tasks_derived, '<<bird --> $0> <=> <swimmer --> $0>>. %0.70;0.45%')
         )
 
 
@@ -208,19 +194,14 @@ class TEST_NAL6(unittest.TestCase):
         'If something can chirp and has wings, then it is a bird.
         ''outputMustContain('<(&&,<$1 --> [chirping]>,<$1 --> [with_wings]>) ==> <$1 --> bird>>. %1.00;0.81%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<(&&,<$x --> flyer>,<$x --> [chirping]>) ==> <$x --> bird>>. %1.00;0.90%',
             '<<$y --> [with_wings]> ==> <$y --> flyer>>. %1.00;0.90%',
-            '<$y --> flyer>.'
+            20
         )
-        self.assertNotEqual(rules, None)
-
-        subst_var = get_substitution__var_var(task.term, belief.term, [0,0], [1]) # to find possible replacement.
-        subst_var.apply(task.term, belief.term)
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
-
+        
         self.assertTrue(
-            output_contains(tasks_derived, '<(&&,<$1 --> [chirping]>,<$1 --> [with_wings]>) ==> <$1 --> bird>>. %1.00;0.81%')
+            output_contains(tasks_derived, '<(&&,<$0 --> [chirping]>,<$0 --> [with_wings]>) ==> <$0 --> bird>>. %1.00;0.81%')
         )
         pass
 
@@ -244,22 +225,17 @@ class TEST_NAL6(unittest.TestCase):
         'I guess if something has wings, then it can fly and eats worms.
         ''outputMustContain('<<$1 --> [with_wings]> ==> (&&,<$1 --> flyer>,<(*,$1,worms) --> food>)>. %1.00;0.45%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<(&&,<$x --> flyer>,<$x --> [chirping]>, <(*, $x, worms) --> food>) ==> <$x --> bird>>.  %1.00;0.90%',
             '<(&&,<$x --> [chirping]>,<$x --> [with_wings]>) ==> <$x --> bird>>. %1.00;0.90%',
-            'chirping.'
+            20
         )
-        self.assertNotEqual(rules, None)
-
-        subst_var = get_substitution__var_var(task.term, belief.term, [1], [1]) # to find possible replacement.
-        subst_var.apply(task.term, belief.term)
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
-
+        
         self.assertTrue(
-            output_contains(tasks_derived, '<(&&,<$1 --> flyer>,<(*,$1,worms) --> food>) ==> <$1 --> [with_wings]>>. %1.00;0.45%')
+            output_contains(tasks_derived, '<(&&,<$0 --> flyer>,<(*,$0,worms) --> food>) ==> <$0 --> [with_wings]>>. %1.00;0.45%')
         )
         self.assertTrue(
-            output_contains(tasks_derived, '<<$1 --> [with_wings]> ==> (&&,<$1 --> flyer>,<(*,$1,worms) --> food>)>. %1.00;0.45%')
+            output_contains(tasks_derived, '<<$0 --> [with_wings]> ==> (&&,<$0 --> flyer>,<(*,$0,worms) --> food>)>. %1.00;0.45%')
         )
         pass
 
@@ -291,17 +267,14 @@ class TEST_NAL6(unittest.TestCase):
         'If something has wings and eats worms, then I guess it is a bird.
         ''outputMustContain('<(&&,<$1 --> [with_wings]>,<(*,$1,worms) --> food>) ==> <$1 --> bird>>. %1.00;0.45%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<(&&,<$x --> flyer>,<(*,$x,worms) --> food>) ==> <$x --> bird>>. %1.00;0.90%',
             '<<$y --> flyer> ==> <$y --> [with_wings]>>. %1.00;0.90%',
-            'flyer.'
+            20
         )
-        self.assertNotEqual(rules, None)
-
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
-
+       
         self.assertTrue(
-            output_contains(tasks_derived, '<(&&,<$1 --> [with_wings]>,<(*,$1,worms) --> food>) ==> <$1 --> bird>>. %1.00;0.45%')
+            output_contains(tasks_derived, '<(&&,<$0 --> [with_wings]>,<(*,$0,worms) --> food>) ==> <$0 --> bird>>. %1.00;0.45%')
         )
         pass
 
@@ -321,16 +294,12 @@ class TEST_NAL6(unittest.TestCase):
         'A robin is an animal.
         ''outputMustContain('<robin --> animal>. %1.00;0.81%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<<$x --> bird> ==> <$x --> animal>>. %1.00;0.90%',
             '<robin --> bird>. %1.00;0.90%',
-            'bird.'
+            3
         )
-        self.assertNotEqual(rules, None)
-
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
-
-
+        
         self.assertTrue(
             output_contains(tasks_derived, '<robin --> animal>. %1.00;0.81%')
         )
@@ -352,15 +321,11 @@ class TEST_NAL6(unittest.TestCase):
         'I guess that a tiger is a bird.
         ''outputMustContain('<tiger --> bird>. %1.00;0.45%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<<$x --> bird> ==> <$x --> animal>>. %1.00;0.90%',
             '<tiger --> animal>. %1.00;0.90%',
-            'animal.'
+            10
         )
-        self.assertNotEqual(rules, None)
-
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
-
 
         self.assertTrue(
             output_contains(tasks_derived, '<tiger --> bird>. %1.00;0.45%')
@@ -383,15 +348,11 @@ class TEST_NAL6(unittest.TestCase):
         'A robin is a animal.
         ''outputMustContain('<robin --> animal>. %1.00;0.81%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<<$x --> animal> <=> <$x --> bird>>. %1.00;0.90%',
             '<robin --> bird>. %1.00;0.90%',
-            'bird.'
+            3
         )
-        self.assertNotEqual(rules, None)
-
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
-
 
         self.assertTrue(
             output_contains(tasks_derived, '<robin --> animal>. %1.00;0.81%')
@@ -414,15 +375,11 @@ class TEST_NAL6(unittest.TestCase):
         'I guess swan can swim.
         ''outputMustContain('<swan --> swimmer>. %0.90;0.43%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '(&&,<#x --> bird>,<#x --> swimmer>).  %1.00;0.90%',
             '<swan --> bird>. %0.90;0.90%',
-            'bird.'
+            10
         )
-        self.assertNotEqual(rules, None)
-
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
-
 
         self.assertTrue(
             output_contains(tasks_derived, '<swan --> swimmer>. %0.90;0.43%')
@@ -462,15 +419,11 @@ class TEST_NAL6(unittest.TestCase):
         'If Tweety can chirp, then it is a bird.
         ''outputMustContain('<<{Tweety} --> [chirping]> ==> <{Tweety} --> bird>>. %1.00;0.81%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<(&&,<$x --> [chirping]>,<$x --> [with_wings]>) ==> <$x --> bird>>. %1.00;0.90%',
             '<{Tweety} --> [with_wings]>.  %1.00;0.90%',
-            '[with_wings].'
+            30
         )
-        self.assertNotEqual(rules, None)
-
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
-
 
         self.assertTrue(
             output_contains(tasks_derived, '<<{Tweety} --> [chirping]> ==> <{Tweety} --> bird>>. %1.00;0.81%')
@@ -493,15 +446,11 @@ class TEST_NAL6(unittest.TestCase):
         'If Tweety can chirp and eats worms, then it is a bird.
         ''outputMustContain('<(&&,<(*,{Tweety},worms) --> food>,<{Tweety} --> [chirping]>) ==> <{Tweety} --> bird>>. %1.00;0.81%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<(&&,<$x --> flyer>,<$x --> [chirping]>, <(*, $x, worms) --> food>) ==> <$x --> bird>>.%1.00;0.90%',
             '<{Tweety} --> flyer>.  %1.00;0.90%',
-            'flyer.'
+            10
         )
-        self.assertNotEqual(rules, None)
-
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
-
 
         self.assertTrue(
             output_contains(tasks_derived, '<(&&,<(*,{Tweety},worms) --> food>,<{Tweety} --> [chirping]>) ==> <{Tweety} --> bird>>. %1.00;0.81%')
@@ -524,18 +473,14 @@ class TEST_NAL6(unittest.TestCase):
         'Lock-1 can be opened by every key.
         ''outputMustContain('<<$1 --> key> ==> <{lock1} --> (/,open,$1,_)>>. %1.00;0.81%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<(&&,<$x --> key>,<$y --> lock>) ==> <$y --> (/,open,$x,_)>>. %1.00;0.90%',
             '<{lock1} --> lock>. %1.00;0.90%',
-            'lock.'
+            20
         )
-        self.assertNotEqual(rules, None)
-
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
-
 
         self.assertTrue(
-            output_contains(tasks_derived, '<<$1 --> key> ==> <{lock1} --> (/,open,$1,_)>>. %1.00;0.81%')
+            output_contains(tasks_derived, '<<$0 --> key> ==> <{lock1} --> (/,open,$0,_)>>. %1.00;0.81%')
         )
         pass
 
@@ -555,17 +500,14 @@ class TEST_NAL6(unittest.TestCase):
         'Some key can open Lock-1.
         ''outputMustContain('(&&,<#1 --> key>,<{lock1} --> (/,open,#1,_)>). %1.00;0.81%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<<$x --> lock> ==> (&&,<#y --> key>,<$x --> (/,open,#y,_)>)>. %1.00;0.90%',
             '<{lock1} --> lock>. %1.00;0.90%',
-            'lock.'
+            100
         )
-        self.assertNotEqual(rules, None)
-        
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
 
         self.assertTrue(
-            output_contains(tasks_derived, '(&&,<#1 --> key>,<{lock1} --> (/,open,#1,_)>). %1.00;0.81%')
+            output_contains(tasks_derived, '(&&,<#0 --> key>,<{lock1} --> (/,open,#0,_)>). %1.00;0.81%')
         )
 
         pass
@@ -586,17 +528,14 @@ class TEST_NAL6(unittest.TestCase):
         'I guess Lock-1 can be opened by every key.
         ''outputMustContain('<<$1 --> key> ==> <{lock1} --> (/,open,$1,_)>>. %1.00;0.43%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '(&&,<#x --> lock>,<<$y --> key> ==> <#x --> (/,open,$y,_)>>). %1.00;0.90%',
             '<{lock1} --> lock>. %1.00;0.90%',
-            'lock.'
+            100
         )
-        self.assertNotEqual(rules, None)
-        
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
 
         self.assertTrue(
-            output_contains(tasks_derived, '<<$1 --> key> ==> <{lock1} --> (/,open,$1,_)>>. %1.00;0.43%')
+            output_contains(tasks_derived, '<<$0 --> key> ==> <{lock1} --> (/,open,$0,_)>>. %1.00;0.43%')
         )
 
         pass
@@ -617,6 +556,15 @@ class TEST_NAL6(unittest.TestCase):
         'I guess there is a key that can open Lock-1.
         ''outputMustContain('(&&,<#1 --> key>,<{lock1} --> (/,open,#1,_)>). %1.00;0.43%')
         '''
+        tasks_derived = process_two_premises(
+            '(&&,<#x --> (/,open,#y,_)>,<#x --> lock>,<#y --> key>).',
+            '<{lock1} --> lock>.',
+            100
+        )
+
+        self.assertTrue(
+            output_contains(tasks_derived, '(&&,<#0 --> key>,<{lock1} --> (/,open,#0,_)>). %1.00;0.43%')
+        )
         pass
 
 
@@ -645,27 +593,23 @@ class TEST_NAL6(unittest.TestCase):
         ''outputMustContain('(&&,<#1 --> bird>,<#1 --> swimmer>). %0.80;0.81%')
         '''
 
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<swan --> bird>. %1.00;0.90%',
             '<swan --> swimmer>. %0.80;0.90%',
-            'swan.'
+            100
         )
-        self.assertNotEqual(rules, None)
-
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
-
 
         self.assertTrue(
-            output_contains(tasks_derived, '<<$1 --> bird> ==> <$1 --> swimmer>>. %0.80;0.45%')
+            output_contains(tasks_derived, '<<$0 --> bird> ==> <$0 --> swimmer>>. %0.80;0.45%')
         )
         self.assertTrue(
-            output_contains(tasks_derived, '<<$1 --> swimmer> ==> <$1 --> bird>>. %1.00;0.39%')
+            output_contains(tasks_derived, '<<$0 --> swimmer> ==> <$0 --> bird>>. %1.00;0.39%')
         )
         self.assertTrue(
-            output_contains(tasks_derived, '<<$1 --> bird> <=> <$1 --> swimmer>>. %0.80;0.45%')
+            output_contains(tasks_derived, '<<$0 --> bird> <=> <$0 --> swimmer>>. %0.80;0.45%')
         )
         self.assertTrue(
-            output_contains(tasks_derived, '(&&,<#1 --> bird>,<#1 --> swimmer>). %0.80;0.81%')
+            output_contains(tasks_derived, '(&&,<#0 --> bird>,<#0 --> swimmer>). %0.80;0.81%')
         )
         pass
 
@@ -694,27 +638,23 @@ class TEST_NAL6(unittest.TestCase):
         'Gull and swan have some common property.
         ''outputMustContain('(&&,<gull --> #1>,<swan --> #1>). %0.80;0.81%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<gull --> swimmer>. %1.00;0.90%',
             '<swan --> swimmer>. %0.80;0.90%',
-            'swimmer.'
+            100
         )
-        self.assertNotEqual(rules, None)
-
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
-
 
         self.assertTrue(
-            output_contains(tasks_derived, '<<gull --> $1> ==> <swan --> $1>>. %0.80;0.45%')
+            output_contains(tasks_derived, '<<gull --> $0> ==> <swan --> $0>>. %0.80;0.45%')
         )
         self.assertTrue(
-            output_contains(tasks_derived, '<<swan --> $1> ==> <gull --> $1>>. %1.00;0.39%')
+            output_contains(tasks_derived, '<<swan --> $0> ==> <gull --> $0>>. %1.00;0.39%')
         )
         self.assertTrue(
-            output_contains(tasks_derived, '<<gull --> $1> <=> <swan --> $1>>. %0.80;0.45%')
+            output_contains(tasks_derived, '<<gull --> $0> <=> <swan --> $0>>. %0.80;0.45%')
         )
         self.assertTrue(
-            output_contains(tasks_derived, '(&&,<gull --> #1>,<swan --> #1>). %0.80;0.81%')
+            output_contains(tasks_derived, '(&&,<gull --> #0>,<swan --> #0>). %0.80;0.81%')
         )
         pass
 
@@ -739,21 +679,17 @@ class TEST_NAL6(unittest.TestCase):
         ''  outputMustContain('(&&,<#1 --> (/,open,_,{lock1})>,<#1 --> key>). %1.00;0.25%')
         '''
 
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<{key1} --> (/,open,_,{lock1})>. %1.00;0.90%',
             '<{key1} --> key>. %1.00;0.90%',
-            'key1.'
+            100
         )
-        self.assertNotEqual(rules, None)
-
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
-
 
         self.assertTrue(
-            output_contains(tasks_derived, '<<$1 --> key> ==> <$1 --> (/,open,_,{lock1})>>. %1.00;0.45%')
+            output_contains(tasks_derived, '<<$0 --> key> ==> <$0 --> (/,open,_,{lock1})>>. %1.00;0.45%')
         )
         self.assertTrue(
-            output_contains(tasks_derived, '(&&,<#1 --> (/,open,_,{lock1})>,<#1 --> key>). %1.00;0.81%')
+            output_contains(tasks_derived, '(&&,<#0 --> (/,open,_,{lock1})>,<#0 --> key>). %1.00;0.81%')
         )
 
         pass
@@ -777,21 +713,17 @@ class TEST_NAL6(unittest.TestCase):
         'I guess every lock can be opened by every key.
         ''outputMustContain('<(&&,<$1 --> key>,<$2 --> lock>) ==> <$2 --> (/,open,$1,_)>>. %1.00;0.45%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<<$x --> key> ==> <{lock1} --> (/,open,$x,_)>>. %1.00;0.90%',
             '<{lock1} --> lock>. %1.00;0.90%',
-            'lock1.'
+            10
         )
-        self.assertNotEqual(rules, None)
-
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
-
 
         self.assertTrue(
-            output_contains(tasks_derived, '(&&,<#1 --> lock>,<<$2 --> key> ==> <#1 --> (/,open,$2,_)>>). %1.00;0.81%')
+            output_contains(tasks_derived, '(&&,<#0 --> lock>,<<$1 --> key> ==> <#0 --> (/,open,$1,_)>>). %1.00;0.81%')
         )
         self.assertTrue(
-            output_contains(tasks_derived, '<(&&,<$1 --> key>,<$2 --> lock>) ==> <$2 --> (/,open,$1,_)>>. %1.00;0.45%')
+            output_contains(tasks_derived, '<(&&,<$0 --> key>,<$1 --> lock>) ==> <$1 --> (/,open,$0,_)>>. %1.00;0.45%')
         )
 
         pass
@@ -815,21 +747,17 @@ class TEST_NAL6(unittest.TestCase):
         'I guess every lock can be opened by some key.
         ''outputMustContain('<<$1 --> lock> ==> (&&,<#2 --> key>,<$1 --> (/,open,#2,_)>)>. %1.00;0.45%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '(&&,<#x --> key>,<{lock1} --> (/,open,#x,_)>). %1.00;0.90%',
             '<{lock1} --> lock>. %1.00;0.90%',
-            'lock1.'
+            10
         )
-        self.assertNotEqual(rules, None)
-
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
-
 
         self.assertTrue(
-            output_contains(tasks_derived, '(&&,<#1 --> key>,<#2 --> (/,open,#1,_)>,<#2 --> lock>). %1.00;0.81%')
+            output_contains(tasks_derived, '(&&,<#0 --> key>,<#1 --> (/,open,#0,_)>,<#1 --> lock>). %1.00;0.81%')
         )
         self.assertTrue(
-            output_contains(tasks_derived, '<<$1 --> lock> ==> (&&,<#2 --> key>,<$1 --> (/,open,#2,_)>)>. %1.00;0.45%')
+            output_contains(tasks_derived, '<<$0 --> lock> ==> (&&,<#1 --> key>,<$0 --> (/,open,#1,_)>)>. %1.00;0.45%')
         )
 
         pass
@@ -850,18 +778,14 @@ class TEST_NAL6(unittest.TestCase):
         'there is a lock with the property that when opened by something, this something is a key (induction)
         ''outputMustContain('<(&&,<#1 --> (/,open,$2,_)>,<#1 --> lock>) ==> <$2 --> key>>. %1.00;0.45%')    
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<<lock1 --> (/,open,$1,_)> ==> <$1 --> key>>. %1.00;0.90%',
             '<lock1 --> lock>. %1.00;0.90%',
-            'lock1.'
+            10
         )
-        self.assertNotEqual(rules, None)
-
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
-
 
         self.assertTrue(
-            output_contains(tasks_derived, '<(&&,<#1 --> (/,open,$2,_)>,<#1 --> lock>) ==> <$2 --> key>>. %1.00;0.81%')
+            output_contains(tasks_derived, '<(&&,<#0 --> (/,open,$1,_)>,<#0 --> lock>) ==> <$1 --> key>>. %1.00;0.81%')
         )
 
         pass
@@ -918,18 +842,14 @@ class TEST_NAL6(unittest.TestCase):
         ''outputMustContain('')
         //''outputMustContain('<<$1 --> lock> ==> <$1 --> (/,open,{key1},_)>>. %1.00;0.43%')       
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<<$1 --> lock> ==> (&&,<#2 --> key>,<$1 --> (/,open,#2,_)>)>. %1.00;0.90%',
             '<{key1} --> key>. %1.00;0.90% ',
-            'key.'
+            100
         )
-        self.assertNotEqual(rules, None)
-
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
-
 
         self.assertTrue(
-            output_contains(tasks_derived, '<<$1 --> lock> ==> <$1 --> (/,open,{key1},_)>>. %1.00;0.43%')
+            output_contains(tasks_derived, '<<$0 --> lock> ==> <$0 --> (/,open,{key1},_)>>. %1.00;0.43%')
         )
         pass
 
@@ -941,15 +861,11 @@ class TEST_NAL6(unittest.TestCase):
 
         ''outputMustContain('<A ==> C>. %1.00;0.43%')       
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<A ==> (&&,<#2 --> B>,C)>. %1.00;0.90%',
             '<M --> B>. %1.00;0.90%',
-            'B.'
+            10
         )
-        self.assertNotEqual(rules, None)
-
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
-
 
         self.assertTrue(
             output_contains(tasks_derived, '<A ==> C>. %1.00;0.43%')
@@ -989,18 +905,14 @@ class TEST_NAL6(unittest.TestCase):
         'whatever opens lock1 is a key
         ''outputMustContain('<<lock1 --> (/,open,$1,_)> ==> <$1 --> key>>. %1.00;0.81%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<(&&,<#1 --> lock>,<#1 --> (/,open,$2,_)>) ==> <$2 --> key>>. %1.00;0.90%',
             '<lock1 --> lock>. %1.00;0.90%',
-            'lock.'
+            100
         )
-        self.assertNotEqual(rules, None)
-
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
-
 
         self.assertTrue(
-            output_contains(tasks_derived, '<<lock1 --> (/,open,$1,_)> ==> <$1 --> key>>. %1.00;0.81%')
+            output_contains(tasks_derived, '<<lock1 --> (/,open,$0,_)> ==> <$0 --> key>>. %1.00;0.81%')
         )
         pass
 
@@ -1012,15 +924,11 @@ class TEST_NAL6(unittest.TestCase):
 
         ''outputMustContain('<<M --> B> ==> C>. %1.00;0.81%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<(&&,<#1 --> A>, <#1 --> B>) ==> C>. %1.00;0.90%',
             '<M --> A>. %1.00;0.90%',
-            'A.'
+            100
         )
-        self.assertNotEqual(rules, None)
-
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
-
 
         self.assertTrue(
             output_contains(tasks_derived, '<<M --> B> ==> C>. %1.00;0.81%')
@@ -1059,15 +967,11 @@ class TEST_NAL6(unittest.TestCase):
         'lock1 is a lock
         ''outputMustContain('<lock1 --> lock>. %1.00;0.45%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<(&&,<#1 --> lock>,<#1 --> (/,open,$2,_)>) ==> <$2 --> key>>. %1.00;0.90%',
             '<<lock1 --> (/,open,$1,_)> ==> <$1 --> key>>. %1.00;0.90%',
-            'key.'
+            200
         )
-        self.assertNotEqual(rules, None)
-
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
-
 
         self.assertTrue(
             output_contains(tasks_derived, '<lock1 --> lock>. %1.00;0.45%')
@@ -1080,15 +984,11 @@ class TEST_NAL6(unittest.TestCase):
 
         ''outputMustContain('<M --> B>. %1.00;0.45%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<(&&,<#1 --> A>,<#1 --> B>) ==> C>. %1.00;0.90%',
             '<<M --> A> ==> C>. %1.00;0.90%',
-            'A.'
+            200
         )
-        self.assertNotEqual(rules, None)
-
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
-
 
         self.assertTrue(
             output_contains(tasks_derived, '<M --> B>. %1.00;0.45%')
@@ -1208,26 +1108,21 @@ class TEST_NAL6(unittest.TestCase):
         'I guess that if something is a animal, then it is a robin. 
         ''outputMustContain('<<#1 --> D> ==> <#2 --> A>>. %1.00;0.45%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<<#x-->A> ==> (&&, <#y-->B>, <#x-->C>)>. %1.00;0.90%',
-            '<(&&, <#x-->B>, <#y-->C>) ==> <#x --> D>>. %1.00;0.90% ',
-            '(&&, <#y-->B>, <#x-->C>).', index_task=(1,), index_belief=(0,)
-        )
-        self.assertNotEqual(rules, None)
-
-        # subst_var = get_substitution__var_var(task.term, belief.term, [1], [0]) # to find possible replacement.
-        # subst_var.apply(task.term, belief.term)
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
-
-        self.assertTrue(
-            output_contains(tasks_derived, '<<#1 --> A> ==> <#2 --> D>>. %1.00;0.81%')
-        )
-        self.assertTrue(
-            output_contains(tasks_derived, '<<#1 --> D> ==> <#2 --> A>>. %1.00;0.45%')
+            '<(&&, <#x-->B>, <#y-->C>) ==> <#x --> D>>. %1.00;0.90%',
+            10
         )
 
         self.assertTrue(
-            not output_contains(tasks_derived, '<<$1 --> D> ==> <$1 --> A>>. %1.00;0.45%')
+            output_contains(tasks_derived, '<<#0 --> A> ==> <#1 --> D>>. %1.00;0.81%')
+        )
+        self.assertTrue(
+            output_contains(tasks_derived, '<<#0 --> D> ==> <#1 --> A>>. %1.00;0.45%')
+        )
+
+        self.assertTrue(
+            not output_contains(tasks_derived, '<<$0 --> D> ==> <$0 --> A>>. %1.00;0.45%')
         )
 
     def test_0(self):
@@ -1238,12 +1133,10 @@ class TEST_NAL6(unittest.TestCase):
         <(&&, <#x-->A>, <#x-->B>, <<$y-->C>==><$y-->D>>, <$z-->E>) ==> <$x-->H>>.
         '''
 
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = rule_map_two_premises(
             "<(&&, <#x-->A>, <#x-->B>, <<$y-->C>==><$y-->D>>, <$z-->E>) ==> (&&, <$z-->F>, <#p-->G>, <#p-->H>)>. %1.00;0.90%", 
             "<(&&, <$x-->F>, <#p-->G>, <#p-->H>)==><$x-->H>>. %1.00;0.90%", 
-            '(&&, <$z-->F>, <#p-->G>, <#p-->H>).', index_task=(1,), index_belief=(0,))
-        self.assertIsNotNone(rules)
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+            10)
         self.assertTrue(
             output_contains(tasks_derived, "<(&&, <#x-->A>, <#x-->B>, <<$y-->C>==><$y-->D>>, <$z-->E>) ==> <$z-->H>>. %1.00;0.81%")
         )

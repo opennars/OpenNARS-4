@@ -8,6 +8,9 @@ Tests/*.png
 !pynars/utils/SparseLUT/*.pyd
 lab.ipynb
 .DS_Store
+cache
+_trash
+temp
 
 # C extensions
 *.so

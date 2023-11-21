@@ -114,7 +114,7 @@ class Sentence:
         return sentence
 
     def __hash__(self) -> int:
-        return hash((self.term, self.punct))
+        return hash((self.term, self.punct, self.truth))
 
     def __str__(self) -> str:
         return self.word
