@@ -371,9 +371,10 @@ class GeneralEngine(Engine):
             
             concept_target: Concept = term_link.target
             belief = concept_target.get_belief() # TODO: consider all beliefs.
-            if belief is None: continue
-            term_belief = concept_target.term
+            
             # if belief is None: continue
+
+            term_belief = concept_target.term
 
             # before matching and applying the rules, do variable-related processes (i.e. unification, and substitution/introduction/elimination)
             subst, elimn, intro = GeneralEngine.unify(task.term, belief.term if belief is not None else None, concept.term, task_link_valid, term_link)
