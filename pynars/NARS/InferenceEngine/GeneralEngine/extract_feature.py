@@ -306,6 +306,7 @@ def extract_feature(premise1: Union[Term, Compound, Statement], premise2: Union[
             # <S==>P>, (&&, S, T)
             # <S-->(|, P, Q)>, (|, P, Q, T)
             # <S-->P>, (&&, <S-->P>, T)
+            # <S-->P>, [S]
             if premise1.subject in premise2.terms: 
                 # <S-->P>, (|, S, T)
                 return Feature(

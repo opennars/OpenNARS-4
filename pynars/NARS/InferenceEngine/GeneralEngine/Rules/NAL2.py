@@ -199,3 +199,42 @@ def add_rules__NAL2(sparse_lut: SparseLUT, structure: OrderedDict):
         common_id = CommonId(1, 1),
         has_compound_at = False
     )
+
+    '''
+    {<S <-> P>., [S]} |- <[S] <-> [P]>.
+    {<S <-> P>., {S}} |- <{S} <-> {P}>.
+
+    {<S <-> P>., [P]} |- <[S] <-> [P]>.
+    {<S <-> P>., {P}} |- <{S} <-> {P}>.
+    '''
+    add_rule(sparse_lut, structure,
+        Interface_CompositionalRules._structural__bi_composition__0,
+        LinkType1 = LinkType.COMPOUND_STATEMENT, 
+        LinkType2 = LinkType.COMPOUND, 
+        has_common_id = True,
+        Copula1 = Copula.Similarity,
+        Copula2 = None,
+        match_reverse = False,
+        sentence_type = class_sentence_to_list(Judgement),
+        Connector1 = None,
+        Connector2 = [Connector.IntensionalSet, Connector.ExtensionalSet],
+        has_compound_common_id = True,
+        compound_common_id = CommonId(0),
+        is_belief_valid = False,
+    )
+
+    add_rule(sparse_lut, structure,
+        Interface_CompositionalRules._structural__bi_composition__1,
+        LinkType1 = LinkType.COMPOUND_STATEMENT, 
+        LinkType2 = LinkType.COMPOUND, 
+        has_common_id = True,
+        Copula1 = Copula.Similarity,
+        Copula2 = None,
+        match_reverse = False,
+        sentence_type = class_sentence_to_list(Judgement),
+        Connector1 = None,
+        Connector2 = [Connector.IntensionalSet, Connector.ExtensionalSet],
+        has_compound_common_id = True,
+        compound_common_id = CommonId(1),
+        is_belief_valid = False,
+    )
