@@ -7,6 +7,9 @@ from Tests.utils_for_test import *
 
 
 class TEST_NAL2(unittest.TestCase):
+    def setUp(self):
+        nars.reset()
+
     ''''''
     
     def test_revision(self):
@@ -25,9 +28,10 @@ class TEST_NAL2(unittest.TestCase):
         ''outputMustContain('<robin <-> swan>. %0.87;0.91%')
         '''
 
-        tasks_derived = memory_accept_revision(
+        tasks_derived = process_two_premises(
             '<robin <-> swan>. %1.00;0.90%',
-            '<robin <-> swan>. %0.10;0.60%'
+            '<robin <-> swan>. %0.10;0.60%',
+            2
         )
         self.assertTrue(
             output_contains(tasks_derived, '<robin <-> swan>. %0.87;0.91%')
@@ -50,12 +54,11 @@ class TEST_NAL2(unittest.TestCase):
         ''outputMustContain('<bird <-> swimmer>. %0.90;0.45%')
         '''
 
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<swan --> swimmer>. %0.90;0.90%', 
             '<swan --> bird>. %1.00;0.90%', 
-            'swan.', 
-            True)
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+            3
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<bird <-> swimmer>. %0.90;0.45%')
         )
@@ -78,12 +81,11 @@ class TEST_NAL2(unittest.TestCase):
         ''outputMustContain('<{?1} --> bird>?')
         '''
 
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<bird --> swimmer>. %1.00;0.90%', 
             '<{?1} --> swimmer>?', 
-            'swimmer.', 
-            True)
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+            6 
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<{?1} --> bird>?')
         )
@@ -107,12 +109,11 @@ class TEST_NAL2(unittest.TestCase):
         ''outputMustContain('<chess <-> sport>. %0.90;0.45%')
         '''
 
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<sport --> competition>. %1.00;0.90%', 
             '<chess --> competition>. %0.90;0.90% ', 
-            'competition.', 
-            True)
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+            5 
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<chess <-> sport>. %0.90;0.45%')
         )
@@ -135,11 +136,11 @@ class TEST_NAL2(unittest.TestCase):
         ''outputMustContain('<gull --> swimmer>. %1.00;0.81%')
         '''
 
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<swan --> swimmer>. %1.00;0.90%', 
             '<gull <-> swan>. %1.00;0.90%', 
-            'swan.', index_task=(0,), index_belief=(1,))
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+            5
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<gull --> swimmer>. %1.00;0.81%')
         )
@@ -161,12 +162,11 @@ class TEST_NAL2(unittest.TestCase):
         ''outputMustContain('<swan --> swimmer>. %1.00;0.81%')
         '''
 
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<gull --> swimmer>. %1.00;0.90%', 
             '<gull <-> swan>. %1.00;0.90%', 
-            'gull.',
-            True)
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+            5
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<swan --> swimmer>. %1.00;0.81%')
         )
@@ -188,12 +188,11 @@ class TEST_NAL2(unittest.TestCase):
         ''outputMustContain('<gull <-> robin>. %1.00;0.81%')
         '''
 
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<robin <-> swan>. %1.00;0.90%', 
             '<gull <-> swan>. %1.00;0.90%', 
-            'swan.',
-            True)
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+            5
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<gull <-> robin>. %1.00;0.81%')
         )
@@ -216,11 +215,11 @@ class TEST_NAL2(unittest.TestCase):
         ''outputMustContain('<bird <-> swan>. %0.10;0.81%')
         '''
 
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<swan --> bird>. %1.00;0.90%', 
             '<bird --> swan>. %0.10;0.90%', 
-            'bird.', index_task=(1,), index_belief=(0,))
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+            10
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<bird <-> swan>. %0.10;0.81%')
         )
@@ -243,12 +242,11 @@ class TEST_NAL2(unittest.TestCase):
         ''outputMustContain('<[smart] --> [bright]>. %0.90;0.66%')
         '''
 
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<bright <-> smart>. %0.90;0.90%', 
             '<[smart] --> [bright]>?', 
-            'bright.',
-            True)
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+            10
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<[bright] <-> [smart]>. %0.90;0.90%')
         )
@@ -273,12 +271,11 @@ class TEST_NAL2(unittest.TestCase):
         ''outputMustContain('<{Birdie} <-> {Tweety}>. %0.90;0.73%')
         '''
 
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<Birdie <-> Tweety>. %0.90;0.90%', 
             '<{Birdie} <-> {Tweety}>?', 
-            'Birdie.',
-            True)
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+            10
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<{Birdie} <-> {Tweety}>. %0.90;0.73%')
         )
@@ -300,12 +297,11 @@ class TEST_NAL2(unittest.TestCase):
         ''outputMustContain('<bird --> swan>. %0.10;0.73%')
         '''
 
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<swan --> bird>. %1.00;0.90%', 
             '<bird <-> swan>. %0.10;0.90%', 
-            'bird.',
-            True)
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+            10
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<bird --> swan>. %0.10;0.73%')
         )
@@ -329,12 +325,11 @@ class TEST_NAL2(unittest.TestCase):
         ''outputMustContain('<bird <-> swan>. %0.90;0.47%')
         '''
 
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<swan --> bird>. %0.90;0.90%', 
             '<bird <-> swan>?', 
-            'bird.',
-            True)
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+            10
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<bird <-> swan>. %0.90;0.47%')
         )
@@ -357,12 +352,11 @@ class TEST_NAL2(unittest.TestCase):
         ''outputMustContain('<swan --> bird>. %0.90;0.81%')
         '''
 
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<bird <-> swan>. %0.90;0.90%', 
             '<swan --> bird>?', 
-            'bird.',
-            True)
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+            10
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<swan --> bird>. %0.90;0.81%')
         )
@@ -381,8 +375,11 @@ class TEST_NAL2(unittest.TestCase):
         ''outputMustContain('<{Tweety} --> bird>. %1.00;0.90%')
         '//expect.outEmpty
         '''
-        task = Narsese.parse('<Tweety {-- bird>. %1.00;0.90%')
-        tasks_derived = [task]
+        tasks_derived = process_two_premises(
+            '<Tweety {-- bird>. %1.00;0.90%',
+            None,
+            1
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<{Tweety} --> bird>. %1.00;0.90%')
         )
@@ -400,8 +397,11 @@ class TEST_NAL2(unittest.TestCase):
 
         ''outputMustContain('<raven --> [black]>. %1.00;0.90%')
         '''
-        task = Narsese.parse('<raven --] black>. %1.00;0.90%')
-        tasks_derived = [task]
+        tasks_derived = process_two_premises(
+            '<raven --] black>. %1.00;0.90%',
+            None,
+            1
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<raven --> [black]>. %1.00;0.90%')
         )
@@ -419,8 +419,11 @@ class TEST_NAL2(unittest.TestCase):
 
         ''outputMustContain('<{Tweety} --> [yellow]>. %1.00;0.90%')
         '''
-        task = Narsese.parse('<Tweety {-] yellow>. %1.00;0.90%')
-        tasks_derived = [task]
+        tasks_derived = process_two_premises(
+            '<Tweety {-] yellow>. %1.00;0.90%',
+            None,
+            1
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<{Tweety} --> [yellow]>. %1.00;0.90%')
         )
@@ -438,8 +441,11 @@ class TEST_NAL2(unittest.TestCase):
         'Birdie is similar to Tweety. 
         ''outputMustContain('<{Birdie} <-> {Tweety}>. %1.00;0.90%')
         '''
-        task = Narsese.parse('<{Tweety} --> {Birdie}>. %1.00;0.90%')
-        tasks_derived = [task]
+        tasks_derived = process_two_premises(
+            '<{Tweety} --> {Birdie}>. %1.00;0.90%',
+            None,
+            3
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<{Birdie} <-> {Tweety}>. %1.00;0.90%')
         )
@@ -458,8 +464,11 @@ class TEST_NAL2(unittest.TestCase):
         'Bright thing is similar to smart thing. 
         ''outputMustContain('<[bright] <-> [smart]>. %1.00;0.90%')
         '''
-        task = Narsese.parse('<[smart] --> [bright]>. %1.00;0.90%')
-        tasks_derived = [task]
+        tasks_derived = process_two_premises(
+            '<[smart] --> [bright]>. %1.00;0.90%',
+            None,
+            1
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<[bright] <-> [smart]>. %1.00;0.90%')
         )
@@ -481,8 +490,11 @@ class TEST_NAL2(unittest.TestCase):
         'Tweety is Birdie. 
         ''outputMustContain('<{Tweety} --> {Birdie}>. %1.00;0.90%')
         '''
-        task = Narsese.parse('<{Birdie} <-> {Tweety}>. %1.00;0.90%')
-        tasks_derived = [task]
+        tasks_derived = process_two_premises(
+            '<{Birdie} <-> {Tweety}>. %1.00;0.90%',
+            None,
+            1
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<Birdie <-> Tweety>. %1.00;0.90%')
         )
@@ -507,8 +519,11 @@ class TEST_NAL2(unittest.TestCase):
         'Bright thing is a type of smart thing. 
         ''outputMustContain('<[bright] --> [smart]>. %1.00;0.90%')
         '''
-        task = Narsese.parse('<[bright] <-> [smart]>. %1.00;0.90%')
-        tasks_derived = [task]
+        tasks_derived = process_two_premises(
+            '<[bright] <-> [smart]>. %1.00;0.90%',
+            None,
+            1
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<bright <-> smart>. %1.00;0.90%')
         )

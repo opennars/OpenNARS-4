@@ -130,8 +130,8 @@ def policy_nars(env: gym.Env):
     def player_stop(arguments: Iterable[Term], task: Task=None, memory: Memory=None):
         action = 0
 
-    nars.register_operation('move', player_move)
-    nars.register_operation('stop', player_stop)
+    nars.register_operator('move', player_move)
+    nars.register_operator('stop', player_stop)
         
     # begin playing
     i_step = 0

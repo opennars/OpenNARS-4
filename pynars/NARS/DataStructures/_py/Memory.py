@@ -37,7 +37,8 @@ class Memory:
         task_revised, goal_derived, answers_question, answer_quest = None, None, None, None
         if task.is_judgement:
             # revised the belief if there has been one, and try to solve question if there has been a corresponding one.
-            task_revised, answers_question = self._accept_judgement(task, concept)
+            task_revised, answers = self._accept_judgement(task, concept)
+            answers_question, answer_quest = answers[Question], answers[Goal]
         elif task.is_goal:
             task_revised, belief_selected, (task_operation_return, task_executed), tasks_derived = self._accept_goal(task, concept)
             # TODO, ugly!
@@ -73,7 +74,7 @@ class Memory:
         # Build the concepts corresponding to the terms of those components within the task.
         concept.accept(task, self.concepts, conceptualize=False)
 
-        if Enable.temporal_rasoning or Enable.operation:
+        if Enable.temporal_reasoning or Enable.operation:
             # if (!task.sentence.isEternal() && !(task.sentence.term instanceof Operation)) {
             #     globalBuffer.eventInference(task, cont, false); //can be triggered by Buffer itself in the future
             # }
@@ -84,7 +85,7 @@ class Memory:
     def _accept_judgement(self, task: Task, concept: Concept):
         ''''''
         belief_revised = None
-        answers = None
+        answers = { Question: [], Goal: [] }
         if Enable.operation: raise  # InternalExperienceBuffer.handleOperationFeedback(task, nal);
         if Enable.anticipation: raise  # ProcessAnticipation.confirmAnticipation(task, concept, nal);
 
@@ -93,7 +94,7 @@ class Memory:
         if belief is not None:
             # j2: Judgement = belief.sentence
             if revisible(task, belief):
-                if Enable.temporal_rasoning:
+                if Enable.temporal_reasoning:
                     '''
                     nal.setTheNewStamp(newStamp, oldStamp, nal.time.time());
                     final Sentence projectedBelief = oldBelief.projection(nal.time.time(), newStamp.getOccurrenceTime(), concept.memory);
@@ -121,11 +122,11 @@ class Memory:
             concept.add_belief(task)
 
             # try to solve questions
-            answers = self._solve_judgement(task, concept)
+            answers[Question] = self._solve_judgement(task, concept)
 
             for task_goal in concept.desire_table:
-                answers_goal, _ = self._solve_goal(task_goal, concept, None, task)
-                answers.extend(answers_goal)
+                _, goal_answer = self._solve_goal(task_goal, concept, None, task)
+                if goal_answer is not None: answers[Goal] = [goal_answer]
 
         return belief_revised, answers
 
@@ -239,13 +240,13 @@ class Memory:
             truth = task.truth
         if truth.e > Config.decision_threshold:
             if (task is not None) and task.is_executable and not (desire is not None and desire.evidential_base.contains(task.evidential_base)):
-                    #   execute registered operations 
+                    #   execute with registered operators 
                     stat: Statement = task.term
                     op = stat.predicate
-                    from pynars.NARS.Operation.Register import registered_operations
+                    from pynars.NARS.Operation.Register import registered_operators
                     from pynars.NARS.Operation.Execution import execute
-                    if op in registered_operations and not task.is_mental_operation:
-                        
+                    # ! if `op` isn't registered, an error "AttributeError: 'NoneType' object has no attribute 'stamp'" from "key: Callable[[Task], Any] = lambda task: (hash(task), hash(task.stamp.evidential_base))" will be raised
+                    if op in registered_operators and not task.is_mental_operation:
                         # to judge whether the goal has been fulfilled
                         task_operation_return, task_executed = execute(task, concept, self)
                         concept_task = self.take_by_key(task.term, remove=False)
@@ -359,15 +360,18 @@ class Memory:
             concept (Concept): The concept corresponding to the task.
         '''
         tasks = []
-        belief = belief or concept.match_belief(task.sentence)
-        if belief is None:
-            return tasks, None
         old_best = task.best_solution
+
+        belief = belief or concept.match_belief(task.sentence)
+        if belief is None or belief == old_best:
+            return tasks, None
+
         if old_best is not None:
             quality_new = calculate_solution_quality(task.sentence, belief.sentence, True)
             quality_old = calculate_solution_quality(task.sentence, old_best.sentence, True)
             if (quality_new <= quality_old):
                 return tasks, belief
+
         task.best_solution = belief
         tasks.append(belief) # the task as the new best solution should be added into the internal buffer, so that it would be paid attention
         budget = Budget_evaluate_goal_solution(task.sentence, belief.sentence, task.budget, (task_link.budget if task_link is not None else None))
@@ -399,6 +403,9 @@ class Memory:
 
     def put_back(self, concept: Concept):
         return self.concepts.put_back(concept)
+
+    def reset(self):
+        self.concepts.reset()
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__}: #items={len(self.concepts)}, #buckets={len(self.concepts.levels)}>"

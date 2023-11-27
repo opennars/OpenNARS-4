@@ -21,6 +21,9 @@ from pynars.NARS.RuleMap import Interface_TransformRules
 
 
 class TEST_NAL4(unittest.TestCase):
+    def setUp(self):
+        nars.reset()
+
     ''''''
 
     def test_structural_transformation_0(self):
@@ -38,23 +41,15 @@ class TEST_NAL4(unittest.TestCase):
         'A base is something that has a reaction with an acid. 
         ''outputMustContain('<base --> (/,reaction,acid,_)>. %1.00;0.90%')
         '''
-        rules, task, concept, task_link, result1 = rule_map_task_only(
+        tasks_derived = process_two_premises(
             '<(*,acid, base) --> reaction>. %1.00;0.90%',
-            'acid',
-            (0,0)
+            None,
+            10
         )
-        tasks_derived = [rule(task, None, task_link, None) for rule in rules] 
 
         self.assertTrue(
             output_contains(tasks_derived, '<acid --> (/,reaction,_,base)>. %1.00;0.90%')
         )
-
-        rules, task, concept, task_link, result1 = rule_map_task_only(
-            '<(*,acid, base) --> reaction>. %1.00;0.90%',
-            'base',
-            (0,1)
-        )
-        tasks_derived = [rule(task, None, task_link, None) for rule in rules] 
 
         self.assertTrue(
             output_contains(tasks_derived, '<base --> (/,reaction,acid,_)>. %1.00;0.90%')
@@ -74,12 +69,11 @@ class TEST_NAL4(unittest.TestCase):
         'An acid and a base can have a reaction.
         ''outputMustContain('<(*,acid,base) --> reaction>. %1.00;0.90%')
         '''
-        rules, task, concept, task_link, result1 = rule_map_task_only(
+        tasks_derived = process_two_premises(
             '<acid --> (/,reaction,_,base)>. %1.00;0.90%',
-            'base',
-            (1,2)
+            None,
+            10
         )
-        tasks_derived = [rule(task, None, task_link, None) for rule in rules] 
         
         self.assertTrue(
             output_contains(tasks_derived, '<(*,acid,base) --> reaction>. %1.00;0.90%')
@@ -99,12 +93,11 @@ class TEST_NAL4(unittest.TestCase):
         'A base is something that has a reaction with an acid. 
         ''outputMustContain('<base --> (/,reaction,acid,_)>. %1.00;0.90%')
         '''
-        rules, task, concept, task_link, result1 = rule_map_task_only(
+        tasks_derived = process_two_premises(
             '<acid --> (/,reaction,_,base)>. %1.00;0.90%',
-            'base',
-            (1,2)
+            None,
+            10
         )
-        tasks_derived = [rule(task, None, task_link, None) for rule in rules] 
         
         self.assertTrue(
             output_contains(tasks_derived, '<base --> (/,reaction,acid,_)>. %1.00;0.90%')
@@ -124,12 +117,11 @@ class TEST_NAL4(unittest.TestCase):
         'Acid can react with base.
         ''outputMustContain('<acid --> (/,reaction,_,base)>. %1.00;0.90%')
         '''
-        rules, task, concept, task_link, result1 = rule_map_task_only(
+        tasks_derived = process_two_premises(
             '<base --> (/,reaction,acid,_)>. %1.00;0.90%',
-            'acid',
-            (1,1)
+            None,
+            10
         )
-        tasks_derived = [rule(task, None, task_link, None) for rule in rules] 
         
         self.assertTrue(
             output_contains(tasks_derived, '<acid --> (/,reaction,_,base)>. %1.00;0.90%')
@@ -149,12 +141,11 @@ class TEST_NAL4(unittest.TestCase):
         'Neutralization is a relation between an acid and a base. 
         ''outputMustContain('<neutralization --> (*,acid,base)>. %1.00;0.90%')
         '''
-        rules, task, concept, task_link, result1 = rule_map_task_only(
+        tasks_derived = process_two_premises(
             '<(\,neutralization,_,base) --> acid>. %1.00;0.90%',
-            'base',
-            (0,2)
+            None,
+            10
         )
-        tasks_derived = [rule(task, None, task_link, None) for rule in rules] 
         
         self.assertTrue(
             output_contains(tasks_derived, '<neutralization --> (*,acid,base)>. %1.00;0.90%')
@@ -174,12 +165,11 @@ class TEST_NAL4(unittest.TestCase):
         'Something that can be neutralized by an acid is a base.
         ''outputMustContain('<(\,neutralization,acid,_) --> base>. %1.00;0.90%')
         '''
-        rules, task, concept, task_link, result1 = rule_map_task_only(
+        tasks_derived = process_two_premises(
             '<(\,neutralization,_,base) --> acid>. %1.00;0.90%',
-            'base',
-            (0,2)
+            None,
+            10
         )
-        tasks_derived = [rule(task, None, task_link, None) for rule in rules] 
         
         self.assertTrue(
             output_contains(tasks_derived, '<(\,neutralization,acid,_) --> base>. %1.00;0.90%')
@@ -199,12 +189,11 @@ class TEST_NAL4(unittest.TestCase):
         'Something that can neutralize a base is an acid.
         ''outputMustContain('<(\,neutralization,_,base) --> acid>. %1.00;0.90%')
         '''
-        rules, task, concept, task_link, result1 = rule_map_task_only(
+        tasks_derived = process_two_premises(
             '<(\,neutralization,acid,_) --> base>. %1.00;0.90%',
-            'acid',
-            (0,1)
+            None,
+            10
         )
-        tasks_derived = [rule(task, None, task_link, None) for rule in rules] 
         
         self.assertTrue(
             output_contains(tasks_derived, '<(\,neutralization,_,base) --> acid>. %1.00;0.90%')
@@ -224,12 +213,11 @@ class TEST_NAL4(unittest.TestCase):
         'Neutralization is a relation between an acid and a base. 
         ''outputMustContain('<neutralization --> (*,acid,base)>. %1.00;0.90%')
         '''
-        rules, task, concept, task_link, result1 = rule_map_task_only(
+        tasks_derived = process_two_premises(
             '<(\,neutralization,acid,_) --> base>. %1.00;0.90%',
-            'acid',
-            (0,1)
+            None,
+            10
         )
-        tasks_derived = [rule(task, None, task_link, None) for rule in rules] 
         
         self.assertTrue(
             output_contains(tasks_derived, '<neutralization --> (*,acid,base)>. %1.00;0.90%')
@@ -252,11 +240,11 @@ class TEST_NAL4(unittest.TestCase):
         'The relation between bird and plant is a type of relation between animal and plant.
         ''outputMustContain('<(*,bird,plant) --> (*,animal,plant)>. %1.00;0.81%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<bird --> animal>. %1.00;0.90%', 
-            '(*,bird,plant).', 
-            'bird.', is_belief_term=True, index_task=(0,), index_belief=(0,))
-        tasks_derived = [rule(task, belief.term, task_link, term_link) for rule in rules] 
+            '<(*,bird,plant) --> ?x>?', 
+            6
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<(*,bird,plant) --> (*,animal,plant)>. %1.00;0.81%')
         )
@@ -277,11 +265,11 @@ class TEST_NAL4(unittest.TestCase):
         'What can be neutralized by acid can react with acid. 
         ''outputMustContain('<(\,neutralization,acid,_) --> (\,reaction,acid,_)>. %1.00;0.81%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<neutralization --> reaction>. %1.00;0.90%', 
-            '(\,neutralization,acid,_).', 
-            'neutralization.', is_belief_term=True, index_task=(0,), index_belief=(0,))
-        tasks_derived = [rule(task, belief.term, task_link, term_link) for rule in rules] 
+            '<(\,neutralization,acid,_) --> ?x>?', 
+            6
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<(\,neutralization,acid,_) --> (\,reaction,acid,_)>. %1.00;0.81%')
         )
@@ -303,11 +291,11 @@ class TEST_NAL4(unittest.TestCase):
         'What can neutraliz base can react with base. 
         ''outputMustContain('<(/,neutralization,_,base) --> (/,neutralization,_,soda)>. %1.00;0.81%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<soda --> base>. %1.00;0.90%', 
-            '(/,neutralization,_,base).', 
-            'base.', is_belief_term=True, index_task=(1,), index_belief=(2,))
-        tasks_derived = [rule(task, belief.term, task_link, term_link) for rule in rules] 
+            '<(/,neutralization,_,base) --> ?x>?', 
+            6
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<(/,neutralization,_,base) --> (/,neutralization,_,soda)>. %1.00;0.81%')
         )
