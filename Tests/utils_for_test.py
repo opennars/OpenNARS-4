@@ -14,11 +14,8 @@ from pynars.NAL.MentalOperation import execute
 from pynars.Narsese import Sentence, Judgement, Quest, Question, Goal
 from pynars.Config import Config, Enable
 
-# from pynars.NARS.InferenceEngine.Logic2 import KanrenEngine
-
 nars = Reasoner(100, 100)
 engine: GeneralEngine = nars.inference
-# kanren: KanrenEngine = KanrenEngine()
 
 def process_two_premises(premise1: str, premise2: str, n_cycle: int) -> List[Task]:
     ''''''
