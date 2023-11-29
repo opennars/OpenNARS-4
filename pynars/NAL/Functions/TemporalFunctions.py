@@ -14,14 +14,14 @@ def project(truth: Truth, t_source: int, t_current: int, t_target: int):
             }
         ```
     [2] Hammer, Patrick, Tony Lofthouse, and Pei Wang. "The OpenNARS implementation of the non-axiomatic reasoning system." International conference on artificial general intelligence. Springer, Cham, 2016.
-        
+
         Section 5. Projection and Eternalization
 
             $$k_c = \frac{|tB - tT|}{|tB - tC| + |tT - tC|}$$
 
             $$c_{new} = (1 - k_c) * c_{old}$$
     '''
-    c_new = truth.c * (t_current - t_source + 1) ** Config.projection_decay
+    c_new = truth.c * (Config.projection_decay ** (t_current - t_source))
     return Truth(truth.f, c_new, truth.k)
 
 
