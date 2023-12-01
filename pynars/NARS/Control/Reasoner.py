@@ -1,3 +1,4 @@
+import random
 from os import remove
 from pynars.NAL.Functions.Tools import truth_to_quality
 from pynars.NARS.DataStructures._py.Channel import Channel
@@ -41,6 +42,8 @@ class Reasoner:
         self.sequence_buffer = Buffer(capacity)
         self.operations_buffer = Buffer(capacity)
 
+        self.u_top_level_attention = 0.5
+
     def reset(self):
         self.memory.reset()
         self.overall_experience.reset()
@@ -66,72 +69,28 @@ class Reasoner:
             return success, task, task_overflow, tasks
         return success, task, task_overflow
 
+
+
     def cycle(self):
-        '''Everything to do by NARS in a single working cycle'''
+        """Everything to do by NARS in a single working cycle"""
         Global.States.reset()
         tasks_derived: List[Task] = []
+
+        judgement_revised, goal_revised, answers_question, answers_quest = None, None, None, None
         task_operation_return, task_executed = None, None
-        # step 1. Take out an Item from `Channels`, and then put it into the `Overall Experience`
-        for channel in self.channels:
-            task_in: Task = channel.take()
-            if task_in is not None:
-                self.overall_experience.put(task_in)
 
-        # step 2. Take out an Item from the `Internal Experience`, with putting it back afterwards, and then put it
-        # into the `Overall Experience`
-        task: Task = self.internal_experience.take(remove=True)
-        if task is not None:
-            self.overall_experience.put(task)
-            self.internal_experience.put_back(task)
+        random_number: float = random.random()
 
-        # step 3. Process a task in the global experience buffer
-        task: Task = self.overall_experience.take()
-        if task is not None and not task.processed:
-            task.processed = True
-            # if task.is_goal:
-            #     print(task)
-            
-            # concept = self.memory.take_by_key(task.term, remove=False)
-            # if task.is_goal:
-                # goal_revised = self.process_goal(task, concept)
-            judgement_revised, goal_revised, answers_question, answers_quest, (task_operation_return, task_executed), _tasks_derived = self.memory.accept(task)
-            if task_operation_return is not None: tasks_derived.append(task_operation_return)
-            # if task_executed is not None: tasks_derived.append(task_executed)
-            tasks_derived.extend(_tasks_derived)
-            # self.sequence_buffer.put_back(task) # globalBuffer.putBack(task,
-            # narParameters.GLOBAL_BUFFER_FORGET_DURATIONS, this)
-
-            if Enable.temporal_reasoning:
-                # TODO: Temporal Inference
-                # Ref: OpenNARS 3.1.0 line 409~411
-                # if (!task.sentence.isEternal() && !(task.sentence.term instanceof Operation)) {
-                #     globalBuffer.eventInference(task, cont, false); //can be triggered by Buffer itself in the future
-                # }
-                raise
-
-            if judgement_revised is not None:
-                self.internal_experience.put(judgement_revised)
-            if goal_revised is not None:
-                self.internal_experience.put(goal_revised)
-            if answers_question is not None:
-                for answer in answers_question:
-                    self.internal_experience.put(answer)
-            if answers_quest is not None:
-                for answer in answers_quest:
-                    self.internal_experience.put(answer)
+        data_structure_accessed_busyness = None
+        if random_number < self.u_top_level_attention:
+            judgement_revised, goal_revised, answers_question, answers_quest = self.observe(tasks_derived)
+            data_structure_accessed_busyness = self.overall_experience.busyness
         else:
-            judgement_revised, goal_revised, answers_question, answers_quest = None, None, None, None
+            self.consider(tasks_derived)
+            data_structure_accessed_busyness = self.memory.busyness
 
-        # step 4. Apply inference step
-        #   general inference step
-        concept: Concept = self.memory.take(remove=True)
-        if concept is not None:
-            tasks_inference_derived = self.inference.step(concept)
-            tasks_derived.extend(tasks_inference_derived)
-            
-            is_concept_valid = True # TODO
-            if is_concept_valid:
-                self.memory.put_back(concept)
+        self.u_top_level_attention = Config.Config.r_top_level_attention_adjust * data_structure_accessed_busyness \
+                                     + (1 - Config.Config.r_top_level_attention_adjust) * self.u_top_level_attention
 
         #   temporal induction in NAL-7
         if Enable.temporal_reasoning and task is not None and task.is_judgement and task.is_external_event:
@@ -167,6 +126,81 @@ class Reasoner:
         tasks_derived = [task for task in tasks_derived if task.term.complexity <= thresh_complexity]
         return tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest, (
             task_operation_return, task_executed)
+
+
+    def consider(self, tasks_derived: List[Task]):
+        """
+            Consider a Concept in the Memory
+        """
+        # step 4. Apply inference step
+        #   general inference step
+        concept: Concept = self.memory.take(remove=True)
+        if concept is not None:
+            tasks_inference_derived = self.inference.step(concept)
+            tasks_derived.extend(tasks_inference_derived)
+
+            is_concept_valid = True  # TODO
+            if is_concept_valid:
+                self.memory.put_back(concept)
+
+    def observe(self, tasks_derived: List[Task]):
+        """
+            OBSERVE
+            Process Channels/Buffers
+        """
+        judgement_revised, goal_revised, answers_question, answers_quest = None, None, None, None
+        # step 1. Take out an Item from `Channels`, and then put it into the `Overall Experience`
+        for channel in self.channels:
+            task_in: Task = channel.take()
+            if task_in is not None:
+                self.overall_experience.put(task_in)
+
+        # step 2. Take out an Item from the `Internal Experience`, with putting it back afterwards, and then put it
+        # into the `Overall Experience`
+        task: Task = self.internal_experience.take(remove=True)
+        if task is not None:
+            self.overall_experience.put(task)
+            self.internal_experience.put_back(task)
+
+        # step 3. Process a task in the global experience buffer
+        task: Task = self.overall_experience.take()
+        if task is not None and not task.processed:
+            task.processed = True
+            # if task.is_goal:
+            #     print(task)
+
+            # concept = self.memory.take_by_key(task.term, remove=False)
+            # if task.is_goal:
+            # goal_revised = self.process_goal(task, concept)
+            judgement_revised, goal_revised, answers_question, answers_quest, (
+            task_operation_return, task_executed), _tasks_derived = self.memory.accept(task)
+            if task_operation_return is not None: tasks_derived.append(task_operation_return)
+            # if task_executed is not None: tasks_derived.append(task_executed)
+            tasks_derived.extend(_tasks_derived)
+            # self.sequence_buffer.put_back(task) # globalBuffer.putBack(task,
+            # narParameters.GLOBAL_BUFFER_FORGET_DURATIONS, this)
+
+            if Enable.temporal_reasoning:
+                # TODO: Temporal Inference
+                # Ref: OpenNARS 3.1.0 line 409~411
+                # if (!task.sentence.isEternal() && !(task.sentence.term instanceof Operation)) {
+                #     globalBuffer.eventInference(task, cont, false); //can be triggered by Buffer itself in the future
+                # }
+                raise
+
+            if judgement_revised is not None:
+                self.internal_experience.put(judgement_revised)
+            if goal_revised is not None:
+                self.internal_experience.put(goal_revised)
+            if answers_question is not None:
+                for answer in answers_question:
+                    self.internal_experience.put(answer)
+            if answers_quest is not None:
+                for answer in answers_quest:
+                    self.internal_experience.put(answer)
+
+
+        return judgement_revised, goal_revised, answers_question, answers_quest,
 
     def mental_operation(self, task: Task, concept: Concept, answers_question: Task, answers_quest: Task):
         # handle the mental operations in NAL-9

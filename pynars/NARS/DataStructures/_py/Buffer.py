@@ -22,10 +22,12 @@ class Buffer(Bag):
         existing concepts in the memory or tasks in the buffer.
     '''
 
+
     def __init__(self, capacity: int, n_buckets: int=None, take_in_order: bool=False, max_duration: int=None) -> None:
         key: Callable[[Task], Any] = lambda task: (hash(task), hash(task.stamp.evidential_base))
         Bag.__init__(self, capacity, n_buckets=n_buckets, take_in_order=take_in_order, key=key)
         self.max_duration = max_duration if max_duration is not None else Config.max_duration
+        self.busyness = 0.5
 
     # def put(self, task: Task):
     #     return Bag.put(self, task, (hash(task), hash(task.stamp.evidential_base)))

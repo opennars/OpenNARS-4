@@ -17,6 +17,8 @@ class Enable:
     debug = False
 
 class Config:
+    r_top_level_attention_adjust = 0.5
+
     priority: float=0.8
     durability: float=0.8
     quality: float=0.5
@@ -47,7 +49,6 @@ class Config:
     capacity_term_link: int=100
     capacity_table: int=100
 
-    complexity_unit: float=1.0 # 1.0 - oo
 
     quality_min: float=0.3
     cycles_per_duration: int=5
@@ -58,8 +59,10 @@ class Config:
 
     truth_epsilon = 0.01
     budget_epsilon = 0.0001
-    complexity_unit = 1.0
-    
+
+    r_term_complexity_unit = 0.5
+    t_sentence_directness_unit = 1.0
+
 
     variable_repr_normalized = False
 
@@ -72,8 +75,8 @@ class Config:
     n_sequence_attempts = 10
     n_op_condition_attempts = 10
 
-    projection_decay = 0.1
-    decision_threshold = 0.51
+    projection_decay = 0.99
+    Td_decision_threshold = 0.51
 
     # what this value represents was originally equal to the termlink record length (10), but we may want to adjust it or make it scaled according to duration since it has more to do with time than # of records.  it can probably be increased several times larger since each item should remain in the recording queue for longer than 1 cycle
     novelty_horizon = 100000
@@ -164,7 +167,7 @@ def load(file_path: str):
             Config.nlevels_term_link = concept.get('NUM_LEVELS_TERMLINK_BAG', Config.nlevels_term_link)
             Config.capacity_term_link = concept.get('CAPACITY_TERMLINK_BAG', Config.capacity_term_link)
             Config.capacity_table = concept.get('CAPACITY_TABLE', Config.capacity_table)
-        Config.complexity_unit = defaults.get('COMPLEXITY_UNIT', Config.complexity_unit)
+        Config.r_term_complexity_unit = defaults.get('COMPLEXITY_UNIT', Config.r_term_complexity_unit)
         Config.quality_min = defaults.get('QUALITY_MIN', Config.quality_min)
         Config.cycles_per_duration = defaults.get('CYCLES_PER_DURATION', Config.cycles_per_duration)
         Config.n_forget_durations = defaults.get('NUM_FORGET_DURATIONS', Config.n_forget_durations)
@@ -179,7 +182,7 @@ def load(file_path: str):
         hyperparams: dict = content['HYPER-PARAMS']
         Config.truth_epsilon = hyperparams.get('TRUTH_EPSILON', Config.truth_epsilon)
         Config.budget_epsilon = hyperparams.get('BUDGET_EPSILON', Config.budget_epsilon)
-        Config.complexity_unit = hyperparams.get('COMPLEXITY_UNIT', Config.complexity_unit)
+        Config.r_term_complexity_unit = hyperparams.get('COMPLEXITY_UNIT', Config.r_term_complexity_unit)
         Config.temporal_duration = hyperparams.get('TEMPORAL_DURATION', Config.temporal_duration)
         Config.n_sequence_attempts = hyperparams.get('TEMPORAL_DURATION', Config.n_sequence_attempts)
         Config.n_op_condition_attempts = hyperparams.get('NUM_OP_CONDITION_ATTEMPTS', Config.n_op_condition_attempts)

@@ -17,7 +17,7 @@ from pynars.Config import Config, Enable
 nars = Reasoner(100, 100)
 engine: GeneralEngine = nars.inference
 
-
+NUM_CYCLES_MULTIPLIER = 4
 def process_two_premises(premise1: str, premise2: str, n_cycle: int) -> List[Task]:
     ''''''
     tasks_all_cycles = []
@@ -29,7 +29,7 @@ def process_two_premises(premise1: str, premise2: str, n_cycle: int) -> List[Tas
         success, task, task_overflow = nars.input_narsese(premise2)
         tasks_all_cycles.append(task)
 
-    for tasks_all in nars.cycles(n_cycle):
+    for tasks_all in nars.cycles(n_cycle*NUM_CYCLES_MULTIPLIER):
         # print('>>>', tasks_all)
         tasks_derived, judgement_revised, goal_revised, answers_question, \
             answers_quest, (task_operation_return, task_executed) = tasks_all

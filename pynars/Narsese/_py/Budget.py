@@ -11,7 +11,7 @@ class Budget:
     def __init__(self, priority: float, durability: float, quality: float):
         self.priority = priority if priority is not None else Budget.priority
         self.durability = durability if durability is not None else  Budget.durability
-        self.quality = quality if durability is not None else  Budget.quality    
+        self.quality = quality if quality is not None else  Budget.quality
 
     @property
     def summary(self) -> float:
