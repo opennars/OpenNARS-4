@@ -10,6 +10,9 @@ from Tests.utils_for_test import *
 # utils_for_test.rule_map = RuleMap_v2()
 
 class TEST_NAL7(unittest.TestCase):
+    def setUp(self):
+        nars.reset()
+
     ''''''
 
     def test_deduction(self):
@@ -634,6 +637,9 @@ class TEST_NAL7(unittest.TestCase):
         pass
 
 class TEST_NAL7_ANALOGY(unittest.TestCase):
+    def setUp(self):
+        nars.reset()
+
     def test_analogy_0_0__0(self):
         '''
         

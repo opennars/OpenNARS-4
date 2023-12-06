@@ -7,6 +7,9 @@ from Tests.utils_for_test import *
 
 
 class TEST_NAL2(unittest.TestCase):
+    def setUp(self):
+        nars.reset()
+
     ''''''
     
     def test_revision(self):
@@ -215,7 +218,7 @@ class TEST_NAL2(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<swan --> bird>. %1.00;0.90%', 
             '<bird --> swan>. %0.10;0.90%', 
-            2
+            10
         )
         self.assertTrue(
             output_contains(tasks_derived, '<bird <-> swan>. %0.10;0.81%')

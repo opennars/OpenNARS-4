@@ -10,6 +10,9 @@ from pynars.utils.Print import PrintType, print_out
 from pynars.NARS.InferenceEngine.VariableEngine.VariableEngine import VariableEngine
 
 class TEST_NAL6(unittest.TestCase):
+    def setUp(self):
+        nars.reset()
+
     ''''''
 
     def test_unification_0(self):
@@ -30,7 +33,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<<$x --> bird> ==> <$x --> flyer>>. %1.00;0.90%',
             '<<$y --> bird> ==> <$y --> flyer>>. %0.00;0.70%',
-            2
+            20
         )
         self.assertTrue(
             output_contains(tasks_derived, '<<$1 --> bird> ==> <$1 --> flyer>>. %0.79;0.92%')
@@ -59,7 +62,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<<$x --> bird> ==> <$x --> animal>>. %1.00;0.90%',
             '<<$y --> robin> ==> <$y --> bird>>. %1.00;0.90%',
-            10
+            20
         )
         self.assertTrue(
             output_contains(tasks_derived, '<<$0 --> robin> ==> <$0 --> animal>>. %1.00;0.81%')
@@ -105,7 +108,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<<$x --> swan> ==> <$x --> bird>>. %1.00;0.80% ',
             '<<$y --> swan> ==> <$y --> swimmer>>. %0.80;0.90%',
-            10
+            20
         )
 
         self.assertTrue(
@@ -156,7 +159,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<<bird --> $x> ==> <robin --> $x>>. %1.00;0.90%',
             '<<swimmer --> $y> ==> <robin --> $y>>. %0.70;0.90%',
-            10
+            20
         )
         
         self.assertTrue(
@@ -194,7 +197,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(&&,<$x --> flyer>,<$x --> [chirping]>) ==> <$x --> bird>>. %1.00;0.90%',
             '<<$y --> [with_wings]> ==> <$y --> flyer>>. %1.00;0.90%',
-            10
+            20
         )
         
         self.assertTrue(
@@ -225,7 +228,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(&&,<$x --> flyer>,<$x --> [chirping]>, <(*, $x, worms) --> food>) ==> <$x --> bird>>.  %1.00;0.90%',
             '<(&&,<$x --> [chirping]>,<$x --> [with_wings]>) ==> <$x --> bird>>. %1.00;0.90%',
-            10
+            20
         )
         
         self.assertTrue(
@@ -267,7 +270,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(&&,<$x --> flyer>,<(*,$x,worms) --> food>) ==> <$x --> bird>>. %1.00;0.90%',
             '<<$y --> flyer> ==> <$y --> [with_wings]>>. %1.00;0.90%',
-            10
+            20
         )
        
         self.assertTrue(
@@ -500,7 +503,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<<$x --> lock> ==> (&&,<#y --> key>,<$x --> (/,open,#y,_)>)>. %1.00;0.90%',
             '<{lock1} --> lock>. %1.00;0.90%',
-            10
+            100
         )
 
         self.assertTrue(
@@ -528,7 +531,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '(&&,<#x --> lock>,<<$y --> key> ==> <#x --> (/,open,$y,_)>>). %1.00;0.90%',
             '<{lock1} --> lock>. %1.00;0.90%',
-            10
+            100
         )
 
         self.assertTrue(
@@ -556,7 +559,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '(&&,<#x --> (/,open,#y,_)>,<#x --> lock>,<#y --> key>).',
             '<{lock1} --> lock>.',
-            10
+            100
         )
 
         self.assertTrue(
@@ -593,7 +596,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<swan --> bird>. %1.00;0.90%',
             '<swan --> swimmer>. %0.80;0.90%',
-            10
+            100
         )
 
         self.assertTrue(
@@ -638,7 +641,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<gull --> swimmer>. %1.00;0.90%',
             '<swan --> swimmer>. %0.80;0.90%',
-            10
+            100
         )
 
         self.assertTrue(
@@ -679,7 +682,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<{key1} --> (/,open,_,{lock1})>. %1.00;0.90%',
             '<{key1} --> key>. %1.00;0.90%',
-            10
+            100
         )
 
         self.assertTrue(
@@ -842,7 +845,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<<$1 --> lock> ==> (&&,<#2 --> key>,<$1 --> (/,open,#2,_)>)>. %1.00;0.90%',
             '<{key1} --> key>. %1.00;0.90% ',
-            10
+            100
         )
 
         self.assertTrue(
@@ -905,7 +908,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(&&,<#1 --> lock>,<#1 --> (/,open,$2,_)>) ==> <$2 --> key>>. %1.00;0.90%',
             '<lock1 --> lock>. %1.00;0.90%',
-            10
+            100
         )
 
         self.assertTrue(
@@ -924,7 +927,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(&&,<#1 --> A>, <#1 --> B>) ==> C>. %1.00;0.90%',
             '<M --> A>. %1.00;0.90%',
-            10
+            100
         )
 
         self.assertTrue(
@@ -967,7 +970,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(&&,<#1 --> lock>,<#1 --> (/,open,$2,_)>) ==> <$2 --> key>>. %1.00;0.90%',
             '<<lock1 --> (/,open,$1,_)> ==> <$1 --> key>>. %1.00;0.90%',
-            10
+            200
         )
 
         self.assertTrue(
@@ -984,7 +987,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(&&,<#1 --> A>,<#1 --> B>) ==> C>. %1.00;0.90%',
             '<<M --> A> ==> C>. %1.00;0.90%',
-            100
+            200
         )
 
         self.assertTrue(

@@ -19,6 +19,9 @@ from Tests.utils_for_test import *
 
 
 class TEST_NAL5(unittest.TestCase):
+    def setUp(self):
+        nars.reset()
+
     ''''''
     
     def test_revision(self):
@@ -180,6 +183,8 @@ class TEST_NAL5(unittest.TestCase):
             output_contains(tasks_derived, '<robin --> animal>. %1.00;0.81%')
         )
 
+        nars.reset()
+
         tasks_derived = process_two_premises(
             '<robin --> bird>. %1.00;0.90%', 
             '<<robin --> bird> ==> <robin --> animal>>. %1.00;0.90%', 
@@ -340,35 +345,40 @@ class TEST_NAL5(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<robin --> bird>. %1.00;0.90%', 
             '<<robin --> bird> <=> <robin --> [flying]>>. %0.80;0.90%', 
-            6
+            10
         )
         self.assertTrue(
             output_contains(tasks_derived, '<robin --> [flying]>. %0.80;0.65%')
         )
+
+        nars.reset()
 
         tasks_derived = process_two_premises(
             '<<robin --> bird> <=> <robin --> [flying]>>. %0.80;0.90%', 
             '<robin --> bird>. %1.00;0.90%', 
-            6
+            10
         )
         self.assertTrue(
             output_contains(tasks_derived, '<robin --> [flying]>. %0.80;0.65%')
         )
 
+        nars.reset()
+
         tasks_derived = process_two_premises(
             '<robin --> bird>. %1.00;0.90%', 
             '<<robin --> [flying]> <=> <robin --> bird>>. %0.80;0.90%', 
-            6
+            10
         )
         self.assertTrue(
             output_contains(tasks_derived, '<robin --> [flying]>. %0.80;0.65%')
         )
 
+        nars.reset()
 
         tasks_derived = process_two_premises(
             '<<robin --> [flying]> <=> <robin --> bird>>. %0.80;0.90%', 
             '<robin --> bird>. %1.00;0.90%', 
-            6
+            10
         )
         self.assertTrue(
             output_contains(tasks_derived, '<robin --> [flying]>. %0.80;0.65%')
@@ -580,6 +590,8 @@ class TEST_NAL5(unittest.TestCase):
         self.assertTrue(
             output_contains(tasks_derived, '<robin --> swimmer>. %0.00;0.81%')
         )
+
+        nars.reset()
 
         tasks_derived = process_two_premises(
             '<robin --> [flying]>. %1.00;0.90%', 

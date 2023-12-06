@@ -56,14 +56,13 @@ def Budget_revision(budget_task: Budget, truth_task: Truth, truth_belief: Truth,
     quality = truth_to_quality(truth_derived)
     return Budget(priority, durability, quality), budget_task, budget_tasklink, budget_termlink
 
-def Budget_inference(quality: float, budget_tasklink: Budget, budget_termlink: Budget=None, complexity: float=1.0):
+def Budget_inference(quality: float, budget_tasklink: Budget, budget_termlink: Budget=None, simplicity: float=1.0):
     '''
     Ref. OpenNARS 3.1.0 BudgetFunctions.java line 292~317.
     '''
-    complexity = 1 + log2(complexity)
     p = budget_tasklink.priority
-    d = budget_tasklink.durability/complexity
-    q = quality/complexity
+    d = budget_tasklink.durability * simplicity
+    q = quality * simplicity
     if budget_termlink is not None:
         p = Or(p, budget_termlink.priority)
         d = And(d, budget_termlink.durability)
@@ -85,13 +84,13 @@ def Budget_backward_weak(truth_new_task: Truth, budget_tasklink: Budget, budget_
 
 def Budget_forward_compound(content: Term, truth_new_task: Truth, budget_tasklink: Budget, budget_termlink: Budget=None):
     '''Ref. OpenNARS 3.1.0 BudgetFunctions.java line 254~257.'''
-    return Budget_inference(truth_to_quality(truth_new_task), budget_tasklink, budget_termlink, Config.complexity_unit if content is None else Config.complexity_unit*content.complexity)
+    return Budget_inference(truth_to_quality(truth_new_task), budget_tasklink, budget_termlink, content.simplicity)
 
 def Budget_backward_compound(content: Term, budget_tasklink: Budget, budget_termlink: Budget=None):
-    return Budget_inference(1.0, budget_tasklink, budget_termlink, Config.complexity_unit*content.complexity)
+    return Budget_inference(1.0, budget_tasklink, budget_termlink, content.simplicity)
 
 def Budget_backward_weak_compound(content: Term, budget_tasklink: Budget, budget_termlink: Budget=None):
-    return Budget_inference(w_to_c(1, Config.k), budget_tasklink, budget_termlink, Config.complexity_unit*content.complexity)
+    return Budget_inference(w_to_c(1, Config.k), budget_tasklink, budget_termlink, content.simplicity)
 
 
 '''Bag'''
@@ -125,20 +124,9 @@ def Budget_merge(budget_base: Budget, budget_merged: Budget, replace=True):
     Here the implementation is accordant to the description in the Conceptual Design.
     '''
     if not replace: budget_base = deepcopy(budget_base)
-    # # implementation in the Conceptual Design.
-    # budget_base.priority = max(budget_base.priority, budget_merged.priority)
-    # budget_base.durability = Or(budget_base.durability, budget_merged.durability)
-    # budget_base.quality = Or(budget_base.quality, budget_merged.quality)
-
-    # implementation in OpenNARS 3.1.0 or 3.0.4:
     budget_base.priority = Or(budget_base.priority, budget_merged.priority)
-    budget_base.durability = Average(budget_base.durability, budget_merged.durability)
-    budget_base.quality = budget_base.quality
-
-    # TODO: which implementation is better?
-    # Note (2021.1.25):
-    # I find that if I adopt the former one, which is consistent with the conceptual design, the budget of a term will be very large, because when build term links, there will be several times to call this function. Hence, if we choose the first one, `Concept._build_term_links(...)` and `Concept._build_task_links(...)` should be modified.
-    
+    budget_base.durability = Or(budget_base.durability, budget_merged.durability)
+    budget_base.quality = max(budget_base.quality, budget_merged.quality)
     return budget_base
 
 

@@ -1,3 +1,5 @@
+from pynars.NAL.Functions import BudgetFunctions
+
 from pynars.Config import Enable, Config
 from pynars.NAL.Inference.LocalRules import solve_query, solution_query, solution_question
 from pynars.NAL.MetaLevelInference.VariableSubstitution import get_elimination__var_const
@@ -25,14 +27,22 @@ class Memory:
         # self.output_buffer = output_buffer
         self.global_eval = global_eval if global_eval is not None else GlobalEval()
 
+    @property
+    def busyness(self):
+        return self.concepts.busyness
+
     def accept(self, task: Task):
         '''
         **Accept task**: Accept a task from the `Overall Experience`, and link it from all directly related concepts. Ref: *The Conceptual Design of OpenNARS 3.1.0*.
         '''
         tasks_derived = []
         task_operation_return, task_executed = None, None
-        # merging the new task as a concept into the memory
-        concept: Concept = Concept._conceptualize(self, task.term, task.budget)
+
+        conceptualize_budget = Budget(priority=task.budget.priority,
+                                      durability=task.budget.durability,
+                                      quality=task.term.simplicity)
+        # merge the task as a concept into the memory
+        concept: Concept = Concept._conceptualize(self.concepts, task.term, conceptualize_budget)
         if concept is None: return None  # The memroy is full. The concept fails to get into the memory.
 
         # then process each task according to its type
@@ -240,7 +250,7 @@ class Memory:
             truth = project(task.truth, task.stamp.t_occurrence, Global.time, Global.time)
         else:
             truth = task.truth
-        if truth.e > Config.decision_threshold:
+        if truth.e > Config.Td_decision_threshold:
             if (task is not None) and task.is_executable and not (desire is not None and desire.evidential_base.contains(task.evidential_base)):
                     #   execute with registered operators 
                     stat: Statement = task.term
@@ -415,6 +425,9 @@ class Memory:
 
     def put_back(self, concept: Concept):
         return self.concepts.put_back(concept)
+
+    def reset(self):
+        self.concepts.reset()
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__}: #items={len(self.concepts)}, #buckets={len(self.concepts.levels)}>"

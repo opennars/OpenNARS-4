@@ -100,6 +100,15 @@ class Sentence:
     def tense(self):
         return self.stamp.tense
 
+    @property
+    def directness(self):
+        return len(self.stamp.evidential_base) ** -Config.t_sentence_directness_unit
+
+    @property
+    def sharpness(self):
+        if self.truth_value is None: return None
+        else: return 2 * abs(self.truth_value.e - 0.5)
+
     # @property
     # def temporal_order(self):
     #     return self.term.temporal_order

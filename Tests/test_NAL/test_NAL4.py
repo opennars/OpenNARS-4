@@ -21,6 +21,9 @@ from pynars.NARS.RuleMap import Interface_TransformRules
 
 
 class TEST_NAL4(unittest.TestCase):
+    def setUp(self):
+        nars.reset()
+
     ''''''
 
     def test_structural_transformation_0(self):
@@ -41,7 +44,7 @@ class TEST_NAL4(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(*,acid, base) --> reaction>. %1.00;0.90%',
             None,
-            6
+            10
         )
 
         self.assertTrue(
@@ -69,7 +72,7 @@ class TEST_NAL4(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<acid --> (/,reaction,_,base)>. %1.00;0.90%',
             None,
-            6
+            10
         )
         
         self.assertTrue(
@@ -93,7 +96,7 @@ class TEST_NAL4(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<acid --> (/,reaction,_,base)>. %1.00;0.90%',
             None,
-            6
+            10
         )
         
         self.assertTrue(
@@ -117,7 +120,7 @@ class TEST_NAL4(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<base --> (/,reaction,acid,_)>. %1.00;0.90%',
             None,
-            6
+            10
         )
         
         self.assertTrue(
@@ -141,7 +144,7 @@ class TEST_NAL4(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(\,neutralization,_,base) --> acid>. %1.00;0.90%',
             None,
-            4
+            10
         )
         
         self.assertTrue(
@@ -165,7 +168,7 @@ class TEST_NAL4(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(\,neutralization,_,base) --> acid>. %1.00;0.90%',
             None,
-            6
+            10
         )
         
         self.assertTrue(
@@ -189,7 +192,7 @@ class TEST_NAL4(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(\,neutralization,acid,_) --> base>. %1.00;0.90%',
             None,
-            6
+            10
         )
         
         self.assertTrue(
@@ -213,7 +216,7 @@ class TEST_NAL4(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(\,neutralization,acid,_) --> base>. %1.00;0.90%',
             None,
-            6
+            10
         )
         
         self.assertTrue(

@@ -19,6 +19,9 @@ from Tests.utils_for_test import *
 
 
 class TEST_NAL3(unittest.TestCase):
+    def setUp(self):
+        nars.reset()
+
     ''''''
     
     def test_compound_intersection_extension(self):
@@ -154,6 +157,7 @@ class TEST_NAL3(unittest.TestCase):
             output_contains(tasks_derived, '<robin --> bird>. %1.00;0.81%')
         )        
 
+        nars.reset()
 
         tasks_derived = process_two_premises(
             '<robin --> swimmer>. %0.00;0.90%', 
@@ -189,6 +193,8 @@ class TEST_NAL3(unittest.TestCase):
         self.assertTrue(
             output_contains(tasks_derived, '<robin --> mammal>. %0.00;0.81%')
         )
+
+        nars.reset()
 
         tasks_derived = process_two_premises(
             '<robin --> (-,mammal,swimmer)>. %0.00;0.90%', 
