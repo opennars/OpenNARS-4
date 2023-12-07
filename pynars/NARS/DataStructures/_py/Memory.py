@@ -261,6 +261,10 @@ class Memory:
                     if op in registered_operators and not task.is_mental_operation:
                         # to judge whether the goal has been fulfilled
                         task_operation_return, task_executed = execute(task, concept, self)
+
+                        # update well-being
+                        self.global_eval.update_wellbeing(task_executed.truth.e)
+                        
                         concept_task = self.take_by_key(task.term, remove=False)
                         if concept_task is not None:
                             belief: Belief = concept_task.match_belief(task.sentence)
@@ -270,6 +274,8 @@ class Memory:
                         task_executed = task
                         # if task_operation_return is not None: tasks_derived.append(task_operation_return)
                         # if task_executed is not None: tasks_derived.append(task_executed)
+
+                        
 
 
 
