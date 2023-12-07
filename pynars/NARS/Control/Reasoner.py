@@ -19,15 +19,17 @@ from pynars import Global
 from time import time
 from pynars.NAL.Functions.Tools import project_truth, project
 
+
 class Reasoner:
 
-    def __init__(self, n_memory, capacity, config = './config.json', nal_rules={1,2,3,4,5,6,7,8,9}) -> None:
+    def __init__(self, n_memory, capacity, config='./config.json', nal_rules={1, 2, 3, 4, 5, 6, 7, 8, 9}) -> None:
         # print('''Init...''')
         Config.load(config)
 
         self.inference = GeneralEngine(add_rules=nal_rules)
         self.variable_inference = VariableEngine(add_rules=nal_rules)
-        self.temporal_inference = TemporalEngine(add_rules=nal_rules) # for temporal causal reasoning 
+        self.temporal_inference = TemporalEngine(
+            add_rules=nal_rules)  # for temporal causal reasoning
 
         self.memory = Memory(n_memory)
         self.overall_experience = Buffer(capacity)
@@ -64,12 +66,10 @@ class Reasoner:
 
     def input_narsese(self, text, go_cycle: bool = False) -> Tuple[bool, Union[Task, None], Union[Task, None]]:
         success, task, task_overflow = self.narsese_channel.put(text)
-        if go_cycle: 
+        if go_cycle:
             tasks = self.cycle()
             return success, task, task_overflow, tasks
         return success, task, task_overflow
-
-
 
     def cycle(self):
         """Everything to do by NARS in a single working cycle"""
@@ -83,38 +83,16 @@ class Reasoner:
 
         data_structure_accessed_busyness = None
         if random_number < self.u_top_level_attention:
-            judgement_revised, goal_revised, answers_question, answers_quest = self.observe(tasks_derived)
+            judgement_revised, goal_revised, answers_question, answers_quest = self.observe(
+                tasks_derived)
             data_structure_accessed_busyness = self.overall_experience.busyness
         else:
             self.consider(tasks_derived)
             data_structure_accessed_busyness = self.memory.busyness
 
         self.u_top_level_attention = Config.Config.r_top_level_attention_adjust * data_structure_accessed_busyness \
-                                     + (1 - Config.Config.r_top_level_attention_adjust) * self.u_top_level_attention
-
-        #   temporal induction in NAL-7
-        if Enable.temporal_reasoning and task is not None and task.is_judgement and task.is_external_event:
-            concept_task: Concept = self.memory.take_by_key(task.term, remove=False)
-            t1 = time()
-            tasks_derived.extend(
-                self.temporal_inference.step(
-                    task, concept_task,
-                    self.sequence_buffer,
-                    self.operations_buffer
-                )
-            )
-            t2 = time()
-            print(f"time: {t2-t1}")
-        else:
-            pass  # TODO: select a task from `self.sequence_buffer`?
-
-        #   mental operation of NAL-9
-        if Enable.operation: # it should be `Enable.mental_operation`?
-            task_operation_return, task_executed, belief_awared = self.mental_operation(task, concept, answers_question,
-                                                                                        answers_quest)
-            if task_operation_return is not None: tasks_derived.append(task_operation_return)
-            if task_executed is not None: tasks_derived.append(task_executed)
-            if belief_awared is not None: tasks_derived.append(belief_awared)
+            + (1 - Config.Config.r_top_level_attention_adjust) * \
+            self.u_top_level_attention
 
         #   put the derived tasks into the internal-experience.
         for task_derived in tasks_derived:
@@ -123,10 +101,10 @@ class Reasoner:
         # handle the sense of time
         Global.time += 1
         thresh_complexity = 20
-        tasks_derived = [task for task in tasks_derived if task.term.complexity <= thresh_complexity]
+        tasks_derived = [
+            task for task in tasks_derived if task.term.complexity <= thresh_complexity]
         return tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest, (
             task_operation_return, task_executed)
-
 
     def consider(self, tasks_derived: List[Task]):
         """
@@ -173,8 +151,9 @@ class Reasoner:
             # if task.is_goal:
             # goal_revised = self.process_goal(task, concept)
             judgement_revised, goal_revised, answers_question, answers_quest, (
-            task_operation_return, task_executed), _tasks_derived = self.memory.accept(task)
-            if task_operation_return is not None: tasks_derived.append(task_operation_return)
+                task_operation_return, task_executed), _tasks_derived = self.memory.accept(task)
+            if task_operation_return is not None:
+                tasks_derived.append(task_operation_return)
             # if task_executed is not None: tasks_derived.append(task_executed)
             tasks_derived.extend(_tasks_derived)
             # self.sequence_buffer.put_back(task) # globalBuffer.putBack(task,
@@ -199,6 +178,39 @@ class Reasoner:
                 for answer in answers_quest:
                     self.internal_experience.put(answer)
 
+            # TODO: handling temporal induction and mental operation
+            #       Is it implemented correctly?
+
+            #   temporal induction in NAL-7
+            if Enable.temporal_reasoning and task is not None and task.is_judgement and task.is_external_event:
+                concept_task: Concept = self.memory.take_by_key(
+                    task.term, remove=False)
+                # t1 = time()
+                tasks_derived.extend(
+                    self.temporal_inference.step(
+                        task, concept_task,
+                        self.sequence_buffer,
+                        self.operations_buffer
+                    )
+                )
+                # t2 = time()
+                # print(f"time: {t2-t1}")
+            else:
+                pass  # TODO: select a task from `self.sequence_buffer`?
+
+            #   mental operation of NAL-9
+            if Enable.operation:  # it should be `Enable.mental_operation`?
+                # self.memory.
+                concept_task: Concept = self.memory.take_by_key(
+                    task.term, remove=False)
+                task_operation_return, task_executed, belief_awared = self.mental_operation(
+                    task, concept_task, answers_question, answers_quest)
+                if task_operation_return is not None:
+                    tasks_derived.append(task_operation_return)
+                if task_executed is not None:
+                    tasks_derived.append(task_executed)
+                if belief_awared is not None:
+                    tasks_derived.append(belief_awared)
 
         return judgement_revised, goal_revised, answers_question, answers_quest,
 
@@ -208,7 +220,8 @@ class Reasoner:
 
         # belief-awareness
         for answers in (answers_question, answers_quest):
-            if answers is None: continue
+            if answers is None:
+                continue
             for answer in answers:
                 belief_awared = Operation.aware__believe(answer)
 
@@ -222,7 +235,8 @@ class Reasoner:
 
                 # execute mental operation
         if task is not None and task.is_executable:
-            task_operation_return, task_executed = Operation.execute(task, concept, self.memory)
+            task_operation_return, task_executed = Operation.execute(
+                task, concept, self.memory)
 
         return task_operation_return, task_executed, belief_awared
 
@@ -234,4 +248,3 @@ class Reasoner:
             Operation.register(op, callback)
             return op
         return None
-
