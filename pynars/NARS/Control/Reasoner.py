@@ -21,6 +21,7 @@ from pynars.NAL.Functions.Tools import project_truth, project
 from ..GlobalEval import GlobalEval
 
 
+
 class Reasoner:
 
     def __init__(self, n_memory, capacity, config='./config.json', nal_rules={1, 2, 3, 4, 5, 6, 7, 8, 9}) -> None:
@@ -96,34 +97,6 @@ class Reasoner:
         self.u_top_level_attention = Config.Config.r_top_level_attention_adjust * data_structure_accessed_busyness \
             + (1 - Config.Config.r_top_level_attention_adjust) * \
             self.u_top_level_attention
-
-        #   temporal induction in NAL-7
-        if Enable.temporal_reasoning and task is not None and task.is_judgement and task.is_external_event:
-            concept_task: Concept = self.memory.take_by_key(
-                task.term, remove=False)
-            t1 = time()
-            tasks_derived.extend(
-                self.temporal_inference.step(
-                    task, concept_task,
-                    self.sequence_buffer,
-                    self.operations_buffer
-                )
-            )
-            t2 = time()
-            print(f"time: {t2-t1}")
-        else:
-            pass  # TODO: select a task from `self.sequence_buffer`?
-
-        #   mental operation of NAL-9
-        if Enable.operation:  # it should be `Enable.mental_operation`?
-            task_operation_return, task_executed, belief_awared = self.mental_operation(task, concept, answers_question,
-                                                                                        answers_quest)
-            if task_operation_return is not None:
-                tasks_derived.append(task_operation_return)
-            if task_executed is not None:
-                tasks_derived.append(task_executed)
-            if belief_awared is not None:
-                tasks_derived.append(belief_awared)
 
         #   put the derived tasks into the internal-experience.
         for task_derived in tasks_derived:
@@ -226,6 +199,39 @@ class Reasoner:
                 judgement_revised.truth.c - task.truth.c)
         else:
             self.global_eval.update_alertness(0.0)
+            # TODO: handling temporal induction and mental operation
+            #       Is it implemented correctly?
+
+            #   temporal induction in NAL-7
+            if Enable.temporal_reasoning and task is not None and task.is_judgement and task.is_external_event:
+                concept_task: Concept = self.memory.take_by_key(
+                    task.term, remove=False)
+                # t1 = time()
+                tasks_derived.extend(
+                    self.temporal_inference.step(
+                        task, concept_task,
+                        self.sequence_buffer,
+                        self.operations_buffer
+                    )
+                )
+                # t2 = time()
+                # print(f"time: {t2-t1}")
+            else:
+                pass  # TODO: select a task from `self.sequence_buffer`?
+
+            #   mental operation of NAL-9
+            if Enable.operation:  # it should be `Enable.mental_operation`?
+                # self.memory.
+                concept_task: Concept = self.memory.take_by_key(
+                    task.term, remove=False)
+                task_operation_return, task_executed, belief_awared = self.mental_operation(
+                    task, concept_task, answers_question, answers_quest)
+                if task_operation_return is not None:
+                    tasks_derived.append(task_operation_return)
+                if task_executed is not None:
+                    tasks_derived.append(task_executed)
+                if belief_awared is not None:
+                    tasks_derived.append(belief_awared)
 
         return judgement_revised, goal_revised, answers_question, answers_quest,
 
