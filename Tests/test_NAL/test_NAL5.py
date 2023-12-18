@@ -785,16 +785,18 @@ class TEST_NAL5(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(&&,<robin --> [flying]>,<robin --> [with_wings]>) ==> <robin --> bird>>. %1.00;0.90%', 
             '<robin --> [flying]>. %1.00;0.90%', 
-            2
+            10
         )
         self.assertTrue(
             output_contains(tasks_derived, '<<robin --> [with_wings]> ==> <robin --> bird>>. %1.00;0.81%')
         )
 
+        nars.reset()
+
         tasks_derived = process_two_premises(
             '<robin --> [flying]>. %1.00;0.90%', 
             '<(&&,<robin --> [flying]>,<robin --> [with_wings]>) ==> <robin --> bird>>. %1.00;0.90%', 
-            2
+            10
         )
         self.assertTrue(
             output_contains(tasks_derived, '<<robin --> [with_wings]> ==> <robin --> bird>>. %1.00;0.81%')

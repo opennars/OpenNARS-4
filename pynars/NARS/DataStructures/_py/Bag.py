@@ -6,6 +6,7 @@ from pynars.Config import Config
 from pynars.Narsese import Item, Task
 from pynars.NAL.Functions.BudgetFunctions import *
 from typing import Union, Callable, Any
+from .Distributor import Distributor
 
 
 class Bag:
@@ -49,11 +50,18 @@ class Bag:
             take_in_order (bool): if True, an item is taken out in order within a bucket, otherwise a random item is taken out.
         '''
         self.capacity = capacity
-        self.pointer = 0  # Pointing to the Bag's current bucket number
         self.take_in_order = take_in_order
         self.item_lut = self.LUT(key=key)  # look up table
         self.n_levels = n_buckets if n_buckets is not None else Config.num_buckets
+        self.pointer = self.n_levels - 1  # Pointing to the Bag's current bucket number
+
+        self.distributor = Distributor.new(self.n_levels)
+        
         self.levels = tuple(list() for i in range(self.n_levels))  # initialize buckets between 0 and capacity
+
+        self.currenCounter = 0
+        self.levelIndex = capacity % self.n_levels
+
         # self.buckets = self.Depq(maxlen=self.n_buckets)
         n_digits = int(math.log10(self.n_levels)) + 3
 
@@ -66,9 +74,12 @@ class Bag:
 
     def take(self, remove = True) -> Item:
         if len(self) == 0: return None
-
-        if self._is_current_level_empty():
-            self._move_to_next_nonempty_level()
+        if self._is_current_level_empty() or self.currenCounter == 0:
+            self.pointer = self.distributor.pick(self.levelIndex)
+            self.levelIndex = self.distributor.next(self.levelIndex)
+            while self._is_current_level_empty():
+                self.pointer = self.distributor.pick(self.levelIndex)
+                self.levelIndex = self.distributor.next(self.levelIndex)
 
         if self.take_in_order:
             # take the first item from the current bucket
@@ -86,10 +97,7 @@ class Bag:
         else:
             item = self.levels[self.pointer][idx]
 
-        bucket_probability = self.pointer / self.n_levels
-        rnd = random.random()  # [0.0, 1.0)
-        if rnd > bucket_probability:
-            self._move_to_next_nonempty_level()
+        self.currenCounter = idx
 
         return item
 

@@ -331,7 +331,7 @@ class TEST_NAL7(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<<(*,John,key_101) --> hold> =/> <(*,John,room_101) --> enter>>. %1.00;0.90%',
             '<(*,John,room_101) --> enter>. :\: %1.00;0.90%',
-            10
+            30
         )
 
         self.assertTrue(

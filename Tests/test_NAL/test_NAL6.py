@@ -750,7 +750,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '(&&,<#x --> key>,<{lock1} --> (/,open,#x,_)>). %1.00;0.90%',
             '<{lock1} --> lock>. %1.00;0.90%',
-            10
+            20
         )
 
         self.assertTrue(
@@ -781,7 +781,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<<lock1 --> (/,open,$1,_)> ==> <$1 --> key>>. %1.00;0.90%',
             '<lock1 --> lock>. %1.00;0.90%',
-            10
+            20
         )
 
         self.assertTrue(
@@ -864,7 +864,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<A ==> (&&,<#2 --> B>,C)>. %1.00;0.90%',
             '<M --> B>. %1.00;0.90%',
-            10
+            20
         )
 
         self.assertTrue(
