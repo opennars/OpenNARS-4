@@ -3,7 +3,7 @@ import functools
 
 class Distributor:
     @staticmethod
-    @functools.cache
+    @functools.lru_cache(maxsize=None)
     def new(range_val):
         return Distributor(range_val)
 
