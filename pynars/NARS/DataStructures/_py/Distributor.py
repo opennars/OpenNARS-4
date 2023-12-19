@@ -1,12 +1,18 @@
-import functools
+from functools import lru_cache
 
-
+"""
+A pseudo-random number generator, used in Bag
+"""
 class Distributor:
     @staticmethod
-    @functools.lru_cache(maxsize=None)
+    @lru_cache(maxsize=None)
     def new(range_val):
+        '''Factory method for creating new Distributors with caching to avoid repeated calculations'''
         return Distributor(range_val)
 
+    """
+    For any number N < range, there is N+1 copies of it in the array, distributed as evenly as possible
+    """
     def __init__(self, range_val):
         self.capacity = (range_val * (range_val + 1)) // 2
         self.order = [-1] * self.capacity
