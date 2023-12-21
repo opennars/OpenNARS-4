@@ -59,8 +59,8 @@ class Bag:
         
         self.levels = tuple(list() for i in range(self.n_levels))  # initialize buckets between 0 and capacity
 
-        self.currentCounter = 0
-        self.levelIndex = capacity % self.n_levels
+        self.current_counter = 0
+        self.level_index = capacity % self.n_levels
 
         # self.buckets = self.Depq(maxlen=self.n_buckets)
         n_digits = int(math.log10(self.n_levels)) + 3
@@ -74,12 +74,12 @@ class Bag:
 
     def take(self, remove = True) -> Item:
         if len(self) == 0: return None
-        if self._is_current_level_empty() or self.currentCounter == 0:
-            self.pointer = self.distributor.pick(self.levelIndex)
-            self.levelIndex = self.distributor.next(self.levelIndex)
+        if self._is_current_level_empty() or self.current_counter == 0:
+            self.pointer = self.distributor.pick(self.level_index)
+            self.level_index = self.distributor.next(self.level_index)
             while self._is_current_level_empty():
-                self.pointer = self.distributor.pick(self.levelIndex)
-                self.levelIndex = self.distributor.next(self.levelIndex)
+                self.pointer = self.distributor.pick(self.level_index)
+                self.level_index = self.distributor.next(self.level_index)
 
         if self.take_in_order:
             # take the first item from the current bucket
@@ -97,7 +97,7 @@ class Bag:
         else:
             item = self.levels[self.pointer][idx]
 
-        self.currentCounter = idx
+        self.current_counter = idx
 
         return item
 
