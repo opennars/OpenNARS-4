@@ -18,6 +18,8 @@ import pynars.NARS.Operation as Operation
 from pynars import Global
 from time import time
 from pynars.NAL.Functions.Tools import project_truth, project
+from ..GlobalEval import GlobalEval
+
 
 
 class Reasoner:
@@ -26,12 +28,14 @@ class Reasoner:
         # print('''Init...''')
         Config.load(config)
 
+        self.global_eval = GlobalEval()
+
         self.inference = GeneralEngine(add_rules=nal_rules)
         self.variable_inference = VariableEngine(add_rules=nal_rules)
         self.temporal_inference = TemporalEngine(
             add_rules=nal_rules)  # for temporal causal reasoning
 
-        self.memory = Memory(n_memory)
+        self.memory = Memory(n_memory, global_eval=self.global_eval)
         self.overall_experience = Buffer(capacity)
         self.internal_experience = Buffer(capacity)
         self.narsese_channel = NarseseChannel(capacity)
@@ -177,7 +181,24 @@ class Reasoner:
             if answers_quest is not None:
                 for answer in answers_quest:
                     self.internal_experience.put(answer)
+            # update busyness
+            self.global_eval.update_busyness(task.budget.priority)
 
+        """ update alertness
+        Note: 
+            according to [Wang, P., Talanov, M., & Hammer, P. (2016). The emotional mechanisms in NARS. In Artificial General Intelligence: 9th International Conference, AGI 2016, New York, NY, USA, July 16-19, 2016, Proceedings 9 (pp. 150-159). Springer International Publishing.](https://cis.temple.edu/~pwang/Publication/emotion.pdf)
+                > summarizes the average difference between recently processed input and the corresponding anticipations, so as to roughly indicate the extent to which the current environment is familiar.
+            The current code hasn't implemented `EventBuffer` yet.
+            The intuitive meaning of `alertness` is 
+                > the extent to which the system’s knowledge is insufficient
+                (see [The Conceptual Design of OpenNARS 3.1.0](https://cis.temple.edu/tagit/publications/PAGI-TR-11.pdf))
+            We tentatively exploit the truth of a revised task to indicate alertness
+        """
+        if judgement_revised is not None:
+            self.global_eval.update_alertness(
+                judgement_revised.truth.c - task.truth.c)
+        else:
+            self.global_eval.update_alertness(0.0)
             # TODO: handling temporal induction and mental operation
             #       Is it implemented correctly?
 
@@ -237,6 +258,9 @@ class Reasoner:
         if task is not None and task.is_executable:
             task_operation_return, task_executed = Operation.execute(
                 task, concept, self.memory)
+
+            # update well-being
+            self.global_eval.update_wellbeing(task_executed.truth.e)
 
         return task_operation_return, task_executed, belief_awared
 

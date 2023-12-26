@@ -18,12 +18,14 @@ from pynars import Global
 from pynars.NAL.Functions.BudgetFunctions import Budget_evaluate_goal_solution
 from pynars.NAL.Functions.Tools import calculate_solution_quality
 from typing import Callable, Any
+from pynars.NARS.GlobalEval import GlobalEval
 
 class Memory:
-    def __init__(self, capacity: int, n_buckets: int = None, take_in_order: bool = False, output_buffer = None) -> None:
+    def __init__(self, capacity: int, n_buckets: int = None, take_in_order: bool = False, output_buffer = None, global_eval: GlobalEval=None) -> None:
         # key: Callable[[Task], Any] = lambda task: task.term
         self.concepts = Bag(capacity, n_buckets=n_buckets, take_in_order=take_in_order)
-        self.output_buffer = output_buffer
+        # self.output_buffer = output_buffer
+        self.global_eval = global_eval if global_eval is not None else GlobalEval()
 
     @property
     def busyness(self):
@@ -51,31 +53,31 @@ class Memory:
             answers_question, answer_quest = answers[Question], answers[Goal]
         elif task.is_goal:
             task_revised, belief_selected, (task_operation_return, task_executed), tasks_derived = self._accept_goal(task, concept)
-            # TODO, ugly!
-            if self.output_buffer is not None:
-                exist = False
-                for i in range(len(self.output_buffer.active_goals)):
-                    if self.output_buffer.active_goals[i][0].term.equal(task.term):
-                        self.output_buffer.active_goals = self.output_buffer.active_goals[:i] + [
-                            [task, "updated"]] + self.output_buffer.active_goals[i:]
-                        exist = True
-                        break
-                if not exist:
-                    self.output_buffer.active_goals.append([task, "initialized"])
+            # # TODO, ugly!
+            # if self.output_buffer is not None:
+            #     exist = False
+            #     for i in range(len(self.output_buffer.active_goals)):
+            #         if self.output_buffer.active_goals[i][0].term.equal(task.term):
+            #             self.output_buffer.active_goals = self.output_buffer.active_goals[:i] + [
+            #                 [task, "updated"]] + self.output_buffer.active_goals[i:]
+            #             exist = True
+            #             break
+            #     if not exist:
+            #         self.output_buffer.active_goals.append([task, "initialized"])
         elif task.is_question:
             # add the question to the question-table of the concept, and try to find a solution.
             answers_question = self._accept_question(task, concept)
             # TODO, ugly!
-            if self.output_buffer is not None:
-                exist = False
-                for i in range(len(self.output_buffer.active_questions)):
-                    if self.output_buffer.active_questions[i][0].term.equal(task.term):
-                        self.output_buffer.active_questions = self.output_buffer.active_questions[:i] + [
-                            [task, "updated"]] + self.output_buffer.active_questions[i:]
-                        exist = True
-                        break
-                if not exist:
-                    self.output_buffer.active_questions.append([task, "initialized"])
+            # if self.output_buffer is not None:
+            #     exist = False
+            #     for i in range(len(self.output_buffer.active_questions)):
+            #         if self.output_buffer.active_questions[i][0].term.equal(task.term):
+            #             self.output_buffer.active_questions = self.output_buffer.active_questions[:i] + [
+            #                 [task, "updated"]] + self.output_buffer.active_questions[i:]
+            #             exist = True
+            #             break
+            #     if not exist:
+            #         self.output_buffer.active_questions.append([task, "initialized"])
         elif task.is_quest:
             answer_quest = self._accept_quest(task, concept)
         else:
@@ -259,6 +261,10 @@ class Memory:
                     if op in registered_operators and not task.is_mental_operation:
                         # to judge whether the goal has been fulfilled
                         task_operation_return, task_executed = execute(task, concept, self)
+
+                        # update well-being
+                        self.global_eval.update_wellbeing(task_executed.truth.e)
+                        
                         concept_task = self.take_by_key(task.term, remove=False)
                         if concept_task is not None:
                             belief: Belief = concept_task.match_belief(task.sentence)
@@ -268,6 +274,8 @@ class Memory:
                         task_executed = task
                         # if task_operation_return is not None: tasks_derived.append(task_operation_return)
                         # if task_executed is not None: tasks_derived.append(task_executed)
+
+                        
 
 
 
@@ -370,6 +378,10 @@ class Memory:
             concept (Concept): The concept corresponding to the task.
         '''
         tasks = []
+        belief = belief or concept.match_belief(task.sentence)
+        if belief is None:
+            self.global_eval.update_satisfaction(task.achieving_level(), task.budget.priority)
+            return tasks, None
         old_best = task.best_solution
 
         belief = belief or concept.match_belief(task.sentence)
@@ -388,6 +400,12 @@ class Memory:
         if budget.is_above_thresh:
             task.budget = budget
             tasks.append(task)
+        
+        ''' Here, belief is not None, and it is the best solution for the task 
+        Thus, do global evaluation to update satisfaction of the system.
+        '''
+        self.global_eval.update_satisfaction(task.achieving_level(belief.truth), task.budget.priority)
+
         return tasks, belief
 
     def _solve_quest(self, task: Task, concept: Concept):

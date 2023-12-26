@@ -18,3 +18,10 @@ typing>=3.7.4.3
 typing_extensions>=4.0.1
 sparse-lut>=1.0.0
 miniKanren>=1.0.3
+# GUI related packages
+qt-material>=2.14
+qtawesome>=1.2.3
+as-rpc>=1.0.1
+qasync
+pyqtgraph
+PySide6

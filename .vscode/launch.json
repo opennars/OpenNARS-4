@@ -2,10 +2,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Module",
+            "name": "Python: pynars.GUI",
             "type": "python",
             "request": "launch",
-            "module": "enter-your-module-name",
+            "module": "pynars.GUI",
             "justMyCode": true
         },
         {
@@ -268,7 +268,7 @@
             "module": "Narsese.Parser._test"
         },
         {
-            "name": "Python: 当前文件",
+            "name": "Python: Current File",
             "type": "python",
             "request": "launch",
             "program": "${file}",
