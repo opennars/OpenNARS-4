@@ -10,7 +10,7 @@ from pynars.Narsese._py.Budget import Budget
 from pynars.Narsese._py.Statement import Statement
 from pynars.Narsese._py.Task import Belief
 from ..DataStructures import Bag, Memory, NarseseChannel, Buffer, Task, Concept
-from ..InferenceEngine import GeneralEngine, TemporalEngine, VariableEngine
+from ..InferenceEngine import GeneralEngine, TemporalEngine, VariableEngine, KanrenEngine
 from pynars import Config
 from pynars.Config import Enable
 from typing import Callable, List, Tuple, Union
@@ -30,7 +30,8 @@ class Reasoner:
 
         self.global_eval = GlobalEval()
 
-        self.inference = GeneralEngine(add_rules=nal_rules)
+        self.inference = KanrenEngine()
+        # self.inference = GeneralEngine(add_rules=nal_rules)
         self.variable_inference = VariableEngine(add_rules=nal_rules)
         self.temporal_inference = TemporalEngine(
             add_rules=nal_rules)  # for temporal causal reasoning
