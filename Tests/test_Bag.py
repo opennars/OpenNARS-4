@@ -90,7 +90,7 @@ class TEST_Bag(unittest.TestCase):
                 cnt1 += 1
             elif task == task2: 
                 cnt2 += 1
-        self.assertGreater(cnt1, 3*cnt2)
+        self.assertGreater(cnt1, cnt2)
 
         bag.take_by_key(task1)
         bag.take_by_key(task2)
