@@ -138,6 +138,19 @@ class Concept(Item):
                 if concept is None: return # The memroy is full, and the concept fails to get into the memory.
             self._build_task_links(concepts, task)
             self._build_term_links(concepts, task, budget)
+
+
+    def update_priority(self, p):
+        self.budget.priority = (Config.concept_update_priority_weight * p
+                                + (1-Config.concept_update_priority_weight)*self.budget.priority)
+
+    def update_durability(self, d):
+        self.budget.durability = (Config.concept_update_durability_weight * d
+                                + (1-Config.concept_update_durability_weight)*self.budget.durability)
+
+    def update_quality(self, q):
+        self.budget.quality = (Config.concept_update_quality_weight * q
+                                + (1-Config.concept_update_quality_weight)*self.budget.quality)
     
     def _build_task_links(self, concepts: Bag, task: Task):
         ''''''
