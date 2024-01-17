@@ -141,8 +141,7 @@ class Concept(Item):
 
 
     def update_priority(self, p):
-        self.budget.priority = (Config.concept_update_priority_weight * p
-                                + (1-Config.concept_update_priority_weight)*self.budget.priority)
+        self.budget.priority = Or(self.budget.priority, p)
 
     def update_durability(self, d):
         self.budget.durability = (Config.concept_update_durability_weight * d
@@ -202,10 +201,16 @@ class Concept(Item):
 
     def _insert_task_link(self, task_link: TaskLink):
         self.task_links.put(task_link)
+        # update the concept's budget using the link's budget
+        self.update_priority(task_link.budget.priority)
+        self.update_durability(task_link.budget.durability)
         # TODO: more handling. see OpenNARS 3.1.0 Concept.java line 318~366.
     
     def _insert_term_link(self, term_link: TermLink):
         self.term_links.put(term_link)
+        # update the concept's budget using the link's budget
+        self.update_priority(term_link.budget.priority)
+        self.update_durability(term_link.budget.durability)
         # TODO: more handling. see OpenNARS 3.1.0 Concept.java line 318~366.
 
     @classmethod

@@ -73,7 +73,6 @@ class Config:
 
     # parameters for updating the Budget of Concept.
     # Lower values means it is harder to change the budget, higher values means it is easier to change the budget
-    concept_update_priority_weight = 0.1
     concept_update_durability_weight = 0.1
     concept_update_quality_weight = 0.1
 
