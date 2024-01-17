@@ -86,9 +86,6 @@ class Memory:
         # Build the concepts corresponding to the terms of those components within the task.
         concept.accept(task, self.concepts, conceptualize=False)
 
-
-
-
         if Enable.temporal_reasoning or Enable.operation:
             # if (!task.sentence.isEternal() && !(task.sentence.term instanceof Operation)) {
             #     globalBuffer.eventInference(task, cont, false); //can be triggered by Buffer itself in the future

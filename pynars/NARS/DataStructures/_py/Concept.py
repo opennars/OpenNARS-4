@@ -139,7 +139,6 @@ class Concept(Item):
             self._build_task_links(concepts, task)
             self._build_term_links(concepts, task, budget)
 
-
     def update_priority(self, p):
         self.budget.priority = Or(self.budget.priority, p)
 

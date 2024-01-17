@@ -76,7 +76,7 @@ class Config:
     concept_update_durability_weight = 0.1
     concept_update_quality_weight = 0.1
 
-    #
+    # temporal parameters
     temporal_duration = 5
     n_sequence_attempts = 10
     n_op_condition_attempts = 10
