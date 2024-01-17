@@ -86,6 +86,9 @@ class Memory:
         # Build the concepts corresponding to the terms of those components within the task.
         concept.accept(task, self.concepts, conceptualize=False)
 
+
+
+
         if Enable.temporal_reasoning or Enable.operation:
             # if (!task.sentence.isEternal() && !(task.sentence.term instanceof Operation)) {
             #     globalBuffer.eventInference(task, cont, false); //can be triggered by Buffer itself in the future
@@ -139,6 +142,9 @@ class Memory:
             for task_goal in concept.desire_table:
                 _, goal_answer = self._solve_goal(task_goal, concept, None, task)
                 if goal_answer is not None: answers[Goal] = [goal_answer]
+
+        # Modify the concept's Budget using the belief
+        if belief_revised is not None: concept.update_quality(belief_revised.sharpness)
 
         return belief_revised, answers
 
