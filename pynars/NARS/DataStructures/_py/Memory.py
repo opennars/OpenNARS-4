@@ -45,6 +45,9 @@ class Memory:
         concept: Concept = Concept._conceptualize(self.concepts, task.term, conceptualize_budget)
         if concept is None: return None  # The memroy is full. The concept fails to get into the memory.
 
+        # take out the concept, to update the budget
+        concept = self.concepts.take_by_key(key=task.term,remove=True)
+
         # then process each task according to its type
         task_revised, goal_derived, answers_question, answer_quest = None, None, None, None
         if task.is_judgement:
@@ -85,6 +88,9 @@ class Memory:
 
         # Build the concepts corresponding to the terms of those components within the task.
         concept.accept(task, self.concepts, conceptualize=False)
+
+        # put back the concept, to update the budget
+        self.concepts.put_back(item=concept,key=task.term)
 
         if Enable.temporal_reasoning or Enable.operation:
             # if (!task.sentence.isEternal() && !(task.sentence.term instanceof Operation)) {
