@@ -220,6 +220,12 @@ def toggle_silent() -> None:
             else "closed"
         }.''')
 
+@cmd_register('cycles')
+def cycles(*args: List[str]) -> None:
+    '''Format: volume [volume:int 0~100]
+    Set the Output Volume of the console to control its output (same as OpenNARS)'''
+    current_NARS_interface.print_output(
+        type=PrintType.INFO, content=f'''Cycles per second is {current_NARS_interface.reasoner.cycles_per_second}.''')
 
 @cmd_register(('volume'), (int, 100))
 def volume(vol:int) -> None:
