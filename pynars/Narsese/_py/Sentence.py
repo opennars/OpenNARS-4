@@ -106,8 +106,8 @@ class Sentence:
 
     @property
     def sharpness(self):
-        if self.truth_value is None: return None
-        else: return 2 * abs(self.truth_value.e - 0.5)
+        if self.truth is None: return None
+        else: return 2 * abs(self.truth.e - 0.5)
 
     # @property
     # def temporal_order(self):
