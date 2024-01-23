@@ -54,7 +54,7 @@ class Reasoner:
         self.cycles_per_second_timer = 0
         self.cycles_per_second_counter = 0
         self.cycles_per_second = 0
-        self.last_cycle_time = 0
+        self.last_cycle_duration = 0
 
     def reset(self):
         self.memory.reset()
@@ -115,20 +115,17 @@ class Reasoner:
         tasks_derived = [
             task for task in tasks_derived if task.term.complexity <= thresh_complexity]
 
-
-        # done with cycle
-
+        """done with cycle"""
         #  record some metrics
-        total_cycle_time_in_seconds = time.time() - start_cycle_time_in_seconds
-        self.last_cycle_time = total_cycle_time_in_seconds
-        self.cycles_per_second_timer += total_cycle_time_in_seconds
+        total_cycle_duration_in_seconds = time.time() - start_cycle_time_in_seconds
+        self.last_cycle_duration = total_cycle_duration_in_seconds
+        self.cycles_per_second_timer += total_cycle_duration_in_seconds
         self.cycles_per_second_counter += 1
         if self.cycles_per_second_timer > 1:
             # 1 second has passed
             self.cycles_per_second = self.cycles_per_second_counter # store the result
             self.cycles_per_second_timer = 0 # reset the timer
             self.cycles_per_second_counter = 0 # reset the counter
-
 
         return tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest, (
             task_operation_return, task_executed)
