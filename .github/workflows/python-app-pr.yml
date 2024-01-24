@@ -1,0 +1,58 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
+name: Python application - PR
+
+on:
+  pull_request:
+    branches: [ "dev" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python 3.7.x
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.7"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 pytest
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+    - name: Test with unittest
+      continue-on-error: true
+      run: |
+        python -m unittest discover Tests/test_NAL/ -p "test_*.py" -v > output-pr.txt
+    
+    - name: Download workflow artifact
+      uses: dawidd6/action-download-artifact@v3.0.0
+      with:
+        workflow: python-app-dev.yml
+        name: test-report
+    
+    - name: Setup Node (for diff)
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+    - run: npm install -g diff2html-cli
+  
+    - name: Compare test results
+      run: |
+        diff -u ./test-report/output-dev.txt output-pr.txt | diff2html -i stdin -F test-diff.html
+    
+    - uses: actions/upload-artifact@v4
+      with:
+        name: test-diff
+        path: ./test-diff.html
+
+
