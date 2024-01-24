@@ -32,7 +32,7 @@ jobs:
     - name: Test with unittest
       continue-on-error: true
       run: |
-        python -m unittest discover Tests/test_NAL/ -p "test_*.py" -v > output-dev.txt
+        python -m unittest discover Tests/test_NAL/ -p "test_*.py" -v |& tee output-dev.txt
 
     - uses: actions/upload-artifact@v4
       with:
