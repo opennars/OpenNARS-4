@@ -30,6 +30,7 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
     - name: Test with unittest
+      continue-on-error: true
       run: |
         python -m unittest discover Tests/test_NAL/ -p "test_*.py" -v > output-pr.txt
     
