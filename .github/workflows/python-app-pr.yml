@@ -47,7 +47,7 @@ jobs:
         echo "test_dev=$(tail -2 output-dev.txt | head -1)" >> "$GITHUB_ENV"
         echo "test_pr=$(tail -2 output-pr.txt | head -1)" >> "$GITHUB_ENV"
         {
-          echo "test_results<<EOF"
+          echo 'test_results<<EOF'
           diff -u output-dev.txt output-pr.txt
           echo EOF
         } >> "$GITHUB_ENV"
