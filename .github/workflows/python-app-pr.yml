@@ -40,6 +40,15 @@ jobs:
       with:
         workflow: python-app-dev.yml
         name: test-report
+
+    - name: Set the value in bash
+      id: step_one
+      run: |
+        {
+          echo 'JSON_RESPONSE<<EOF'
+          curl https://example.com
+          echo EOF
+        } >> "$GITHUB_ENV"
         
     - name: Extract number of failures and errors
       id: extract_results
