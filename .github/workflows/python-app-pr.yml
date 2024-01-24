@@ -40,6 +40,12 @@ jobs:
       with:
         workflow: python-app-dev.yml
         name: test-report
+        
+    - name: Extract number of failures and errors
+      id: extract_results
+      run: |
+        echo "test_dev=$(tail -2 ../output-dev.txt | head -1)" >> "$GITHUB_ENV"
+        echo "test_pr=$(tail -2 ../output-pr.txt | head -1)" >> "$GITHUB_ENV"
     
     - name: Setup Node (for diff)
       uses: actions/setup-node@v4
@@ -60,7 +66,8 @@ jobs:
       uses: thollander/actions-comment-pull-request@v2.4.3
       with:
         message: |
-          _(execution **${{ github.run_id }}** / attempt **${{ github.run_attempt }}**)_
+          Test results from DEV: "$test_dev"
+          Test results from PR:  "$test_pr"
         comment_tag: execution
 
 
