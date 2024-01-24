@@ -31,7 +31,7 @@ jobs:
 
     - name: Test with unittest
       run: |
-        python -m unittest discover Tests/test_NAL/ -p "test_*.py" -v &> output-pr.txt
+        python -m unittest discover Tests/test_NAL/ -p "test_*.py" -v > output-pr.txt 2>&1
     
     - name: Download workflow artifact
       uses: dawidd6/action-download-artifact@v3.0.0
