@@ -48,6 +48,8 @@ jobs:
   
     - name: Compare test results
       run: |
+        ls
+        less output-pr.txt
         diff -u ./test-report/output-dev.txt output-pr.txt | diff2html -i stdin -F test-diff.html
     
     - uses: actions/upload-artifact@v4
