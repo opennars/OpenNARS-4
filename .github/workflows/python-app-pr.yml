@@ -32,7 +32,7 @@ jobs:
     - name: Test with unittest
       continue-on-error: true
       run: |
-        python -m unittest discover Tests/test_NAL/ -p "test_*.py" -v > output-pr.txt
+        python -m unittest discover Tests/test_NAL/ -p "test_*.py" -v |& tee output-pr.txt
     
     - name: Download workflow artifact
       uses: dawidd6/action-download-artifact@v3.0.0
@@ -48,7 +48,7 @@ jobs:
   
     - name: Compare test results
       run: |
-        diff -u ./test-report/output-dev.txt output-pr.txt | diff2html -i stdin -F test-diff.html
+        diff -u output-dev.txt output-pr.txt | diff2html -i stdin -F test-diff.html
     
     - uses: actions/upload-artifact@v4
       with:
