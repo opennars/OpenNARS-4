@@ -45,7 +45,7 @@ jobs:
       id: extract_results
       run: |
         {
-          echo 'test_results<<EOF'
+          echo "test_results<<EOF"
           diff -u output-dev.txt output-pr.txt || true
           echo EOF
         } >> "$GITHUB_ENV"
@@ -56,15 +56,10 @@ jobs:
         node-version: 20
     - run: npm install -g diff2html-cli
   
-    # - name: Compare test results
-    #   run: |
-    #     diff -u output-dev.txt output-pr.txt | diff2html -i stdin -F test-diff.html
-    #     echo "```diff" >> $GITHUB_STEP_SUMMARY
-    #     echo "$test_results" >> $GITHUB_STEP_SUMMARY
-    #     echo "```" >> $GITHUB_STEP_SUMMARY
-
-    - name: Adding markdown
-      run: echo '### Hello world! 🚀' >> $GITHUB_STEP_SUMMARY
+    - name: Compare test results
+      run: |
+        diff -u output-dev.txt output-pr.txt | diff2html -i stdin -F test-diff.html
+        printf '%s\n' "```diff\n$test_results\n```" >> $GITHUB_STEP_SUMMARY
     
     - uses: actions/upload-artifact@v4
       with:
