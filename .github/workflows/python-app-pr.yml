@@ -59,7 +59,7 @@ jobs:
     - name: Compare test results
       run: |
         diff -u output-dev.txt output-pr.txt | diff2html -i stdin -F test-diff.html
-        printf '%s\n' "```diff\n$test_results\n```" >> $GITHUB_STEP_SUMMARY
+        printf '%s\n' "\`\`\`diff\n$test_results\n\`\`\`" >> $GITHUB_STEP_SUMMARY
     
     - uses: actions/upload-artifact@v4
       with:
