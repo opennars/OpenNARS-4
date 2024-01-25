@@ -46,8 +46,8 @@ jobs:
       run: |
         tr '\r' '\n' < output-dev.txt > old.txt
         tr '\r' '\n' < output-pr.txt > new.txt
-        tail -n +53 old.txt
-        tail -n +53 new.txt
+        tail -n +53 old.txt > tmp.txt && mv tmp.txt old.txt
+        tail -n +53 new.txt > tmp.txt && mv tmp.txt new.txt
         {
           echo "TEST_RESULTS<<EOF"
           diff -u old.txt new.txt || true
