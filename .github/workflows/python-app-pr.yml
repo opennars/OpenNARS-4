@@ -48,24 +48,20 @@ jobs:
         tr '\r' '\n' < output-pr.txt > new.txt
         tail -n +53 old.txt
         tail -n +53 new.txt
-
         {
           echo "TEST_RESULTS<<EOF"
           diff -u old.txt new.txt || true
           echo EOF
         } >> "$GITHUB_ENV"
-
+        
+    - name: Update build summary
+      run: |
         printf '%s\n' "\`\`\`diff\n$TEST_RESULTS\n\`\`\`" >> $GITHUB_STEP_SUMMARY
-    
-    - uses: actions/upload-artifact@v4
-      with:
-        name: test-diff
-        path: ./test-diff.html
 
     - name: Comment on the PR
       uses: thollander/actions-comment-pull-request@v2.4.3
       with:
-        message: ${{ env.TEST_RESULTS }}
+        message: \`\`\`diff\n${{ env.TEST_RESULTS }}\n\`\`\`
         comment_tag: execution
 
 
