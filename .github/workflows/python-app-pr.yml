@@ -60,11 +60,11 @@ jobs:
     - name: Update build summary
       run: |
         {
+          echo "dev.txt - DEV BRANCH: $DEV"
+          echo "pr.txt - PR BRANCH: $PR"
+          echo ""
           echo "\`\`\`diff"
           echo "$TEST_RESULTS"
-          echo ""
-          echo "dev.txt - DEV BRANCH: $DEV"
-          echo "pr.txt  - PR  BRANCH: $PR"
           echo "\`\`\`"
         } >> $GITHUB_STEP_SUMMARY
 
@@ -73,7 +73,7 @@ jobs:
       with:
         message: |
           **dev.txt - DEV BRANCH: ${{ env.DEV }}**
-          **pr.txt  - PR  BRANCH: ${{ env.PR }}**
+          **pr.txt - PR BRANCH: ${{ env.PR }}**
 
           ```diff
           ${{ env.TEST_RESULTS }}
