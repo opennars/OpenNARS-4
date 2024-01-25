@@ -63,8 +63,8 @@ jobs:
           echo "\`\`\`diff"
           echo "$TEST_RESULTS"
           echo ""
-          echo "DEV BRANCH: $DEV"
-          echo "PR  BRANCH: $PR"
+          echo "old.txt - DEV BRANCH: $DEV"
+          echo "pr.txt  - PR  BRANCH: $PR"
           echo "\`\`\`"
         } >> $GITHUB_STEP_SUMMARY
 
@@ -72,11 +72,11 @@ jobs:
       uses: thollander/actions-comment-pull-request@v2.4.3
       with:
         message: |
+          **old.txt - DEV BRANCH: ${{ env.DEV }}**
+          **pr.txt  - PR  BRANCH: ${{ env.PR }}**
+
           ```diff
           ${{ env.TEST_RESULTS }}
-
-          DEV BRANCH: ${{ env.DEV }}
-          PR  BRANCH: ${{ env.PR }}
           ```
         comment_tag: execution
 
