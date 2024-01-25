@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write 
 
 jobs:
   build:
@@ -39,20 +40,44 @@ jobs:
       with:
         workflow: python-app-dev.yml
         name: test-report
-    
-    - name: Setup Node (for diff)
-      uses: actions/setup-node@v4
-      with:
-        node-version: 20
-    - run: npm install -g diff2html-cli
-  
-    - name: Compare test results
+        
+    - name: Extract number of failures and errors
       run: |
-        diff -u output-dev.txt output-pr.txt | diff2html -i stdin -F test-diff.html
-    
-    - uses: actions/upload-artifact@v4
+        tr '\r' '\n' < output-dev.txt > dev.txt
+        tr '\r' '\n' < output-pr.txt > pr.txt
+        tail -n +53 dev.txt > tmp.txt && mv tmp.txt dev.txt
+        tail -n +53 pr.txt > tmp.txt && mv tmp.txt pr.txt
+        echo "DEV=$(tail -n 2 dev.txt | head -n 1)" >> $GITHUB_ENV
+        echo "PR=$(tail -n 2 pr.txt | head -n 1)" >> $GITHUB_ENV
+        sed -i -n '/======================================================================/q;p' dev.txt
+        sed -i -n '/======================================================================/q;p' pr.txt
+        {
+          echo "TEST_RESULTS<<EOF"
+          diff -u dev.txt pr.txt || true
+          echo EOF
+        } >> "$GITHUB_ENV"
+        
+    - name: Update build summary
+      run: |
+        {
+          echo "dev.txt - DEV BRANCH: $DEV"
+          echo "pr.txt - PR BRANCH: $PR"
+          echo ""
+          echo "\`\`\`diff"
+          echo "$TEST_RESULTS"
+          echo "\`\`\`"
+        } >> $GITHUB_STEP_SUMMARY
+
+    - name: Comment on the PR
+      uses: thollander/actions-comment-pull-request@v2.4.3
       with:
-        name: test-diff
-        path: ./test-diff.html
+        message: |
+          **dev.txt - DEV BRANCH: ${{ env.DEV }}**
+          **pr.txt - PR BRANCH: ${{ env.PR }}**
+
+          ```diff
+          ${{ env.TEST_RESULTS }}
+          ```
+        comment_tag: execution
 
 
