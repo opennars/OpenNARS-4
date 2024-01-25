@@ -42,12 +42,13 @@ jobs:
         name: test-report
         
     - name: Extract number of failures and errors
-      id: extract_results
       run: |
         tr '\r' '\n' < output-dev.txt > old.txt
         tr '\r' '\n' < output-pr.txt > new.txt
         tail -n +53 old.txt > tmp.txt && mv tmp.txt old.txt
         tail -n +53 new.txt > tmp.txt && mv tmp.txt new.txt
+        sed -n '/=============/q;p' old.txt
+        sed -n '/=============/q;p' new.txt
         {
           echo "TEST_RESULTS<<EOF"
           diff -u old.txt new.txt || true
@@ -61,7 +62,10 @@ jobs:
     - name: Comment on the PR
       uses: thollander/actions-comment-pull-request@v2.4.3
       with:
-        message: \`\`\`diff\n${{ env.TEST_RESULTS }}\n\`\`\`
+        message: |
+          ```diff
+          ${{ env.TEST_RESULTS }}
+          ```
         comment_tag: execution
 
 
