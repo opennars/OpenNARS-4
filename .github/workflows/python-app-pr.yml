@@ -47,6 +47,8 @@ jobs:
         tr '\r' '\n' < output-pr.txt > new.txt
         tail -n +53 old.txt > tmp.txt && mv tmp.txt old.txt
         tail -n +53 new.txt > tmp.txt && mv tmp.txt new.txt
+        echo "OLD=$(tail -n 2 old.txt | head -n 1)" >> $GITHUB_ENV
+        echo "NEW=$(tail -n 2 new.txt | head -n 1)" >> $GITHUB_ENV
         sed -i -n '/======================================================================/q;p' old.txt
         sed -i -n '/======================================================================/q;p' new.txt
         {
@@ -57,7 +59,13 @@ jobs:
         
     - name: Update build summary
       run: |
-        printf '%s\n' "\`\`\`diff\n$TEST_RESULTS\n\`\`\`" >> $GITHUB_STEP_SUMMARY
+        {
+          echo "\`\`\`diff"
+          echo "$TEST_RESULTS"
+          echo "DEV BRANCH: $OLD"
+          echo "PR BRANCH: $NEW"
+          echo "\`\`\`"
+        } >> $GITHUB_STEP_SUMMARY
 
     - name: Comment on the PR
       uses: thollander/actions-comment-pull-request@v2.4.3
