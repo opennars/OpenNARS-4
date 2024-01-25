@@ -43,17 +43,17 @@ jobs:
         
     - name: Extract number of failures and errors
       run: |
-        tr '\r' '\n' < output-dev.txt > old.txt
-        tr '\r' '\n' < output-pr.txt > new.txt
-        tail -n +53 old.txt > tmp.txt && mv tmp.txt old.txt
-        tail -n +53 new.txt > tmp.txt && mv tmp.txt new.txt
-        echo "OLD=$(tail -n 2 old.txt | head -n 1)" >> $GITHUB_ENV
-        echo "NEW=$(tail -n 2 new.txt | head -n 1)" >> $GITHUB_ENV
-        sed -i -n '/======================================================================/q;p' old.txt
-        sed -i -n '/======================================================================/q;p' new.txt
+        tr '\r' '\n' < output-dev.txt > dev.txt
+        tr '\r' '\n' < output-pr.txt > pr.txt
+        tail -n +53 dev.txt > tmp.txt && mv tmp.txt dev.txt
+        tail -n +53 pr.txt > tmp.txt && mv tmp.txt pr.txt
+        echo "DEV=$(tail -n 2 dev.txt | head -n 1)" >> $GITHUB_ENV
+        echo "PR=$(tail -n 2 pr.txt | head -n 1)" >> $GITHUB_ENV
+        sed -i -n '/======================================================================/q;p' dev.txt
+        sed -i -n '/======================================================================/q;p' pr.txt
         {
           echo "TEST_RESULTS<<EOF"
-          diff -u old.txt new.txt || true
+          diff -u dev.txt pr.txt || true
           echo EOF
         } >> "$GITHUB_ENV"
         
@@ -62,8 +62,9 @@ jobs:
         {
           echo "\`\`\`diff"
           echo "$TEST_RESULTS"
-          echo "DEV BRANCH: $OLD"
-          echo "PR BRANCH: $NEW"
+          echo ""
+          echo "DEV BRANCH: $DEV"
+          echo "PR  BRANCH: $PR"
           echo "\`\`\`"
         } >> $GITHUB_STEP_SUMMARY
 
@@ -73,6 +74,9 @@ jobs:
         message: |
           ```diff
           ${{ env.TEST_RESULTS }}
+
+          DEV BRANCH: ${{ env.DEV }}
+          PR  BRANCH: ${{ env.PR }}
           ```
         comment_tag: execution
 
