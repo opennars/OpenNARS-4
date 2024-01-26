@@ -274,7 +274,7 @@ class TEST_NAL2(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<Birdie <-> Tweety>. %0.90;0.90%', 
             '<{Birdie} <-> {Tweety}>?', 
-            10
+            100
         )
         self.assertTrue(
             output_contains(tasks_derived, '<{Birdie} <-> {Tweety}>. %0.90;0.73%')

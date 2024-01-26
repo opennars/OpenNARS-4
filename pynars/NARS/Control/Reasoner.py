@@ -21,8 +21,9 @@ from pynars.NAL.Functions.Tools import project_truth, project
 from ..GlobalEval import GlobalEval
 
 
-
 class Reasoner:
+    avg_inference = 0
+    num_runs = 0
 
     def __init__(self, n_memory, capacity, config='./config.json', nal_rules={1, 2, 3, 4, 5, 6, 7, 8, 9}) -> None:
         # print('''Init...''')
@@ -31,6 +32,12 @@ class Reasoner:
         self.global_eval = GlobalEval()
 
         self.inference = KanrenEngine()
+        
+        for theorem in self.inference.theorems:
+            priority = random.randint(0,9) * 0.01
+            item = Concept.TheoremItem(theorem, Budget(0.5 + priority, 0.8, 0.5))
+            Concept.all_theorems.put(item)
+
         # self.inference = GeneralEngine(add_rules=nal_rules)
         self.variable_inference = VariableEngine(add_rules=nal_rules)
         self.temporal_inference = TemporalEngine(
@@ -119,8 +126,13 @@ class Reasoner:
         #   general inference step
         concept: Concept = self.memory.take(remove=True)
         if concept is not None:
+            self.num_runs += 1
+            t0 = time()
             tasks_inference_derived = self.inference.step(concept)
             tasks_derived.extend(tasks_inference_derived)
+            t1 = time() - t0
+            self.avg_inference += (t1 - self.avg_inference) / self.num_runs
+            # print("inference:", 1 // self.avg_inference, "per second", f"({1//t1})")
 
             is_concept_valid = True  # TODO
             if is_concept_valid:

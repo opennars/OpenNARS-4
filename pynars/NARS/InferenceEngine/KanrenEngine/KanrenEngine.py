@@ -14,6 +14,10 @@ from pynars.NAL.Functions.Tools import project_truth, revisible
 from collections import defaultdict
 from typing import List
 
+from functools import cache
+
+from time import time
+
 nal1 = '''
 {<M --> P>. <S --> M>} |- <S --> P> .ded
 {<P --> M>. <M --> S>} |- <P --> S> .ded'
@@ -253,6 +257,10 @@ _vars_all = defaultdict(lambda: len(_vars_all))
 
 class KanrenEngine:
 
+    _inference_time_avg = 0
+    _run_count = 0
+    _structural_time_avg = 0
+
     _truth_functions = {
         'ded': Truth_deduction,
         'ana': Truth_analogy,
@@ -380,8 +388,14 @@ class KanrenEngine:
     def _convert_theorems(self, theorem):
         # TODO: can we parse statements instead?
         t = parse(theorem+'.', True)
+        # print(theorem)
+        # print(t)
+        # print("")
         l = self.logic(t, True, True, prefix='_theorem_')
-        sub_terms = set(filter(lambda x: x != place_holder, t.sub_terms))
+        # print(l)
+        # print(self.term(l))
+        # print("\n\n")
+        sub_terms = frozenset(filter(lambda x: x != place_holder, t.sub_terms))
         return (l, sub_terms)
 
     def logic(self, term: Term, rule=False, substitution=False, var_intro=False, structural=False, prefix='_rule_'):
@@ -397,7 +411,7 @@ class KanrenEngine:
                 self._variables.add(var(name))
             return var(name) if rule else term
         if term.is_statement:
-            return cons(term.copula, *[self.logic(t, rule, substitution, var_intro, structural, prefix) for t in term.terms])
+            return cons(term.copula, *[self.logic(t, rule, substitution, var_intro, structural, prefix) for t in term.terms], ())
         if term.is_compound:
             # when used in variable introduction, treat single component compounds as atoms
             if rule and var_intro and len(term.terms) == 1 \
@@ -409,7 +423,7 @@ class KanrenEngine:
             # extensional and intensional images are not composable
             if term.connector is Connector.ExtensionalImage \
                 or term.connector is Connector.IntensionalImage:
-                return cons(term.connector, *[self.logic(t, rule, substitution, var_intro, structural, prefix) for t in term.terms])
+                return cons(term.connector, *[self.logic(t, rule, substitution, var_intro, structural, prefix) for t in term.terms], ())
 
             terms = list(term.terms)
             multi = []
@@ -419,7 +433,7 @@ class KanrenEngine:
                 multi.append(term.connector)
             multi.extend(self.logic(t, rule, substitution, var_intro, structural, prefix) for t in terms)
             
-            return cons(term.connector, *multi)
+            return cons(term.connector, *multi, ())
 
     def term(self, logic, root=True):
         # additional variable handling
@@ -450,7 +464,7 @@ class KanrenEngine:
                 return create_var(name[1:], VarPrefix.Query)
             else:
                 return Term(name)
-        if type(logic) is cons:
+        if type(logic) is cons or type(logic) is tuple:
             if type(car(logic)) is Copula:
                 sub = car(cdr(logic))
                 cop = car(logic)
@@ -459,14 +473,18 @@ class KanrenEngine:
             if type(car(logic)) is Connector:
                 con = car(logic)
                 t = cdr(logic)
-                is_list = type(t) is cons and not (type(car(t)) is Copula or type(car(t)) is Connector)
+                is_list = (type(t) is cons or tuple) \
+                    and not (type(car(t)) is Copula or type(car(t)) is Connector)
                 terms = self.to_list(cdr(logic)) if is_list else [self.term(t, False)]
                 return Compound(con, *terms)
+            else:
+                return self.term(car(logic))
         return logic # cons
 
     def to_list(self, pair) -> list:
         l = [self.term(car(pair), False)]
-        if type(cdr(pair)) is list and cdr(pair) == []:
+        if type(cdr(pair)) is list and cdr(pair) == [] \
+            or type(cdr(pair)) is tuple and cdr(pair) == ():
             () # empty TODO: there's gotta be a better way to check
         elif type(cdr(pair)) is cons:
             t = self.term(cdr(pair), False)
@@ -602,14 +620,43 @@ class KanrenEngine:
             # record immediate rule application for task
             task.immediate_rules_applied = True
 
+
+        self._run_count += 1
+
+
         ### STRUCTURAL
 
-        if task.is_judgement and not task.structural_rules_applied: # TODO: handle other cases
+        if task.is_judgement: #and not task.structural_rules_applied: # TODO: handle other cases
             Global.States.record_premises(task)
 
             results = []
 
-            results.extend(self.inference_structural(task.sentence))
+            t0 = time()
+            theorems = []
+            for _ in range(5):
+                theorem = concept.theorems.take(remove=True)
+                theorems.append(theorem)
+            
+            for theorem in theorems:
+                # print(self.term(theorem._theorem))
+                # results.extend(self.inference_structural(task.sentence))
+                res, cached = self.inference_structural(task.sentence, tuple([theorem._theorem]))
+                # print(res)
+                # print("")
+                if not cached:
+                    if res:
+                        new_priority = theorem.budget.priority + 0.3
+                        theorem.budget.priority = min(0.99, new_priority)
+                    else:
+                        new_priority = theorem.budget.priority - 0.3
+                        theorem.budget.priority = max(0.1, new_priority)
+
+                concept.theorems.put(theorem)
+
+                results.extend(res)
+            t1 = time() - t0
+            self._structural_time_avg += (t1 - self._structural_time_avg) / self._run_count
+            # print("structural: ", 1 // self._structural_time_avg, "per second")
             # for r in results:
             #     print(r, r[0][0].complexity)
             # print(task.budget.priority)
@@ -631,16 +678,21 @@ class KanrenEngine:
                     tasks_derived.append(task_derived)
 
             # record structural rule application for task
-            task.structural_rules_applied = True
+            # task.structural_rules_applied = True
 
         # inference for two-premises rules
         term_links = []
         term_link_valid = None
         is_valid = False
-
+        n = len(concept.term_links)
+        t0 = time()
+        iter = 0
         for _ in range(len(concept.term_links)): # TODO: should limit max number of links to process
+            iter += 1
             # To find a belief, which is valid to interact with the task, by iterating over the term-links.
+            _t = time()
             term_link: TermLink = concept.term_links.take(remove=True)
+            print(round((time() - _t)*1000, 2))
             term_links.append(term_link)
 
             if not task_link.novel(term_link, Global.time):
@@ -665,6 +717,12 @@ class KanrenEngine:
                 is_valid = True
                 break
 
+        t1 = time() - t0
+        loop_time = round(t1 * 1000, 2)
+        if loop_time > 20:
+            print("hello")
+        print(iter, '/', n, "- loop time", loop_time, is_valid)
+        # print(is_valid, "Concept", concept.term)
         if is_valid \
             and task.is_judgement: # TODO: handle other cases
             
@@ -678,7 +736,17 @@ class KanrenEngine:
                     belief = belief.eternalize(truth_belief)
                     # beleif_eternalized = belief # TODO: should it be added into the `tasks_derived`?
 
+            t0 = time()
+
             results = self.inference(task.sentence, belief.sentence)
+
+            t1 = time() - t0
+
+            print("inf:", 1 // t1, "per second")
+
+            self._inference_time_avg += (t1 - self._inference_time_avg) / self._run_count
+
+            print("avg:", 1 // self._inference_time_avg, "per second")
 
             results.extend(self.inference_compositional(task.sentence, belief.sentence))
 
@@ -764,21 +832,37 @@ class KanrenEngine:
             (p, c), (r, constraints) = rule[0], rule[1]
 
             result = run(1, c, eq(p, l), *constraints)
-            # print(result)
 
             if result:
                 conclusion = self.term(result[0])
-                # print(conclusion)
                 truth = self._truth_functions[r](t.truth)
                 results.append(((conclusion, r), truth))
             
         return results
     
-    def inference_structural(self, t: Sentence):
+    def cache_notify(func):
+        func = cache(func)
+        def notify_wrapper(*args, **kwargs):
+            stats = func.cache_info()
+            hits = stats.hits
+            results = func(*args, **kwargs)
+            stats = func.cache_info()
+            cached = False
+            if stats.hits > hits:
+                cached = True
+                # print(f"NOTE: {func.__name__}() results were cached")
+            return (results, cached)
+        return notify_wrapper
+
+    @cache_notify
+    def inference_structural(self, t: Sentence, theorems = None):
         results = []
 
+        if not theorems:
+            theorems = self.theorems
+
         l1 = self.logic(t.term, structural=True)
-        for (l2, sub_terms) in self.theorems:
+        for (l2, sub_terms) in theorems:
             for rule in self.rules_strong:
                 res = self.apply(rule, l2, l1)
                 if res is not None:
