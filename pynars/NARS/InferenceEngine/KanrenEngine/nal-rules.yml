@@ -1,0 +1,15 @@
+name: NAL Rules
+
+rules:
+  nal1: |
+    {<M --> P>. <S --> M>} |- <S --> P> .ded
+    {<P --> M>. <M --> S>} |- <P --> S> .ded'
+    {<M --> P>. <M --> S>} |- <S --> P> .ind
+    {<M --> P>. <M --> S>} |- <P --> S> .ind'
+    {<P --> M>. <S --> M>} |- <S --> P> .abd
+    {<P --> M>. <S --> M>} |- <P --> S> .abd'
+    {<P --> M>. <M --> S>} |- <S --> P> .exe
+    {<M --> P>. <S --> M>} |- <P --> S> .exe'
+
+    {<S --> P>. <P --> S>} |- <S <-> P> .ded
+    {<S --> P>. <P --> S>} |- <P <-> S> .ded

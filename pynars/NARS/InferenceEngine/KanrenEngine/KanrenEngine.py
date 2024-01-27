@@ -17,6 +17,8 @@ from typing import List
 from functools import cache
 
 from time import time
+import yaml
+from pathlib import Path
 
 nal1 = '''
 {<M --> P>. <S --> M>} |- <S --> P> .ded
@@ -284,7 +286,16 @@ class KanrenEngine:
 
     def __init__(self):
         
-        nal1_rules = split_rules(nal1)
+        with open(f'{Path(__file__).parent}/nal-rules.yml', 'r') as file:
+            config = yaml.safe_load(file)
+
+        # print(config['rules'])
+        # for level, rules in config['rules'].items():
+        #     print(level)
+        #     for rule in split_rules(rules):
+        #         print(rule)
+
+        nal1_rules = split_rules(config['rules']['nal1'])
         nal2_rules = split_rules(nal2)
         nal3_rules = split_rules(nal3)
 
