@@ -132,7 +132,7 @@ class Reasoner:
             tasks_derived.extend(tasks_inference_derived)
             t1 = time() - t0
             self.avg_inference += (t1 - self.avg_inference) / self.num_runs
-            # print("inference:", 1 // self.avg_inference, "per second", f"({1//t1})")
+            print("inference:", 1 // self.avg_inference, "per second", f"({1//t1})")
 
             is_concept_valid = True  # TODO
             if is_concept_valid:

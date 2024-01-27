@@ -692,7 +692,7 @@ class KanrenEngine:
             # To find a belief, which is valid to interact with the task, by iterating over the term-links.
             _t = time()
             term_link: TermLink = concept.term_links.take(remove=True)
-            print(round((time() - _t)*1000, 2))
+            # print(round((time() - _t)*1000, 2))
             term_links.append(term_link)
 
             if not task_link.novel(term_link, Global.time):
@@ -719,9 +719,9 @@ class KanrenEngine:
 
         t1 = time() - t0
         loop_time = round(t1 * 1000, 2)
-        if loop_time > 20:
-            print("hello")
-        print(iter, '/', n, "- loop time", loop_time, is_valid)
+        # if loop_time > 20:
+        #     print("hello")
+        # print(iter, '/', n, "- loop time", loop_time, is_valid)
         # print(is_valid, "Concept", concept.term)
         if is_valid \
             and task.is_judgement: # TODO: handle other cases
