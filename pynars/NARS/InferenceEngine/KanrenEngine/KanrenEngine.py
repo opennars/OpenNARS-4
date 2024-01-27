@@ -19,270 +19,14 @@ from functools import cache
 from time import time
 import yaml
 from pathlib import Path
+from .util import *
 
-nal1 = '''
-{<M --> P>. <S --> M>} |- <S --> P> .ded
-{<P --> M>. <M --> S>} |- <P --> S> .ded'
-{<M --> P>. <M --> S>} |- <S --> P> .ind
-{<M --> P>. <M --> S>} |- <P --> S> .ind'
-{<P --> M>. <S --> M>} |- <S --> P> .abd
-{<P --> M>. <S --> M>} |- <P --> S> .abd'
-{<P --> M>. <M --> S>} |- <S --> P> .exe
-{<M --> P>. <S --> M>} |- <P --> S> .exe'
-
-{<S --> P>. <P --> S>} |- <S <-> P> .ded
-{<S --> P>. <P --> S>} |- <P <-> S> .ded
-'''
-
-nal2 = '''
-{<M <-> P>. <S <-> M>} |- <S <-> P> .res
-{<M <-> P>. <M <-> S>} |- <S <-> P> .res
-{<P <-> M>. <S <-> M>} |- <S <-> P> .res
-{<P <-> M>. <M <-> S>} |- <S <-> P> .res
-{<M --> P>. <M --> S>} |- <S <-> P> .com
-{<P --> M>. <S --> M>} |- <S <-> P> .com'
-{<M --> P>. <S <-> M>} |- <S --> P> .ana
-{<M --> P>. <M <-> S>} |- <S --> P> .ana
-{<P --> M>. <S <-> M>} |- <P --> S> .ana
-{<P --> M>. <M <-> S>} |- <P --> S> .ana
-{<M <-> P>. <S --> M>} |- <S --> P> .ana'
-{<P <-> M>. <S --> M>} |- <S --> P> .ana'
-{<M <-> P>. <M --> S>} |- <P --> S> .ana'
-{<P <-> M>. <M --> S>} |- <P --> S> .ana'
-'''
-
-nal3 = '''
-'composition
-{<M --> T1>. <M --> T2>} |- <M --> (&, T1, T2)> .int
-{<T1 --> M>. <T2 --> M>} |- <(|, T1, T2) --> M> .int
-{<M --> T1>. <M --> T2>} |- <M --> (|, T1, T2)> .uni
-{<T1 --> M>. <T2 --> M>} |- <(&, T1, T2) --> M> .uni
-{<M --> T1>. <M --> T2>} |- <M --> (-, T1, T2)> .dif
-{<M --> T1>. <M --> T2>} |- <M --> (-, T2, T1)> .dif'
-{<T1 --> M>. <T2 --> M>} |- <(~, T1, T2) --> M> .dif
-{<T1 --> M>. <T2 --> M>} |- <(~, T2, T1) --> M> .dif'
-'decomposition
-{(--, <M --> (&, T1, T2)>). <M --> T1>} |- (--, <M --> T2>) .ded
-'TODO: need alternative syntax for decomposition
-'i.e. {(--, <M --> (&, T1, T2)>). <M --> _T1>} |- (--, <M --> ((&, T1, T2) - _T1)>) .ded
-{(--, <M --> (&, T2, T1)>). <M --> T1>} |- (--, <M --> T2>) .ded
-{<M --> (|, T1, T2)>. (--, <M --> T1>)} |- <M --> T2> .ded
-{<M --> (|, T2, T1)>. (--, <M --> T1>)} |- <M --> T2> .ded
-{(--, <M --> (-, T1, T2)>). <M --> T1>} |- <M --> T2> .ded
-{(--, <M --> (-, T2, T1)>). (--, <M --> T1>)} |- (--, <M --> T2>) .ded
-{(--, <(|, T2, T1) --> M>). <T1 --> M>} |- (--, <T2 --> M>) .ded
-{(--, <(|, T1, T2) --> M>). <T1 --> M>} |- (--, <T2 --> M>) .ded
-{<(&, T2, T1) --> M>. (--, <T1 --> M>)} |- <T2 --> M> .ded
-{<(&, T1, T2) --> M>. (--, <T1 --> M>)} |- <T2 --> M> .ded
-{(--, <(~, T1, T2) --> M>). <T1 --> M>} |- <T2 --> M> .ded
-{(--, <(~, T2, T1) --> M>). (--, <T1 --> M>)} |- (--, <T2 --> M>) .ded
-{(--, (&&, T1, T2)). T1} |- (--, T2) .ded
-{(--, (&&, T2, T1)). T1} |- (--, T2) .ded
-{(||, T1, T2). (--, T1)} |- T2 .ded
-{(||, T2, T1). (--, T1)} |- T2 .ded
-'''
-
-nal5 = '''
-'conditional syllogistic
-{<S ==> P>. S} |- P .ded
-{<P ==> S>. S} |- P .abd
-{S. <S ==> P>} |- P .ded'
-{S. <P ==> S>} |- P .abd'
-{S. <S <=> P>} |- P .ana
-{S. <P <=> S>} |- P .ana
-{<S <=> P>. S} |- P .ana'
-{<P <=> S>. S} |- P .ana'
-
-'conditional conjunctive
-'(C ^ S) => P, S |- C => P (alternative syntax below)
-{<(&&, C, S) ==> P>. _S} |- <((&&, C, S) - _S) ==> P> .ded
-{<(&&, S, C) ==> P>. _S} |- <((&&, S, C) - _S) ==> P> .ded
-
-'(C ^ S) => P, M => S |- (C ^ M) => P (alternative syntax below)
-{<(&&, C, S) ==> P>. <M ==> _S>} |- <(&&, ((&&, C, S) - _S), M) ==> P> .ded
-{<(&&, S, C) ==> P>. <M ==> _S>} |- <(&&, ((&&, S, C) - _S), M) ==> P> .ded
-
-'(C ^ S) => P, C => P |- S (alternative syntax below)
-{<(&&, C, S) ==> P>. <_C ==> P>} |- ((&&, C, S) - _C) .abd
-{<(&&, S, C) ==> P>. <_C ==> P>} |- ((&&, S, C) - _C) .abd
-
-'(C ^ S) => P, (C ^ M) => P |- M => S (alternative syntax below)
-{<(&&, C, S) ==> P>. <(&&, _C, M) ==> P>} |- <((&&, _C, M) - C) ==> ((&&, C, S) - _C)> .abd
-{<(&&, S, C) ==> P>. <(&&, _C, M) ==> P>} |- <((&&, _C, M) - C) ==> ((&&, S, C) - _C)> .abd
-{<(&&, C, S) ==> P>. <(&&, M, _C) ==> P>} |- <((&&, M, _C) - C) ==> ((&&, C, S) - _C)> .abd
-{<(&&, S, C) ==> P>. <(&&, M, _C) ==> P>} |- <((&&, M, _C) - C) ==> ((&&, S, C) - _C)> .abd
-
-'{<C ==> P>. S} |- <(&&, C, S) ==> P> .ind (alternative syntax below)
-{<(&&, C, M) ==> P>. (&&, S, M)} |- <(&&, C, S, M) ==> P> .ind
-{<(&&, M, C) ==> P>. (&&, S, M)} |- <(&&, C, S, M) ==> P> .ind
-{<(&&, C, M) ==> P>. (&&, M, S)} |- <(&&, C, S, M) ==> P> .ind
-{<(&&, M, C) ==> P>. (&&, M, S)} |- <(&&, C, S, M) ==> P> .ind
-
-'(C ^ M) => P, M => S |- (C ^ S) => P (alternative syntax below)
-{<(&&, C, M) ==> P>. <_M ==> S>} |- <(&&, ((&&, C, M) - _M), S) ==> P> .ind
-{<(&&, M, C) ==> P>. <_M ==> S>} |- <(&&, ((&&, M, C) - _M), S) ==> P> .ind
-'''
-
-immediate = '''
-S |- (--, S) .neg
-<S --> P> |- <P --> S> .cnv
-<S ==> P> |- <P ==> S> .cnv
-<S ==> P> |- <(--, P) ==> (--, S)> .cnt
-'''
-
-conditional_compositional = '''
-{P. S} |- <S ==> P> .ind
-{P. S} |- <P ==> S> .abd
-{P. S} |- <S <=> P> .com
-{T1. T2} |- (&&, T1, T2) .int
-{T1. T2} |- (||, T1, T2) .uni
-{<C ==> P>. S} |- <(&&, C, S) ==> P> .ind
-'''
-
-theorems = '''
-'inheritance
-<(T1 & T2) --> T1>
-<T1 --> (T1 | T2)>
-<(T1 - T2) --> T1>
-<((/, R, _, T) * T) --> R>
-<R --> ((\, R, _, T) * T)>
-
-'similarity
-# <(--, (--, T)) <-> T>
-<(/, (T1 * T2), _, T2) <-> T1>
-<(\, (T1 * T2), _, T2) <-> T1>
-
-'implication
-<<S <-> P> ==> <S --> P>>
-<<P <-> S> ==> <S --> P>>
-<<S <=> P> ==> <S ==> P>>
-<<P <=> S> ==> <S ==> P>>
-<(&&, S1, S2) ==> S1>
-<(&&, S1, S2) ==> S2>
-<S1 ==> (||, S1, S2)>
-<S2 ==> (||, S1, S2)>
-
-<<S --> P> ==> <(S | M) --> (P | M)>>
-<<S --> P> ==> <(S & M) --> (P & M)>>
-<<S <-> P> ==> <(S | M) <-> (P | M)>>
-<<S <-> P> ==> <(S & M) <-> (P & M)>>
-<<P <-> S> ==> <(S | M) <-> (P | M)>>
-<<P <-> S> ==> <(S & M) <-> (P & M)>>
-
-<<S ==> P> ==> <(S || M) ==> (P || M)>>
-<<S ==> P> ==> <(S && M) ==> (P && M)>>
-<<S <=> P> ==> <(S || M) <=> (P || M)>>
-<<S <=> P> ==> <(S && M) <=> (P && M)>>
-<<P <=> S> ==> <(S || M) <=> (P || M)>>
-<<P <=> S> ==> <(S && M) <=> (P && M)>>
-
-<<S --> P> ==> <(S - M) --> (P - M)>>
-<<S --> P> ==> <(M - P) --> (M - S)>>
-<<S --> P> ==> <(S ~ M) --> (P ~ M)>>
-<<S --> P> ==> <(M ~ P) --> (M ~ S)>>
-
-<<S <-> P> ==> <(S - M) <-> (P - M)>>
-<<S <-> P> ==> <(M - P) <-> (M - S)>>
-<<S <-> P> ==> <(S ~ M) <-> (P ~ M)>>
-<<S <-> P> ==> <(M ~ P) <-> (M ~ S)>>
-<<P <-> S> ==> <(S - M) <-> (P - M)>>
-<<P <-> S> ==> <(M - P) <-> (M - S)>>
-<<P <-> S> ==> <(S ~ M) <-> (P ~ M)>>
-<<P <-> S> ==> <(M ~ P) <-> (M ~ S)>>
-
-<<M --> (T1 - T2)> ==> (--, <M --> T2>)>
-<<(T1 ~ T2) --> M> ==> (--, <T2 --> M>)>
-
-<<S --> P> ==> <(/, S, _, M) --> (/, P, _, M)>>
-<<S --> P> ==> <(\, S, _, M) --> (\, P, _, M)>>
-<<S --> P> ==> <(/, M, _, P) --> (/, M, _, S)>>
-<<S --> P> ==> <(\, M, _, P) --> (\, M, _, S)>>
-
-'equivalence
-<<S <-> P> <=> <P <-> S>>
-<<S <-> P> <=> (&&, <S --> P>, <P --> S>)>
-<<P <-> S> <=> (&&, <S --> P>, <P --> S>)>
-<<S <=> P> <=> (&&, <S ==> P>, <P ==> S>)>
-<<P <=> S> <=> (&&, <S ==> P>, <P ==> S>)>
-
-<<S <-> P> <=> <{S} <-> {P}>>
-<<P <-> S> <=> <{S} <-> {P}>>
-<<S <-> P> <=> <[S] <-> [P]>>
-<<P <-> S> <=> <[S] <-> [P]>>
-
-<<S --> {P}> <=> <S <-> {P}>>
-<<[S] --> P> <=> <[S] <-> P>>
-
-<<(S1 * S2) --> (P1 * P2)> <=> (&&, <S1 --> P1>, <S2 --> P2>)>
-<<(S1 * S2) <-> (P1 * P2)> <=> (&&, <S1 <-> P1>, <S2 <-> P2>)>
-<<(P1 * P2) <-> (S1 * S2)> <=> (&&, <S1 <-> P1>, <S2 <-> P2>)>
-
-<<S --> P> <=> <(M * S) --> (M * P)>>
-<<S --> P> <=> <(S * M) --> (P * M)>>
-<<S <-> P> <=> <(M * S) <-> (M * P)>>
-<<S <-> P> <=> <(S * M) <-> (P * M)>>
-<<P <-> S> <=> <(M * S) <-> (M * P)>>
-<<P <-> S> <=> <(S * M) <-> (P * M)>>
-
-
-<<(T1 * T2) --> R> <=> <T1 --> (/, R, _, T2)>>
-<<(T1 * T2) --> R> <=> <T2 --> (/, R, T1, _)>>
-<<T1 --> (/, R, _, T2)> <=> <(T1 * T2) --> R>>
-<<T2 --> (/, R, T1, _)> <=> <(T1 * T2) --> R>>
-<<R --> (T1 * T2)> <=> <(\, R, _, T2) --> T1>>
-<<R --> (T1 * T2)> <=> <(\, R, T1, _) --> T2>>
-
-<<S1 ==> <S2 ==> S3>> <=> <(S1 && S2) ==> S3>>
-
-<(--, (S1 && S2)) <=> (||, (--, S1), (--, S2))>
-<(--, (S1 && S2)) <=> (&&, (--, S1), (--, S2))>
-<(--, (S2 && S1)) <=> (||, (--, S1), (--, S2))>
-<(--, (S2 && S1)) <=> (&&, (--, S1), (--, S2))>
-
-<<S1 <=> S2> <=> <(--, S1) <=> (--, S2)>>
-<<S2 <=> S1> <=> <(--, S1) <=> (--, S2)>>
-
-'not in the NAL book but a nice to have
-<<T1 --> (/, R, _, T2)> <=> <T2 --> (/, R, T1, _)>>
-<<T2 --> (/, R, T1, _)> <=> <T1 --> (/, R, _, T2)>>
-'''
-
-def split_rules(rules: str) -> List[str]:
-    lines = []
-    for line in rules.splitlines():
-        if len(line) and not (line.startswith("'") or line.startswith("#")):
-            lines.append(line)
-    return lines
-
-def parse(narsese: str, rule=False):
-    task = Narsese.parser.parse(narsese)
-    return task.term if rule else task.sentence
-
-# used in converting from logic to Narsese
-_vars_all = defaultdict(lambda: len(_vars_all))
 
 class KanrenEngine:
 
     _inference_time_avg = 0
     _run_count = 0
     _structural_time_avg = 0
-
-    _truth_functions = {
-        'ded': Truth_deduction,
-        'ana': Truth_analogy,
-        'res': Truth_resemblance,
-        'abd': Truth_abduction,
-        'ind': Truth_induction,
-        'exe': Truth_exemplification,
-        'com': Truth_comparison,
-        'int': Truth_intersection,
-        'uni': Truth_union,
-        'dif': Truth_difference,
-
-        'neg': Truth_negation,
-        'cnv': Truth_conversion,
-        'cnt': Truth_contraposition
-    }
 
     def __init__(self):
         
@@ -296,10 +40,10 @@ class KanrenEngine:
         #         print(rule)
 
         nal1_rules = split_rules(config['rules']['nal1'])
-        nal2_rules = split_rules(nal2)
-        nal3_rules = split_rules(nal3)
+        nal2_rules = split_rules(config['rules']['nal2'])
+        nal3_rules = split_rules(config['rules']['nal3'])
 
-        nal5_rules = split_rules(nal5)
+        nal5_rules = split_rules(config['rules']['nal5'])
         
         # NAL5 includes higher order variants of NAL1-3 rules
         for rule in (nal1_rules + nal2_rules):
@@ -328,265 +72,15 @@ class KanrenEngine:
                 nal5_rules.append(rule)
         
         rules = nal1_rules + nal2_rules + nal3_rules + nal5_rules
-
-        self._variables = set() # used as scratchpad while converting
-
-        self.rules_strong = [] # populated by the line below for use in structural inference
         
-        self.rules_syllogistic = [self._convert(r) for r in rules]
+        self.rules_syllogistic = [convert(r) for r in rules]
 
-        self.rules_immediate = [self._convert_immediate(r) for r in split_rules(immediate)]
+        self.rules_immediate = [convert_immediate(r) for r in split_rules(config['rules']['immediate'])]
 
-        self.rules_conditional_compositional = [self._convert(r, True) for r in split_rules(conditional_compositional)]
+        self.rules_conditional_compositional = [convert(r, True) for r in split_rules(config['rules']['conditional_compositional'])]
 
-        self.theorems = [self._convert_theorems(t) for t in split_rules(theorems)]
+        self.theorems = [convert_theorems(t) for t in split_rules(config['theorems'])]
 
-
-    #################################################
-    ### Conversion between Narsese and miniKanren ###
-    #################################################
-
-    def _convert(self, rule, conditional_compositional=False):
-        # convert to logical form
-        premises, conclusion = rule.split(" |- ")
-
-        p1, p2 = premises.strip("{}").split(". ")
-        conclusion = conclusion.split(" .")
-        c = conclusion[0]
-        r = conclusion[1]
-
-        # TODO: can we parse statements instead?
-        p1 = parse(p1+'.', True)
-        p2 = parse(p2+'.', True)
-        c = parse(c+'.', True)
-
-        self._variables.clear() # clear scratchpad
-
-        p1 = self.logic(p1, True)
-        p2 = self.logic(p2, True)
-        c = self.logic(c, True)
-
-        var_combinations = list(combinations(self._variables, 2))
-        # filter out combinations like (_C, C) allowing them to be the same
-        cond = lambda x, y: x.token.replace('_', '') != y.token.replace('_', '')
-        constraints = [neq(c[0], c[1]) for c in var_combinations if cond(c[0], c[1])]
-
-        if not conditional_compositional: # conditional compositional rules require special treatment
-            if r.replace("'", '') in ['ded', 'ana', 'res', 'int', 'uni', 'dif']:
-                self.rules_strong.append(((p1, p2, c), (r, constraints)))
-
-        return ((p1, p2, c), (r, constraints))
-    
-    def _convert_immediate(self, rule):
-        # convert to logical form
-        premise, conclusion = rule.split(" |- ")
-        conclusion = conclusion.split(" .")
-        c = conclusion[0]
-        r = conclusion[1]
-
-        # TODO: can we parse statements instead?
-        p = parse(premise+'.', True)
-        c = parse(c+'.', True)
-
-        self._variables.clear() # clear scratchpad
-
-        p = self.logic(p, True)
-        c = self.logic(c, True)
-        
-        var_combinations = list(combinations(self._variables, 2))
-        # filter out combinations like (_C, C) allowing them to be the same
-        cond = lambda x, y: x.token.replace('_', '') != y.token.replace('_', '')
-        constraints = [neq(c[0], c[1]) for c in var_combinations if cond(c[0], c[1])]
-
-        return ((p, c), (r, constraints))
-    
-    def _convert_theorems(self, theorem):
-        # TODO: can we parse statements instead?
-        t = parse(theorem+'.', True)
-        # print(theorem)
-        # print(t)
-        # print("")
-        l = self.logic(t, True, True, prefix='_theorem_')
-        # print(l)
-        # print(self.term(l))
-        # print("\n\n")
-        sub_terms = frozenset(filter(lambda x: x != place_holder, t.sub_terms))
-        return (l, sub_terms)
-
-    def logic(self, term: Term, rule=False, substitution=False, var_intro=False, structural=False, prefix='_rule_'):
-        if term.is_atom:
-            name = prefix+term.word if rule else term.word
-            if type(term) is Variable:
-                vname = term.word + term.name
-                name = prefix+vname if rule else vname 
-                if rule and not substitution: # collect rule variable names
-                    self._variables.add(var(name))
-                return var(name) if not structural else term
-            if rule and not substitution: # collect rule variable names
-                self._variables.add(var(name))
-            return var(name) if rule else term
-        if term.is_statement:
-            return cons(term.copula, *[self.logic(t, rule, substitution, var_intro, structural, prefix) for t in term.terms], ())
-        if term.is_compound:
-            # when used in variable introduction, treat single component compounds as atoms
-            if rule and var_intro and len(term.terms) == 1 \
-                and (term.connector is Connector.ExtensionalSet \
-                or term.connector is Connector.IntensionalSet):
-                    name = prefix+term.word
-                    return var(name)
-            
-            # extensional and intensional images are not composable
-            if term.connector is Connector.ExtensionalImage \
-                or term.connector is Connector.IntensionalImage:
-                return cons(term.connector, *[self.logic(t, rule, substitution, var_intro, structural, prefix) for t in term.terms], ())
-
-            terms = list(term.terms)
-            multi = []
-            while len(terms) > 2:
-                t = terms.pop(0)
-                multi.append(self.logic(t, rule, substitution, var_intro, structural, prefix))
-                multi.append(term.connector)
-            multi.extend(self.logic(t, rule, substitution, var_intro, structural, prefix) for t in terms)
-            
-            return cons(term.connector, *multi, ())
-
-    def term(self, logic, root=True):
-        # additional variable handling
-        if root: _vars_all.clear()
-        def create_var(name, prefix: VarPrefix):
-            _vars_all[name]
-            var = Variable(prefix, name)
-            idx = _vars_all[name]
-            if prefix is VarPrefix.Independent:
-                var._vars_independent.add(idx, [])
-            if prefix is VarPrefix.Dependent:
-                var._vars_dependent.add(idx, [])
-            if prefix is VarPrefix.Query:
-                var._vars_query.add(idx, [])
-            return var
-
-        if type(logic) is Term:
-            return logic
-        if type(logic) is Variable:
-            return logic
-        if type(logic) is var or type(logic) is ConstrainedVar:
-            name = logic.token.replace('_rule_', '').replace('_theorem_', '')
-            if name[0] == '$':
-                return create_var(name[1:], VarPrefix.Independent)
-            if name[0] == '#':
-                return create_var(name[1:], VarPrefix.Dependent)
-            if name[0] == '?':
-                return create_var(name[1:], VarPrefix.Query)
-            else:
-                return Term(name)
-        if type(logic) is cons or type(logic) is tuple:
-            if type(car(logic)) is Copula:
-                sub = car(cdr(logic))
-                cop = car(logic)
-                pre = cdr(cdr(logic))
-                return Statement(self.term(sub, False), cop, self.term(pre, False))
-            if type(car(logic)) is Connector:
-                con = car(logic)
-                t = cdr(logic)
-                is_list = (type(t) is cons or tuple) \
-                    and not (type(car(t)) is Copula or type(car(t)) is Connector)
-                terms = self.to_list(cdr(logic)) if is_list else [self.term(t, False)]
-                return Compound(con, *terms)
-            else:
-                return self.term(car(logic))
-        return logic # cons
-
-    def to_list(self, pair) -> list:
-        l = [self.term(car(pair), False)]
-        if type(cdr(pair)) is list and cdr(pair) == [] \
-            or type(cdr(pair)) is tuple and cdr(pair) == ():
-            () # empty TODO: there's gotta be a better way to check
-        elif type(cdr(pair)) is cons or tuple:
-            # t = self.term(cdr(pair), False)
-            # if type(t) is cons:
-            l.extend(self.to_list(cdr(pair))) # recurse
-            # else:
-            #     l.append(t)
-        else:
-            l.append(self.term(cdr(pair), False)) # atom
-        return l
-
-    #################################################
-    ### quick and dirty example of applying diff ####
-    #################################################
-
-    def _diff(self, c):
-        # TODO: room for improvement
-        difference = -1 # result of applying diff
-
-        def calculate_difference(l: Term, r: Term):
-            return (l - r) if l.contains(r) and not l.equal(r) else None
-            
-        def do_diff(t: Term):
-            nonlocal difference
-            if len(t.terms.terms) == 2:
-                components = t.terms.terms
-                difference = calculate_difference(*components)
-
-
-        # COMPOUND
-        if type(c) is Compound and c.connector is Connector.ExtensionalDifference:
-            if len(c.terms.terms) == 2:
-                return calculate_difference(*c.terms.terms)
-
-        # STATEMENT
-        elif type(c) is Statement and c.copula is Copula.Implication:
-            # check subject
-            subject = c.subject
-            if subject.is_compound:
-                if subject.connector is Connector.ExtensionalDifference:
-                    do_diff(c.subject)
-                    if difference is not None and difference != -1:
-                        subject = difference
-
-                # check for nested difference
-                elif subject.connector is Connector.Conjunction:
-                    if len(subject.terms.terms) == 2:
-                        components = subject.terms.terms
-                        if components[0].is_compound:
-                            if components[0].connector is Connector.ExtensionalDifference:
-                                do_diff(components[0])
-                                # if components[0].terms.terms[0] == components[1]:
-                                #     difference = None
-                                if difference is not None:
-                                    subject = Compound(subject.connector, difference, components[1])
-
-            # check predicate
-            predicate = c.predicate
-            if predicate.is_compound and difference is not None and difference != -1: # already failed one check
-                if predicate.connector is Connector.ExtensionalDifference:
-                    do_diff(predicate)
-                    if difference is not None:
-                        predicate = difference
-
-            # check for success
-            if difference == None or difference == -1:
-                return difference
-            else:
-                return Statement(subject, c.copula, predicate)
-
-        return -1 # no difference was applied
-
-    # UNIFICATION
-
-    def _variable_elimination(self, t1: Term, t2: Term) -> list:
-        unified = filter(None, (unify(self.logic(t), self.logic(t2, True, True)) for t in t1.terms))
-        substitution = []
-        for u in unified:
-            d = {k: v for k, v in u.items() if type(self.term(k)) is Variable}
-            if len(d):
-                substitution.append(d)
-        result = []
-        for s in substitution:
-            reified = reify(self.logic(t1), s)
-            result.append(self.term(reified))
-
-        return result
 
     #################################################
 
@@ -653,7 +147,7 @@ class KanrenEngine:
                 theorems.append(theorem)
             
             for theorem in theorems:
-                # print(self.term(theorem._theorem))
+                # print(term(theorem._theorem))
                 # results.extend(self.inference_structural(task.sentence))
                 res, cached = self.inference_structural(task.sentence, tuple([theorem._theorem]))
                 # print(res)
@@ -793,15 +287,15 @@ class KanrenEngine:
     def inference(self, t1: Sentence, t2: Sentence) -> list:
         results = []
 
-        t1e = self._variable_elimination(t1.term, t2.term)
-        t2e = self._variable_elimination(t2.term, t1.term)
+        t1e = variable_elimination(t1.term, t2.term)
+        t2e = variable_elimination(t2.term, t1.term)
 
         # TODO: what about other possibilities?
         t1t = t1e[0] if len(t1e) else t1.term
         t2t = t2e[0] if len(t2e) else t2.term
 
-        l1 = self.logic(t1t)
-        l2 = self.logic(t2t)
+        l1 = logic(t1t)
+        l2 = logic(t2t)
         for rule in self.rules_syllogistic:
             res = self.apply(rule, l1, l2)
             if res is not None:
@@ -809,7 +303,7 @@ class KanrenEngine:
                 inverse = True if r[-1] == "'" else False
                 r = r.replace("'", '') # remove trailing '
                 tr1, tr2 = (t1.truth, t2.truth) if not inverse else (t2.truth, t1.truth)
-                truth = self._truth_functions[r](tr1, tr2)
+                truth = truth_functions[r](tr1, tr2)
                 results.append((res, truth))
 
         return results
@@ -822,10 +316,10 @@ class KanrenEngine:
         # print(result)
 
         if result:
-            conclusion = self.term(result[0])
+            conclusion = term(result[0])
             # print(conclusion)
             # apply diff connector
-            difference = self._diff(conclusion)
+            difference = diff(conclusion)
             if difference == None:
                 # print("Rule application failed.")
                 return None
@@ -842,15 +336,15 @@ class KanrenEngine:
     def inference_immediate(self, t: Sentence):
         results = []
 
-        l = self.logic(t.term)
+        l = logic(t.term)
         for rule in self.rules_immediate:
             (p, c), (r, constraints) = rule[0], rule[1]
 
             result = run(1, c, eq(p, l), *constraints)
 
             if result:
-                conclusion = self.term(result[0])
-                truth = self._truth_functions[r](t.truth)
+                conclusion = term(result[0])
+                truth = truth_functions[r](t.truth)
                 results.append(((conclusion, r), truth))
             
         return results
@@ -876,9 +370,9 @@ class KanrenEngine:
         if not theorems:
             theorems = self.theorems
 
-        l1 = self.logic(t.term, structural=True)
+        l1 = logic(t.term, structural=True)
         for (l2, sub_terms) in theorems:
-            for rule in self.rules_strong:
+            for rule in rules_strong:
                 res = self.apply(rule, l2, l1)
                 if res is not None:
                     # ensure no theorem terms in conclusion
@@ -888,7 +382,7 @@ class KanrenEngine:
                         inverse = True if r[-1] == "'" else False
                         r = r.replace("'", '') # remove trailing '
                         tr1, tr2 = (t.truth, truth_analytic) if not inverse else (truth_analytic, t.truth)
-                        truth = self._truth_functions[r](tr1, tr2)
+                        truth = truth_functions[r](tr1, tr2)
                         results.append((res, truth))
 
         return results
@@ -902,22 +396,22 @@ class KanrenEngine:
         if len(common) == 0:
             return results
         
-        l1 = self.logic(t1.term)
-        l2 = self.logic(t2.term)
+        l1 = logic(t1.term)
+        l2 = logic(t2.term)
         for rule in self.rules_conditional_compositional:
             res = self.apply(rule, l1, l2)
             if res is not None:
                 r, _ = rule[1]
                 tr1, tr2 = (t1.truth, t2.truth)
-                truth = self._truth_functions[r](tr1, tr2)
+                truth = truth_functions[r](tr1, tr2)
 
                 results.append(((res[0], r), truth))
 
                 prefix = '$' if res[0].is_statement else '#'
-                substitution = {self.logic(c, True, var_intro=True): var(prefix=prefix) for c in common}
-                reified = reify(self.logic(res[0], True, var_intro=True), substitution)
+                substitution = {logic(c, True, var_intro=True): var(prefix=prefix) for c in common}
+                reified = reify(logic(res[0], True, var_intro=True), substitution)
 
-                conclusion = self.term(reified)
+                conclusion = term(reified)
 
                 results.append(((conclusion, r), truth))
         
