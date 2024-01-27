@@ -27,6 +27,9 @@ nal1 = '''
 {<P --> M>. <S --> M>} |- <P --> S> .abd'
 {<P --> M>. <M --> S>} |- <S --> P> .exe
 {<M --> P>. <S --> M>} |- <P --> S> .exe'
+
+{<S --> P>. <P --> S>} |- <S <-> P> .ded
+{<S --> P>. <P --> S>} |- <P <-> S> .ded
 '''
 
 nal2 = '''
@@ -194,6 +197,7 @@ theorems = '''
 <<S --> P> ==> <(\, M, _, P) --> (\, M, _, S)>>
 
 'equivalence
+<<S <-> P> <=> <P <-> S>>
 <<S <-> P> <=> (&&, <S --> P>, <P --> S>)>
 <<P <-> S> <=> (&&, <S --> P>, <P --> S>)>
 <<S <=> P> <=> (&&, <S ==> P>, <P ==> S>)>
@@ -486,12 +490,12 @@ class KanrenEngine:
         if type(cdr(pair)) is list and cdr(pair) == [] \
             or type(cdr(pair)) is tuple and cdr(pair) == ():
             () # empty TODO: there's gotta be a better way to check
-        elif type(cdr(pair)) is cons:
-            t = self.term(cdr(pair), False)
-            if type(t) is cons:
-                l.extend(self.to_list(t)) # recurse
-            else:
-                l.append(t)
+        elif type(cdr(pair)) is cons or tuple:
+            # t = self.term(cdr(pair), False)
+            # if type(t) is cons:
+            l.extend(self.to_list(cdr(pair))) # recurse
+            # else:
+            #     l.append(t)
         else:
             l.append(self.term(cdr(pair), False)) # atom
         return l
@@ -633,7 +637,7 @@ class KanrenEngine:
 
             t0 = time()
             theorems = []
-            for _ in range(5):
+            for _ in range(1):
                 theorem = concept.theorems.take(remove=True)
                 theorems.append(theorem)
             
@@ -742,11 +746,11 @@ class KanrenEngine:
 
             t1 = time() - t0
 
-            print("inf:", 1 // t1, "per second")
+            # print("inf:", 1 // t1, "per second")
 
             self._inference_time_avg += (t1 - self._inference_time_avg) / self._run_count
 
-            print("avg:", 1 // self._inference_time_avg, "per second")
+            # print("avg:", 1 // self._inference_time_avg, "per second")
 
             results.extend(self.inference_compositional(task.sentence, belief.sentence))
 
