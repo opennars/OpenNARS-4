@@ -1,4 +1,6 @@
 from typing import Tuple, Type, List, Union
+
+from pynars.NAL.Functions import Or
 from pynars.NAL.Functions.Tools import calculate_solution_quality, distribute_budget_among_links
 from pynars.NAL.Functions.BudgetFunctions import Budget_merge
 from pynars.Narsese import Belief, Task, Item, Budget, Sentence, Term, Task, Judgement, Goal
@@ -138,12 +140,29 @@ class Concept(Item):
                 if concept is None: return # The memroy is full, and the concept fails to get into the memory.
             self._build_task_links(concepts, task)
             self._build_term_links(concepts, task, budget)
+
+    def update_priority(self, p, concepts: Bag):
+        concepts.take_by_key(key=self,remove=True)
+        self.budget.priority = Or(self.budget.priority, p)
+        concepts.put(item=self)
+
+    def update_durability(self, d, concepts: Bag):
+        concepts.take_by_key(key=self, remove=True)
+        self.budget.durability = (Config.concept_update_durability_weight * d
+                                + (1-Config.concept_update_durability_weight)*self.budget.durability)
+        concepts.put(item=self)
+
+    def update_quality(self, q, concepts: Bag):
+        concepts.take_by_key(key=self, remove=True)
+        self.budget.quality = (Config.concept_update_quality_weight * q
+                                + (1-Config.concept_update_quality_weight)*self.budget.quality)
+        concepts.put(item=self)
     
     def _build_task_links(self, concepts: Bag, task: Task):
         ''''''
         budget = task.budget
         task_link = TaskLink(self, task, budget, True, index=[])
-        self._insert_task_link(task_link)
+        self._insert_task_link(task_link, concepts)
         if self.term.is_atom: return
         sub_budget = budget.distribute(self.term.count()-1) # TODO: It seems that the budget is not the same with that in OpenNARS 3.0.4/3.1.0. Check here.
         for term in self.term.components:
@@ -154,7 +173,7 @@ class Concept(Item):
             indices = Link.get_index(self.term, term)
             for index in indices:
                 task_link = TaskLink(concept, task, sub_budget, index=index)
-                concept._insert_task_link(task_link)
+                concept._insert_task_link(task_link, concepts)
 
     def _build_term_links(self, concepts: Bag, task: Task, budget: Budget):
         '''
@@ -181,18 +200,24 @@ class Concept(Item):
 
                 indices = Link.get_index(self.term, term)
                 for index in indices:
-                    self._insert_term_link(TermLink(self, sub_concept, sub_budget, False, index=index))
-                    sub_concept._insert_term_link(TermLink(sub_concept, self, sub_budget, True, index=index))
+                    self._insert_term_link(TermLink(self, sub_concept, sub_budget, False, index=index), concepts)
+                    sub_concept._insert_term_link(TermLink(sub_concept, self, sub_budget, True, index=index), concepts)
 
                     sub_concept._build_term_links(concepts, task, sub_budget)
         
 
-    def _insert_task_link(self, task_link: TaskLink):
+    def _insert_task_link(self, task_link: TaskLink, concepts: Bag):
         self.task_links.put(task_link)
+        # update the concept's budget using the link's budget
+        self.update_priority(task_link.budget.priority, concepts)
+        self.update_durability(task_link.budget.durability, concepts)
         # TODO: more handling. see OpenNARS 3.1.0 Concept.java line 318~366.
     
-    def _insert_term_link(self, term_link: TermLink):
+    def _insert_term_link(self, term_link: TermLink, concepts: Bag):
         self.term_links.put(term_link)
+        # update the concept's budget using the link's budget
+        self.update_priority(term_link.budget.priority, concepts)
+        self.update_durability(term_link.budget.durability, concepts)
         # TODO: more handling. see OpenNARS 3.1.0 Concept.java line 318~366.
 
     @classmethod

@@ -96,7 +96,7 @@ class Memory:
 
     def _accept_judgement(self, task: Task, concept: Concept):
         ''''''
-        belief_revised = None
+        belief_revised_task = None
         answers = { Question: [], Goal: [] }
         if Enable.operation: raise  # InternalExperienceBuffer.handleOperationFeedback(task, nal);
         if Enable.anticipation: raise  # ProcessAnticipation.confirmAnticipation(task, concept, nal);
@@ -118,7 +118,7 @@ class Memory:
                     }
                     '''
                     raise
-                belief_revised = local__revision(task, belief)  # TODO: handling the stamps
+                belief_revised_task: Task = local__revision(task, belief)  # TODO: handling the stamps
                 # reduce priority by achieving level
                 task.reduce_budget_by_achieving_level(belief)
 
@@ -140,7 +140,10 @@ class Memory:
                 _, goal_answer = self._solve_goal(task_goal, concept, None, task)
                 if goal_answer is not None: answers[Goal] = [goal_answer]
 
-        return belief_revised, answers
+        # Modify the concept's Budget using the belief
+        if belief_revised_task is not None: concept.update_quality(belief_revised_task.sentence.sharpness, concepts=self.concepts)
+
+        return belief_revised_task, answers
 
     def _accept_question(self, task: Task, concept: Concept):
         ''''''

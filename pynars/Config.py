@@ -71,6 +71,12 @@ class Config:
     rate_discount_p_internal_exp = 0.1
     rate_discount_d_internal_exp = 0.1
 
+    # parameters for updating the Budget of Concept.
+    # Lower values means it is harder to change the budget, higher values means it is easier to change the budget
+    concept_update_durability_weight = 0.1
+    concept_update_quality_weight = 0.1
+
+    # temporal parameters
     temporal_duration = 5
     n_sequence_attempts = 10
     n_op_condition_attempts = 10
