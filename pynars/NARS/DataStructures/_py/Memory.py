@@ -1,24 +1,20 @@
-from pynars.NAL.Functions import BudgetFunctions
-
-from pynars.Config import Enable, Config
-from pynars.NAL.Inference.LocalRules import solve_query, solution_query, solution_question
-from pynars.NAL.MetaLevelInference.VariableSubstitution import get_elimination__var_const
-
-from pynars.NARS.DataStructures._py.Link import TaskLink
-from pynars.Narsese._py.Sentence import Goal, Judgement, Question
-from pynars.Narsese import Statement, Term, Sentence, Budget, Task, Truth
-from pynars.Narsese._py.Task import Belief, Desire
-from .Concept import Concept
-from .Bag import Bag
-from pynars.NAL.Functions.Tools import revisible
-from pynars.NAL.Inference import local__revision
-# from pynars.NARS import Operation
-from pynars.NAL.Functions.Tools import project, project_truth
 from pynars import Global
+from pynars.Config import Enable, Config
 from pynars.NAL.Functions.BudgetFunctions import Budget_evaluate_goal_solution
 from pynars.NAL.Functions.Tools import calculate_solution_quality
-from typing import Callable, Any
+from pynars.NAL.Functions.Tools import project, project_truth
+from pynars.NAL.Functions.Tools import revisible
+from pynars.NAL.Inference import local__revision
+from pynars.NAL.Inference.LocalRules import solution_query, solution_question
+from pynars.NAL.MetaLevelInference.VariableSubstitution import get_elimination__var_const
+from pynars.NARS.DataStructures._py.Link import TaskLink
 from pynars.NARS.GlobalEval import GlobalEval
+from pynars.Narsese import Statement, Budget, Task
+from pynars.Narsese._py.Sentence import Goal, Question
+from pynars.Narsese._py.Task import Belief, Desire
+from .Bag import Bag
+from .Concept import Concept
+
 
 class Memory:
     def __init__(self, capacity: int, n_buckets: int = None, take_in_order: bool = False, output_buffer = None, global_eval: GlobalEval=None) -> None:
@@ -299,7 +295,7 @@ class Memory:
 
         return answers
 
-    def _solve_judgement(self, belief: Task, concept: Concept):
+    def _solve_judgement(self, belief_task: Task, concept: Concept):
         '''
         It should be ensured that the task has no query-variables.
 
@@ -309,11 +305,17 @@ class Memory:
         '''
         answers = []
         # 1. try to solve yn-questions
-        for question in concept.question_table:
-            answer = solution_question(question, belief)
+        for question_task in concept.question_table:
+            question: Question = question_task.sentence
+            old_answer = question.best_answer
+            answer = solution_question(question_task, belief_task)
+            new_answer = question.best_answer
+            if old_answer != new_answer:
+                # the belief is a better answer to the question, so reward it
+                belief_task.reward_budget_priority(question_task.achieving_level())
             if answer is not None: answers.append(answer)
         # 2. try to solve wh-questions
-        sub_terms = belief.term.sub_terms
+        sub_terms = belief_task.term.sub_terms
         for sub_term in sub_terms:
             concept_term: Concept = self.concepts.take_by_key(sub_term, remove=False)
             if concept_term is None: continue
@@ -322,8 +324,8 @@ class Memory:
                 query = task_link.target
                 if query is None: continue
                 if not query.is_query: continue
-                if not query.term.equal(belief.term): continue
-                answer = solution_query(query, belief)
+                if not query.term.equal(belief_task.term): continue
+                answer = solution_query(query, belief_task)
                 if answer is not None: answers.append(answer)
 
         return answers
@@ -374,42 +376,45 @@ class Memory:
             raise "Invalid case."
         return answers
 
-    def _solve_goal(self, task: Task, concept: Concept, task_link: TaskLink=None, belief=None):
+    def _solve_goal(self, goal_task: Task, concept: Concept, task_link: TaskLink=None, belief_task: Task =None):
         '''
         Args:
-            task (Task): Its sentence should be a goal.
+            goal_task (Task): Its sentence should be a goal.
             concept (Concept): The concept corresponding to the task.
         '''
         tasks = []
-        belief = belief or concept.match_belief(task.sentence)
-        if belief is None:
-            self.global_eval.update_satisfaction(task.achieving_level(), task.budget.priority)
+        belief_task = belief_task or concept.match_belief(goal_task.sentence)
+        if belief_task is None:
+            self.global_eval.update_satisfaction(goal_task.achieving_level(), goal_task.budget.priority)
             return tasks, None
-        old_best = task.best_solution
+        old_best = goal_task.best_solution
 
-        belief = belief or concept.match_belief(task.sentence)
-        if belief is None or belief == old_best:
+        belief_task = belief_task or concept.match_belief(goal_task.sentence)
+        if belief_task is None or belief_task == old_best:
             return tasks, None
+        elif belief_task != old_best:
+            belief_task.reward_budget_priority(goal_task.achieving_level())
+
 
         if old_best is not None:
-            quality_new = calculate_solution_quality(task.sentence, belief.sentence, True)
-            quality_old = calculate_solution_quality(task.sentence, old_best.sentence, True)
+            quality_new = calculate_solution_quality(goal_task.sentence, belief_task.sentence, True)
+            quality_old = calculate_solution_quality(goal_task.sentence, old_best.sentence, True)
             if (quality_new <= quality_old):
-                return tasks, belief
+                return tasks, belief_task
 
-        task.best_solution = belief
-        tasks.append(belief) # the task as the new best solution should be added into the internal buffer, so that it would be paid attention
-        budget = Budget_evaluate_goal_solution(task.sentence, belief.sentence, task.budget, (task_link.budget if task_link is not None else None))
+        goal_task.best_solution = belief_task
+        tasks.append(belief_task) # the task as the new best solution should be added into the internal buffer, so that it would be paid attention
+        budget = Budget_evaluate_goal_solution(goal_task.sentence, belief_task.sentence, goal_task.budget, (task_link.budget if task_link is not None else None))
         if budget.is_above_thresh:
-            task.budget = budget
-            tasks.append(task)
+            goal_task.budget = budget
+            tasks.append(goal_task)
         
         ''' Here, belief is not None, and it is the best solution for the task 
         Thus, do global evaluation to update satisfaction of the system.
         '''
-        self.global_eval.update_satisfaction(task.achieving_level(belief.truth), task.budget.priority)
+        self.global_eval.update_satisfaction(goal_task.achieving_level(belief_task.truth), goal_task.budget.priority)
 
-        return tasks, belief
+        return tasks, belief_task
 
     def _solve_quest(self, task: Task, concept: Concept):
         '''
