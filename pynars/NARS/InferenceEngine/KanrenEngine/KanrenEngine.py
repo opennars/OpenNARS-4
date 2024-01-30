@@ -1,26 +1,4 @@
-from kanren import run, eq, var
-from kanren.constraints import neq, ConstrainedVar
-from unification import unify, reify
-from cons import cons, car, cdr
-
-from itertools import combinations
-
-from pynars import Narsese, Global
-from pynars.Narsese import Term, Copula, Connector, Statement, Compound, Variable, VarPrefix, Sentence, Punctuation, Stamp, place_holder
-
-from pynars.NAL.Functions import *
-from pynars.NARS.DataStructures import Concept, Task, TaskLink, TermLink, Judgement, Question
-from pynars.NAL.Functions.Tools import project_truth, revisible
-from collections import defaultdict
-from typing import List
-
-from functools import cache
-
-from time import time
-import yaml
-from pathlib import Path
 from .util import *
-
 
 class KanrenEngine:
 
@@ -84,7 +62,145 @@ class KanrenEngine:
 
     #################################################
 
-    # INFERENCE
+    # INFERENCE (SYLLOGISTIC)
+
+    def inference(self, t1: Sentence, t2: Sentence) -> list:
+        results = []
+
+        t1e = variable_elimination(t1.term, t2.term)
+        t2e = variable_elimination(t2.term, t1.term)
+
+        # TODO: what about other possibilities?
+        t1t = t1e[0] if len(t1e) else t1.term
+        t2t = t2e[0] if len(t2e) else t2.term
+
+        l1 = logic(t1t)
+        l2 = logic(t2t)
+        for rule in self.rules_syllogistic:
+            res = self.apply(rule, l1, l2)
+            if res is not None:
+                r, _ = rule[1]
+                inverse = True if r[-1] == "'" else False
+                r = r.replace("'", '') # remove trailing '
+                tr1, tr2 = (t1.truth, t2.truth) if not inverse else (t2.truth, t1.truth)
+                truth = truth_functions[r](tr1, tr2)
+                results.append((res, truth))
+
+        return results
+
+    def apply(self, rule, l1, l2):
+        # print("\nRULE:", rule)
+        (p1, p2, c), (r, constraints) = rule[0], rule[1]
+
+        result = run(1, c, eq((p1, p2), (l1, l2)), *constraints)
+        # print(result)
+
+        if result:
+            conclusion = term(result[0])
+            # print(conclusion)
+            # apply diff connector
+            difference = diff(conclusion)
+            if difference == None:
+                # print("Rule application failed.")
+                return None
+            elif difference == -1:
+                # print(conclusion) # no diff application
+                return (conclusion, r)
+            else:
+                # print(difference) # diff applied successfully
+                return (difference, r)
+        else:
+            # print("Rule application failed.")
+            return None
+
+
+    #############
+    # IMMEDIATE #
+    #############
+        
+    def inference_immediate(self, t: Sentence):
+        results = []
+
+        l = logic(t.term)
+        for rule in self.rules_immediate:
+            (p, c), (r, constraints) = rule[0], rule[1]
+
+            result = run(1, c, eq(p, l), *constraints)
+
+            if result:
+                conclusion = term(result[0])
+                truth = truth_functions[r](t.truth)
+                results.append(((conclusion, r), truth))
+            
+        return results
+
+    ##############
+    # STRUCTURAL #
+    ##############
+
+    @cache_notify
+    def inference_structural(self, t: Sentence, theorems = None):
+        results = []
+
+        if not theorems:
+            theorems = self.theorems
+
+        l1 = logic(t.term, structural=True)
+        for (l2, sub_terms) in theorems:
+            for rule in rules_strong:
+                res = self.apply(rule, l2, l1)
+                if res is not None:
+                    # ensure no theorem terms in conclusion
+                    # TODO: ensure _ is only found inside / or \
+                    if sub_terms.isdisjoint(res[0].sub_terms):
+                        r, _ = rule[1]
+                        inverse = True if r[-1] == "'" else False
+                        r = r.replace("'", '') # remove trailing '
+                        tr1, tr2 = (t.truth, truth_analytic) if not inverse else (truth_analytic, t.truth)
+                        truth = truth_functions[r](tr1, tr2)
+                        results.append((res, truth))
+
+        return results
+    
+    #################
+    # COMPOSITIONAL #
+    #################
+
+    def inference_compositional(self, t1: Sentence, t2: Sentence):
+        results = []
+        
+        common = set(t1.term.sub_terms).intersection(t2.term.sub_terms)
+
+        if len(common) == 0:
+            return results
+        
+        l1 = logic(t1.term)
+        l2 = logic(t2.term)
+        for rule in self.rules_conditional_compositional:
+            res = self.apply(rule, l1, l2)
+            if res is not None:
+                r, _ = rule[1]
+                tr1, tr2 = (t1.truth, t2.truth)
+                truth = truth_functions[r](tr1, tr2)
+
+                results.append(((res[0], r), truth))
+
+                # variable introduction
+                prefix = '$' if res[0].is_statement else '#'
+                substitution = {logic(c, True, var_intro=True): var(prefix=prefix) for c in common}
+                reified = reify(logic(res[0], True, var_intro=True), substitution)
+
+                conclusion = term(reified)
+
+                results.append(((conclusion, r), truth))
+        
+        return results
+
+
+
+#################################################
+
+    # INFERENCE STEP -- TODO: Move to Reasoner class
 
     def step(self, concept: Concept):
         '''One step inference.'''
@@ -142,7 +258,7 @@ class KanrenEngine:
 
             t0 = time()
             theorems = []
-            for _ in range(1):
+            for _ in range(5):
                 theorem = concept.theorems.take(remove=True)
                 theorems.append(theorem)
             
@@ -283,142 +399,9 @@ class KanrenEngine:
             concept.term_links.put_back(term_link)
         
         return list(filter(lambda t: t.truth.c > 0, tasks_derived))
-
-    def inference(self, t1: Sentence, t2: Sentence) -> list:
-        results = []
-
-        t1e = variable_elimination(t1.term, t2.term)
-        t2e = variable_elimination(t2.term, t1.term)
-
-        # TODO: what about other possibilities?
-        t1t = t1e[0] if len(t1e) else t1.term
-        t2t = t2e[0] if len(t2e) else t2.term
-
-        l1 = logic(t1t)
-        l2 = logic(t2t)
-        for rule in self.rules_syllogistic:
-            res = self.apply(rule, l1, l2)
-            if res is not None:
-                r, _ = rule[1]
-                inverse = True if r[-1] == "'" else False
-                r = r.replace("'", '') # remove trailing '
-                tr1, tr2 = (t1.truth, t2.truth) if not inverse else (t2.truth, t1.truth)
-                truth = truth_functions[r](tr1, tr2)
-                results.append((res, truth))
-
-        return results
-
-    def apply(self, rule, l1, l2):
-        # print("\nRULE:", rule)
-        (p1, p2, c), (r, constraints) = rule[0], rule[1]
-
-        result = run(1, c, eq((p1, p2), (l1, l2)), *constraints)
-        # print(result)
-
-        if result:
-            conclusion = term(result[0])
-            # print(conclusion)
-            # apply diff connector
-            difference = diff(conclusion)
-            if difference == None:
-                # print("Rule application failed.")
-                return None
-            elif difference == -1:
-                # print(conclusion) # no diff application
-                return (conclusion, r)
-            else:
-                # print(difference) # diff applied successfully
-                return (difference, r)
-        else:
-            # print("Rule application failed.")
-            return None
-
-    def inference_immediate(self, t: Sentence):
-        results = []
-
-        l = logic(t.term)
-        for rule in self.rules_immediate:
-            (p, c), (r, constraints) = rule[0], rule[1]
-
-            result = run(1, c, eq(p, l), *constraints)
-
-            if result:
-                conclusion = term(result[0])
-                truth = truth_functions[r](t.truth)
-                results.append(((conclusion, r), truth))
-            
-        return results
     
-    def cache_notify(func):
-        func = cache(func)
-        def notify_wrapper(*args, **kwargs):
-            stats = func.cache_info()
-            hits = stats.hits
-            results = func(*args, **kwargs)
-            stats = func.cache_info()
-            cached = False
-            if stats.hits > hits:
-                cached = True
-                # print(f"NOTE: {func.__name__}() results were cached")
-            return (results, cached)
-        return notify_wrapper
-
-    @cache_notify
-    def inference_structural(self, t: Sentence, theorems = None):
-        results = []
-
-        if not theorems:
-            theorems = self.theorems
-
-        l1 = logic(t.term, structural=True)
-        for (l2, sub_terms) in theorems:
-            for rule in rules_strong:
-                res = self.apply(rule, l2, l1)
-                if res is not None:
-                    # ensure no theorem terms in conclusion
-                    # TODO: ensure _ is only found inside / or \
-                    if sub_terms.isdisjoint(res[0].sub_terms):
-                        r, _ = rule[1]
-                        inverse = True if r[-1] == "'" else False
-                        r = r.replace("'", '') # remove trailing '
-                        tr1, tr2 = (t.truth, truth_analytic) if not inverse else (truth_analytic, t.truth)
-                        truth = truth_functions[r](tr1, tr2)
-                        results.append((res, truth))
-
-        return results
-    
-    '''variable introduction'''
-    def inference_compositional(self, t1: Sentence, t2: Sentence):
-        results = []
-        
-        common = set(t1.term.sub_terms).intersection(t2.term.sub_terms)
-
-        if len(common) == 0:
-            return results
-        
-        l1 = logic(t1.term)
-        l2 = logic(t2.term)
-        for rule in self.rules_conditional_compositional:
-            res = self.apply(rule, l1, l2)
-            if res is not None:
-                r, _ = rule[1]
-                tr1, tr2 = (t1.truth, t2.truth)
-                truth = truth_functions[r](tr1, tr2)
-
-                results.append(((res[0], r), truth))
-
-                prefix = '$' if res[0].is_statement else '#'
-                substitution = {logic(c, True, var_intro=True): var(prefix=prefix) for c in common}
-                reified = reify(logic(res[0], True, var_intro=True), substitution)
-
-                conclusion = term(reified)
-
-                results.append(((conclusion, r), truth))
-        
-        return results
 
 
-#################################################
 ### EXAMPLES ###
 
 # engine = KanrenEngine()

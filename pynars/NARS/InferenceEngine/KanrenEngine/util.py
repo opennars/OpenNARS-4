@@ -129,6 +129,10 @@ def convert_theorems(theorem):
     sub_terms = frozenset(filter(lambda x: x != place_holder, t.sub_terms))
     return (l, sub_terms)
 
+
+#################
+# TERM TO LOGIC #
+#################
 def logic(term: Term, rule=False, substitution=False, var_intro=False, structural=False, prefix='_rule_'):
     if term.is_atom:
         name = prefix+term.word if rule else term.word
@@ -166,6 +170,9 @@ def logic(term: Term, rule=False, substitution=False, var_intro=False, structura
         
         return cons(term.connector, *multi, ())
 
+#################
+# LOGIC TO TERM #
+#################
 def term(logic, root=True):
     # additional variable handling
     if root: vars_all.clear()
@@ -227,71 +234,11 @@ def to_list(pair) -> list:
         l.append(term(cdr(pair), False)) # atom
     return l
 
+###############
+# UNIFICATION #
+###############
 
-#################################################
-### quick and dirty example of applying diff ####
-#################################################
-
-def diff(self, c):
-    # TODO: room for improvement
-    difference = -1 # result of applying diff
-
-    def calculate_difference(l: Term, r: Term):
-        return (l - r) if l.contains(r) and not l.equal(r) else None
-        
-    def do_diff(t: Term):
-        nonlocal difference
-        if len(t.terms.terms) == 2:
-            components = t.terms.terms
-            difference = calculate_difference(*components)
-
-
-    # COMPOUND
-    if type(c) is Compound and c.connector is Connector.ExtensionalDifference:
-        if len(c.terms.terms) == 2:
-            return calculate_difference(*c.terms.terms)
-
-    # STATEMENT
-    elif type(c) is Statement and c.copula is Copula.Implication:
-        # check subject
-        subject = c.subject
-        if subject.is_compound:
-            if subject.connector is Connector.ExtensionalDifference:
-                do_diff(c.subject)
-                if difference is not None and difference != -1:
-                    subject = difference
-
-            # check for nested difference
-            elif subject.connector is Connector.Conjunction:
-                if len(subject.terms.terms) == 2:
-                    components = subject.terms.terms
-                    if components[0].is_compound:
-                        if components[0].connector is Connector.ExtensionalDifference:
-                            do_diff(components[0])
-                            # if components[0].terms.terms[0] == components[1]:
-                            #     difference = None
-                            if difference is not None:
-                                subject = Compound(subject.connector, difference, components[1])
-
-        # check predicate
-        predicate = c.predicate
-        if predicate.is_compound and difference is not None and difference != -1: # already failed one check
-            if predicate.connector is Connector.ExtensionalDifference:
-                do_diff(predicate)
-                if difference is not None:
-                    predicate = difference
-
-        # check for success
-        if difference == None or difference == -1:
-            return difference
-        else:
-            return Statement(subject, c.copula, predicate)
-
-    return -1 # no difference was applied
-
-# UNIFICATION
-
-def variable_elimination(self, t1: Term, t2: Term) -> list:
+def variable_elimination(t1: Term, t2: Term) -> list:
     unified = filter(None, (unify(logic(t), logic(t2, True, True)) for t in t1.terms))
     substitution = []
     for u in unified:
@@ -304,6 +251,8 @@ def variable_elimination(self, t1: Term, t2: Term) -> list:
         result.append(term(reified))
 
     return result
+
+
 #################################################
 ### quick and dirty example of applying diff ####
 #################################################
@@ -365,20 +314,24 @@ def diff(c):
 
     return -1 # no difference was applied
 
-#################################################
-###               Unification                ####
-#################################################
 
-def variable_elimination(t1: Term, t2: Term) -> list:
-    unified = filter(None, (unify(logic(t), logic(t2, True, True)) for t in t1.terms))
-    substitution = []
-    for u in unified:
-        d = {k: v for k, v in u.items() if type(term(k)) is Variable}
-        if len(d):
-            substitution.append(d)
-    result = []
-    for s in substitution:
-        reified = reify(logic(t1), s)
-        result.append(term(reified))
 
-    return result
+########################################################################
+
+# UTILITY METHODS
+
+########################################################################
+
+def cache_notify(func):
+    func = cache(func)
+    def notify_wrapper(*args, **kwargs):
+        stats = func.cache_info()
+        hits = stats.hits
+        results = func(*args, **kwargs)
+        stats = func.cache_info()
+        cached = False
+        if stats.hits > hits:
+            cached = True
+            # print(f"NOTE: {func.__name__}() results were cached")
+        return (results, cached)
+    return notify_wrapper
