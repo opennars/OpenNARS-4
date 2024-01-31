@@ -16,7 +16,7 @@ from pynars.Config import Enable
 from typing import Callable, List, Tuple, Union
 import pynars.NARS.Operation as Operation
 from pynars import Global
-import time
+from time import time
 from pynars.NAL.Functions.Tools import project_truth, project
 from ..GlobalEval import GlobalEval
 
@@ -82,7 +82,7 @@ class Reasoner:
         return success, task, task_overflow
 
     def cycle(self):
-        start_cycle_time_in_seconds = time.time()
+        start_cycle_time_in_seconds = time()
         """Everything to do by NARS in a single working cycle"""
         Global.States.reset()
         tasks_derived: List[Task] = []
@@ -117,7 +117,7 @@ class Reasoner:
 
         """done with cycle"""
         #  record some metrics
-        total_cycle_duration_in_seconds = time.time() - start_cycle_time_in_seconds
+        total_cycle_duration_in_seconds = time() - start_cycle_time_in_seconds
         self.last_cycle_duration = total_cycle_duration_in_seconds
         self.cycles_per_second_timer += total_cycle_duration_in_seconds
         self.cycles_per_second_counter += 1
