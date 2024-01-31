@@ -1,12 +1,15 @@
 import random
 from os import remove
+from pynars.NAL.Functions.BudgetFunctions import Budget_forward
+from pynars.NAL.Functions.StampFunctions import Stamp_merge
 from pynars.NAL.Functions.Tools import truth_to_quality
 from pynars.NARS.DataStructures._py.Channel import Channel
 
-from pynars.NARS.DataStructures._py.Link import TaskLink
+from pynars.NARS.DataStructures._py.Link import TaskLink, TermLink
 from pynars.NARS.InferenceEngine import TemporalEngine
 # from pynars.NARS.Operation import Interface_Awareness
 from pynars.Narsese._py.Budget import Budget
+from pynars.Narsese._py.Sentence import Judgement, Stamp
 from pynars.Narsese._py.Statement import Statement
 from pynars.Narsese._py.Task import Belief
 from ..DataStructures import Bag, Memory, NarseseChannel, Buffer, Task, Concept
@@ -22,8 +25,8 @@ from ..GlobalEval import GlobalEval
 
 
 class Reasoner:
-    avg_inference = 0
-    num_runs = 0
+    # avg_inference = 0
+    # num_runs = 0
 
     def __init__(self, n_memory, capacity, config='./config.json', nal_rules={1, 2, 3, 4, 5, 6, 7, 8, 9}) -> None:
         # print('''Init...''')
@@ -126,12 +129,12 @@ class Reasoner:
         #   general inference step
         concept: Concept = self.memory.take(remove=True)
         if concept is not None:
-            self.num_runs += 1
-            t0 = time()
-            tasks_inference_derived = self.inference.step(concept)
+            # self.num_runs += 1
+            # t0 = time()
+            tasks_inference_derived = self.inference_step(concept)
             tasks_derived.extend(tasks_inference_derived)
-            t1 = time() - t0
-            self.avg_inference += (t1 - self.avg_inference) / self.num_runs
+            # t1 = time() - t0
+            # self.avg_inference += (t1 - self.avg_inference) / self.num_runs
             # print("inference:", 1 // self.avg_inference, "per second", f"({1//t1})")
 
             is_concept_valid = True  # TODO
@@ -285,3 +288,206 @@ class Reasoner:
             Operation.register(op, callback)
             return op
         return None
+
+#################################################
+
+    # INFERENCE STEP 
+
+    def inference_step(self, concept: Concept):
+        '''One step inference.'''
+        tasks_derived = []
+
+        Global.States.record_concept(concept)
+        
+        # Based on the selected concept, take out a task and a belief for further inference.
+        task_link: TaskLink = concept.task_links.take(remove=True)
+        
+        if task_link is None: 
+            return tasks_derived
+        
+        concept.task_links.put_back(task_link)
+
+        task: Task = task_link.target
+
+        # inference for single-premise rules
+        if task.is_judgement and not task.immediate_rules_applied: # TODO: handle other cases
+            Global.States.record_premises(task)
+
+            results = []
+
+            results.extend(self.inference.inference_immediate(task.sentence))
+
+            for term, truth in results:
+                # TODO: how to properly handle stamp for immediate rules?
+                stamp_task: Stamp = task.stamp
+
+                if task.is_judgement: # TODO: hadle other cases
+                    # TODO: calculate budget
+                    budget = Budget_forward(truth, task_link.budget, None)
+                    budget.priority = budget.priority * 1/term[0].complexity
+                    sentence_derived = Judgement(term[0], stamp_task, truth)
+                    task_derived = Task(sentence_derived, budget)
+                    # set flag to prevent repeated processing
+                    task_derived.immediate_rules_applied = True
+                    # normalize the variable indices
+                    task_derived.term._normalize_variables()
+                    tasks_derived.append(task_derived)
+
+            # record immediate rule application for task
+            task.immediate_rules_applied = True
+
+
+        # self._run_count += 1
+
+
+        ### STRUCTURAL
+
+        if task.is_judgement: #and not task.structural_rules_applied: # TODO: handle other cases
+            Global.States.record_premises(task)
+
+            results = []
+
+            # t0 = time()
+            theorems = []
+            for _ in range(5):
+                theorem = concept.theorems.take(remove=True)
+                theorems.append(theorem)
+            
+            for theorem in theorems:
+                # print(term(theorem._theorem))
+                # results.extend(self.inference_structural(task.sentence))
+                res, cached = self.inference.inference_structural(task.sentence, tuple([theorem._theorem]))
+                # print(res)
+                # print("")
+                if not cached:
+                    if res:
+                        new_priority = theorem.budget.priority + 0.3
+                        theorem.budget.priority = min(0.99, new_priority)
+                    else:
+                        new_priority = theorem.budget.priority - 0.3
+                        theorem.budget.priority = max(0.1, new_priority)
+
+                concept.theorems.put(theorem)
+
+                results.extend(res)
+            # t1 = time() - t0
+            # self._structural_time_avg += (t1 - self._structural_time_avg) / self._run_count
+            # print("structural: ", 1 // self._structural_time_avg, "per second")
+            # for r in results:
+            #     print(r, r[0][0].complexity)
+            # print(task.budget.priority)
+            # print(task_link.budget.priority)
+            for term, truth in results:
+                # TODO: how to properly handle stamp for structural rules?
+                stamp_task: Stamp = task.stamp
+
+                if task.is_judgement: # TODO: hadle other cases
+                    # TODO: calculate budget
+                    budget = Budget_forward(truth, task_link.budget, None)
+                    budget.priority = budget.priority * 1/term[0].complexity
+                    sentence_derived = Judgement(term[0], stamp_task, truth)
+                    task_derived = Task(sentence_derived, budget)
+                    # task_derived.structural_rules_applied = True
+                    
+                    # normalize the variable indices
+                    task_derived.term._normalize_variables()
+                    tasks_derived.append(task_derived)
+
+            # record structural rule application for task
+            # task.structural_rules_applied = True
+
+        # inference for two-premises rules
+        term_links = []
+        term_link_valid = None
+        is_valid = False
+        # n = len(concept.term_links)
+        # t0 = time()
+        # iter = 0
+        for _ in range(len(concept.term_links)): # TODO: should limit max number of links to process
+            # iter += 1
+            # To find a belief, which is valid to interact with the task, by iterating over the term-links.
+            # _t = time()
+            term_link: TermLink = concept.term_links.take(remove=True)
+            # print(round((time() - _t)*1000, 2))
+            term_links.append(term_link)
+
+            if not task_link.novel(term_link, Global.time):
+                continue
+            
+            concept_target: Concept = term_link.target
+            belief = concept_target.get_belief() # TODO: consider all beliefs.
+            
+            if belief is None: 
+                continue
+            
+            if task == belief:
+                # if task.sentence.punct == belief.sentence.punct:
+                #     is_revision = revisible(task, belief)
+                continue
+            # TODO: currently causes infinite recursion with variables
+            # elif task.term.equal(belief.term): 
+            #     # TODO: here
+            #     continue
+            elif not belief.evidential_base.is_overlaped(task.evidential_base):
+                term_link_valid = term_link
+                is_valid = True
+                break
+
+        # t1 = time() - t0
+        # loop_time = round(t1 * 1000, 2)
+        # if loop_time > 20:
+        #     print("hello")
+        # print(iter, '/', n, "- loop time", loop_time, is_valid)
+        # print(is_valid, "Concept", concept.term)
+        if is_valid \
+            and task.is_judgement: # TODO: handle other cases
+            
+            Global.States.record_premises(task, belief)
+            
+            # Temporal Projection and Eternalization
+            if belief is not None:
+                # TODO: Handle the backward inference.
+                if not belief.is_eternal and (belief.is_judgement or belief.is_goal):
+                    truth_belief = project_truth(task.sentence, belief.sentence)
+                    belief = belief.eternalize(truth_belief)
+                    # beleif_eternalized = belief # TODO: should it be added into the `tasks_derived`?
+
+            # t0 = time()
+
+            results = self.inference.inference(task.sentence, belief.sentence)
+
+            # t1 = time() - t0
+
+            # print("inf:", 1 // t1, "per second")
+
+            # self._inference_time_avg += (t1 - self._inference_time_avg) / self._run_count
+
+            # print("avg:", 1 // self._inference_time_avg, "per second")
+
+            results.extend(self.inference.inference_compositional(task.sentence, belief.sentence))
+
+            # print(">>>", results)
+
+            for term, truth in results:
+                stamp_task: Stamp = task.stamp
+                stamp_belief: Stamp = belief.stamp
+                stamp = Stamp_merge(stamp_task, stamp_belief)
+
+                # TODO: calculate budget
+                budget = Budget_forward(truth, task_link.budget, term_link_valid.budget)
+                sentence_derived = Judgement(term[0], stamp, truth)
+                    
+                task_derived = Task(sentence_derived, budget)
+                # normalize the variable indices
+                task_derived.term._normalize_variables()
+                tasks_derived.append(task_derived)
+
+            if term_link is not None: # TODO: Check here whether the budget updating is the same as OpenNARS 3.0.4.
+                for task in tasks_derived: 
+                    TermLink.update_budget(term_link.budget, task.budget.quality, belief.budget.priority if belief is not None else concept_target.budget.priority)
+
+        for term_link in term_links: 
+            concept.term_links.put_back(term_link)
+        
+        return list(filter(lambda t: t.truth.c > 0, tasks_derived))
+    
