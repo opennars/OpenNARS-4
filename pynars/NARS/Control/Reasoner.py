@@ -15,7 +15,7 @@ from pynars import Config
 from pynars.Config import Enable
 from typing import Callable, List, Tuple, Union
 import pynars.NARS.Operation as Operation
-from pynars import Global
+from pynars.Global import Global
 from time import time
 from pynars.NAL.Functions.Tools import project_truth, project
 from ..GlobalEval import GlobalEval
@@ -77,7 +77,7 @@ class Reasoner:
 
     def cycle(self):
         """Everything to do by NARS in a single working cycle"""
-        Global.States.reset()
+        Global.reset()
         tasks_derived: List[Task] = []
 
         judgement_revised, goal_revised, answers_question, answers_quest = None, None, None, None

@@ -12,7 +12,7 @@ from ...DataStructures import Task, Belief, Concept, TaskLink, TermLink
 from typing import Callable, List, Tuple
 from ...RuleMap import RuleCallable, RuleMap
 from pynars.NAL.Inference import local__revision
-from pynars import Global
+from pynars.Global import Global
 from ..Engine import Engine
 from .extract_feature import extract_feature
 from pathlib import Path
@@ -340,7 +340,7 @@ class GeneralEngine(Engine):
         '''One step inference.'''
         tasks_derived = []
 
-        Global.States.record_concept(concept)
+        Global.record_concept(concept)
         
         # Based on the selected concept, take out a task and a belief for further inference.
         task_link_valid: TaskLink = concept.task_links.take(remove=True)
@@ -352,8 +352,8 @@ class GeneralEngine(Engine):
         # inference for single-premise rules
         is_valid, _, rules_immediate = GeneralEngine.match(task, None, None, task_link_valid, None)
         if is_valid:
-            Global.States.record_premises(task)
-            Global.States.record_rules(rules_immediate)
+            Global.record_premises(task)
+            Global.record_rules(rules_immediate)
             tasks = self.inference(task, None, None, task_link_valid, None, rules_immediate)
             tasks_derived.extend(tasks)
     
@@ -389,8 +389,8 @@ class GeneralEngine(Engine):
                 
         
         if is_valid:
-            Global.States.record_premises(task, belief)
-            Global.States.record_rules(rules)
+            Global.record_premises(task, belief)
+            Global.record_rules(rules)
             tasks = self.inference(task, belief, term_belief, task_link_valid, term_link_valid, rules)
             if term_link_valid is not None: # TODO: Check here whether the budget updating is the same as OpenNARS 3.0.4.
                 for task in tasks: TermLink.update_budget(term_link_valid.budget, task.budget.quality, belief.budget.priority if belief is not None else concept_target.budget.priority)

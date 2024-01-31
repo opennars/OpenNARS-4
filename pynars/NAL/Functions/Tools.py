@@ -3,7 +3,7 @@
 # def compound_remove_components
 
 from typing import Union
-from pynars import Global
+from pynars.Global import Global
 from pynars.Config import Config, Enable
 from pynars.NAL.Functions.TemporalFunctions import eternalize, project
 from pynars.Narsese import Budget

@@ -12,7 +12,7 @@ from .Register import registered_operators
 from pynars.Narsese import Term
 from pynars.NAL.Functions.Tools import truth_from_term, truth_to_quality
 from pynars.Narsese import Base
-from pynars import Global
+from pynars.Global import Global
 
 def executed_task(task: Task):
     '''

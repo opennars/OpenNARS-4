@@ -14,7 +14,7 @@ from ._register import registered_operators
 from pynars.Narsese import Term
 from ..Functions.Tools import truth_from_term, truth_to_quality, truth_to_term
 from pynars.Narsese import Base
-from pynars import Global
+from pynars.Global import Global
 
 
 def _aware(statement: Statement, stamp: Stamp, budget_task: Budget=None):

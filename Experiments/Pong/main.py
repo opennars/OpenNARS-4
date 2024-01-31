@@ -20,7 +20,7 @@ from time import sleep
 from pynars.NARS.DataStructures._py.Memory import Memory
 
 from pynars.Narsese import Task, Judgement, Term, Stamp, Base
-from pynars import Global
+from pynars.Global import Global
 from pynars.NARS import Reasoner
 from pynars.Console import handle_lines, run_file
 from pynars.Narsese._py.Compound import Compound

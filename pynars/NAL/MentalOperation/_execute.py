@@ -10,7 +10,7 @@ from ._register import registered_operators
 from pynars.Narsese import Term
 from ..Functions.Tools import truth_from_term, truth_to_quality
 from pynars.Narsese import Base
-from pynars import Global
+from pynars.Global import Global
 
 def execute(task: Task):
     ''''''
