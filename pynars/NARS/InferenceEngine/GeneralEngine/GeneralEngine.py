@@ -391,14 +391,14 @@ class GeneralEngine(Engine):
         if is_valid:
             Global.States.record_premises(task, belief)
             Global.States.record_rules(rules)
-            derived_tasks = self.inference(task, belief, term_belief, task_link_valid, term_link_valid, rules)
+            new_tasks = self.inference(task, belief, term_belief, task_link_valid, term_link_valid, rules)
             if term_link_valid is not None:
                 # reward the termlink
-                for derived_task in derived_tasks:
-                    reward: float = max(derived_task.budget.priority, task.achieving_level())
-                    TermLink.reward_budget(reward)
+                for new_task in new_tasks:
+                    reward: float = max(new_task.budget.priority, task.achieving_level())
+                    term_link_valid.reward_budget(reward)
 
-            tasks_derived.extend(tasks)
+            tasks_derived.extend(new_tasks)
         
         for term_link in term_links: concept.term_links.put_back(term_link)
         
