@@ -391,10 +391,13 @@ class GeneralEngine(Engine):
         if is_valid:
             Global.States.record_premises(task, belief)
             Global.States.record_rules(rules)
-            tasks = self.inference(task, belief, term_belief, task_link_valid, term_link_valid, rules)
-            if term_link_valid is not None: # TODO: Check here whether the budget updating is the same as OpenNARS 3.0.4.
-                for task in tasks: TermLink.update_budget(term_link_valid.budget, task.budget.quality, belief.budget.priority if belief is not None else concept_target.budget.priority)
-            
+            derived_tasks = self.inference(task, belief, term_belief, task_link_valid, term_link_valid, rules)
+            if term_link_valid is not None:
+                # reward the termlink
+                for derived_task in derived_tasks:
+                    reward: float = max(derived_task.budget.priority, task.achieving_level())
+                    TermLink.reward_budget(reward)
+
             tasks_derived.extend(tasks)
         
         for term_link in term_links: concept.term_links.put_back(term_link)
