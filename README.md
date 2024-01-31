@@ -30,6 +30,16 @@ Reference:
 3.  Input Narsese in the console, input an positive integer to run a number of cycles, or input a comment which is a string with `'` as the beginning, e.g. `' your comment`.
 4.  Press `ctrl`+`C` to exit.
 
+To develop PyNARS, clone this project by 
+```
+git clone https://github.com/bowen-xu/PyNARS.git
+```
+and then update submodule(s) by
+```
+git submodule update --init --recursive
+```
+
+
 #### Contribution
 
 1.  Fork the repository
