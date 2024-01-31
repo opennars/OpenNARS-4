@@ -40,7 +40,7 @@ class Task(Item):
         else:
             raise f'Invalid type! {type(self.sentence)}'
 
-    def reward_budget_priority(self, reward: float):
+    def reward_budget(self, reward: float):
         self.budget.priority = NAL.Functions.Or(self.budget.priority, reward)
 
     def reduce_budget_by_achieving_level(self, belief_selected: Union[Type['Belief'], None]):

@@ -311,8 +311,11 @@ class Memory:
             answer = solution_question(question_task, belief_task)
             new_answer = question.best_answer
             if old_answer != new_answer:
-                # the belief is a better answer to the question, so reward it
-                belief_task.reward_budget_priority(question_task.achieving_level())
+                # the belief is a better answer to the question, so reward the Task and tasklinks
+                reward = question_task.achieving_level()
+                belief_task.reward_budget(reward)
+                for task_link in concept.task_links:
+                    task_link.reward_budget(reward)
             if answer is not None: answers.append(answer)
         # 2. try to solve wh-questions
         sub_terms = belief_task.term.sub_terms
@@ -393,8 +396,10 @@ class Memory:
         if belief_task is None or belief_task == old_best:
             return tasks, None
         elif belief_task != old_best:
-            belief_task.reward_budget_priority(goal_task.achieving_level())
-
+            reward = goal_task.achieving_level()
+            belief_task.reward_budget(reward)
+            for task_link in concept.task_links:
+                task_link.reward_budget(reward)
 
         if old_best is not None:
             quality_new = calculate_solution_quality(goal_task.sentence, belief_task.sentence, True)
