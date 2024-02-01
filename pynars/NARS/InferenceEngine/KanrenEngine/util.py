@@ -224,12 +224,15 @@ def to_list(pair) -> list:
     if type(cdr(pair)) is list and cdr(pair) == [] \
         or type(cdr(pair)) is tuple and cdr(pair) == ():
         () # empty TODO: there's gotta be a better way to check
-    elif type(cdr(pair)) is cons or tuple:
-        # t = term(cdr(pair), False)
-        # if type(t) is cons:
-        l.extend(to_list(cdr(pair))) # recurse
-        # else:
-        #     l.append(t)
+    elif type(cdr(pair)) is cons or type(cdr(pair)) is tuple:
+        if len(cdr(pair)) == 1:
+            l.append(term(car(cdr(pair))))
+            return l
+        t = term(cdr(pair), False)
+        if type(t) is cons or type(t) is tuple:
+            l.extend(to_list(t)) # recurse
+        else:
+            l.append(t)
     else:
         l.append(term(cdr(pair), False)) # atom
     return l
