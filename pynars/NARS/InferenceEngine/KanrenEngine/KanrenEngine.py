@@ -87,15 +87,21 @@ class KanrenEngine:
     def apply(self, rule, l1, l2):
         # print("\nRULE:", rule)
         (p1, p2, c), (r, constraints) = rule[0], rule[1]
-
         result = run(1, c, eq((p1, p2), (l1, l2)), *constraints)
-        # print(result)
 
         if result:
             conclusion = term(result[0])
             # print(conclusion)
+            
             # apply diff connector
             difference = diff(conclusion)
+            # print(difference)
+
+            # sanity check - single variable is not a valid conclusion
+            if type(conclusion) is Variable or type(conclusion) is cons \
+                or type(difference) is Variable or type(difference) is cons:
+                return None
+            
             if difference == None:
                 # print("Rule application failed.")
                 return None

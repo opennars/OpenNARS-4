@@ -146,7 +146,7 @@ def logic(term: Term, rule=False, substitution=False, var_intro=False, structura
             vars.add(var(name))
         return var(name) if rule else term
     if term.is_statement:
-        return cons(term.copula, *[logic(t, rule, substitution, var_intro, structural, prefix) for t in term.terms], ())
+        return cons(term.copula, *[logic(t, rule, substitution, var_intro, structural, prefix) for t in term.terms])
     if term.is_compound:
         # when used in variable introduction, treat single component compounds as atoms
         if rule and var_intro and len(term.terms) == 1 \
@@ -158,7 +158,7 @@ def logic(term: Term, rule=False, substitution=False, var_intro=False, structura
         # extensional and intensional images are not composable
         if term.connector is Connector.ExtensionalImage \
             or term.connector is Connector.IntensionalImage:
-            return cons(term.connector, *[logic(t, rule, substitution, var_intro, structural, prefix) for t in term.terms], ())
+            return cons(term.connector, *[logic(t, rule, substitution, var_intro, structural, prefix) for t in term.terms])
 
         terms = list(term.terms)
         multi = []
@@ -168,7 +168,7 @@ def logic(term: Term, rule=False, substitution=False, var_intro=False, structura
             multi.append(term.connector)
         multi.extend(logic(t, rule, substitution, var_intro, structural, prefix) for t in terms)
         
-        return cons(term.connector, *multi, ())
+        return cons(term.connector, *multi)
 
 #################
 # LOGIC TO TERM #
@@ -207,30 +207,34 @@ def term(logic, root=True):
             sub = car(cdr(logic))
             cop = car(logic)
             pre = cdr(cdr(logic))
+            if type(term(sub, False)) is cons or type(term(pre, False)) is cons:
+                return logic
             return Statement(term(sub, False), cop, term(pre, False))
         if type(car(logic)) is Connector:
             con = car(logic)
             t = cdr(logic)
-            is_list = (type(t) is cons or tuple) \
+            is_list = type(t) is (cons or tuple) \
                 and not (type(car(t)) is Copula or type(car(t)) is Connector)
-            terms = to_list(cdr(logic)) if is_list else [term(t, False)]
+            terms = to_list(cdr(logic), con) if is_list else [term(t, False)]
             return Compound(con, *terms)
-        else:
-            return term(car(logic))
+        # else:
+        #     return term(car(logic))
     return logic # cons
 
-def to_list(pair) -> list:
+def to_list(pair, con) -> list:
     l = [term(car(pair), False)]
     if type(cdr(pair)) is list and cdr(pair) == [] \
         or type(cdr(pair)) is tuple and cdr(pair) == ():
         () # empty TODO: there's gotta be a better way to check
     elif type(cdr(pair)) is cons or type(cdr(pair)) is tuple:
-        if len(cdr(pair)) == 1:
-            l.append(term(car(cdr(pair))))
-            return l
+        # if len(cdr(pair)) == 1:
+        #     l.append(term(car(cdr(pair))))
+        #     return l
         t = term(cdr(pair), False)
         if type(t) is cons or type(t) is tuple:
-            l.extend(to_list(t)) # recurse
+            l.extend(to_list(t, con)) # recurse
+        # elif type(t) is Compound and t.connector == con:
+        #     l.extend(t.terms)
         else:
             l.append(t)
     else:

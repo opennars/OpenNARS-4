@@ -22,11 +22,12 @@ from pynars import Global
 from time import time
 from pynars.NAL.Functions.Tools import project_truth, project
 from ..GlobalEval import GlobalEval
-
+from ..InferenceEngine.KanrenEngine import util
 
 class Reasoner:
     # avg_inference = 0
     # num_runs = 0
+    all_theorems = Bag(100, 100, take_in_order=False)
 
     def __init__(self, n_memory, capacity, config='./config.json', nal_rules={1, 2, 3, 4, 5, 6, 7, 8, 9}) -> None:
         # print('''Init...''')
@@ -36,10 +37,15 @@ class Reasoner:
 
         self.inference = KanrenEngine()
         
+        # a = util.parse('(*,a,b,(*,c,d),e,(*,f,g)).')
+        # b = util.logic(a.term)
+
+        # c = util.term(b)
+
         for theorem in self.inference.theorems:
             priority = random.randint(0,9) * 0.01
             item = Concept.TheoremItem(theorem, Budget(0.5 + priority, 0.8, 0.5))
-            Concept.all_theorems.put(item)
+            self.all_theorems.put(item)
 
         # self.inference = GeneralEngine(add_rules=nal_rules)
         self.variable_inference = VariableEngine(add_rules=nal_rules)
@@ -349,8 +355,8 @@ class Reasoner:
 
             # t0 = time()
             theorems = []
-            for _ in range(5):
-                theorem = concept.theorems.take(remove=True)
+            for _ in range(min(5, len(self.all_theorems))):
+                theorem = self.all_theorems.take(remove=True)
                 theorems.append(theorem)
             
             for theorem in theorems:
@@ -361,13 +367,13 @@ class Reasoner:
                 # print("")
                 if not cached:
                     if res:
-                        new_priority = theorem.budget.priority + 0.3
+                        new_priority = theorem.budget.priority + 0.1
                         theorem.budget.priority = min(0.99, new_priority)
                     else:
-                        new_priority = theorem.budget.priority - 0.3
+                        new_priority = theorem.budget.priority - 0.1
                         theorem.budget.priority = max(0.1, new_priority)
 
-                concept.theorems.put(theorem)
+                self.all_theorems.put(theorem)
 
                 results.extend(res)
             # t1 = time() - t0
