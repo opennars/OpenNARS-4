@@ -6,7 +6,7 @@ from cons import cons, car, cdr
 from itertools import combinations, product, chain, permutations
 
 from pynars import Narsese, Global
-from pynars.Narsese import Term, Copula, Connector, Statement, Compound, Variable, VarPrefix, Sentence, Punctuation, Stamp, place_holder
+from pynars.Narsese import Term, Copula, Connector, Statement, Compound, Variable, VarPrefix, Sentence, Punctuation, Stamp, place_holder, Tense
 
 from pynars.NAL.Functions import *
 from pynars.NARS.DataStructures import Concept, Task, TaskLink, TermLink, Judgement, Question
@@ -145,7 +145,7 @@ def logic(term: Term, rule=False, substitution=False, var_intro=False, structura
             vars.add(var(name))
         return var(name) if rule else term
     if term.is_statement:
-        return cons(term.copula, *[logic(t, rule, substitution, var_intro, structural, prefix) for t in term.terms])
+        return cons(term.copula.atemporal, *[logic(t, rule, substitution, var_intro, structural, prefix) for t in term.terms])
     if term.is_compound:
         # when used in variable introduction, treat single component compounds as atoms
         if rule and var_intro and len(term.terms) == 1 \
@@ -258,7 +258,6 @@ def variable_elimination(t1: Term, t2: Term) -> list:
              *chain(*map(lambda t: t.terms if len(t.terms) > 1 else [], t2.terms))]
 
     for pair in permutations(set(terms), 2):
-        
         unified.append(unify(logic(pair[0]), logic(pair[1], True, True)))
 
     unified = list(filter(None, unified))

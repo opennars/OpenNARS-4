@@ -77,7 +77,25 @@ class KanrenEngine:
 
         l1 = logic(t1t)
         l2 = logic(t2t)
+
+        # temporal = t1.tense is not Tense.Eternal and t2.tense is not Tense.Eternal
+        # print(temporal)
         for rule in self.rules_syllogistic:
+        
+            # if temporal:
+            #     c = term(rule[0][2])
+            #     if type(c) is Statement \
+            #         and (c.copula == Copula.Implication):
+
+            #         (p1, p2, _), (r, constraints) = rule[0], rule[1]
+
+            #         if t1.stamp.t_occurrence < t2.stamp.t_occurrence:
+            #             c.copula = Copula.RetrospectiveImplication
+            #         else:
+            #             c.copula = Copula.PredictiveImplication
+                    
+            #         rule = ((p1, p2, logic(c, True)), (r, constraints))
+                    
             res = self.apply(rule, l1, l2)
             if res is not None:
                 r, _ = rule[1]
