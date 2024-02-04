@@ -246,15 +246,30 @@ def to_list(pair, con) -> list:
 ###############
 
 def variable_elimination(t1: Term, t2: Term) -> list:
-    unified = filter(None, (unify(logic(t), logic(t2, True, True)) for t in t1.terms))
+    unified = list(filter(None, (unify(logic(t1), logic(t, True, True)) for t in t2.terms))) #if type(t) is not Variable)))
+    unified.extend(list(filter(None, (unify(logic(t1), logic(_t, True, True)) for t in t2.terms for _t in t.terms)))) #if type(t) is not Variable)))
+    # unified.extend(list(filter(None, (unify(logic(_t), logic(t2, True, True)) for t in t1.terms for _t in t.terms \
+    #                                   if type(t) is not Variable and type(_t) is not Variable))))
+    # print('')
+    # print(t1)
+    # print(t2)
+    # print('')
+    # print(list(unified))
+
     substitution = []
     for u in unified:
-        d = {k: v for k, v in u.items() if type(term(k)) is Variable}
-        if len(d):
-            substitution.append(d)
+        # print(u)
+        if len(u) > 1 and all(type(term(k)) is Variable \
+               or term(k).word == term(v).word \
+               for k, v in u.items()):
+        # d = {k: v for k, v in u.items() if type(term(k)) is Variable}
+        # if len(d):
+            substitution.append(u)
     result = []
+    # print('>>', substitution)
+    # print('')
     for s in substitution:
-        reified = reify(logic(t1), s)
+        reified = reify(logic(t2, True, True), s)
         result.append(term(reified))
 
     return result

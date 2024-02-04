@@ -533,9 +533,8 @@ class TEST_NAL6(unittest.TestCase):
             '<{lock1} --> lock>. %1.00;0.90%',
             100
         )
-
         self.assertTrue(
-            output_contains(tasks_derived, '<<$0 --> key> ==> <{lock1} --> (/,open,$0,_)>>. %1.00;0.43%')
+            output_contains(tasks_derived, '<<$0 --> key> ==> <{lock1} --> (/,open,$0,_)>>. %1.00;0.90%')
         )
 
         pass
@@ -563,7 +562,7 @@ class TEST_NAL6(unittest.TestCase):
         )
 
         self.assertTrue(
-            output_contains(tasks_derived, '(&&,<#0 --> key>,<{lock1} --> (/,open,#0,_)>). %1.00;0.43%')
+            output_contains(tasks_derived, '(&&,<#0 --> key>,<{lock1} --> (/,open,#0,_)>). %1.00;0.90%')
         )
         pass
 

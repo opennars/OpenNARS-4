@@ -63,12 +63,17 @@ class KanrenEngine:
     def inference(self, t1: Sentence, t2: Sentence) -> list:
         results = []
 
-        t1e = variable_elimination(t1.term, t2.term)
-        t2e = variable_elimination(t2.term, t1.term)
+        t1e = variable_elimination(t2.term, t1.term)
+        t2e = variable_elimination(t1.term, t2.term)
 
         # TODO: what about other possibilities?
         t1t = t1e[0] if len(t1e) else t1.term
         t2t = t2e[0] if len(t2e) else t2.term
+
+        if t1t != t1.term:
+            results.append(((t1t, ''), t1.truth))
+        if t2t != t2.term:
+            results.append(((t2t, ''), t2.truth))
 
         l1 = logic(t1t)
         l2 = logic(t2t)
