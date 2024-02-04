@@ -19,7 +19,6 @@ from functools import cache
 from time import time
 import yaml
 from pathlib import Path
-from .util import *
 
 
 truth_functions = {

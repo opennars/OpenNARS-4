@@ -79,6 +79,13 @@ class Reasoner:
         self.sequence_buffer.reset()
         self.operations_buffer.reset()
 
+        # reset theorems priority
+        self.all_theorems.reset()
+        for theorem in self.inference.theorems:
+            priority = random.randint(0,9) * 0.01
+            item = Concept.TheoremItem(theorem, Budget(0.5 + priority, 0.8, 0.5))
+            self.all_theorems.put(item)
+
     def cycles(self, n_cycle: int):
         tasks_all_cycles = []
         for _ in range(n_cycle):

@@ -191,7 +191,7 @@ class TEST_NAL2(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<robin <-> swan>. %1.00;0.90%', 
             '<gull <-> swan>. %1.00;0.90%', 
-            10
+            20
         )
         self.assertTrue(
             output_contains(tasks_derived, '<gull <-> robin>. %1.00;0.81%')
@@ -218,7 +218,7 @@ class TEST_NAL2(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<swan --> bird>. %1.00;0.90%', 
             '<bird --> swan>. %0.10;0.90%', 
-            10
+            20
         )
         self.assertTrue(
             output_contains(tasks_derived, '<bird <-> swan>. %0.10;0.081%')
@@ -328,7 +328,7 @@ class TEST_NAL2(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<swan --> bird>. %0.90;0.90%', 
             '<bird <-> swan>?', 
-            100
+            10
         )
         self.assertTrue(
             output_contains(tasks_derived, '<bird <-> swan>. %0.90;0.47%')
@@ -444,7 +444,7 @@ class TEST_NAL2(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<{Tweety} --> {Birdie}>. %1.00;0.90%',
             None,
-            10
+            20
         )
         self.assertTrue(
             output_contains(tasks_derived, '<{Birdie} <-> {Tweety}>. %1.00;0.90%')
@@ -467,7 +467,7 @@ class TEST_NAL2(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<[smart] --> [bright]>. %1.00;0.90%',
             None,
-            10
+            20
         )
         self.assertTrue(
             output_contains(tasks_derived, '<[bright] <-> [smart]>. %1.00;0.90%')
@@ -493,7 +493,7 @@ class TEST_NAL2(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<{Birdie} <-> {Tweety}>. %1.00;0.90%',
             None,
-            10
+            20
         )
         self.assertTrue(
             output_contains(tasks_derived, '<Birdie <-> Tweety>. %1.00;0.90%')
@@ -522,7 +522,7 @@ class TEST_NAL2(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<[bright] <-> [smart]>. %1.00;0.90%',
             None,
-            10
+            20
         )
         self.assertTrue(
             output_contains(tasks_derived, '<bright <-> smart>. %1.00;0.90%')

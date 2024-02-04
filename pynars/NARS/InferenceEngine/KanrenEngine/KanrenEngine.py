@@ -206,7 +206,6 @@ class KanrenEngine:
 
 
 
-
 ### EXAMPLES ###
 
 # engine = KanrenEngine()
