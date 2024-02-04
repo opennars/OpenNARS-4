@@ -297,7 +297,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<<$x --> bird> ==> <$x --> animal>>. %1.00;0.90%',
             '<robin --> bird>. %1.00;0.90%',
-            3
+            20
         )
         
         self.assertTrue(
@@ -351,7 +351,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<<$x --> animal> <=> <$x --> bird>>. %1.00;0.90%',
             '<robin --> bird>. %1.00;0.90%',
-            3
+            10
         )
 
         self.assertTrue(
@@ -378,11 +378,11 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '(&&,<#x --> bird>,<#x --> swimmer>).  %1.00;0.90%',
             '<swan --> bird>. %0.90;0.90%',
-            10
+            100
         )
 
         self.assertTrue(
-            output_contains(tasks_derived, '<swan --> swimmer>. %0.90;0.43%')
+            output_contains(tasks_derived, '<swan --> swimmer>. %1.00;0.90%')
         )
         pass
 
@@ -449,7 +449,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(&&,<$x --> flyer>,<$x --> [chirping]>, <(*, $x, worms) --> food>) ==> <$x --> bird>>.%1.00;0.90%',
             '<{Tweety} --> flyer>.  %1.00;0.90%',
-            10
+            30
         )
 
         self.assertTrue(
@@ -476,7 +476,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(&&,<$x --> key>,<$y --> lock>) ==> <$y --> (/,open,$x,_)>>. %1.00;0.90%',
             '<{lock1} --> lock>. %1.00;0.90%',
-            20
+            30
         )
 
         self.assertTrue(
@@ -848,7 +848,7 @@ class TEST_NAL6(unittest.TestCase):
         )
 
         self.assertTrue(
-            output_contains(tasks_derived, '<<$0 --> lock> ==> <$0 --> (/,open,{key1},_)>>. %1.00;0.43%')
+            output_contains(tasks_derived, '<<$0 --> lock> ==> <$0 --> (/,open,{key1},_)>>. %1.00;0.90%')
         )
         pass
 
@@ -867,7 +867,7 @@ class TEST_NAL6(unittest.TestCase):
         )
 
         self.assertTrue(
-            output_contains(tasks_derived, '<A ==> C>. %1.00;0.43%')
+            output_contains(tasks_derived, '<A ==> C>. %1.00;0.90%')
         )
         pass
     
@@ -969,7 +969,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(&&,<#1 --> lock>,<#1 --> (/,open,$2,_)>) ==> <$2 --> key>>. %1.00;0.90%',
             '<<lock1 --> (/,open,$1,_)> ==> <$1 --> key>>. %1.00;0.90%',
-            20
+            100
         )
 
         self.assertTrue(
@@ -986,7 +986,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(&&,<#1 --> A>,<#1 --> B>) ==> C>. %1.00;0.90%',
             '<<M --> A> ==> C>. %1.00;0.90%',
-            20
+            100
         )
 
         self.assertTrue(

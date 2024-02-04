@@ -467,7 +467,7 @@ class Reasoner:
 
             # t0 = time()
 
-            results = self.inference.inference(task.sentence, belief.sentence)
+            results, cached = self.inference.inference(task.sentence, belief.sentence)
 
             # t1 = time() - t0
 

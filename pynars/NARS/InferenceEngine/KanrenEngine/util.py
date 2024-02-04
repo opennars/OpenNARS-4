@@ -3,7 +3,7 @@ from kanren.constraints import neq, ConstrainedVar
 from unification import unify, reify
 from cons import cons, car, cdr
 
-from itertools import combinations
+from itertools import combinations, product, chain, permutations
 
 from pynars import Narsese, Global
 from pynars.Narsese import Term, Copula, Connector, Statement, Compound, Variable, VarPrefix, Sentence, Punctuation, Stamp, place_holder
@@ -245,10 +245,25 @@ def to_list(pair, con) -> list:
 ###############
 
 def variable_elimination(t1: Term, t2: Term) -> list:
-    unified = list(filter(None, (unify(logic(t1), logic(t, True, True)) for t in t2.terms))) #if type(t) is not Variable)))
-    unified.extend(list(filter(None, (unify(logic(t1), logic(_t, True, True)) for t in t2.terms for _t in t.terms)))) #if type(t) is not Variable)))
+    # unified = list(filter(None, (unify(logic(t1), logic(t, True, True)) for t in t2.terms))) #if type(t) is not Variable)))
+    # unified.extend(list(filter(None, (unify(logic(t1), logic(_t, True, True)) for t in t2.terms for _t in t.terms)))) #if type(t) is not Variable)))
     # unified.extend(list(filter(None, (unify(logic(_t), logic(t2, True, True)) for t in t1.terms for _t in t.terms \
     #                                   if type(t) is not Variable and type(_t) is not Variable))))
+
+    unified = []
+
+    terms = [t1, t2, \
+             *t1.terms, *t2.terms, \
+             *chain(*map(lambda t: t.terms if len(t.terms) > 1 else [], t1.terms)), \
+             *chain(*map(lambda t: t.terms if len(t.terms) > 1 else [], t2.terms))]
+
+    for pair in permutations(set(terms), 2):
+        
+        unified.append(unify(logic(pair[0]), logic(pair[1], True, True)))
+
+    unified = list(filter(None, unified))
+
+    # for r in product()
     # print('')
     # print(t1)
     # print(t2)

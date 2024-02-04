@@ -59,7 +59,7 @@ class KanrenEngine:
     #################################################
 
     # INFERENCE (SYLLOGISTIC)
-
+    @cache_notify
     def inference(self, t1: Sentence, t2: Sentence) -> list:
         results = []
 
