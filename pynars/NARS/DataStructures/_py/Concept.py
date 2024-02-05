@@ -85,10 +85,10 @@ class Concept(Item):
             
             # return projectedBelief;     // return the first satisfying belief
             raise
-        # if self.belief_table.empty:
-        #     for term_link in self.term_links:
-        #         if not term_link.target.belief_table.empty:
-        #             return term_link.target.belief_table.first()
+        if self.belief_table.empty:
+            for term_link in self.term_links:
+                if not term_link.target.belief_table.empty:
+                    return term_link.target.belief_table.first()
         return self.belief_table.first()
 
     # def match_candidate(self, sentence: Sentence) -> Task | Belief:

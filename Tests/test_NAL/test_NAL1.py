@@ -66,7 +66,7 @@ class TEST_NAL1(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<bird --> animal>. %1.00;0.90%', 
             '<robin --> bird>. %1.00;0.90%', 
-            10
+            20
         )
         self.assertTrue(
             output_contains(tasks_derived, '<robin --> animal>. %1.00;0.81%')
@@ -96,7 +96,7 @@ class TEST_NAL1(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<sport --> competition>. %1.00;0.90%', 
             '<chess --> competition>. %0.90;0.90%', 
-            5
+            10
         )
         self.assertTrue(
             output_contains(tasks_derived, '<sport --> chess>. %1.00;0.42%')
@@ -159,7 +159,7 @@ class TEST_NAL1(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<robin --> bird>. %1.00;0.90%', 
             '<bird --> animal>. %1.00;0.90%', 
-            100
+            20
         )
         self.assertTrue(
             output_contains(tasks_derived, '<animal --> robin>. %1.00;0.45%')
