@@ -12,6 +12,7 @@ from pynars.Narsese._py.Budget import Budget
 from pynars.Narsese._py.Sentence import Judgement, Stamp
 from pynars.Narsese._py.Statement import Statement
 from pynars.Narsese._py.Task import Belief
+from pynars.Narsese import Copula
 from ..DataStructures import Bag, Memory, NarseseChannel, Buffer, Task, Concept
 from ..InferenceEngine import GeneralEngine, TemporalEngine, VariableEngine, KanrenEngine
 from pynars import Config
@@ -488,7 +489,31 @@ class Reasoner:
 
                 # TODO: calculate budget
                 budget = Budget_forward(truth, task_link.budget, term_link_valid.budget)
-                sentence_derived = Judgement(term[0], stamp, truth)
+
+                # Add temporal dimension
+
+                conclusion = term[0]
+
+                t1 = task.sentence.term
+                t2 = belief.sentence.term
+
+                if type(conclusion) is Statement \
+                    and (conclusion.copula == Copula.Equivalence \
+                    or conclusion.copula == Copula.Implication):
+
+                    if type(t1) is Statement \
+                        and type(t2) is Statement:
+                        
+                        if t1.copula.is_concurrent and t2.copula.is_concurrent:
+                            conclusion.copula = conclusion.copula.concurent
+                        if t1.copula.is_predictive and t2.copula.is_predictive:
+                            conclusion.copula = conclusion.copula.predictive
+                        if t1.copula.is_retrospective and t2.copula.is_retrospective:
+                            conclusion.copula = conclusion.copula.retrospective
+
+                        # TODO: etc...
+
+                sentence_derived = Judgement(conclusion, stamp, truth)
                     
                 task_derived = Task(sentence_derived, budget)
                 # normalize the variable indices

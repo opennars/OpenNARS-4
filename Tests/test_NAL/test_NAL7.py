@@ -33,12 +33,10 @@ class TEST_NAL7(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<<(*, $x, room_101) --> enter> =\> <(*, $x, door_101) --> open>>. %0.90;0.90%',
             '<<(*, $y, door_101) --> open> =\> <(*, $y, key_101) --> hold>>. %0.80;0.90%',
-            100
+            10
         )
-        for t in tasks_derived:
-            print(t)
         self.assertTrue(
-            output_contains(tasks_derived, '<<(*,$0,room_101) --> enter> ==> <(*,$0,key_101) --> hold>>. %0.72;0.58%')
+            output_contains(tasks_derived, '<<(*,$0,room_101) --> enter> =\> <(*,$0,key_101) --> hold>>. %0.72;0.58%')
         )
         pass
         

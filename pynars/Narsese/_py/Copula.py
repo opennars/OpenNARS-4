@@ -45,7 +45,46 @@ class Copula(IdEnum):
             or self is Copula.ConcurrentEquivalence:
             return Copula.ConcurrentEquivalence
         return self
+    
+    @property
+    def is_predictive(self):
+        return self == Copula.PredictiveEquivalence or self == Copula.PredictiveImplication
+    
+    @property
+    def is_concurrent(self):
+        return self == Copula.ConcurrentEquivalence or self == Copula.ConcurrentImplication
+    
+    @property
+    def is_retrospective(self):
+        return self == Copula.RetrospectiveImplication
+    
+    @property
+    def concurent(self):
+        if self == Copula.Implication:
+            return Copula.ConcurrentImplication
+        if self == Copula.Equivalence:
+            return Copula.ConcurrentEquivalence
+        else:
+            return self
+    
+    @property
+    def predictive(self):
+        if self == Copula.Implication:
+            return Copula.PredictiveImplication
+        if self == Copula.Equivalence:
+            return Copula.PredictiveEquivalence
+        else:
+            return self
 
+    @property
+    def retrospective(self):
+        if self == Copula.Implication:
+            return Copula.RetrospectiveImplication
+        # if self == Copula.Equivalence:
+        #     return Copula.ConcurrentEquivalence
+        else:
+            return self
+        
     def symmetrize(self):
         if self is Copula.Inheritance:
             return Copula.Similarity

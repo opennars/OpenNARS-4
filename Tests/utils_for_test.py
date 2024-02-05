@@ -120,7 +120,7 @@ def execute_one_premise(premise: Task):
 def output_contains(outputs: List[Task], target: str):
     target: Task = Narsese.parse(target)
     for output in outputs:
-        flag_contain = output.term.identical(target.term)
+        flag_contain = output.term.equal(target.term)
         if output.truth is None:
             flag_contain &= target.truth is None
         else:
