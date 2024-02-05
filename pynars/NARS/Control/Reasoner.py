@@ -498,20 +498,63 @@ class Reasoner:
                 t2 = belief.sentence.term
 
                 if type(conclusion) is Statement \
-                    and (conclusion.copula == Copula.Equivalence \
-                    or conclusion.copula == Copula.Implication):
+                and (conclusion.copula == Copula.Equivalence \
+                or conclusion.copula == Copula.Implication):
 
                     if type(t1) is Statement \
-                        and type(t2) is Statement:
+                    and type(t2) is Statement:
                         
                         if t1.copula.is_concurrent and t2.copula.is_concurrent:
+                            # both concurrent
                             conclusion.copula = conclusion.copula.concurent
+
                         if t1.copula.is_predictive and t2.copula.is_predictive:
+                            # both predictive
                             conclusion.copula = conclusion.copula.predictive
+
                         if t1.copula.is_retrospective and t2.copula.is_retrospective:
+                            # both retrospective
                             conclusion.copula = conclusion.copula.retrospective
 
-                        # TODO: etc...
+                        if (t1.copula.is_concurrent and t2.copula.is_predictive) \
+                        or (t2.copula.is_concurrent and t1.copula.is_predictive):
+                            # one concurrent, one predictive
+                            conclusion.copula = conclusion.copula.predictive
+                        
+                        if (t1.copula.is_concurrent and t2.copula.is_retrospective) \
+                        or (t2.copula.is_concurrent and t1.copula.is_retrospective):
+                            # one concurrent, one retrospective
+                            conclusion.copula = conclusion.copula.retrospective
+
+                        terms = [] # more complex combinations require extra work
+
+                        if t1.copula.is_predictive and t2.copula.is_retrospective:
+                            terms = [t1.subject, t1.predicate]
+                            if t2.subject in terms:
+                                idx = terms.index(t2.subject)
+                                terms.insert(idx, t2.predicate)
+                            if t2.predicate in terms:
+                                idx = terms.index(t2.predicate)
+                                terms.insert(idx + 1, t2.subject)
+                        elif t2.copula.is_predictive and t1.copula.is_retrospective:
+                            terms = [t2.subject, t2.predicate]
+                            if t1.subject in terms:
+                                idx = terms.index(t1.subject)
+                                terms.insert(idx, t1.predicate)
+                            if t1.predicate in terms:
+                                idx = terms.index(t1.predicate)
+                                terms.insert(idx + 1, t1.subject)
+
+                        if conclusion.predicate in terms and conclusion.subject in terms:
+                            cpi = terms.index(conclusion.predicate)
+                            csi = terms.index(conclusion.subject)
+                            if cpi > csi:
+                                # predicate after subject
+                                conclusion.copula = conclusion.copula.predictive
+                            else:
+                                # predicate before subject
+                                conclusion.copula = conclusion.copula.retrospective
+
 
                 sentence_derived = Judgement(conclusion, stamp, truth)
                     

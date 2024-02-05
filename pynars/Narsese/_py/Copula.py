@@ -38,12 +38,12 @@ class Copula(IdEnum):
     @property
     def atemporal(self):
         if self is Copula.PredictiveImplication \
-            or self is Copula.ConcurrentImplication \
-            or self is Copula.RetrospectiveImplication:
+        or self is Copula.ConcurrentImplication \
+        or self is Copula.RetrospectiveImplication:
             return Copula.Implication
         if self is Copula.PredictiveEquivalence \
-            or self is Copula.ConcurrentEquivalence:
-            return Copula.ConcurrentEquivalence
+        or self is Copula.ConcurrentEquivalence:
+            return Copula.Equivalence
         return self
     
     @property

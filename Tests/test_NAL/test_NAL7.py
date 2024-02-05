@@ -58,7 +58,7 @@ class TEST_NAL7(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<<(*, $x, room_101) --> enter> =\> <(*, $x, door_101) --> open>>. %0.90;0.90%',
             '<<(*, $y, door_101) --> open> =\> <(*, $y, key_101) --> hold>>. %0.80;0.90%',
-            100
+            10
         )
         self.assertTrue(
             output_contains(tasks_derived, '<<(*,$0,key_101) --> hold> =/> <(*,$0,room_101) --> enter>>. %1.00;0.37%')
@@ -75,7 +75,7 @@ class TEST_NAL7(unittest.TestCase):
         'Someone open door_101 after he hold key_101
         <<(*, $y, door_101) --> open> =\> <(*, $y, key_101) --> hold>>. %0.80;0.90%
 
-        100
+        10
 
         'If someone hold key_101, he will enter room_101
         ''outputMustContain('<<(*,$1,key_101) --> hold> =/> <(*,$1,room_101) --> enter>>. %0.90;0.39%')
@@ -116,7 +116,7 @@ class TEST_NAL7(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<<(*, $y, door_101) --> open> =\> <(*, $y, key_101) --> hold>>. %0.80;0.90%',
             '<<(*, $x, door_101) --> open> =/> <(*, $x, room_101) --> enter>>. %0.90;0.90%',
-            100
+            10
         )
 
         self.assertTrue(
@@ -146,7 +146,7 @@ class TEST_NAL7(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<<(*, $x, door_101) --> open> =/> <(*, $x, room_101) --> enter>>. %0.90;0.90%',
             '<<(*, $y, door_101) --> open> =\> <(*, $y, key_101) --> hold>>. %0.80;0.90%',
-            100
+            10
         )
 
         self.assertTrue(
@@ -172,7 +172,7 @@ class TEST_NAL7(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<<(*, $y, door_101) --> open> =\> <(*, $y, key_101) --> hold>>. %0.80;0.90%',
             '<<(*, $x, door_101) --> open> =/> <(*, $x, room_101) --> enter>>. %0.90;0.90%',
-            100
+            10
         )
 
         self.assertTrue(
@@ -198,7 +198,7 @@ class TEST_NAL7(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<<(*, $x, room_101) --> enter> =/> <(*, $x, door_101) --> open>>. %0.90;0.90%',
             '<<(*, $y, key_101) --> hold> =\> <(*, $y, door_101) --> open>>. %0.80;0.90%',
-            100
+            10
         )
 
         self.assertTrue(
@@ -224,7 +224,7 @@ class TEST_NAL7(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<<(*, $y, key_101) --> hold> =\> <(*, $y, door_101) --> open>>. %0.80;0.90%',
             '<<(*, $x, room_101) --> enter> =/> <(*, $x, door_101) --> open>>. %0.90;0.90%',
-            100
+            10
         )
 
         self.assertTrue(
@@ -248,7 +248,7 @@ class TEST_NAL7(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<A =/> B>. %0.80;0.90%',
             '<C =\> B>. %0.90;0.90%',
-            100
+            10
         )
 
         self.assertTrue(
@@ -276,11 +276,10 @@ class TEST_NAL7(unittest.TestCase):
         ''outputMustContain('<(*,John,room_101) --> enter>. :!5: %1.00;0.81%')
         '''
         tasks_derived = process_two_premises(
-            '<(*,John,key_101) --> hold>. :|: %1.00;0.90%',
             '<<(*,John,key_101) --> hold> =/> <(*,John,room_101) --> enter>>. %1.00;0.90%',
+            '<(*,John,key_101) --> hold>. :|: %1.00;0.90%',
             20
         )
-
         self.assertTrue(
             output_contains(tasks_derived, '<(*,John,room_101) --> enter>. :!5: %1.00;0.81%')
         )
@@ -472,9 +471,8 @@ class TEST_NAL7(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<<(*, $x, door_101) --> open> =/> <(*, $x, room_101) --> enter>>. %0.95;0.90%',
             '<<(*, $x, room_101) --> enter> <|> <(*, $x, corridor_100) --> leave>>. %1.00;0.90%',
-            40
+            10
         )
-
         self.assertTrue(
             output_contains(tasks_derived, '<<(*,$0,door_101) --> open> =/> <(*,$0,corridor_100) --> leave>>. %0.95;0.81%')
         )
@@ -501,9 +499,8 @@ class TEST_NAL7(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(*, John, key_101) --> hold>. :\: %1.00;0.90%',
             '<(&/,<(*, John, key_101) --> hold>,+100) =/> <(*, John, room_101) --> enter>>. %1.00;0.90%',
-            200
+            20
         )
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
         self.assertTrue(
             output_contains(tasks_derived, '<(*,John,room_101) --> enter>. :!100: %1.00;0.81%')
         )
