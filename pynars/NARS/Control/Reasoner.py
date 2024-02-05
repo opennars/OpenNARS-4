@@ -506,25 +506,25 @@ class Reasoner:
                         
                         if t1.copula.is_concurrent and t2.copula.is_concurrent:
                             # both concurrent
-                            conclusion.copula = conclusion.copula.concurent
+                            conclusion = conclusion.concurrent()
 
                         if t1.copula.is_predictive and t2.copula.is_predictive:
                             # both predictive
-                            conclusion.copula = conclusion.copula.predictive
+                            conclusion = conclusion.predictive()
 
                         if t1.copula.is_retrospective and t2.copula.is_retrospective:
                             # both retrospective
-                            conclusion.copula = conclusion.copula.retrospective
+                            conclusion = conclusion.retrospective()
 
                         if (t1.copula.is_concurrent and t2.copula.is_predictive) \
                         or (t2.copula.is_concurrent and t1.copula.is_predictive):
                             # one concurrent, one predictive
-                            conclusion.copula = conclusion.copula.predictive
+                            conclusion = conclusion.predictive()
                         
                         if (t1.copula.is_concurrent and t2.copula.is_retrospective) \
                         or (t2.copula.is_concurrent and t1.copula.is_retrospective):
                             # one concurrent, one retrospective
-                            conclusion.copula = conclusion.copula.retrospective
+                            conclusion = conclusion.retrospective()
 
                         terms = [] # more complex combinations require extra work
 
@@ -550,10 +550,10 @@ class Reasoner:
                             csi = terms.index(conclusion.subject)
                             if cpi > csi:
                                 # predicate after subject
-                                conclusion.copula = conclusion.copula.predictive
+                                conclusion = conclusion.predictive()
                             else:
                                 # predicate before subject
-                                conclusion.copula = conclusion.copula.retrospective
+                                conclusion = conclusion.retrospective()
 
 
                 sentence_derived = Judgement(conclusion, stamp, truth)

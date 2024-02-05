@@ -143,6 +143,15 @@ class Statement(Term):
     def ConcurrentEquivalence(cls, subject: Term, predicate: Term, is_input: bool=False, is_subterm=True):
         return cls(subject, Copula.ConcurrentEquivalence, predicate, is_input, is_subterm)
 
+    def concurrent(self):
+        return Statement(self.subject, self.copula.concurent, self.predicate)
+
+    def predictive(self):
+        return Statement(self.subject, self.copula.predictive, self.predicate)
+
+    def retrospective(self):
+        return Statement(self.subject, self.copula.retrospective, self.predicate)
+
     def clone(self):
         if not self.has_var: return self
         # now, not self.has_var
