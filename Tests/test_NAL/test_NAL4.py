@@ -46,8 +46,7 @@ class TEST_NAL4(unittest.TestCase):
             None,
             100
         )
-        for t in tasks_derived:
-            print(t)
+
         self.assertTrue(
             output_contains(tasks_derived, '<acid --> (/,reaction,_,base)>. %1.00;0.90%')
         )
