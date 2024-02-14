@@ -144,13 +144,13 @@ class Statement(Term):
         return cls(subject, Copula.ConcurrentEquivalence, predicate, is_input, is_subterm)
 
     def concurrent(self):
-        return Statement(self.subject, self.copula.concurent, self.predicate)
+        return Statement(self.subject, self.copula.get_concurent, self.predicate)
 
     def predictive(self):
-        return Statement(self.subject, self.copula.predictive, self.predicate)
+        return Statement(self.subject, self.copula.get_predictive, self.predicate)
 
     def retrospective(self):
-        return Statement(self.subject, self.copula.retrospective, self.predicate)
+        return Statement(self.subject, self.copula.get_retrospective, self.predicate)
 
     def clone(self):
         if not self.has_var: return self

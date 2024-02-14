@@ -36,7 +36,7 @@ class Copula(IdEnum):
         return self in (Copula.ConcurrentEquivalence, Copula.PredictiveEquivalence, Copula.ConcurrentImplication, Copula.PredictiveImplication, Copula.RetrospectiveImplication)
     
     @property
-    def atemporal(self):
+    def get_atemporal(self):
         if self is Copula.PredictiveImplication \
         or self is Copula.ConcurrentImplication \
         or self is Copula.RetrospectiveImplication:
@@ -59,7 +59,7 @@ class Copula(IdEnum):
         return self == Copula.RetrospectiveImplication
     
     @property
-    def concurent(self):
+    def get_concurent(self):
         if self == Copula.Implication:
             return Copula.ConcurrentImplication
         if self == Copula.Equivalence:
@@ -68,7 +68,7 @@ class Copula(IdEnum):
             return self
     
     @property
-    def predictive(self):
+    def get_predictive(self):
         if self == Copula.Implication:
             return Copula.PredictiveImplication
         if self == Copula.Equivalence:
@@ -77,7 +77,7 @@ class Copula(IdEnum):
             return self
 
     @property
-    def retrospective(self):
+    def get_retrospective(self):
         if self == Copula.Implication:
             return Copula.RetrospectiveImplication
         # if self == Copula.Equivalence:
