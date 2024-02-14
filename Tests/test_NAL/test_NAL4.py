@@ -301,6 +301,29 @@ class TEST_NAL4(unittest.TestCase):
         )
         pass
 
+    def test_other_stuff(self):
+        # tasks_derived = []
+        # # tasks_derived = process_two_premises(
+        # #     '<<(*, $a, $b) --> is> <=> <$a --> $b>>.',
+        # #     None
+        # # )
+        # tasks_derived.extend(process_two_premises(
+        #     '<(*,cat,animal)-->is>.',
+        #     '<cat-->animal>.'
+        # ))
+        # tasks_derived.extend(process_two_premises(
+        #     '<(*,dog,animal)-->is>.',
+        #     '<dog-->animal>?',
+        #     600
+        # ))
+        # # for t in tasks_derived: print(t)
+        # self.assertTrue(
+        #     output_contains(tasks_derived, '<dog --> animal>. %1.00;0.29%')
+        #     or
+        #     output_contains(tasks_derived, '<dog --> animal>. %1.00;0.40%')
+        # )
+        pass
+
 if __name__ == '__main__':
 
     test_classes_to_run = [

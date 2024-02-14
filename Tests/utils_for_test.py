@@ -17,8 +17,8 @@ from pynars.Config import Config, Enable
 nars = Reasoner(100, 100)
 engine: GeneralEngine = nars.inference
 
-NUM_CYCLES_MULTIPLIER = 4
-def process_two_premises(premise1: str, premise2: str, n_cycle: int) -> List[Task]:
+NUM_CYCLES_MULTIPLIER = 10
+def process_two_premises(premise1: str, premise2: str, n_cycle: int = 0) -> List[Task]:
     ''''''
     tasks_all_cycles = []
 

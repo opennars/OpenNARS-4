@@ -26,8 +26,9 @@ from ..GlobalEval import GlobalEval
 from ..InferenceEngine.KanrenEngine import util
 
 class Reasoner:
-    # avg_inference = 0
-    # num_runs = 0
+    avg_inference = 0
+    num_runs = 0
+    
     all_theorems = Bag(100, 100, take_in_order=False)
 
     def __init__(self, n_memory, capacity, config='./config.json', nal_rules={1, 2, 3, 4, 5, 6, 7, 8, 9}) -> None:
@@ -147,7 +148,7 @@ class Reasoner:
             # t0 = time()
             tasks_inference_derived = self.inference_step(concept)
             tasks_derived.extend(tasks_inference_derived)
-            # t1 = time() - t0
+            # t1 = time() - t0 + 1e-6 # add epsilon to avoid division by 0
             # self.avg_inference += (t1 - self.avg_inference) / self.num_runs
             # print("inference:", 1 // self.avg_inference, "per second", f"({1//t1})")
 
@@ -329,7 +330,10 @@ class Reasoner:
 
             results = []
 
-            results.extend(self.inference.inference_immediate(task.sentence))
+            res, cached = self.inference.inference_immediate(task.sentence)
+
+            if not cached:
+                results.extend(res)
 
             for term, truth in results:
                 # TODO: how to properly handle stamp for immediate rules?
@@ -363,7 +367,7 @@ class Reasoner:
 
             # t0 = time()
             theorems = []
-            for _ in range(min(5, len(self.all_theorems))):
+            for _ in range(min(1, len(self.all_theorems))):
                 theorem = self.all_theorems.take(remove=True)
                 theorems.append(theorem)
             
@@ -467,8 +471,13 @@ class Reasoner:
                     # beleif_eternalized = belief # TODO: should it be added into the `tasks_derived`?
 
             # t0 = time()
-
-            results, cached = self.inference.inference(task.sentence, belief.sentence)
+                    
+            results = []
+            
+            res, cached = self.inference.inference(task.sentence, belief.sentence)
+            
+            if not cached: 
+                results.extend(res)
 
             # t1 = time() - t0
 
@@ -478,7 +487,10 @@ class Reasoner:
 
             # print("avg:", 1 // self._inference_time_avg, "per second")
 
-            results.extend(self.inference.inference_compositional(task.sentence, belief.sentence))
+            res, cached = self.inference.inference_compositional(task.sentence, belief.sentence)
+
+            if not cached:
+                results.extend(res)
 
             # print(">>>", results)
 

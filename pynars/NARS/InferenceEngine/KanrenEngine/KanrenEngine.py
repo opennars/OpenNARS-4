@@ -61,6 +61,7 @@ class KanrenEngine:
     # INFERENCE (SYLLOGISTIC)
     @cache_notify
     def inference(self, t1: Sentence, t2: Sentence) -> list:
+        # print(f'Inference syllogistic\n{t1}\n{t2}')
         results = []
 
         t1e = variable_elimination(t2.term, t1.term)
@@ -142,8 +143,10 @@ class KanrenEngine:
     #############
     # IMMEDIATE #
     #############
-        
+    
+    @cache_notify
     def inference_immediate(self, t: Sentence):
+        # print(f'Inference immediate\n{t}')
         results = []
 
         l = logic(t.term)
@@ -165,6 +168,7 @@ class KanrenEngine:
 
     @cache_notify
     def inference_structural(self, t: Sentence, theorems = None):
+        # print(f'Inference structural\n{t}')
         results = []
 
         if not theorems:
@@ -191,7 +195,9 @@ class KanrenEngine:
     # COMPOSITIONAL #
     #################
 
+    @cache_notify
     def inference_compositional(self, t1: Sentence, t2: Sentence):
+        # print(f'Inference compositional\n{t1}\n{t2}')
         results = []
         
         common = set(t1.term.sub_terms).intersection(t2.term.sub_terms)
