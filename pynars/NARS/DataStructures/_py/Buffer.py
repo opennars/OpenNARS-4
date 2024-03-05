@@ -80,9 +80,7 @@ class EventBuffer:
         return results
 
     def put(self, event_task_to_insert: Task):
-        if not event_task_to_insert.is_event \
-            or event_task_to_insert.term.type != TermType.STATEMENT \
-            or event_task_to_insert.term.is_higher_order:
+        if not self.can_task_enter(event_task_to_insert):
             print("ERROR! Only events with first-order statements can enter the EventBuffer.")
             return
 
@@ -108,3 +106,8 @@ class EventBuffer:
         if len(self.buffer) > self.capacity:
             # if too many events, take out the oldest event
             self.buffer.pop(0)
+
+    def can_task_enter(self, task: Task):
+       return task.is_event \
+            and task.term.type == TermType.STATEMENT \
+            and not task.term.is_higher_order

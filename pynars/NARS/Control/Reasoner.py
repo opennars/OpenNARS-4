@@ -137,7 +137,7 @@ class Reasoner:
             task_in: Task = channel.take()
             if task_in is not None:
                 self.overall_experience.put(task_in)
-                if task_in.is_event:
+                if self.event_buffer.can_task_enter(task_in):
                     self.event_buffer.put(task_in)
                     # when there's a new event, run the temporal chaining
                     temporal_results = self.event_buffer.generate_temporal_sentences()
