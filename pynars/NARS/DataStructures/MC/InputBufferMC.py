@@ -330,9 +330,9 @@ class InputBufferMC(object):
             for i in range(self.present):
                 if self.slots[i].candidate:
                     # e.g., (E, +1) as the subject
-                    subject = Compound.SequentialEvents(scopula = Copula.PredictiveImplication  # =/>
-                    term = Statement(subject, copula, predicate)elf.slots[i].candidate.term, Interval(abs(self.present - i)))
-
+                    subject = Compound.SequentialEvents(self.slots[i].candidate.term, Interval(abs(self.present - i)))
+                    copula = Copula.PredictiveImplication  # =/>
+                    term = Statement(subject, copula, predicate)
                     # truth, using truth-induction function (TODO, may subject to change)
                     truth = Truth_induction(self.slots[i].candidate.truth,
                                             self.slots[self.present].candidate.truth)
