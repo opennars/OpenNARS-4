@@ -163,6 +163,10 @@ class Sentence:
     def is_external_event(self) -> bool: # TODO: ???
         return not self.is_eternal and self.stamp.is_external
 
+    @property
+    def is_higher_order(self) -> bool:
+        return self.term is Statement and self.term.is_higher_order
+
 
 class Judgement(Sentence):
     def __init__(self, term: Term, stamp: Stamp = None, truth: Truth = None) -> None:
