@@ -43,7 +43,7 @@ def revision(task: Task, belief: Task, budget_tasklink: Budget=None, budget_term
         raise "Invalid case."
     return task
 
-def solution_question(task: Task, belief: Belief, budget_tasklink: Budget=None, budget_termlink: Budget=None):
+def solution_question(task: Task, belief: Task, budget_tasklink: Budget=None, budget_termlink: Budget=None):
     question: Union[Question, Quest] = task.sentence
     answer: Union[Judgement, Goal] = belief.sentence
     answer_best =  question.best_answer

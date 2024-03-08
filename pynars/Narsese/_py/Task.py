@@ -1,10 +1,15 @@
 from copy import copy
 from typing import Type, Union
+
+from pynars import NAL
+
 from .Sentence import Sentence, Judgement, Goal, Quest, Question, Stamp
 from .Item import Item
 from .Budget import Budget
 from .Term import Term
 from .Truth import Truth
+
+
 
 class Task(Item):
     input_id = -1
@@ -34,6 +39,9 @@ class Task(Item):
                 return 0
         else:
             raise f'Invalid type! {type(self.sentence)}'
+
+    def reward_budget(self, reward: float):
+        self.budget.priority = NAL.Functions.Or(self.budget.priority, reward)
 
     def reduce_budget_by_achieving_level(self, belief_selected: Union[Type['Belief'], None]):
         truth = belief_selected.truth if belief_selected is not None else None

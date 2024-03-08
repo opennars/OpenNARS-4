@@ -187,12 +187,6 @@ class Link(Item):
 
         return indices
 
-    @classmethod
-    def update_budget(cls, budget: Budget, q: float, p_belief: float):
-        budget.priority = min(1.0, Or(budget.priority, Or(q, p_belief)))
-        budget.durability = min(1.0-Config.budget_epsilon, Or(budget.durability, q))
-
-
 
     @property
     def is_valid(self):
@@ -210,6 +204,11 @@ class TermLink(Link):
     def set_type(self, source_is_component=True, type: LinkType=None):
         Link.set_type(self, source_is_component, type)
         if not self.is_valid: self.type = None
+
+
+    def reward_budget(self, reward: float):
+        self.budget.quality = Or(self.budget.quality, reward)
+
 
     @property
     def is_valid(self):
@@ -240,12 +239,15 @@ class TaskLink(Link):
     def set_type(self, source_is_component=True, type: LinkType=None):
         Link.set_type(self, source_is_component, type, enable_transform=True)
         if not self.is_valid: self.type = None
+
+    def reward_budget(self, reward: float):
+        self.budget.priority = Or(self.budget.priority, reward)
     
     @property
     def is_valid(self) -> bool:
         return self.type in (
             LinkType.SELF, 
-            LinkType.COMPOUND, 
+            LinkType.COMPOUND,
             LinkType.COMPOUND_STATEMENT, 
             LinkType.COMPOUND_CONDITION, 
             LinkType.TRANSFORM, 
