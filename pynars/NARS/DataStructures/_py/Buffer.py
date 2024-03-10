@@ -61,6 +61,15 @@ class EventBuffer:
         self.buffer: List[Task] = []
         self.capacity: int = capacity
 
+    def __len__(self):
+        return len(self.buffer)
+
+    def get_oldest_event(self):
+        return self.buffer[0]
+
+    def get_newest_event(self):
+        return self.buffer[-1]
+
     def generate_temporal_sentences(self):
         results: List[Task] = []
         # first event A occurred, then event B occurred, then event C
@@ -81,14 +90,13 @@ class EventBuffer:
 
     def put(self, event_task_to_insert: Task):
         if not self.can_task_enter(event_task_to_insert):
-            print("ERROR! Only events with first-order statements can enter the EventBuffer.")
-            return
+            raise Exception("ERROR! Only events with first-order statements can enter the EventBuffer.")
 
         if len(self.buffer) == 0: # if nothing in the buffer, just insert it
             self.buffer.append(event_task_to_insert)
             return
 
-        newest_event = self.buffer[-1]
+        newest_event = self.get_newest_event()
 
         if event_task_to_insert.stamp.t_occurrence >= newest_event.stamp.t_occurrence:
             # if its newer than even the newest event, just insert it at the end
