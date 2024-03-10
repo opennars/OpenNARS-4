@@ -15,7 +15,7 @@ class TEST_EventBuffer(unittest.TestCase):
 
     def test_3_firstorder_event_temporal_chaining(self):
         """
-            Add 3 first order events to the buffer (A-->B,B,C), each with different timestamps (A=1, B=2, C=3)
+            Add 3 first order events to the buffer (A,B,C), each with different timestamps (A=1, B=2, C=3)
 
             Ensure that the compound events are all created:
                 (A &/ B), (B &/ C), (A &/ C)
