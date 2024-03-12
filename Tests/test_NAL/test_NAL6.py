@@ -228,7 +228,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(&&,<$x --> flyer>,<$x --> [chirping]>, <(*, $x, worms) --> food>) ==> <$x --> bird>>.  %1.00;0.90%',
             '<(&&,<$x --> [chirping]>,<$x --> [with_wings]>) ==> <$x --> bird>>. %1.00;0.90%',
-            20
+            5
         )
         
         self.assertTrue(
@@ -969,7 +969,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(&&,<#1 --> lock>,<#1 --> (/,open,$2,_)>) ==> <$2 --> key>>. %1.00;0.90%',
             '<<lock1 --> (/,open,$1,_)> ==> <$1 --> key>>. %1.00;0.90%',
-            100
+            10
         )
 
         self.assertTrue(

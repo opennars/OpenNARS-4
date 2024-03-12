@@ -129,7 +129,7 @@ class TEST_NAL1(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<swan --> swimmer>. %0.90;0.90%', 
             '<swan --> bird>.  %1.00;0.90%', 
-            10
+            20
         )
         self.assertTrue(
             output_contains(tasks_derived, '<bird --> swimmer>. %0.90;0.45%')

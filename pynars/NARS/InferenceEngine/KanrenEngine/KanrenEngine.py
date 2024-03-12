@@ -60,12 +60,11 @@ class KanrenEngine:
 
     # INFERENCE (SYLLOGISTIC)
     @cache_notify
-    def inference(self, t1: Sentence, t2: Sentence) -> list:
+    def inference(self, t1: Sentence, t2: Sentence, common: Term) -> list:
         # print(f'Inference syllogistic\n{t1}\n{t2}')
         results = []
 
-        t1e = variable_elimination(t2.term, t1.term)
-        t2e = variable_elimination(t1.term, t2.term)
+        t1e, t2e = variable_elimination(t1.term, t2.term, common)
 
         # TODO: what about other possibilities?
         t1t = t1e[0] if len(t1e) else t1.term
@@ -81,6 +80,7 @@ class KanrenEngine:
 
         # temporal = t1.tense is not Tense.Eternal and t2.tense is not Tense.Eternal
         # print(temporal)
+        # t0 = time()
         for rule in self.rules_syllogistic:
         
             # if temporal:
@@ -106,6 +106,31 @@ class KanrenEngine:
                 truth = truth_functions[r](tr1, tr2)
                 results.append((res, truth))
 
+            # r, _ = rule[1]
+            # inverse = True if r[-1] == "'" else False
+            # r = r.replace("'", '') # remove trailing '
+            
+            # res = self.apply(rule, l1, l2)
+            # if res is not None:
+            #     # print(res)
+            #     tr1, tr2 = (t1.truth, t2.truth) if not inverse else (t2.truth, t1.truth)
+            #     truth = truth_functions[r](tr1, tr2)
+            #     results.append((res, truth))
+
+            # inverse = not inverse # try swapping the premises
+            # res = self.apply(rule, l2, l1)
+            # if res is not None:
+            #     # print(res)
+            #     tr1, tr2 = (t1.truth, t2.truth) if not inverse else (t2.truth, t1.truth)
+            #     truth = truth_functions[r](tr1, tr2)
+            #     results.append((res, truth))
+            
+            # x = int((time()-t0)*1000)
+            # if x > 100:
+            #     print(rule)
+
+            # t0 = time()
+
         return results
 
     def apply(self, rule, l1, l2):
@@ -114,7 +139,9 @@ class KanrenEngine:
         result = run(1, c, eq((p1, p2), (l1, l2)), *constraints)
 
         if result:
+            # t0 = time()
             conclusion = term(result[0])
+            # print('--', time()-t0)
             # print(conclusion)
             
             # apply diff connector

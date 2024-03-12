@@ -1,4 +1,4 @@
-from kanren import run, eq, var
+from kanren import run, eq, var, lall, lany
 from kanren.constraints import neq, ConstrainedVar
 from unification import unify, reify
 from cons import cons, car, cdr
@@ -244,7 +244,7 @@ def to_list(pair, con) -> list:
 # UNIFICATION #
 ###############
 
-def variable_elimination(t1: Term, t2: Term) -> list:
+def variable_elimination(t1: Term, t2: Term, common: Term) -> list:
     # unified = list(filter(None, (unify(logic(t1), logic(t, True, True)) for t in t2.terms))) #if type(t) is not Variable)))
     # unified.extend(list(filter(None, (unify(logic(t1), logic(_t, True, True)) for t in t2.terms for _t in t.terms)))) #if type(t) is not Variable)))
     # unified.extend(list(filter(None, (unify(logic(_t), logic(t2, True, True)) for t in t1.terms for _t in t.terms \
@@ -252,14 +252,39 @@ def variable_elimination(t1: Term, t2: Term) -> list:
 
     unified = []
 
-    terms = [t1, t2, \
-             *t1.terms, *t2.terms, \
-             *chain(*map(lambda t: t.terms if len(t.terms) > 1 else [], t1.terms)), \
-             *chain(*map(lambda t: t.terms if len(t.terms) > 1 else [], t2.terms))]
+    terms = [
+        t1, t2, \
+        *t1.terms, *t2.terms, \
+        *chain(*map(lambda t: t.terms if len(t.terms) > 1 else [], t1.terms)), \
+        *chain(*map(lambda t: t.terms if len(t.terms) > 1 else [], t2.terms))
+    ]
 
+    # terms = [t1, t2]
+
+    # for t in t1.terms:
+    #     if len(t.terms) > 1 and common in t.terms:
+    #         terms.append(t)
+    #     for _t in t.terms:
+    #         if len(_t.terms) > 1 and common in _t.terms:
+    #             terms.append(_t)
+
+    # for t in t2.terms:
+    #     if len(t.terms) > 1 and common in t.terms:
+    #         terms.append(t)
+    #     for _t in t.terms:
+    #         if len(_t.terms) > 1 and common in _t.terms:
+    #             terms.append(_t)
+
+    # print(">>>", len(terms))
+    # for t in terms:
+    #     print(t)
+    # print('---')
+    terms = list(filter(lambda x: common in x.terms, terms))
+    # print(">>>", len(terms))
     for pair in permutations(set(terms), 2):
+        # print('.',pair)
         unified.append(unify(logic(pair[0]), logic(pair[1], True, True)))
-
+    # print("---")
     unified = list(filter(None, unified))
 
     # for r in product()
@@ -278,14 +303,20 @@ def variable_elimination(t1: Term, t2: Term) -> list:
         # d = {k: v for k, v in u.items() if type(term(k)) is Variable}
         # if len(d):
             substitution.append(u)
-    result = []
+    t1s = []
+    t2s = []
     # print('>>', substitution)
     # print('')
     for s in substitution:
-        reified = reify(logic(t2, True, True), s)
-        result.append(term(reified))
-
-    return result
+        t1r = reify(logic(t1, True, True), s)
+        t1s.append(term(t1r))
+        t2r = reify(logic(t2, True, True), s)
+        t2s.append(term(t2r))
+    
+    if not t1s: t1s.append(t1)
+    if not t2s: t2s.append(t2)
+    
+    return (t1s, t2s)
 
 
 #################################################

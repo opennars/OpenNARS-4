@@ -88,6 +88,10 @@ class Reasoner:
             item = Concept.TheoremItem(theorem, Budget(0.5 + priority, 0.8, 0.5))
             self.all_theorems.put(item)
 
+        # reset metrics
+        self.avg_inference = 0
+        self.num_runs = 0
+
     def cycles(self, n_cycle: int):
         tasks_all_cycles = []
         for _ in range(n_cycle):
@@ -151,7 +155,7 @@ class Reasoner:
             # t1 = time() - t0 + 1e-6 # add epsilon to avoid division by 0
             # self.avg_inference += (t1 - self.avg_inference) / self.num_runs
             # print("inference:", 1 // self.avg_inference, "per second", f"({1//t1})")
-
+            
             is_concept_valid = True  # TODO
             if is_concept_valid:
                 self.memory.put_back(concept)
@@ -324,6 +328,12 @@ class Reasoner:
 
         task: Task = task_link.target
 
+        # print('')
+        # print(task.sentence)
+
+        # _t0 = time()
+        # t0 = time()
+
         # inference for single-premise rules
         if task.is_judgement and not task.immediate_rules_applied: # TODO: handle other cases
             Global.States.record_premises(task)
@@ -354,7 +364,9 @@ class Reasoner:
             # record immediate rule application for task
             task.immediate_rules_applied = True
 
-
+        # _t1 = time() - t0 + 1e-6 # add epsilon to avoid division by 0
+        # print('single premise', 1//_t1)
+        # t0 = _t1
         # self._run_count += 1
 
 
@@ -365,9 +377,11 @@ class Reasoner:
 
             results = []
 
+            theorems_per_cycle = 1
+
             # t0 = time()
             theorems = []
-            for _ in range(min(1, len(self.all_theorems))):
+            for _ in range(min(theorems_per_cycle, len(self.all_theorems))):
                 theorem = self.all_theorems.take(remove=True)
                 theorems.append(theorem)
             
@@ -413,6 +427,10 @@ class Reasoner:
 
             # record structural rule application for task
             # task.structural_rules_applied = True
+
+        # _t1 = time() - t0 + 1e-6 # add epsilon to avoid division by 0
+        # print('structural', 1//_t1)
+        # t0 = _t1
 
         # inference for two-premises rules
         term_links = []
@@ -473,12 +491,15 @@ class Reasoner:
             # t0 = time()
                     
             results = []
-            
-            res, cached = self.inference.inference(task.sentence, belief.sentence)
+
+            res, cached = self.inference.inference(task.sentence, belief.sentence, concept.term)
             
             if not cached: 
                 results.extend(res)
 
+            # t1 = time() - t0 + 1e-6 # add epsilon to avoid division by 0
+            # print('syllogistic', 1//t1)
+            # t0 = t1
             # t1 = time() - t0
 
             # print("inf:", 1 // t1, "per second")
@@ -486,8 +507,16 @@ class Reasoner:
             # self._inference_time_avg += (t1 - self._inference_time_avg) / self._run_count
 
             # print("avg:", 1 // self._inference_time_avg, "per second")
+            
+            # t0 = time()
 
             res, cached = self.inference.inference_compositional(task.sentence, belief.sentence)
+            
+            # t1 = time() - t0
+            # print("inf comp:", 1 // t1, "per second")
+            # t1 = time() - t0 + 1e-6 # add epsilon to avoid division by 0
+            # print('compositional', 1//t1)
+            # t0 = t1
 
             if not cached:
                 results.extend(res)

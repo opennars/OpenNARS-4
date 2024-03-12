@@ -44,6 +44,7 @@ def process_two_premises(premise1: str, premise2: str, n_cycle: int = 0) -> List
     return [t for t in tasks_all_cycles if t is not None]
 
 def rule_map_two_premises(premise1: str, premise2: str, term_common: str, inverse: bool=False, is_belief_term: bool=False, index_task=None, index_belief=None) -> Tuple[List[RuleCallable], Task, Belief, Concept, TaskLink, TermLink, Tuple[Task, Task, Task, Task]]:
+    # assert False
     ''''''
     premise1: Task = Narsese.parse(premise1)
     result1 = nars.memory.accept(premise1)
