@@ -29,9 +29,10 @@ class KanrenEngine:
             nal5_rules.append(rule)
 
         for rule in nal3_rules:
-            # replace --> with ==> in NAL3 (except difference)
+            # replace --> with ==> and <-> with <=> in NAL3 (except difference)
             if '(-,' not in rule and '(~,' not in rule:
                 rule = rule.replace('-->', '==>')
+                rule = rule.replace('<->', '<=>')
                 
                 # replace | with || in NAL3 (except difference)
                 if '||' not in rule:

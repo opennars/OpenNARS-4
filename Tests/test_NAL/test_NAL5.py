@@ -430,7 +430,7 @@ class TEST_NAL5(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<<robin --> [flying]> ==> <robin --> bird>>. %0.90;0.90%', 
             '<<robin --> bird> ==> <robin --> [flying]>>. %0.90;0.90%', 
-            7
+            20
         )
         self.assertTrue(
             output_contains(tasks_derived, '<<robin --> [flying]> <=> <robin --> bird>>. %0.81;0.81%')
@@ -982,11 +982,11 @@ class TEST_NAL5(unittest.TestCase):
         )
 
     def test_0(self):
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             'A.', 
             '<(&&, A, B)==>C>.', 
-            'A.')
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+            10
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<B==>C>. %1.00;0.81%')
         )

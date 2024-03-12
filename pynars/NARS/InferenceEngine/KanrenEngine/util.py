@@ -328,7 +328,7 @@ def diff(c):
     difference = -1 # result of applying diff
 
     def calculate_difference(l: Term, r: Term):
-        return (l - r) if l.contains(r) and not l.equal(r) else None
+        return (l - r) if not l.sub_terms.isdisjoint(r.sub_terms) and not l.equal(r) else None
         
     def do_diff(t: Term):
         nonlocal difference
@@ -343,7 +343,9 @@ def diff(c):
             return calculate_difference(*c.terms.terms)
 
     # STATEMENT
-    elif type(c) is Statement and c.copula is Copula.Implication:
+    elif type(c) is Statement \
+        and c.copula is Copula.Implication \
+        or c.copula is Copula.Inheritance:
         # check subject
         subject = c.subject
         if subject.is_compound:
@@ -366,7 +368,9 @@ def diff(c):
 
         # check predicate
         predicate = c.predicate
-        if predicate.is_compound and difference is not None and difference != -1: # already failed one check
+        if predicate.is_compound and \
+            (c.copula is Copula.Inheritance or \
+             (difference is not None and difference != -1)): # already failed one check
             if predicate.connector is Connector.ExtensionalDifference:
                 do_diff(predicate)
                 if difference is not None:

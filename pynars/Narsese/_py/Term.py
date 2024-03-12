@@ -61,7 +61,7 @@ class Term:
 
     @property
     def sub_terms(self) -> Set[Type['Term']]:
-        return (self, *self._components) if self._components is not None else set((self, ))
+        return set((self, *self._components)) if self._components is not None else set((self, ))
 
     @property
     def components(self) ->Set[Type['Term']]:

@@ -11,10 +11,6 @@ rules:
     {<P --> M>. <M --> S>} |- <S --> P> .exe
     {<M --> P>. <S --> M>} |- <P --> S> .exe'
 
-    # TODO: change to .res
-    {<S --> P>. <P --> S>} |- <S <-> P> .ded
-    {<S --> P>. <P --> S>} |- <P <-> S> .ded
-
   nal2: |
     {<M <-> P>. <S <-> M>} |- <S <-> P> .res
     {<M <-> P>. <M <-> S>} |- <S <-> P> .res
@@ -32,6 +28,8 @@ rules:
     {<P <-> M>. <M --> S>} |- <P --> S> .ana'
 
   nal3: |
+    {<S --> P>. <P --> S>} |- <S <-> P> .int
+    {<S --> P>. <P --> S>} |- <P <-> S> .int
     # 'composition
     {<M --> T1>. <M --> T2>} |- <M --> (&, T1, T2)> .int
     {<T1 --> M>. <T2 --> M>} |- <(|, T1, T2) --> M> .int

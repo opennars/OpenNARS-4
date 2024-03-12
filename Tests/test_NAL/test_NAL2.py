@@ -221,7 +221,7 @@ class TEST_NAL2(unittest.TestCase):
             20
         )
         self.assertTrue(
-            output_contains(tasks_derived, '<bird <-> swan>. %0.10;0.081%')
+            output_contains(tasks_derived, '<bird <-> swan>. %0.10;0.81%')
         )
         pass
 
