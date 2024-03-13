@@ -13,7 +13,7 @@ from pynars.Narsese._py.Sentence import Judgement, Stamp
 from pynars.Narsese._py.Statement import Statement
 from pynars.Narsese._py.Task import Belief
 from pynars.Narsese import Copula
-from ..DataStructures import Bag, Memory, NarseseChannel, Buffer, Task, Concept
+from ..DataStructures import Bag, Memory, NarseseChannel, Buffer, Task, Concept, EventBuffer
 from ..InferenceEngine import GeneralEngine, TemporalEngine, VariableEngine, KanrenEngine
 from pynars import Config
 from pynars.Config import Enable
@@ -57,6 +57,7 @@ class Reasoner:
         self.memory = Memory(n_memory, global_eval=self.global_eval)
         self.overall_experience = Buffer(capacity)
         self.internal_experience = Buffer(capacity)
+        self.event_buffer = EventBuffer(3)
         self.narsese_channel = NarseseChannel(capacity)
         self.perception_channel = Channel(capacity)
         self.channels: List[Channel] = [
@@ -166,11 +167,17 @@ class Reasoner:
             Process Channels/Buffers
         """
         judgement_revised, goal_revised, answers_question, answers_quest = None, None, None, None
-        # step 1. Take out an Item from `Channels`, and then put it into the `Overall Experience`
+        # step 1. Take out an Item from `Channels`, and then put it into the `Overall Experience` and Event Buffers
         for channel in self.channels:
             task_in: Task = channel.take()
             if task_in is not None:
                 self.overall_experience.put(task_in)
+                if self.event_buffer.can_task_enter(task_in):
+                    self.event_buffer.put(task_in)
+                    # when there's a new event, run the temporal chaining
+                    temporal_results = self.event_buffer.generate_temporal_sentences()
+                    for result in temporal_results:
+                        self.overall_experience.put(result)
 
         # step 2. Take out an Item from the `Internal Experience`, with putting it back afterwards, and then put it
         # into the `Overall Experience`
