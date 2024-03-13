@@ -611,9 +611,10 @@ class Reasoner:
                 task_derived.term._normalize_variables()
                 tasks_derived.append(task_derived)
 
-            if term_link is not None: # TODO: Check here whether the budget updating is the same as OpenNARS 3.0.4.
-                for task in tasks_derived: 
-                    TermLink.update_budget(term_link.budget, task.budget.quality, belief.budget.priority if belief is not None else concept_target.budget.priority)
+            if term_link is not None:
+                for derived_task in tasks_derived: 
+                    reward: float = max(derived_task.budget.priority, task.achieving_level())
+                    term_link.reward_budget(reward)
 
         for term_link in term_links: 
             concept.term_links.put_back(term_link)
