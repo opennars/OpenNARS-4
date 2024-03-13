@@ -1,4 +1,5 @@
 import unittest
+import timeit
 
 from pynars.NARS.DataStructures import Task
 from pynars.Narsese import Variable, VarPrefix
@@ -17,10 +18,9 @@ class TEST_NAL6(unittest.TestCase):
     ''''''
 
     def test_variables(self):
-        import timeit
-        print('')
-        print(timeit.timeit(lambda: Term('a')))
-        print(timeit.timeit(lambda: Variable(VarPrefix.Independent, 'x')))
+        t1 = timeit.timeit(lambda: Term('a'))
+        t2 = timeit.timeit(lambda: Variable(VarPrefix.Independent, 'x'))
+        self.assertAlmostEqual(t1, t2)
         pass
 
     def test_unification_0(self):
