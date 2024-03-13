@@ -1,6 +1,7 @@
 import unittest
 
 from pynars.NARS.DataStructures import Task
+from pynars.Narsese import Variable, VarPrefix
 from pynars.NAL.MetaLevelInference.VariableSubstitution import *
 # from pynars.NARS.RuleMap import RuleMap
 
@@ -14,6 +15,13 @@ class TEST_NAL6(unittest.TestCase):
         nars.reset()
 
     ''''''
+
+    def test_variables(self):
+        import timeit
+        print('')
+        print(timeit.timeit(lambda: Term('a')))
+        print(timeit.timeit(lambda: Variable(VarPrefix.Independent, 'x')))
+        pass
 
     def test_unification_0(self):
         '''
@@ -1000,15 +1008,14 @@ class TEST_NAL6(unittest.TestCase):
 
         ''outputMustContain('<M --> B>. %1.00;0.45%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<(&&,<D --> A>,<E --> B>) ==> C>. %1.00;0.90%',
             '<<M --> A> ==> C>. %1.00;0.90%',
-            'A.'
+            100
         )
-        rules = [] if rules is None else rules
-        rules_var = {rule for _, rule in VariableEngine.rule_map.map.data}
-        self.assertTrue(len(set(rules) & rules_var) == 0)
-
+        self.assertTrue(
+            output_contains(tasks_derived, '<M --> B>. %1.00;0.45%')
+        )
 
     def test_birdClaimedByBob(self):
         '''

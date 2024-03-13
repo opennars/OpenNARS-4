@@ -384,7 +384,7 @@ class Reasoner:
 
             results = []
 
-            theorems_per_cycle = 1
+            theorems_per_cycle = 5
 
             # t0 = time()
             theorems = []

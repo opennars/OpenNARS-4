@@ -279,7 +279,7 @@ def variable_elimination(t1: Term, t2: Term, common: Term) -> list:
     # for t in terms:
     #     print(t)
     # print('---')
-    terms = list(filter(lambda x: common in x.terms, terms))
+    # terms = list(filter(lambda x: common in x.terms, terms))
     # print(">>>", len(terms))
     for pair in permutations(set(terms), 2):
         # print('.',pair)
