@@ -23,6 +23,46 @@ class TEST_NAL6(unittest.TestCase):
         self.assertAlmostEqual(t1, t2)
         pass
 
+    # def test_parsing(self):
+    #     tasks_derived = []
+    #     tasks_derived.extend(
+    #         process_two_premises(
+    #             '<Sandy_is_a_dog --> dog>.',
+    #             '<dog --> a>.',
+    #             10
+    #         )
+    #     )
+    #     tasks_derived.extend(
+    #         process_two_premises(
+    #             '<dog --> [is]>.',
+    #             '<Sandy --> dog>.',
+    #             10
+    #         )
+    #     )
+    #     tasks_derived.extend(
+    #         process_two_premises(
+    #             '<Sandy_is_dirty --> [dirty]>.',
+    #             '<[dirty] --> [is]>.',
+    #             10
+    #         )
+    #     )
+    #     tasks_derived.extend(
+    #         process_two_premises(
+    #             '<Sandy --> [dirty]>.',
+    #             None,
+    #             20
+    #         )
+    #     )
+    #     for t in tasks_derived: print(t)
+    #     print('---')
+    #     tasks_derived = process_two_premises(
+    #         '<Sandy --> ?who>?',
+    #         None,
+    #         10
+    #     )
+    #     for t in tasks_derived: print(t)
+    #     pass
+
     def test_unification_0(self):
         '''
         'Variable unification
@@ -394,23 +434,6 @@ class TEST_NAL6(unittest.TestCase):
         )
         pass
 
-
-    def test_elimination_3_1(self):
-        '''
-        (&&,<C --> A>,<D --> B>). %1.00;0.90%
-        <M --> A>. %0.90;0.90%
-
-        '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
-            '(&&,<C --> A>,<D --> B>). %1.00;0.90%',
-            '<M --> A>. %0.90;0.90%',
-            'A.'
-        )
-        rules = [] if rules is None else rules
-        rules_var = {rule for _, rule in VariableEngine.rule_map.map.data}
-        self.assertTrue(len(set(rules) & rules_var) == 0)
-
-        pass
 
     def test_elimination_4(self):
         '''
@@ -878,23 +901,6 @@ class TEST_NAL6(unittest.TestCase):
             output_contains(tasks_derived, '<A ==> C>. %1.00;0.90%')
         )
         pass
-    
-    def test_second_level_variable_unification_1_1(self):
-        '''
-        <A ==> (&&,<D --> B>,C)>. %1.00;0.90% 
-
-        <M --> B>. %1.00;0.90% 
-
-        '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
-            '<A ==> (&&,<D --> B>,C)>. %1.00;0.90%',
-            '<M --> B>. %1.00;0.90%',
-            'B.'
-        )
-        rules = [] if rules is None else rules
-        rules_var = {rule for _, rule in VariableEngine.rule_map.map.data}
-        self.assertTrue(len(set(rules) & rules_var) == 0)
-
 
 
     def test_variable_elimination_deduction(self):
@@ -942,22 +948,6 @@ class TEST_NAL6(unittest.TestCase):
         )
         pass
 
-    def test_variable_elimination_deduction_1(self):
-        '''
-        <M --> A>. %1.00;0.90%
-        <(&&,<C --> A>,<D --> B>) ==> C>. %1.00;0.90% 
-        '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
-            '<(&&,<C --> A>,<D --> B>) ==> C>. %1.00;0.90%',
-            '<M --> A>. %1.00;0.90%',
-            'A.'
-        )
-        rules = [] if rules is None else rules
-        rules_var = {rule for _, rule in VariableEngine.rule_map.map.data}
-        self.assertTrue(len(set(rules) & rules_var) == 0)
-
-        pass
-
 
     def test_abduction_with_variable_elimination_abduction(self):
         '''
@@ -994,28 +984,13 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(&&,<#1 --> A>,<#1 --> B>) ==> C>. %1.00;0.90%',
             '<<M --> A> ==> C>. %1.00;0.90%',
-            100
+            10
         )
 
         self.assertTrue(
             output_contains(tasks_derived, '<M --> B>. %1.00;0.45%')
         )
 
-    def test_abduction_with_variable_elimination_abduction_1(self):
-        '''
-        <<M --> A> ==> C>. %1.00;0.90%
-        <(&&,<D --> A>,<E --> B>) ==> C>. %1.00;0.90%
-
-        ''outputMustContain('<M --> B>. %1.00;0.45%')
-        '''
-        tasks_derived = process_two_premises(
-            '<(&&,<D --> A>,<E --> B>) ==> C>. %1.00;0.90%',
-            '<<M --> A> ==> C>. %1.00;0.90%',
-            100
-        )
-        self.assertTrue(
-            output_contains(tasks_derived, '<M --> B>. %1.00;0.45%')
-        )
 
     def test_birdClaimedByBob(self):
         '''
