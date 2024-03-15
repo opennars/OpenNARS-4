@@ -12,7 +12,7 @@ from pynars.Narsese._py.Budget import Budget
 from pynars.Narsese._py.Sentence import Judgement, Stamp, Tense
 from pynars.Narsese._py.Statement import Statement
 from pynars.Narsese._py.Task import Belief
-from pynars.Narsese import Copula
+from pynars.Narsese import Copula, Item
 from ..DataStructures import Bag, Memory, NarseseChannel, Buffer, Task, Concept, EventBuffer
 from ..InferenceEngine import GeneralEngine, TemporalEngine, VariableEngine, KanrenEngine
 from pynars import Config
@@ -30,6 +30,12 @@ class Reasoner:
     num_runs = 0
     
     all_theorems = Bag(100, 100, take_in_order=False)
+    theorems_per_cycle = 10
+
+    class TheoremItem(Item):
+        def __init__(self, theorem, budget: Budget) -> None:
+            super().__init__(hash(theorem), budget)
+            self._theorem = theorem
 
     def __init__(self, n_memory, capacity, config='./config.json', nal_rules={1, 2, 3, 4, 5, 6, 7, 8, 9}) -> None:
         # print('''Init...''')
@@ -46,7 +52,7 @@ class Reasoner:
 
         for theorem in self.inference.theorems:
             priority = random.randint(0,9) * 0.01
-            item = Concept.TheoremItem(theorem, Budget(0.5 + priority, 0.8, 0.5))
+            item = self.TheoremItem(theorem, Budget(0.5 + priority, 0.8, 0.5))
             self.all_theorems.put(item)
 
         # self.inference = GeneralEngine(add_rules=nal_rules)
@@ -86,7 +92,7 @@ class Reasoner:
         self.all_theorems.reset()
         for theorem in self.inference.theorems:
             priority = random.randint(0,9) * 0.01
-            item = Concept.TheoremItem(theorem, Budget(0.5 + priority, 0.8, 0.5))
+            item = self.TheoremItem(theorem, Budget(0.5 + priority, 0.8, 0.5))
             self.all_theorems.put(item)
 
         # reset metrics
@@ -384,11 +390,9 @@ class Reasoner:
 
             results = []
 
-            theorems_per_cycle = 10
-
             # t0 = time()
             theorems = []
-            for _ in range(min(theorems_per_cycle, len(self.all_theorems))):
+            for _ in range(min(self.theorems_per_cycle, len(self.all_theorems))):
                 theorem = self.all_theorems.take(remove=True)
                 theorems.append(theorem)
             
@@ -491,11 +495,11 @@ class Reasoner:
                     
             results = []
 
-            # COMPOSITIONAL
-            res, cached = self.inference.inference_compositional(task.sentence, belief.sentence)
+            # # COMPOSITIONAL
+            # res, cached = self.inference.inference_compositional(task.sentence, belief.sentence)
             
-            if not cached: 
-                results.extend(res)
+            # if not cached: 
+            #     results.extend(res)
             
             # Temporal Projection and Eternalization
             if belief is not None:

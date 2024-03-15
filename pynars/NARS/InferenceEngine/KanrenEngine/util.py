@@ -145,7 +145,8 @@ def logic(term: Term, rule=False, substitution=False, var_intro=False, structura
             vars.add(var(name))
         return var(name) if rule else term
     if term.is_statement:
-        return cons(term.copula.get_atemporal, *[logic(t, rule, substitution, var_intro, structural, prefix) for t in term.terms])
+        copula = term.copula if rule else term.copula.get_atemporal
+        return cons(copula, *[logic(t, rule, substitution, var_intro, structural, prefix) for t in term.terms])
     if term.is_compound:
         # when used in variable introduction, treat single component compounds as atoms
         if rule and var_intro and len(term.terms) == 1 \

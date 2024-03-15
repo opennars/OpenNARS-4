@@ -19,13 +19,6 @@ class Concept(Item):
     task_links: Bag
     term_links: Bag
     
-    all_theorems = Bag(100, 100, take_in_order=False)
-    
-    class TheoremItem(Item):
-        def __init__(self, theorem, budget: Budget) -> None:
-            super().__init__(hash(theorem), budget)
-            self._theorem = theorem
-
     # *Note*: since this is iterated frequently, an array should be used. To avoid iterator allocation, use .get(n) in a for-loop
     question_table: Table # Pending Question directly asked about the term
     quest_table: Table # Pending Question directly asked about the term
@@ -63,8 +56,6 @@ class Concept(Item):
 
         self.task_links = Bag(Config.capacity_task_link, Config.nlevels_task_link)
         self.term_links = Bag(Config.capacity_term_link, Config.nlevels_term_link)
-
-        self.theorems = deepcopy(Concept.all_theorems)
 
         # self._cache_subterms()
         # self.accept(task)

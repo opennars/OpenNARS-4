@@ -4,12 +4,10 @@ from .util import *
 engine = KanrenEngine()
 print('--')
 
-x = parse('<A-->B>. %0.90;0.90%')
-y = parse('<B-->A>. %0.90;0.90%')
-rule = convert("{<S --> P>. <P --> S>} |- <S <-> P> .int")
-conclusion = engine.apply(rule, logic(x.term), logic(y.term))[0]
-print(truth_functions['int'](x.truth, y.truth))
-print('')
+x = parse('(&/, <(*, John, key_101)-->hold>, +6, <<(*, John, door_101)-->open>=/><(*, John, room_101)-->enter>>).')
+# x = parse('(&/, A, +6, <B==>C>).')
+r = engine.inference_structural(x, tuple(engine.theorems))
+print(r)
 
 exit()
 

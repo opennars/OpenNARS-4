@@ -11,6 +11,7 @@ from Tests.utils_for_test import *
 
 class TEST_NAL7(unittest.TestCase):
     def setUp(self):
+        Global.time = 0
         nars.reset()
 
     ''''''
@@ -85,7 +86,7 @@ class TEST_NAL7(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<<(*, $x, door_101) --> open> =/> <(*, $x, room_101) --> enter>>. %0.90;0.90%',
             '<<(*, $y, door_101) --> open> =\> <(*, $y, key_101) --> hold>>. %0.80;0.90%',
-            100
+            10
         )
 
         self.assertTrue(
@@ -248,7 +249,7 @@ class TEST_NAL7(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<A =/> B>. %0.80;0.90%',
             '<C =\> B>. %0.90;0.90%',
-            10
+            100
         )
 
         self.assertTrue(
@@ -278,8 +279,9 @@ class TEST_NAL7(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<<(*,John,key_101) --> hold> =/> <(*,John,room_101) --> enter>>. %1.00;0.90%',
             '<(*,John,key_101) --> hold>. :|: %1.00;0.90%',
-            10
+            100
         )
+        Global.time = 0
         self.assertTrue(
             output_contains(tasks_derived, '<(*,John,room_101) --> enter>. :!5: %1.00;0.81%')
         )
@@ -303,9 +305,9 @@ class TEST_NAL7(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<<(*,John,key_101) --> hold> =/> <(*,John,room_101) --> enter>>. %1.00;0.90%',
             '<(*,John,room_101) --> enter>. :\: %1.00;0.90%',
-            10
+            100
         )
-
+        Global.time = 0
         self.assertTrue(
             output_contains(tasks_derived, '<(*,John,key_101) --> hold>. :!-10: %1.00;0.45%')
         )
@@ -329,7 +331,7 @@ class TEST_NAL7(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<<(*,John,key_101) --> hold> =/> <(*,John,room_101) --> enter>>. %1.00;0.90%',
             '<(*,John,room_101) --> enter>. :\: %1.00;0.90%',
-            10
+            100
         )
 
         self.assertTrue(
@@ -370,13 +372,12 @@ class TEST_NAL7(unittest.TestCase):
             None,
             6
         )
-        Global.time = 6
         tasks_derived.extend(process_two_premises(
             '<John --> (/,enter,_,room_101)>. :|:',
             None,
-            20
+            100
         ))
-
+        Global.time = 0
         self.assertTrue(
             output_contains(tasks_derived, '<<John --> (/,enter,_,room_101)> =\> (&/,<John --> (/,open,_,door_101)>,+6)>. :!6: %1.00;0.45%')
         )
@@ -411,12 +412,17 @@ class TEST_NAL7(unittest.TestCase):
 
         10
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<John --> (/,open,_,door_101)>. :|: ',
-            '<John --> (/,enter,_,room_101)>. :|: ',
-            'John.'
+            None,
+            6
         )
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+        tasks_derived.extend(process_two_premises(
+            '<John --> (/,enter,_,room_101)>. :|: ',
+            None,
+            100
+        ))
+        Global.time = 0
         self.assertTrue(
             output_contains(tasks_derived, '<<$1 --> (/,enter,_,room_101)> =\> (&/,<$1 --> (/,open,_,door_101)>,+6)>. :!6: %1.00;0.45%')
         )
@@ -443,12 +449,17 @@ class TEST_NAL7(unittest.TestCase):
         'changed fomr +2 to +4 due to changes in interval calculations
         'this one is working, just throwing exception
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<(*,John,key_101) --> hold>. :|:  %1.00;0.90% ',
-            '<<(*,John,door_101) --> open> =/> <(*,John,room_101) --> enter>>. :|:  %1.00;0.90%',
-            'John.'
+            None,
+            6
         )
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+        tasks_derived.extend(process_two_premises(
+            '<<(*,John,door_101) --> open> =/> <(*,John,room_101) --> enter>>. :|:  %1.00;0.90%',
+            None,
+            100
+        ))
+        Global.time = 0
         self.assertTrue(
             output_contains(tasks_derived, '<(&/,<(*,John,key_101) --> hold>,+6,<(*,John,door_101) --> open>) =/> <(*,John,room_101) --> enter>>. :!6: %1.00;0.45%')
         )

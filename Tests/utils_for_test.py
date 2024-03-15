@@ -21,6 +21,8 @@ engine: GeneralEngine = nars.inference
 NUM_CYCLES_MULTIPLIER = 10
 def process_two_premises(premise1: str, premise2: str, n_cycle: int = 0) -> List[Task]:
     ''''''
+    time_before = Global.time
+    
     tasks_all_cycles = []
 
     success, task, task_overflow = nars.input_narsese(premise1)
@@ -43,8 +45,8 @@ def process_two_premises(premise1: str, premise2: str, n_cycle: int = 0) -> List
             tasks_all_cycles.extend(answers_quest)
 
     # reset time to correctly reflect tense
-    # ignoring cycle times
-    Global.time = 0
+    # ignoring NUM_CYCLES_MULTIPLIER
+    Global.time = time_before + n_cycle
 
     return [t for t in tasks_all_cycles if t is not None]
 

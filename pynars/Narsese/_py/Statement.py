@@ -97,7 +97,7 @@ class Statement(Term):
         word_subject = str(self.subject) if not self.subject.has_var else self.subject.repr()
         word_predicate = str(self.predicate) if not self.predicate.has_var else self.predicate.repr()
         
-        return f'<{word_subject+str(self.copula.value)+word_predicate}>'
+        return f'<{word_subject+" "+str(self.copula.value)+" "+word_predicate}>'
 
     @classmethod
     def Inheritance(cls, subject: Term, predicate: Term, is_input: bool=False, is_subterm=True):

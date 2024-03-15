@@ -217,6 +217,17 @@ class KanrenEngine:
                         truth = truth_functions[r](tr1, tr2)
                         results.append((res, truth))
 
+                        # variable introduction
+                        if type(res[0]) is Statement \
+                            and res[0].copula == Copula.RetrospectiveImplication \
+                            or res[0].copula == Copula.PredictiveImplication:
+                            common_terms = self.common_terms(res[0].subject, res[0].predicate)
+                            if len(common_terms):
+                                intro = self.variable_introduction(res[0], common_terms)
+                                print(intro == res[0])
+                                if intro != res[0]:
+                                    results.append(((intro, res[1]), truth))
+
         return results
     
     #################
@@ -256,6 +267,16 @@ class KanrenEngine:
                 results.append(((conclusion, r), truth))
         
         return results
+    
+    def common_terms(self, t1: Term, t2: Term):
+        return set(t1.sub_terms).intersection(t2.sub_terms) - set([place_holder])
+        
+    def variable_introduction(self, conclusion: Term, common: set):
+        prefix = '$' if conclusion.is_statement else '#'
+        substitution = {logic(c, True, var_intro=True): var(prefix=prefix) for c in common}
+        reified = reify(logic(conclusion, True, var_intro=True), substitution)
+        conclusion = term(reified)
+        return conclusion
 
     def determine_order(self, t1: Sentence, t2: Sentence, conclusion: Term):
         # TODO: add .temporal() functions to Compound
