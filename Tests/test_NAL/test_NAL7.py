@@ -278,7 +278,7 @@ class TEST_NAL7(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<<(*,John,key_101) --> hold> =/> <(*,John,room_101) --> enter>>. %1.00;0.90%',
             '<(*,John,key_101) --> hold>. :|: %1.00;0.90%',
-            20
+            10
         )
         self.assertTrue(
             output_contains(tasks_derived, '<(*,John,room_101) --> enter>. :!5: %1.00;0.81%')
@@ -301,8 +301,8 @@ class TEST_NAL7(unittest.TestCase):
         ''outputMustContain('<(*,John,key_101) --> hold>. :!-10: %1.00;0.45%')
         '''
         tasks_derived = process_two_premises(
-            '<(*,John,room_101) --> enter>. :\: %1.00;0.90%',
             '<<(*,John,key_101) --> hold> =/> <(*,John,room_101) --> enter>>. %1.00;0.90%',
+            '<(*,John,room_101) --> enter>. :\: %1.00;0.90%',
             10
         )
 
@@ -329,7 +329,7 @@ class TEST_NAL7(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<<(*,John,key_101) --> hold> =/> <(*,John,room_101) --> enter>>. %1.00;0.90%',
             '<(*,John,room_101) --> enter>. :\: %1.00;0.90%',
-            30
+            10
         )
 
         self.assertTrue(
@@ -370,6 +370,7 @@ class TEST_NAL7(unittest.TestCase):
             None,
             6
         )
+        Global.time = 6
         tasks_derived.extend(process_two_premises(
             '<John --> (/,enter,_,room_101)>. :|:',
             None,

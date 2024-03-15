@@ -9,7 +9,7 @@ from pynars.NARS.DataStructures._py.Link import TaskLink, TermLink
 from pynars.NARS.InferenceEngine import TemporalEngine
 # from pynars.NARS.Operation import Interface_Awareness
 from pynars.Narsese._py.Budget import Budget
-from pynars.Narsese._py.Sentence import Judgement, Stamp
+from pynars.Narsese._py.Sentence import Judgement, Stamp, Tense
 from pynars.Narsese._py.Statement import Statement
 from pynars.Narsese._py.Task import Belief
 from pynars.Narsese import Copula
@@ -384,7 +384,7 @@ class Reasoner:
 
             results = []
 
-            theorems_per_cycle = 5
+            theorems_per_cycle = 10
 
             # t0 = time()
             theorems = []
@@ -486,6 +486,16 @@ class Reasoner:
             and task.is_judgement: # TODO: handle other cases
             
             Global.States.record_premises(task, belief)
+
+            # t0 = time()
+                    
+            results = []
+
+            # COMPOSITIONAL
+            res, cached = self.inference.inference_compositional(task.sentence, belief.sentence)
+            
+            if not cached: 
+                results.extend(res)
             
             # Temporal Projection and Eternalization
             if belief is not None:
@@ -495,14 +505,8 @@ class Reasoner:
                     belief = belief.eternalize(truth_belief)
                     # beleif_eternalized = belief # TODO: should it be added into the `tasks_derived`?
 
-            # t0 = time()
-                    
-            results = []
-
+            # SYLLOGISTIC
             res, cached = self.inference.inference(task.sentence, belief.sentence, concept.term)
-            
-            if not cached: 
-                results.extend(res)
 
             # t1 = time() - t0 + 1e-6 # add epsilon to avoid division by 0
             # print('syllogistic', 1//t1)
@@ -517,7 +521,6 @@ class Reasoner:
             
             # t0 = time()
 
-            res, cached = self.inference.inference_compositional(task.sentence, belief.sentence)
             
             # t1 = time() - t0
             # print("inf comp:", 1 // t1, "per second")
@@ -531,11 +534,7 @@ class Reasoner:
             # print(">>>", results)
 
             for term, truth in results:
-                stamp_task: Stamp = task.stamp
-                stamp_belief: Stamp = belief.stamp
-                stamp = Stamp_merge(stamp_task, stamp_belief)
 
-                # TODO: calculate budget
                 budget = Budget_forward(truth, task_link.budget, term_link_valid.budget)
 
                 # Add temporal dimension
@@ -604,9 +603,33 @@ class Reasoner:
                                 conclusion = conclusion.retrospective()
 
 
+                # calculate new stamp
+                stamp_task: Stamp = task.stamp
+                stamp_belief: Stamp = belief.stamp
+
+                # TODO: how to correctly determine order?
+                order_mark = None
+                whole = part = None
+
+                if task.sentence.term.copula and task.sentence.term.copula == Copula.PredictiveImplication:
+                    whole = task
+                    part = belief
+                if belief.sentence.term.copula and belief.sentence.term.copula == Copula.PredictiveImplication:
+                    whole = belief
+                    part = task
+
+                if part and whole:
+                    if part.term == whole.sentence.term.subject:
+                        order_mark = Copula.PredictiveImplication
+                    if part.term == whole.sentence.term.predicate:
+                        order_mark = Copula.RetrospectiveImplication
+
+                stamp = Stamp_merge(stamp_task, stamp_belief, order_mark)
+
                 sentence_derived = Judgement(conclusion, stamp, truth)
-                    
+                # print(stamp.tense == sentence_derived.stamp.tense)
                 task_derived = Task(sentence_derived, budget)
+                # print(task_derived.sentence.tense, task_derived)
                 # normalize the variable indices
                 task_derived.term._normalize_variables()
                 tasks_derived.append(task_derived)

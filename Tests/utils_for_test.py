@@ -13,6 +13,7 @@ from pynars.Narsese._py.Term import Term
 from pynars.NAL.MentalOperation import execute
 from pynars.Narsese import Sentence, Judgement, Quest, Question, Goal
 from pynars.Config import Config, Enable
+from pynars import Global
 
 nars = Reasoner(100, 100)
 engine: GeneralEngine = nars.inference
@@ -40,6 +41,10 @@ def process_two_premises(premise1: str, premise2: str, n_cycle: int = 0) -> List
             tasks_all_cycles.extend(answers_question)
         if answers_quest is not None:
             tasks_all_cycles.extend(answers_quest)
+
+    # reset time to correctly reflect tense
+    # ignoring cycle times
+    Global.time = 0
 
     return [t for t in tasks_all_cycles if t is not None]
 

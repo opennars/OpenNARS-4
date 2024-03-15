@@ -242,12 +242,14 @@ class KanrenEngine:
                 tr1, tr2 = (t1.truth, t2.truth)
                 truth = truth_functions[r](tr1, tr2)
 
-                results.append(((res[0], r), truth))
+                conclusion = self.determine_order(t1, t2, res[0])
+
+                results.append(((conclusion, r), truth))
 
                 # variable introduction
-                prefix = '$' if res[0].is_statement else '#'
+                prefix = '$' if conclusion.is_statement else '#'
                 substitution = {logic(c, True, var_intro=True): var(prefix=prefix) for c in common}
-                reified = reify(logic(res[0], True, var_intro=True), substitution)
+                reified = reify(logic(conclusion, True, var_intro=True), substitution)
 
                 conclusion = term(reified)
 
@@ -255,6 +257,19 @@ class KanrenEngine:
         
         return results
 
+    def determine_order(self, t1: Sentence, t2: Sentence, conclusion: Term):
+        # TODO: add .temporal() functions to Compound
+        # remove this condition when done
+        if type(conclusion) is Statement:
+            if t1.is_event and t2.is_event:
+                diff = t1.stamp.t_occurrence - t2.stamp.t_occurrence
+                if diff == 0:
+                    conclusion = conclusion.concurrent()
+                if diff > 0:
+                    conclusion = conclusion.predictive()
+                if diff < 0:
+                    conclusion = conclusion.retrospective()
+        return conclusion
 
 
 

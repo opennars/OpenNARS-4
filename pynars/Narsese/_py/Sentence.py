@@ -176,7 +176,15 @@ class Judgement(Sentence):
 
 
     def repr(self,is_input=False):
-        return f'{self.term.repr()}{self.punct.value}{(" " + str(self.tense.value)) if self.tense != Tense.Eternal else ""} {self.truth}'
+        interval = ""
+        if self.tense != Tense.Eternal:
+            if self.tense == Tense.Present:
+                interval = str(self.tense.value)
+            if self.tense == Tense.Future:
+                interval = f':!{self.stamp.t_occurrence}:'
+            if self.tense == Tense.Past:
+                interval = f':!-{self.stamp.t_occurrence}:'
+        return f'{self.term.repr()}{self.punct.value} {interval} {self.truth}'
 
 
 class Goal(Sentence):
