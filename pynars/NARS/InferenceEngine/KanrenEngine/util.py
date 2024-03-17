@@ -344,9 +344,9 @@ def diff(c):
             return calculate_difference(*c.terms.terms)
 
     # STATEMENT
-    elif type(c) is Statement \
-        and c.copula is Copula.Implication \
-        or c.copula is Copula.Inheritance:
+    elif type(c) is Statement and \
+        (c.copula is Copula.Implication \
+        or c.copula is Copula.Inheritance):
         # check subject
         subject = c.subject
         if subject.is_compound:
