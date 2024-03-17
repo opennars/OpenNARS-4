@@ -30,7 +30,7 @@ class Reasoner:
     num_runs = 0
     
     all_theorems = Bag(100, 100, take_in_order=False)
-    theorems_per_cycle = 10
+    theorems_per_cycle = 1
 
     class TheoremItem(Item):
         def __init__(self, theorem, budget: Budget) -> None:

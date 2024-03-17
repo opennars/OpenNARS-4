@@ -224,7 +224,6 @@ class KanrenEngine:
                             common_terms = self.common_terms(res[0].subject, res[0].predicate)
                             if len(common_terms):
                                 intro = self.variable_introduction(res[0], common_terms)
-                                print(intro == res[0])
                                 if intro != res[0]:
                                     results.append(((intro, res[1]), truth))
 
