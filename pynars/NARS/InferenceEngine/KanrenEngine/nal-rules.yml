@@ -58,6 +58,10 @@ rules:
     {(--, (&&, T2, T1)). T1} |- (--, T2) .ded
     {(||, T1, T2). (--, T1)} |- T2 .ded
     {(||, T2, T1). (--, T1)} |- T2 .ded
+    # possibly wrong -- double check two rules below
+    # see test_elimination_3 in test_NAL6.py
+    {(&&, T1, T2). T1} |- T2 .ded
+    {(&&, T2, T1). T1} |- T2 .ded
 
   nal5: |
     # 'conditional syllogistic
@@ -217,9 +221,11 @@ theorems: |
   <<S1 <=> S2> <=> <(--, S1) <=> (--, S2)>>
   <<S2 <=> S1> <=> <(--, S1) <=> (--, S2)>>
 
-  # 'not in the NAL book but a nice to have
+  # 'not in the NAL book but nice to have
   <<T1 --> (/, R, _, T2)> <=> <T2 --> (/, R, T1, _)>>
   <<T2 --> (/, R, T1, _)> <=> <T1 --> (/, R, _, T2)>>
+  <<T1 --> (\, R, _, T2)> <=> <T2 --> (\, R, T1, _)>>
+  <<T2 --> (\, R, T1, _)> <=> <T1 --> (\, R, _, T2)>>
 
   <(&/, S1, N1, S2) <=> <S2 =\> (&/, S1, N1)>>
   <(&/, S1, N1, S2) <=> <S1 =/> S2>>

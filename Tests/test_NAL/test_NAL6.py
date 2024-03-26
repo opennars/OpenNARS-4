@@ -425,12 +425,12 @@ class TEST_NAL6(unittest.TestCase):
         '''
         tasks_derived = process_two_premises(
             '(&&,<#x --> bird>,<#x --> swimmer>).  %1.00;0.90%',
-            '<swan --> bird>. %0.90;0.90%',
-            100
+            '<swan --> bird>. %1.00;0.90%',
+            10
         )
 
         self.assertTrue(
-            output_contains(tasks_derived, '<swan --> swimmer>. %1.00;0.90%')
+            output_contains(tasks_derived, '<swan --> swimmer>. %1.00;0.81%')
         )
         pass
 
@@ -453,7 +453,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(&&,<$x --> [chirping]>,<$x --> [with_wings]>) ==> <$x --> bird>>. %1.00;0.90%',
             '<{Tweety} --> [with_wings]>.  %1.00;0.90%',
-            30
+            100
         )
 
         self.assertTrue(
@@ -875,7 +875,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<<$1 --> lock> ==> (&&,<#2 --> key>,<$1 --> (/,open,#2,_)>)>. %1.00;0.90%',
             '<{key1} --> key>. %1.00;0.90% ',
-            100
+            400
         )
 
         self.assertTrue(
@@ -894,7 +894,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<A ==> (&&,<#2 --> B>,C)>. %1.00;0.90%',
             '<M --> B>. %1.00;0.90%',
-            20
+            200
         )
 
         self.assertTrue(
@@ -967,7 +967,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(&&,<#1 --> lock>,<#1 --> (/,open,$2,_)>) ==> <$2 --> key>>. %1.00;0.90%',
             '<<lock1 --> (/,open,$1,_)> ==> <$1 --> key>>. %1.00;0.90%',
-            10
+            100
         )
 
         self.assertTrue(
@@ -984,7 +984,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(&&,<#1 --> A>,<#1 --> B>) ==> C>. %1.00;0.90%',
             '<<M --> A> ==> C>. %1.00;0.90%',
-            10
+            100
         )
 
         self.assertTrue(

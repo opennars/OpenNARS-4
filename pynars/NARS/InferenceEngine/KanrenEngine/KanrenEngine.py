@@ -18,6 +18,8 @@ class KanrenEngine:
         nal3_rules = split_rules(config['rules']['nal3'])
 
         nal5_rules = split_rules(config['rules']['nal5'])
+
+        higher_order = []
         
         # NAL5 includes higher order variants of NAL1-3 rules
         for rule in (nal1_rules + nal2_rules):
@@ -26,7 +28,10 @@ class KanrenEngine:
             # replace <-> with <=> in NAL2
             rule = rule.replace('<->', '<=>')
 
-            nal5_rules.append(rule)
+            higher_order.append(rule)
+
+        # save subset for backward inference
+        self.rules_backward = [convert(r) for r in nal1_rules + nal2_rules + higher_order]
 
         for rule in nal3_rules:
             # replace --> with ==> and <-> with <=> in NAL3 (except difference)
@@ -44,10 +49,10 @@ class KanrenEngine:
                 if '&&' not in rule:
                     rule = rule.replace('&', '&&')
                 
-                nal5_rules.append(rule)
+                higher_order.append(rule)
         
-        rules = nal1_rules + nal2_rules + nal3_rules + nal5_rules
-        
+        rules = nal1_rules + nal2_rules + nal3_rules + nal5_rules + higher_order
+
         self.rules_syllogistic = [convert(r) for r in rules]
 
         self.rules_immediate = [convert_immediate(r) for r in split_rules(config['rules']['immediate'])]
@@ -58,6 +63,23 @@ class KanrenEngine:
 
 
     #################################################
+
+    @cache_notify
+    def backward(self, q: Sentence, t: Sentence) -> list:
+        results = []
+
+        lq = logic(q.term)
+        lt = logic(t.term)
+
+        for rule in self.rules_backward:
+            res = self.apply(rule, lt, lq, backward=True)
+            if res is not None:
+                (p1, p2, c) = rule[0]
+                sub_terms = term(p1).sub_terms | term(p2).sub_terms | term(c).sub_terms
+                if sub_terms.isdisjoint(res[0].sub_terms):
+                    results.append((res, truth_analytic))
+        
+        return results
 
     # INFERENCE (SYLLOGISTIC)
     @cache_notify
@@ -134,10 +156,14 @@ class KanrenEngine:
 
         return results
 
-    def apply(self, rule, l1, l2):
+    def apply(self, rule, l1, l2, backward = False):
         # print("\nRULE:", rule)
         (p1, p2, c), (r, constraints) = rule[0], rule[1]
-        result = run(1, c, eq((p1, p2), (l1, l2)), *constraints)
+
+        if backward:
+            result = run(1, p2, eq((p1, c), (l1, l2)), *constraints)
+        else:
+            result = run(1, c, eq((p1, p2), (l1, l2)), *constraints)
 
         if result:
             # t0 = time()
@@ -173,7 +199,7 @@ class KanrenEngine:
     #############
     
     @cache_notify
-    def inference_immediate(self, t: Sentence):
+    def inference_immediate(self, t: Sentence, backward=False):
         # print(f'Inference immediate\n{t}')
         results = []
 
@@ -181,11 +207,14 @@ class KanrenEngine:
         for rule in self.rules_immediate:
             (p, c), (r, constraints) = rule[0], rule[1]
 
-            result = run(1, c, eq(p, l), *constraints)
+            if backward:
+                result = run(1, p, eq(c, l), *constraints)
+            else:
+                result = run(1, c, eq(p, l), *constraints)
 
             if result:
                 conclusion = term(result[0])
-                truth = truth_functions[r](t.truth)
+                truth = truth_analytic if backward else truth_functions[r](t.truth)
                 results.append(((conclusion, r), truth))
             
         return results

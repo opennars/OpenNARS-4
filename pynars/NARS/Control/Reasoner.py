@@ -1,6 +1,6 @@
 import random
 from os import remove
-from pynars.NAL.Functions.BudgetFunctions import Budget_forward
+from pynars.NAL.Functions.BudgetFunctions import Budget_forward, Budget_backward
 from pynars.NAL.Functions.StampFunctions import Stamp_merge
 from pynars.NAL.Functions.Tools import truth_to_quality
 from pynars.NARS.DataStructures._py.Channel import Channel
@@ -9,7 +9,7 @@ from pynars.NARS.DataStructures._py.Link import TaskLink, TermLink
 from pynars.NARS.InferenceEngine import TemporalEngine
 # from pynars.NARS.Operation import Interface_Awareness
 from pynars.Narsese._py.Budget import Budget
-from pynars.Narsese._py.Sentence import Judgement, Stamp, Tense
+from pynars.Narsese._py.Sentence import Judgement, Stamp, Tense, Question
 from pynars.Narsese._py.Statement import Statement
 from pynars.Narsese._py.Task import Belief
 from pynars.Narsese import Copula, Item
@@ -348,12 +348,12 @@ class Reasoner:
         # t0 = time()
 
         # inference for single-premise rules
-        if task.is_judgement and not task.immediate_rules_applied: # TODO: handle other cases
+        if not task.immediate_rules_applied: # TODO: handle other cases
             Global.States.record_premises(task)
 
             results = []
 
-            res, cached = self.inference.inference_immediate(task.sentence)
+            res, cached = self.inference.inference_immediate(task.sentence, backward=task.is_question)
 
             if not cached:
                 results.extend(res)
@@ -361,6 +361,13 @@ class Reasoner:
             for term, truth in results:
                 # TODO: how to properly handle stamp for immediate rules?
                 stamp_task: Stamp = task.stamp
+
+                if task.is_question:
+                    question_derived = Question(term[0], task.stamp)
+                    task_derived = Task(question_derived)
+                    # set flag to prevent repeated processing
+                    task_derived.immediate_rules_applied = True
+                    tasks_derived.append(task_derived)
 
                 if task.is_judgement: # TODO: hadle other cases
                     # TODO: calculate budget
@@ -643,8 +650,27 @@ class Reasoner:
                     reward: float = max(derived_task.budget.priority, task.achieving_level())
                     term_link.reward_budget(reward)
 
+        # BACKWARD
+        if is_valid \
+            and task.is_question: # TODO: handle other cases
+
+            results = []
+
+            res, cached = self.inference.backward(task.sentence, belief.sentence)
+            # print('\nBackward:', res)
+            if not cached:
+                results.extend(res)
+
+            for term, _ in results:
+                # budget = Budget_backward(truth, task_link.budget, term_link_valid.budget)
+
+                question_derived = Question(term[0], task.stamp)
+                task_derived = Task(question_derived) #, budget)
+                tasks_derived.append(task_derived)
+
+
         for term_link in term_links: 
             concept.term_links.put_back(term_link)
         
-        return list(filter(lambda t: t.truth.c > 0, tasks_derived))
+        return list(filter(lambda t: t.is_question or t.truth.c > 0, tasks_derived))
     

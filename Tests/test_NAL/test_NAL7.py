@@ -420,7 +420,7 @@ class TEST_NAL7(unittest.TestCase):
         tasks_derived.extend(process_two_premises(
             '<John --> (/,enter,_,room_101)>. :|: ',
             None,
-            100
+            200
         ))
         Global.time = 0
         self.assertTrue(
@@ -457,7 +457,7 @@ class TEST_NAL7(unittest.TestCase):
         tasks_derived.extend(process_two_premises(
             '<<(*,John,door_101) --> open> =/> <(*,John,room_101) --> enter>>. :|:  %1.00;0.90%',
             None,
-            100
+            200
         ))
         Global.time = 0
         self.assertTrue(

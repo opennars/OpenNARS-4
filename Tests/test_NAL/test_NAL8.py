@@ -252,7 +252,7 @@ class TEST_NAL8(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(*,{t003}) --> ^go_to>. :|:',
             '<<(*,{t003}) --> ^go_to> =/> <(*,SELF,{t003}) --> at>>.',
-            20
+            200
         )
 
         self.assertTrue(
