@@ -2,51 +2,25 @@ from .KanrenEngine import KanrenEngine
 from .util import *
 
 engine = KanrenEngine()
-print('--')
 
-x = parse('(&/, <(*, John, key_101)-->hold>, +6, <<(*, John, door_101)-->open>=/><(*, John, room_101)-->enter>>).')
-# x = parse('(&/, A, +6, <B==>C>).')
-r = engine.inference_structural(x, tuple(engine.theorems))
-print(r)
+rule = convert('{<(&&, S, C) ==> P>. <_C ==> P>} |- ((&&, S, C) - _C) .abd')
 
-exit()
-
-engine = KanrenEngine()
-print('--')
-
-# t0 = time()
-x = parse('<(-, (&&, <$1-->[chirping]>, <$1-->[with_wings]>), <(&&, <$1-->flyer>, <$1-->[chirping]>, <(*, $1, worms)-->food>)==><$1-->bird>>)==><$1-->bird>>.')
-# x = parse('<(-, (&&, <x-->[chirping]>, <x-->[with_wings]>), <(&&, <x-->flyer>, <x-->[chirping]>, <(*, x, worms)-->food>)==><x-->bird>>)==><x-->bird>>.')
-# print(time()-t0)
-# t0 = time()
-
-logic = logic(x.term)
-# print(time()-t0)
-t0 = time()
-
-term = term(logic)
-print(time()-t0)
-t0 = time()
+t1 = parse('<(&&,<#1 --> lock>,<#1 --> (/,open,$2,_)>) ==> <$2 --> key>>.')
+t2 = parse('<<lock1 --> (/,open,$1,_)> ==> <$1 --> key>>.')
 
 
-exit()
+t1e, t2e = variable_elimination(t1.term, t2.term, None)
 
-# rule = convert('{<M --> P>. <S --> M>} |- <S --> P> .ded')
-rule = convert('{<(&&, C, S) ==> P>. _S} |- <((&&, C, S) - _S) ==> P> .ded')
+# TODO: what about other possibilities?
+t1t = t1e[0] if len(t1e) else t1.term
+t2t = t2e[0] if len(t2e) else t2.term
 
-x = parse('<(&&, <$1-->[chirping]>, <$1-->[with_wings]>)==><$1-->bird>>.')
-y = parse('<(&&, <$1-->flyer>, <$1-->[chirping]>, <(*, $1, worms)-->food>)==><$1-->bird>>.')
-c = parse('bird.').term
-t0 = time()
-# z = engine.inference(x,y,c)
-
-l1 = logic(x.term)
-l2 = logic(y.term)
+l1 = logic(t1t)
+l2 = logic(t2t)
 
 res = engine.apply(rule, l1, l2)
 
-t1 = time() - t0
-print(res, t1)
+print(res)
 exit()
 
 memory = {}

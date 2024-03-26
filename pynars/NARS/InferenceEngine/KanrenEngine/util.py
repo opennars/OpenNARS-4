@@ -295,24 +295,38 @@ def variable_elimination(t1: Term, t2: Term, common: Term) -> list:
     # print('')
     # print(list(unified))
 
+    def valid(k, v):
+        kname = vname = '.'
+        if type(k) is var:
+            kname = k.token.replace('_rule_', '')
+        if type(k) is Term:
+            kname = k.word
+        if type(v) is var:
+            vname = v.token.replace('_rule_', '')
+        if type(v) is Term:
+            vname = v.word
+        if kname[0] in ['#', '$', '?'] or kname == vname:
+            return True
+        return False
+
     substitution = []
     for u in unified:
         # print(u)
-        if len(u) > 1 and all(type(term(k)) is Variable \
-               or term(k).word == term(v).word \
-               for k, v in u.items()):
-        # d = {k: v for k, v in u.items() if type(term(k)) is Variable}
-        # if len(d):
+        if len(u) > 1 and all(valid(k, v) for k, v in u.items()):
             substitution.append(u)
+            
     t1s = []
     t2s = []
     # print('>>', substitution)
     # print('')
     for s in substitution:
-        t1r = reify(logic(t1, True, True), s)
-        t1s.append(term(t1r))
-        t2r = reify(logic(t2, True, True), s)
-        t2s.append(term(t2r))
+        t1r = term(reify(logic(t1, True, True), s))
+        if not t1r.identical(t1):
+            t1s.append(t1r)
+
+        t2r = term(reify(logic(t2, True, True), s))
+        if not t2r.identical(t2):
+            t2s.append(t2r)
     
     if not t1s: t1s.append(t1)
     if not t2s: t2s.append(t2)
