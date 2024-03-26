@@ -12,6 +12,7 @@ from pynars.Narsese._py.Budget import Budget
 from pynars.Narsese._py.Sentence import Judgement, Stamp, Tense, Question
 from pynars.Narsese._py.Statement import Statement
 from pynars.Narsese._py.Task import Belief
+from pynars.Narsese._py.Evidence import Base
 from pynars.Narsese import Copula, Item
 from ..DataStructures import Bag, Memory, NarseseChannel, Buffer, Task, Concept, EventBuffer
 from ..InferenceEngine import GeneralEngine, TemporalEngine, VariableEngine, KanrenEngine
@@ -360,10 +361,12 @@ class Reasoner:
 
             for term, truth in results:
                 # TODO: how to properly handle stamp for immediate rules?
-                stamp_task: Stamp = task.stamp
+                # base = Base((Global.get_input_id(),))
+                # stamp_task: Stamp = Stamp(Global.time, None, None, base)
+                stamp_task = task.stamp
 
                 if task.is_question:
-                    question_derived = Question(term[0], task.stamp)
+                    question_derived = Question(term[0], stamp_task)
                     task_derived = Task(question_derived)
                     # set flag to prevent repeated processing
                     task_derived.immediate_rules_applied = True
@@ -473,7 +476,7 @@ class Reasoner:
             
             if belief is None: 
                 continue
-            
+
             if task == belief:
                 # if task.sentence.punct == belief.sentence.punct:
                 #     is_revision = revisible(task, belief)
@@ -502,11 +505,13 @@ class Reasoner:
                     
             results = []
 
-            # # COMPOSITIONAL
-            # res, cached = self.inference.inference_compositional(task.sentence, belief.sentence)
-            
-            # if not cached: 
-            #     results.extend(res)
+            # COMPOSITIONAL
+            if task.is_eternal and belief.is_eternal:
+                # events are handled in the event buffer
+                res, cached = self.inference.inference_compositional(task.sentence, belief.sentence)
+                
+                if not cached: 
+                    results.extend(res)
             
             # Temporal Projection and Eternalization
             if belief is not None:

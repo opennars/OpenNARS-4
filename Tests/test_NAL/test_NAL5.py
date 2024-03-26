@@ -962,21 +962,21 @@ class TEST_NAL5(unittest.TestCase):
         pass
 
     def test_question_0(self):
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '(&&, A, B)?', 
             'A.', 
-            'A.', is_belief_term=True)
-        tasks_derived = [rule(task, belief.term, task_link, term_link) for rule in rules] 
+            10
+        )
         self.assertTrue(
             output_contains(tasks_derived, 'A?')
         )
 
     def test_question_1(self):
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             'C?', 
             '<(&&, A, B)==>C>.', 
-            'C.')
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+            10
+        )
         self.assertTrue(
             output_contains(tasks_derived, '(&&, A, B)?')
         )
