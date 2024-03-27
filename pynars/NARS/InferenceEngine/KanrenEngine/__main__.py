@@ -3,10 +3,10 @@ from .util import *
 
 engine = KanrenEngine()
 
-rule = convert('{<(&&, S, C) ==> P>. <_C ==> P>} |- ((&&, S, C) - _C) .abd')
+rule = convert('{<(&&, S, C) ==> P>. <M ==> _S>} |- <(&&, ((&&, S, C) - _S), M) ==> P> .ded')
 
-t1 = parse('<(&&,<#1 --> lock>,<#1 --> (/,open,$2,_)>) ==> <$2 --> key>>.')
-t2 = parse('<<lock1 --> (/,open,$1,_)> ==> <$1 --> key>>.')
+t1 = parse('<(&&,<$x --> flyer>,<$x --> [chirping]>) ==> <$x --> bird>>.')
+t2 = parse('<<$y --> [with_wings]> ==> <$y --> flyer>>.')
 
 
 t1e, t2e = variable_elimination(t1.term, t2.term, None)
@@ -20,7 +20,17 @@ l2 = logic(t2t)
 
 res = engine.apply(rule, l1, l2)
 
-print(res)
+conclusion = res[0]
+# common = set(t1.term.sub_terms).intersection(t2.term.sub_terms)
+
+# # variable introduction
+# prefix = '$' if conclusion.is_statement else '#'
+# substitution = {logic(c, True, var_intro=True): var(prefix=prefix) for c in common}
+# reified = reify(logic(conclusion, True, var_intro=True), substitution)
+
+# conclusion = term(reified)
+
+print(conclusion)
 exit()
 
 memory = {}

@@ -343,6 +343,8 @@ def diff(c):
     difference = -1 # result of applying diff
 
     def calculate_difference(l: Term, r: Term):
+        l._normalize_variables()
+        r._normalize_variables()
         return (l - r) if not l.sub_terms.isdisjoint(r.sub_terms) and not l.equal(r) else None
         
     def do_diff(t: Term):
@@ -375,17 +377,17 @@ def diff(c):
                     components = subject.terms.terms
                     if components[0].is_compound:
                         if components[0].connector is Connector.ExtensionalDifference:
+                            components[0]._normalize_variables()
                             do_diff(components[0])
                             # if components[0].terms.terms[0] == components[1]:
                             #     difference = None
                             if difference is not None:
+                                components[1]._normalize_variables()
                                 subject = Compound(subject.connector, difference, components[1])
 
         # check predicate
         predicate = c.predicate
-        if predicate.is_compound and \
-            (c.copula is Copula.Inheritance or \
-             (difference is not None and difference != -1)): # already failed one check
+        if predicate.is_compound:
             if predicate.connector is Connector.ExtensionalDifference:
                 do_diff(predicate)
                 if difference is not None:

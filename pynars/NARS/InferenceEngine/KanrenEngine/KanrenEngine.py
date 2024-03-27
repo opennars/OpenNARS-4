@@ -286,6 +286,9 @@ class KanrenEngine:
                 results.append(((conclusion, r), truth))
 
                 # variable introduction
+                # TODO: handle nested statements
+                # currently compound inside statement will not be handled correctly
+                # see test_second_variable_introduction_induction
                 prefix = '$' if conclusion.is_statement else '#'
                 substitution = {logic(c, True, var_intro=True): var(prefix=prefix) for c in common}
                 reified = reify(logic(conclusion, True, var_intro=True), substitution)

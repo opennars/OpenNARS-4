@@ -78,6 +78,10 @@ rules:
     # '(C ^ S) => P, S |- C => P (alternative syntax below)
     {<(&&, C, S) ==> P>. _S} |- <((&&, C, S) - _S) ==> P> .ded
     {<(&&, S, C) ==> P>. _S} |- <((&&, S, C) - _S) ==> P> .ded
+    # 'inverse TODO: need a better way to handle variations
+    # 'IDEA: generate variations when rules are loaded
+    {<P ==> (&&, C, S)>. _S} |- <P ==> ((&&, C, S) - _S)> .ded
+    {<P ==> (&&, S, C)>. _S} |- <P ==> ((&&, S, C) - _S)> .ded
 
     # '(C ^ S) => P, M => S |- (C ^ M) => P (alternative syntax below)
     {<(&&, C, S) ==> P>. <M ==> _S>} |- <(&&, ((&&, C, S) - _S), M) ==> P> .ded
@@ -115,8 +119,10 @@ rules:
     {P. S} |- <P ==> S> .abd
     {P. S} |- <S <=> P> .com
     {T1. T2} |- (&&, T1, T2) .int
+    {T1. T2} |- (&&, T2, T1) .int
     {T1. T2} |- (||, T1, T2) .uni
     {<C ==> P>. S} |- <(&&, C, S) ==> P> .ind
+    {<C ==> P>. S} |- <(&&, S, C) ==> P> .ind
 
 theorems: |
   # 'inheritance
