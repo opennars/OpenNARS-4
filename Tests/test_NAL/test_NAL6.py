@@ -247,7 +247,7 @@ class TEST_NAL6(unittest.TestCase):
             '<<$y --> [with_wings]> ==> <$y --> flyer>>. %1.00;0.90%',
             20
         )
-        
+
         self.assertTrue(
             output_contains(tasks_derived, '<(&&,<$0 --> [chirping]>,<$0 --> [with_wings]>) ==> <$0 --> bird>>. %1.00;0.81%')
         )
@@ -813,7 +813,6 @@ class TEST_NAL6(unittest.TestCase):
             '<lock1 --> lock>. %1.00;0.90%',
             20
         )
-        for t in tasks_derived: print(t)
         self.assertTrue(
             output_contains(tasks_derived, '<(&&,<#0 --> (/,open,$1,_)>,<#0 --> lock>) ==> <$1 --> key>>. %1.00;0.45%')
         )
