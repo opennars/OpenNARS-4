@@ -671,14 +671,21 @@ class Reasoner:
                         order_mark = Copula.RetrospectiveImplication
 
                 stamp = Stamp_merge(stamp_task, stamp_belief, order_mark)
+                
+                def add_task(term):
+                    sentence_derived = Judgement(term, stamp, truth)
+                    # print(stamp.tense == sentence_derived.stamp.tense)
+                    task_derived = Task(sentence_derived, budget)
+                    # print(task_derived.sentence.tense, task_derived)
+                    # normalize the variable indices
+                    task_derived.term._normalize_variables()
+                    tasks_derived.append(task_derived)
 
-                sentence_derived = Judgement(conclusion, stamp, truth)
-                # print(stamp.tense == sentence_derived.stamp.tense)
-                task_derived = Task(sentence_derived, budget)
-                # print(task_derived.sentence.tense, task_derived)
-                # normalize the variable indices
-                task_derived.term._normalize_variables()
-                tasks_derived.append(task_derived)
+                add_task(conclusion)
+
+                if type(conclusion) is Statement: # TODO: handle this better
+                    if conclusion.is_predictive or conclusion.is_retrospective:
+                        add_task(conclusion.temporal_swapped())
 
             if term_link is not None:
                 for derived_task in tasks_derived: 

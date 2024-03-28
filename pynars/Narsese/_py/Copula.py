@@ -85,6 +85,14 @@ class Copula(IdEnum):
         else:
             return self
         
+    @property
+    def get_temporal_swapped(self):
+        if self == Copula.PredictiveImplication:
+            return Copula.RetrospectiveImplication
+        if self == Copula.RetrospectiveImplication:
+            return Copula.PredictiveImplication
+        return self
+        
     def symmetrize(self):
         if self is Copula.Inheritance:
             return Copula.Similarity

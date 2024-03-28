@@ -164,6 +164,11 @@ class Statement(Term):
     def retrospective(self):
         return Statement(self.subject, self.copula.get_retrospective, self.predicate)
 
+    def temporal_swapped(self):
+        if self.copula is Copula.PredictiveEquivalence:
+            return self # TODO: could be handled by introducing <\> copula
+        return Statement(self.predicate, self.copula.get_temporal_swapped, self.subject)
+    
     def clone(self):
         if not self.has_var: return self
         # now, not self.has_var
