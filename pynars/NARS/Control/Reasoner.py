@@ -584,7 +584,11 @@ class Reasoner:
                 if type(conclusion) is Compound \
                 and conclusion.connector == Connector.Conjunction:
                     # TODO: finish this
-                    conclusion = conclusion.predictive()
+                    if type(belief.term) is Compound or type(belief.term) is Statement:
+                        if belief.term.is_predictive:
+                            conclusion = conclusion.predictive()
+                        if belief.term.is_concurrent:
+                            conclusion = conclusion.concurrent()
 
                 if type(conclusion) is Statement \
                 and (conclusion.copula == Copula.Equivalence \
