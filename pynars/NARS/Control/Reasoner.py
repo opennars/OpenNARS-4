@@ -40,23 +40,27 @@ class Reasoner:
             super().__init__(hash(theorem), budget)
             self._theorem = theorem
 
-    def __init__(self, n_memory, capacity, config='./config.json', nal_rules={1, 2, 3, 4, 5, 6, 7, 8, 9}) -> None:
+    def __init__(self, n_memory, capacity, config='./config.json', nal_rules={1, 2, 3, 4, 5, 6, 7, 8, 9}, inference: str = 'kanren') -> None:
         # print('''Init...''')
         Config.load(config)
 
         self.global_eval = GlobalEval()
 
-        self.inference = KanrenEngine()
+        if inference == 'kanren':
+            self.inference = KanrenEngine()
+
+            for theorem in self.inference.theorems:
+                priority = random.randint(0,9) * 0.01
+                item = self.TheoremItem(theorem, Budget(0.5 + priority, 0.8, 0.5))
+                self.all_theorems.put(item)
+        else:
+            self.inference = GeneralEngine(add_rules=nal_rules)
         
         # a = util.parse('(*,a,b,(*,c,d),e,(*,f,g)).')
         # b = util.logic(a.term)
 
         # c = util.term(b)
 
-        for theorem in self.inference.theorems:
-            priority = random.randint(0,9) * 0.01
-            item = self.TheoremItem(theorem, Budget(0.5 + priority, 0.8, 0.5))
-            self.all_theorems.put(item)
 
         # self.inference = GeneralEngine(add_rules=nal_rules)
         self.variable_inference = VariableEngine(add_rules=nal_rules)
@@ -91,12 +95,13 @@ class Reasoner:
         self.sequence_buffer.reset()
         self.operations_buffer.reset()
 
-        # reset theorems priority
-        self.all_theorems.reset()
-        for theorem in self.inference.theorems:
-            priority = random.randint(0,9) * 0.01
-            item = self.TheoremItem(theorem, Budget(0.5 + priority, 0.8, 0.5))
-            self.all_theorems.put(item)
+        if type(self.inference) is KanrenEngine:
+            # reset theorems priority
+            self.all_theorems.reset()
+            for theorem in self.inference.theorems:
+                priority = random.randint(0,9) * 0.01
+                item = self.TheoremItem(theorem, Budget(0.5 + priority, 0.8, 0.5))
+                self.all_theorems.put(item)
 
         # reset metrics
         self.avg_inference = 0
@@ -329,6 +334,9 @@ class Reasoner:
     # INFERENCE STEP 
 
     def inference_step(self, concept: Concept):
+        if type(self.inference) is GeneralEngine:
+            return self.inference.step(concept)
+
         '''One step inference.'''
         tasks_derived = []
 
