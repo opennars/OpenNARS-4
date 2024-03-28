@@ -9,8 +9,10 @@ from pynars.NARS.DataStructures._py.Link import TaskLink, TermLink
 from pynars.NARS.InferenceEngine import TemporalEngine
 # from pynars.NARS.Operation import Interface_Awareness
 from pynars.Narsese._py.Budget import Budget
-from pynars.Narsese._py.Sentence import Judgement, Stamp, Tense, Question
+from pynars.Narsese._py.Sentence import Judgement, Stamp, Tense, Question, Goal
 from pynars.Narsese._py.Statement import Statement
+from pynars.Narsese._py.Compound import Compound
+from pynars.Narsese._py.Connector import Connector
 from pynars.Narsese._py.Task import Belief
 from pynars.Narsese._py.Evidence import Base
 from pynars.Narsese import Copula, Item
@@ -354,7 +356,8 @@ class Reasoner:
 
             results = []
 
-            res, cached = self.inference.inference_immediate(task.sentence, backward=task.is_question)
+            backward = task.is_question or task.is_goal
+            res, cached = self.inference.inference_immediate(task.sentence, backward=backward)
 
             if not cached:
                 results.extend(res)
@@ -365,11 +368,20 @@ class Reasoner:
                 # stamp_task: Stamp = Stamp(Global.time, None, None, base)
                 stamp_task = task.stamp
 
-                if task.is_question:
+                if task.is_question and term[1] == 'cnv':
                     question_derived = Question(term[0], stamp_task)
                     task_derived = Task(question_derived)
                     # set flag to prevent repeated processing
                     task_derived.immediate_rules_applied = True
+                    task_derived.term._normalize_variables()
+                    tasks_derived.append(task_derived)
+                
+                if task.is_goal and term[1] == 'cnv':
+                    goal_derived = Goal(term[0], stamp_task, truth)
+                    task_derived = Task(goal_derived)
+                    # set flag to prevent repeated processing
+                    task_derived.immediate_rules_applied = True
+                    task_derived.term._normalize_variables()
                     tasks_derived.append(task_derived)
 
                 if task.is_judgement: # TODO: hadle other cases
@@ -395,7 +407,7 @@ class Reasoner:
 
         ### STRUCTURAL
 
-        if task.is_judgement: #and not task.structural_rules_applied: # TODO: handle other cases
+        if task.is_judgement or task.is_goal or task.is_question: #and not task.structural_rules_applied: # TODO: handle other cases
             Global.States.record_premises(task)
 
             results = []
@@ -433,6 +445,15 @@ class Reasoner:
             for term, truth in results:
                 # TODO: how to properly handle stamp for structural rules?
                 stamp_task: Stamp = task.stamp
+
+                if task.is_question:
+                    pass
+
+                if task.is_goal:
+                    goal_derived = Goal(term[0], stamp_task, truth)
+                    task_derived = Task(goal_derived)
+                    task_derived.term._normalize_variables()
+                    tasks_derived.append(task_derived)
 
                 if task.is_judgement: # TODO: hadle other cases
                     # TODO: calculate budget
@@ -560,6 +581,11 @@ class Reasoner:
                 t1 = task.sentence.term
                 t2 = belief.sentence.term
 
+                if type(conclusion) is Compound \
+                and conclusion.connector == Connector.Conjunction:
+                    # TODO: finish this
+                    conclusion = conclusion.predictive()
+
                 if type(conclusion) is Statement \
                 and (conclusion.copula == Copula.Equivalence \
                 or conclusion.copula == Copula.Implication):
@@ -671,6 +697,33 @@ class Reasoner:
 
                 question_derived = Question(term[0], task.stamp)
                 task_derived = Task(question_derived) #, budget)
+                tasks_derived.append(task_derived)
+
+        if is_valid \
+            and task.is_goal: # TODO: handle other cases
+
+            results = []
+
+            res, cached = self.inference.backward(task.sentence, belief.sentence)
+            # print('\nBackward:', res)
+            if not cached:
+                results.extend(res)
+
+            for term, truth in results:
+                # budget = Budget_backward(truth, task_link.budget, term_link_valid.budget)
+                conclusion = term[0]
+
+                if type(conclusion) is Compound \
+                and conclusion.connector == Connector.Conjunction:
+                    # TODO: finish this
+                    if type(belief.term) is Compound or type(belief.term) is Statement:
+                        if belief.term.is_predictive:
+                            conclusion = conclusion.predictive()
+                        if belief.term.is_concurrent:
+                            conclusion = conclusion.concurrent()
+
+                goal_derived = Goal(conclusion, task.stamp, truth)
+                task_derived = Task(goal_derived) #, budget)
                 tasks_derived.append(task_derived)
 
 

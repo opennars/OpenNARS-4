@@ -3,22 +3,22 @@ from .util import *
 
 engine = KanrenEngine()
 
-rule = convert('{<(&&, S, C) ==> P>. <M ==> _S>} |- <(&&, ((&&, S, C) - _S), M) ==> P> .ded')
+rule = convert("{<S ==> P>. S} |- P .ded")
 
-t1 = parse('<(&&,<$x --> flyer>,<$x --> [chirping]>) ==> <$x --> bird>>.')
-t2 = parse('<<$y --> [with_wings]> ==> <$y --> flyer>>.')
+t1 = parse('(&/, <(*, SELF, {t002})-->reachable>, <(*, SELF, {t002})-->^pick>).')
+t2 = parse('<(&&, S1, S2) ==> S1>.')
 
 
 t1e, t2e = variable_elimination(t1.term, t2.term, None)
 
 # TODO: what about other possibilities?
-t1t = t1e[0] if len(t1e) else t1.term
-t2t = t2e[0] if len(t2e) else t2.term
+t1t = t1.term#t1e[0] if len(t1e) else t1.term
+t2t = t2.term#t2e[0] if len(t2e) else t2.term
 
-l1 = logic(t1t)
-l2 = logic(t2t)
+l1 = logic(t1t, structural=True)
+l2 = convert_theorems('<(&&, S1, S2) ==> S1>')[0]
 
-res = engine.apply(rule, l1, l2)
+res = engine.apply(rule, l2, l1)
 
 conclusion = res[0]
 # common = set(t1.term.sub_terms).intersection(t2.term.sub_terms)

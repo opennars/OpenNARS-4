@@ -60,6 +60,18 @@ class Statement(Term):
         return self._is_higher_order
 
     @property
+    def is_predictive(self):
+        return self.copula.is_predictive
+    
+    @property
+    def is_concurrent(self):
+        return self.copula.is_concurrent
+    
+    @property
+    def is_retrospective(self):
+        return self.copula.is_retrospective
+
+    @property
     def terms(self):
         return (self.subject, self.predicate)
 

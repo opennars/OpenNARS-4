@@ -63,6 +63,33 @@ class Connector(IdEnum):
     def is_temporal(self):
         return self in (Connector.SequentialEvents, Connector.ParallelEvents)
 
+    @property
+    def is_predictive(self):
+        return self is Connector.SequentialEvents
+    
+    @property
+    def is_concurrent(self):
+        return self is Connector.ParallelEvents
+
+    @property
+    def get_atemporal(self):
+        if self is Connector.SequentialEvents \
+        or self is Connector.ParallelEvents:
+            return Connector.Conjunction
+        return self
+    
+    @property
+    def get_concurent(self):
+        if self is Connector.Conjunction:
+            return Connector.ParallelEvents
+        return self
+
+    @property
+    def get_predictive(self):
+        if self is Connector.Conjunction:
+            return Connector.SequentialEvents
+        return self
+    
     def check_valid(self, len_terms: int):
         if self.is_single_only: return len_terms == 1
         elif self.is_double_only: return len_terms == 2

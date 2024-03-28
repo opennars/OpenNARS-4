@@ -63,8 +63,7 @@ rules:
     {(&&, T1, T2). T1} |- T2 .ded
     {(&&, T2, T1). T1} |- T2 .ded
 
-  nal5: |
-    # 'conditional syllogistic
+  conditional_syllogistic: |
     {<S ==> P>. S} |- P .ded
     {<P ==> S>. S} |- P .abd
     {S. <S ==> P>} |- P .ded'
@@ -74,6 +73,7 @@ rules:
     {<S <=> P>. S} |- P .ana'
     {<P <=> S>. S} |- P .ana'
 
+  nal5: |
     # 'conditional conjunctive
     # '(C ^ S) => P, S |- C => P (alternative syntax below)
     {<(&&, C, S) ==> P>. _S} |- <((&&, C, S) - _S) ==> P> .ded

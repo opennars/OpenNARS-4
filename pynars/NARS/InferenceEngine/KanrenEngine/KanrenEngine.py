@@ -19,6 +19,8 @@ class KanrenEngine:
 
         nal5_rules = split_rules(config['rules']['nal5'])
 
+        conditional_syllogistic = split_rules(config['rules']['conditional_syllogistic'])
+
         higher_order = []
         
         # NAL5 includes higher order variants of NAL1-3 rules
@@ -31,7 +33,12 @@ class KanrenEngine:
             higher_order.append(rule)
 
         # save subset for backward inference
-        self.rules_backward = [convert(r) for r in nal1_rules + nal2_rules + higher_order]
+        self.rules_backward = [convert(r) for r in nal1_rules + nal2_rules 
+                               + higher_order 
+                            #    + conditional_syllogistic
+                               ]
+        
+        self.rules_conditional_syllogistic = [convert(r) for r in conditional_syllogistic]
 
         for rule in nal3_rules:
             # replace --> with ==> and <-> with <=> in NAL3 (except difference)
@@ -51,7 +58,7 @@ class KanrenEngine:
                 
                 higher_order.append(rule)
         
-        rules = nal1_rules + nal2_rules + nal3_rules + nal5_rules + higher_order
+        rules = nal1_rules + nal2_rules + nal3_rules + nal5_rules + higher_order + conditional_syllogistic
 
         self.rules_syllogistic = [convert(r) for r in rules]
 
@@ -71,13 +78,25 @@ class KanrenEngine:
         lq = logic(q.term)
         lt = logic(t.term)
 
-        for rule in self.rules_backward:
+        rules = self.rules_backward
+        if type(q) is Goal:
+            rules += self.rules_conditional_syllogistic
+
+        for rule in rules:
             res = self.apply(rule, lt, lq, backward=True)
             if res is not None:
                 (p1, p2, c) = rule[0]
                 sub_terms = term(p1).sub_terms | term(p2).sub_terms | term(c).sub_terms
                 if sub_terms.isdisjoint(res[0].sub_terms):
-                    results.append((res, truth_analytic))
+                    r, _ = rule[1]
+                    inverse = True if r[-1] == "'" else False
+                    r = r.replace("'", '') # remove trailing '
+                    if type(q) is Question:
+                        truth = None
+                    else:
+                        tr1, tr2 = (q.truth, t.truth) if not inverse else (t.truth, q.truth)
+                        truth = truth_functions[r](tr1, tr2)
+                    results.append((res, truth))
         
         return results
 
@@ -242,8 +261,11 @@ class KanrenEngine:
                         r, _ = rule[1]
                         inverse = True if r[-1] == "'" else False
                         r = r.replace("'", '') # remove trailing '
-                        tr1, tr2 = (t.truth, truth_analytic) if not inverse else (truth_analytic, t.truth)
-                        truth = truth_functions[r](tr1, tr2)
+                        if type(t) is Question:
+                            truth = None
+                        else:
+                            tr1, tr2 = (t.truth, truth_analytic) if not inverse else (truth_analytic, t.truth)
+                            truth = truth_functions[r](tr1, tr2)
                         results.append((res, truth))
 
                         # variable introduction

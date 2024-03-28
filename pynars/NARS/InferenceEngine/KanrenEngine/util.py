@@ -160,15 +160,16 @@ def logic(term: Term, rule=False, substitution=False, var_intro=False, structura
             or term.connector is Connector.IntensionalImage:
             return cons(term.connector, *[logic(t, rule, substitution, var_intro, structural, prefix) for t in term.terms])
 
+        connector = term.connector if rule else term.connector.get_atemporal
         terms = list(term.terms)
         multi = []
         while len(terms) > 2:
             t = terms.pop(0)
             multi.append(logic(t, rule, substitution, var_intro, structural, prefix))
-            multi.append(term.connector)
+            multi.append(connector)
         multi.extend(logic(t, rule, substitution, var_intro, structural, prefix) for t in terms)
         
-        return cons(term.connector, *multi)
+        return cons(connector, *multi)
 
 #################
 # LOGIC TO TERM #

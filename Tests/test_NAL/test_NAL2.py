@@ -112,7 +112,7 @@ class TEST_NAL2(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<sport --> competition>. %1.00;0.90%', 
             '<chess --> competition>. %0.90;0.90% ', 
-            10
+            20
         )
         self.assertTrue(
             output_contains(tasks_derived, '<chess <-> sport>. %0.90;0.45%')
@@ -139,7 +139,7 @@ class TEST_NAL2(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<swan --> swimmer>. %1.00;0.90%', 
             '<gull <-> swan>. %1.00;0.90%', 
-            10
+            20
         )
         self.assertTrue(
             output_contains(tasks_derived, '<gull --> swimmer>. %1.00;0.81%')
@@ -245,7 +245,7 @@ class TEST_NAL2(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<bright <-> smart>. %0.90;0.90%', 
             '<[smart] --> [bright]>?', 
-            500
+            10
         )
         self.assertTrue(
             output_contains(tasks_derived, '<[bright] <-> [smart]>. %0.90;0.81%')
@@ -328,7 +328,7 @@ class TEST_NAL2(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<swan --> bird>. %0.90;0.90%', 
             '<bird <-> swan>?', 
-            100
+            10
         )
         self.assertTrue(
             output_contains(tasks_derived, '<bird <-> swan>. %0.90;0.47%')
@@ -355,7 +355,7 @@ class TEST_NAL2(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<bird <-> swan>. %0.90;0.90%', 
             '<swan --> bird>?', 
-            200
+            40
         )
         self.assertTrue(
             output_contains(tasks_derived, '<swan --> bird>. %0.90;0.81%')
