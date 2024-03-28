@@ -40,7 +40,8 @@ class Reasoner:
             super().__init__(hash(theorem), budget)
             self._theorem = theorem
 
-    def __init__(self, n_memory, capacity, config='./config.json', nal_rules={1, 2, 3, 4, 5, 6, 7, 8, 9}, inference: str = 'kanren') -> None:
+    def __init__(self, n_memory, capacity, config='./config.json', 
+                 nal_rules={1, 2, 3, 4, 5, 6, 7, 8, 9}, inference: str = 'kanren') -> None:
         # print('''Init...''')
         Config.load(config)
 
