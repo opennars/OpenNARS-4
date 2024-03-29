@@ -125,8 +125,14 @@ def convert_theorems(theorem):
     # print(l)
     # print(term(l))
     # print("\n\n")
+    matching_rules = []
+    for i, rule in enumerate(rules_strong):
+        (p1, p2, c) = rule[0]
+        if run(1, c, eq(p1, l)):
+            matching_rules.append(i)
+
     sub_terms = frozenset(filter(lambda x: x != place_holder, t.sub_terms))
-    return (l, sub_terms)
+    return (l, sub_terms, tuple(matching_rules))
 
 
 #################

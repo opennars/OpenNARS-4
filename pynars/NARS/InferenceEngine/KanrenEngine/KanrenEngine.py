@@ -33,12 +33,12 @@ class KanrenEngine:
             higher_order.append(rule)
 
         # save subset for backward inference
-        self.rules_backward = [convert(r) for r in nal1_rules + nal2_rules 
+        self.rules_backward = [convert(r, True) for r in nal1_rules + nal2_rules 
                                + higher_order 
                             #    + conditional_syllogistic
                                ]
         
-        self.rules_conditional_syllogistic = [convert(r) for r in conditional_syllogistic]
+        self.rules_conditional_syllogistic = [convert(r, True) for r in conditional_syllogistic]
 
         for rule in nal3_rules:
             # replace --> with ==> and <-> with <=> in NAL3 (except difference)
@@ -251,8 +251,9 @@ class KanrenEngine:
             theorems = self.theorems
 
         l1 = logic(t.term, structural=True)
-        for (l2, sub_terms) in theorems:
-            for rule in rules_strong:
+        for (l2, sub_terms, matching_rules) in theorems:
+            for i in matching_rules:
+                rule = rules_strong[i] 
                 res = self.apply(rule, l2, l1)
                 if res is not None:
                     # ensure no theorem terms in conclusion
