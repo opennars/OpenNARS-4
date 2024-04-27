@@ -35,6 +35,10 @@ class Reasoner:
     all_theorems = Bag(100, 100, take_in_order=False)
     theorems_per_cycle = 1
 
+    structural_enabled = True
+    immediate_enabled = True
+    compositional_enabled = False
+
     class TheoremItem(Item):
         def __init__(self, theorem, budget: Budget) -> None:
             super().__init__(hash(theorem), budget)
@@ -50,10 +54,11 @@ class Reasoner:
         if inference == 'kanren':
             self.inference = KanrenEngine()
 
-            for theorem in self.inference.theorems:
-                priority = random.randint(0,9) * 0.01
-                item = self.TheoremItem(theorem, Budget(0.5 + priority, 0.8, 0.5))
-                self.all_theorems.put(item)
+            if self.structural_enabled:
+                for theorem in self.inference.theorems:
+                    priority = random.randint(0,9) * 0.01
+                    item = self.TheoremItem(theorem, Budget(0.5 + priority, 0.8, 0.5))
+                    self.all_theorems.put(item)
         else:
             self.inference = GeneralEngine(add_rules=nal_rules)
         
@@ -96,13 +101,14 @@ class Reasoner:
         self.sequence_buffer.reset()
         self.operations_buffer.reset()
 
-        if type(self.inference) is KanrenEngine:
-            # reset theorems priority
-            self.all_theorems.reset()
-            for theorem in self.inference.theorems:
-                priority = random.randint(0,9) * 0.01
-                item = self.TheoremItem(theorem, Budget(0.5 + priority, 0.8, 0.5))
-                self.all_theorems.put(item)
+        if self.structural_enabled:
+            if type(self.inference) is KanrenEngine:
+                # reset theorems priority
+                self.all_theorems.reset()
+                for theorem in self.inference.theorems:
+                    priority = random.randint(0,9) * 0.01
+                    item = self.TheoremItem(theorem, Budget(0.5 + priority, 0.8, 0.5))
+                    self.all_theorems.put(item)
 
         # reset metrics
         self.avg_inference = 0
@@ -359,129 +365,10 @@ class Reasoner:
         # _t0 = time()
         # t0 = time()
 
-        # inference for single-premise rules
-        if not task.immediate_rules_applied: # TODO: handle other cases
-            Global.States.record_premises(task)
-
-            results = []
-
-            backward = task.is_question or task.is_goal
-            res, cached = self.inference.inference_immediate(task.sentence, backward=backward)
-
-            if not cached:
-                results.extend(res)
-
-            for term, truth in results:
-                # TODO: how to properly handle stamp for immediate rules?
-                # base = Base((Global.get_input_id(),))
-                # stamp_task: Stamp = Stamp(Global.time, None, None, base)
-                stamp_task = task.stamp
-
-                if task.is_question and term[1] == 'cnv':
-                    question_derived = Question(term[0], stamp_task)
-                    task_derived = Task(question_derived)
-                    # set flag to prevent repeated processing
-                    task_derived.immediate_rules_applied = True
-                    task_derived.term._normalize_variables()
-                    tasks_derived.append(task_derived)
-                
-                if task.is_goal and term[1] == 'cnv':
-                    goal_derived = Goal(term[0], stamp_task, truth)
-                    task_derived = Task(goal_derived)
-                    # set flag to prevent repeated processing
-                    task_derived.immediate_rules_applied = True
-                    task_derived.term._normalize_variables()
-                    tasks_derived.append(task_derived)
-
-                if task.is_judgement: # TODO: hadle other cases
-                    # TODO: calculate budget
-                    budget = Budget_forward(truth, task_link.budget, None)
-                    budget.priority = budget.priority * 1/term[0].complexity
-                    sentence_derived = Judgement(term[0], stamp_task, truth)
-                    task_derived = Task(sentence_derived, budget)
-                    # set flag to prevent repeated processing
-                    task_derived.immediate_rules_applied = True
-                    # normalize the variable indices
-                    task_derived.term._normalize_variables()
-                    tasks_derived.append(task_derived)
-
-            # record immediate rule application for task
-            task.immediate_rules_applied = True
-
         # _t1 = time() - t0 + 1e-6 # add epsilon to avoid division by 0
         # print('single premise', 1//_t1)
         # t0 = _t1
         # self._run_count += 1
-
-
-        ### STRUCTURAL
-
-        if task.is_judgement or task.is_goal or task.is_question: #and not task.structural_rules_applied: # TODO: handle other cases
-            Global.States.record_premises(task)
-
-            results = []
-
-            # t0 = time()
-            theorems = []
-            for _ in range(min(self.theorems_per_cycle, len(self.all_theorems))):
-                theorem = self.all_theorems.take(remove=True)
-                theorems.append(theorem)
-            
-            for theorem in theorems:
-                # print(term(theorem._theorem))
-                # results.extend(self.inference_structural(task.sentence))
-                res, cached = self.inference.inference_structural(task.sentence, tuple([theorem._theorem]))
-                # print(res)
-                # print("")
-                if not cached:
-                    if res:
-                        new_priority = theorem.budget.priority + 0.1
-                        theorem.budget.priority = min(0.99, new_priority)
-                    else:
-                        new_priority = theorem.budget.priority - 0.1
-                        theorem.budget.priority = max(0.1, new_priority)
-
-                self.all_theorems.put(theorem)
-
-                results.extend(res)
-            # t1 = time() - t0
-            # self._structural_time_avg += (t1 - self._structural_time_avg) / self._run_count
-            # print("structural: ", 1 // self._structural_time_avg, "per second")
-            # for r in results:
-            #     print(r, r[0][0].complexity)
-            # print(task.budget.priority)
-            # print(task_link.budget.priority)
-            for term, truth in results:
-                # TODO: how to properly handle stamp for structural rules?
-                stamp_task: Stamp = task.stamp
-
-                if task.is_question:
-                    pass
-
-                if task.is_goal:
-                    goal_derived = Goal(term[0], stamp_task, truth)
-                    task_derived = Task(goal_derived)
-                    task_derived.term._normalize_variables()
-                    tasks_derived.append(task_derived)
-
-                if task.is_judgement: # TODO: hadle other cases
-                    # TODO: calculate budget
-                    budget = Budget_forward(truth, task_link.budget, None)
-                    budget.priority = budget.priority * 1/term[0].complexity
-                    sentence_derived = Judgement(term[0], stamp_task, truth)
-                    task_derived = Task(sentence_derived, budget)
-                    # task_derived.structural_rules_applied = True
-                    
-                    # normalize the variable indices
-                    task_derived.term._normalize_variables()
-                    tasks_derived.append(task_derived)
-
-            # record structural rule application for task
-            # task.structural_rules_applied = True
-
-        # _t1 = time() - t0 + 1e-6 # add epsilon to avoid division by 0
-        # print('structural', 1//_t1)
-        # t0 = _t1
 
         # inference for two-premises rules
         term_links = []
@@ -526,6 +413,132 @@ class Reasoner:
         #     print("hello")
         # print(iter, '/', n, "- loop time", loop_time, is_valid)
         # print(is_valid, "Concept", concept.term)
+            
+        
+        ### IMMEDIATE
+
+        if self.immediate_enabled:
+            if not task.immediate_rules_applied: # TODO: handle other cases
+                Global.States.record_premises(task)
+
+                results = []
+
+                backward = task.is_question or task.is_goal
+                res, cached = self.inference.inference_immediate(task.sentence, backward=backward)
+
+                if not cached:
+                    results.extend(res)
+
+                for term, truth in results:
+                    # TODO: how to properly handle stamp for immediate rules?
+                    # base = Base((Global.get_input_id(),))
+                    # stamp_task: Stamp = Stamp(Global.time, None, None, base)
+                    stamp_task = task.stamp
+
+                    if task.is_question and term[1] == 'cnv':
+                        question_derived = Question(term[0], stamp_task)
+                        task_derived = Task(question_derived)
+                        # set flag to prevent repeated processing
+                        task_derived.immediate_rules_applied = True
+                        task_derived.term._normalize_variables()
+                        tasks_derived.append(task_derived)
+                    
+                    if task.is_goal and term[1] == 'cnv':
+                        goal_derived = Goal(term[0], stamp_task, truth)
+                        task_derived = Task(goal_derived)
+                        # set flag to prevent repeated processing
+                        task_derived.immediate_rules_applied = True
+                        task_derived.term._normalize_variables()
+                        tasks_derived.append(task_derived)
+
+                    if task.is_judgement: # TODO: hadle other cases
+                        # TODO: calculate budget
+                        budget = Budget_forward(truth, task_link.budget, None)
+                        budget.priority = budget.priority * 1/term[0].complexity
+                        sentence_derived = Judgement(term[0], stamp_task, truth)
+                        task_derived = Task(sentence_derived, budget)
+                        # set flag to prevent repeated processing
+                        task_derived.immediate_rules_applied = True
+                        # normalize the variable indices
+                        task_derived.term._normalize_variables()
+                        tasks_derived.append(task_derived)
+
+                # record immediate rule application for task
+                task.immediate_rules_applied = True
+
+
+        ### STRUCTURAL
+        
+        if self.structural_enabled:
+            # self.num_runs += 1
+            # print(self.num_runs)
+            if task.is_judgement or task.is_goal or task.is_question: #and not task.structural_rules_applied: # TODO: handle other cases
+                Global.States.record_premises(task)
+
+                results = []
+
+                # t0 = time()
+                theorems = []
+                for _ in range(min(self.theorems_per_cycle, len(self.all_theorems))):
+                    theorem = self.all_theorems.take(remove=False)
+                    theorems.append(theorem)
+                
+                for theorem in theorems:
+                    # print(term(theorem._theorem))
+                    # results.extend(self.inference_structural(task.sentence))
+                    res, cached = self.inference.inference_structural(task.sentence, theorem._theorem)
+                    # print(res)
+                    # print("")
+                    if not cached:
+                        if res:
+                            new_priority = theorem.budget.priority + 0.1
+                            theorem.budget.priority = min(0.99, new_priority)
+                        else:
+                            new_priority = theorem.budget.priority - 0.1
+                            theorem.budget.priority = max(0.1, new_priority)
+                        self.all_theorems.put(theorem)
+
+                    results.extend(res)
+                    # t1 = time() - t0
+                    # self._structural_time_avg += (t1 - self._structural_time_avg) / self._run_count
+                    # print("structural: ", 1 // self._structural_time_avg, "per second")
+                    # for r in results:
+                    #     print(r, r[0][0].complexity)
+                    # print(task.budget.priority)
+                    # print(task_link.budget.priority)
+                    for term, truth in results:
+                        # TODO: how to properly handle stamp for structural rules?
+                        stamp_task: Stamp = task.stamp
+
+                        if task.is_question:
+                            pass
+
+                        if task.is_goal:
+                            goal_derived = Goal(term[0], stamp_task, truth)
+                            task_derived = Task(goal_derived)
+                            task_derived.term._normalize_variables()
+                            tasks_derived.append(task_derived)
+
+                        if task.is_judgement: # TODO: hadle other cases
+                            # TODO: calculate budget
+                            budget = Budget_forward(truth, task_link.budget, None)
+                            budget.priority = budget.priority * 1/term[0].complexity
+                            sentence_derived = Judgement(term[0], stamp_task, truth)
+                            task_derived = Task(sentence_derived, budget)
+                            # task_derived.structural_rules_applied = True
+                            
+                            # normalize the variable indices
+                            task_derived.term._normalize_variables()
+                            tasks_derived.append(task_derived)
+
+                    # record structural rule application for task
+                    # task.structural_rules_applied = True
+
+                    # _t1 = time() - t0 + 1e-6 # add epsilon to avoid division by 0
+                    # print('structural', 1//_t1)
+                    # t0 = _t1
+        
+
         if is_valid \
             and task.is_judgement: # TODO: handle other cases
             
@@ -536,12 +549,13 @@ class Reasoner:
             results = []
 
             # COMPOSITIONAL
-            if task.is_eternal and belief.is_eternal:
-                # events are handled in the event buffer
-                res, cached = self.inference.inference_compositional(task.sentence, belief.sentence)
-                
-                if not cached: 
-                    results.extend(res)
+            if self.compositional_enabled:
+                if task.is_eternal and belief.is_eternal:
+                    # events are handled in the event buffer
+                    res, cached = self.inference.inference_compositional(task.sentence, belief.sentence)
+                    
+                    if not cached: 
+                        results.extend(res)
             
             # Temporal Projection and Eternalization
             if belief is not None:

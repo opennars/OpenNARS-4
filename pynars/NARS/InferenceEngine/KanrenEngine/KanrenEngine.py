@@ -141,6 +141,7 @@ class KanrenEngine:
                     
             res = self.apply(rule, l1, l2)
             if res is not None:
+                # print('>', res[0])
                 r, _ = rule[1]
                 inverse = True if r[-1] == "'" else False
                 r = r.replace("'", '') # remove trailing '
@@ -243,41 +244,38 @@ class KanrenEngine:
     ##############
 
     @cache_notify
-    def inference_structural(self, t: Sentence, theorems = None):
+    def inference_structural(self, t: Sentence, theorem):
         # print(f'Inference structural\n{t}')
         results = []
 
-        if not theorems:
-            theorems = self.theorems
-
         l1 = logic(t.term, structural=True)
-        for (l2, sub_terms, matching_rules) in theorems:
-            for i in matching_rules:
-                rule = rules_strong[i] 
-                res = self.apply(rule, l2, l1)
-                if res is not None:
-                    # ensure no theorem terms in conclusion
-                    # TODO: ensure _ is only found inside / or \
-                    if sub_terms.isdisjoint(res[0].sub_terms):
-                        r, _ = rule[1]
-                        inverse = True if r[-1] == "'" else False
-                        r = r.replace("'", '') # remove trailing '
-                        if type(t) is Question:
-                            truth = None
-                        else:
-                            tr1, tr2 = (t.truth, truth_analytic) if not inverse else (truth_analytic, t.truth)
-                            truth = truth_functions[r](tr1, tr2)
-                        results.append((res, truth))
+        (l2, sub_terms, matching_rules) = theorem
+        for i in matching_rules:
+            rule = rules_strong[i] 
+            res = self.apply(rule, l2, l1)
+            if res is not None:
+                # ensure no theorem terms in conclusion
+                # TODO: ensure _ is only found inside / or \
+                if sub_terms.isdisjoint(res[0].sub_terms):
+                    r, _ = rule[1]
+                    inverse = True if r[-1] == "'" else False
+                    r = r.replace("'", '') # remove trailing '
+                    if type(t) is Question:
+                        truth = None
+                    else:
+                        tr1, tr2 = (t.truth, truth_analytic) if not inverse else (truth_analytic, t.truth)
+                        truth = truth_functions[r](tr1, tr2)
+                    results.append((res, truth))
 
-                        # variable introduction
-                        if type(res[0]) is Statement \
-                            and res[0].copula == Copula.RetrospectiveImplication \
-                            or res[0].copula == Copula.PredictiveImplication:
-                            common_terms = self.common_terms(res[0].subject, res[0].predicate)
-                            if len(common_terms):
-                                intro = self.variable_introduction(res[0], common_terms)
-                                if intro != res[0]:
-                                    results.append(((intro, res[1]), truth))
+                    # variable introduction
+                    if type(res[0]) is Statement \
+                        and res[0].copula == Copula.RetrospectiveImplication \
+                        or res[0].copula == Copula.PredictiveImplication:
+                        common_terms = self.common_terms(res[0].subject, res[0].predicate)
+                        if len(common_terms):
+                            intro = self.variable_introduction(res[0], common_terms)
+                            if intro != res[0]:
+                                results.append(((intro, res[1]), truth))
 
         return results
     
