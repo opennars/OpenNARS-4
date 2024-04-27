@@ -35,11 +35,9 @@ class KanrenEngine:
         # save subset for backward inference
         self.rules_backward = [convert(r, True) for r in nal1_rules + nal2_rules 
                                + higher_order 
-                            #    + conditional_syllogistic
+                               + conditional_syllogistic
                                ]
         
-        self.rules_conditional_syllogistic = [convert(r, True) for r in conditional_syllogistic]
-
         for rule in nal3_rules:
             # replace --> with ==> and <-> with <=> in NAL3 (except difference)
             if '(-,' not in rule and '(~,' not in rule:
@@ -78,13 +76,12 @@ class KanrenEngine:
         lq = logic(q.term)
         lt = logic(t.term)
 
-        rules = self.rules_backward
-        if type(q) is Goal:
-            rules += self.rules_conditional_syllogistic
-
-        for rule in rules:
+        for rule in self.rules_backward:
             res = self.apply(rule, lt, lq, backward=True)
             if res is not None:
+                # print(res[0], res[0].complexity, q.term.complexity + t.term.complexity)
+                if res[0].complexity > (q.term.complexity + t.term.complexity):
+                    continue
                 (p1, p2, c) = rule[0]
                 sub_terms = term(p1).sub_terms | term(p2).sub_terms | term(c).sub_terms
                 if sub_terms.isdisjoint(res[0].sub_terms):
