@@ -141,7 +141,6 @@ class TEST_NAL2(unittest.TestCase):
             '<gull <-> swan>. %1.00;0.90%', 
             20
         )
-        for t in tasks_derived: print(t)
         self.assertTrue(
             output_contains(tasks_derived, '<gull --> swimmer>. %1.00;0.81%')
         )
