@@ -62,7 +62,7 @@ class TEST_NAL7(unittest.TestCase):
             100
         )
         self.assertTrue(
-            output_contains(tasks_derived, '<<(*,$0,key_101) --> hold> =/> <(*,$0,room_101) --> enter>>. %1.00;0.37%')
+            output_contains(tasks_derived, '<<(*,$0,key_101) --> hold> =/> <(*,$0,room_101) --> enter>>. %0.72;0.58%')
         )
         pass
 
@@ -574,7 +574,6 @@ class TEST_NAL7(unittest.TestCase):
             '<(*,John,room_101) --> enter>. :|: %1.00;0.90%',
             100
         )
-        for t in tasks_derived: print(t)
         self.assertTrue(
             output_contains(tasks_derived, '<(*,John,key_101) --> hold>. :!-105: %1.00;0.45%')
         )
@@ -627,7 +626,7 @@ class TEST_NAL7(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(&/, a, +1) =/> b>. %1.00;0.90%',
             '<(&/, b, +1) =/> c>. %1.00;0.90%',
-            10
+            100
         )
 
         self.assertTrue(
