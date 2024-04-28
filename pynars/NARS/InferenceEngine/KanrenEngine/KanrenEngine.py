@@ -301,7 +301,7 @@ class KanrenEngine:
 
                 conclusion = self.determine_order(t1, t2, res[0])
 
-                results.append(((conclusion, r), truth))
+                # results.append(((conclusion, r), truth))
 
                 # variable introduction
                 # TODO: handle nested statements

@@ -37,7 +37,7 @@ class Reasoner:
 
     structural_enabled = True
     immediate_enabled = True
-    compositional_enabled = False
+    compositional_enabled = True
 
     class TheoremItem(Item):
         def __init__(self, theorem, budget: Budget) -> None:
