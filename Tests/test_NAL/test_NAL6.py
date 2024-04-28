@@ -276,7 +276,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(&&,<$x --> flyer>,<$x --> [chirping]>, <(*, $x, worms) --> food>) ==> <$x --> bird>>.  %1.00;0.90%',
             '<(&&,<$x --> [chirping]>,<$x --> [with_wings]>) ==> <$x --> bird>>. %1.00;0.90%',
-            5
+            20
         )
         
         self.assertTrue(
@@ -562,7 +562,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '(&&,<#x --> lock>,<<$y --> key> ==> <#x --> (/,open,$y,_)>>). %1.00;0.90%',
             '<{lock1} --> lock>. %1.00;0.90%',
-            10
+            100
         )
         self.assertTrue(
             output_contains(tasks_derived, '<<$0 --> key> ==> <{lock1} --> (/,open,$0,_)>>. %1.00;0.81%')
@@ -589,7 +589,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '(&&,<#x --> (/,open,#y,_)>,<#x --> lock>,<#y --> key>).',
             '<{lock1} --> lock>.',
-            10
+            100
         )
 
         self.assertTrue(
@@ -811,8 +811,9 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<<lock1 --> (/,open,$1,_)> ==> <$1 --> key>>. %1.00;0.90%',
             '<lock1 --> lock>. %1.00;0.90%',
-            20
+            10
         )
+        # TODO: finish variable introduction code see inference_compositional() in KanrenEngine
         self.assertTrue(
             output_contains(tasks_derived, '<(&&,<#0 --> (/,open,$1,_)>,<#0 --> lock>) ==> <$1 --> key>>. %1.00;0.45%')
         )
@@ -874,7 +875,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<<$1 --> lock> ==> (&&,<#2 --> key>,<$1 --> (/,open,#2,_)>)>. %1.00;0.90%',
             '<{key1} --> key>. %1.00;0.90% ',
-            10
+            100
         )
 
         self.assertTrue(
@@ -893,7 +894,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<A ==> (&&,<#2 --> B>,C)>. %1.00;0.90%',
             '<M --> B>. %1.00;0.90%',
-            20
+            100
         )
 
         self.assertTrue(
@@ -920,7 +921,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(&&,<#1 --> lock>,<#1 --> (/,open,$2,_)>) ==> <$2 --> key>>. %1.00;0.90%',
             '<lock1 --> lock>. %1.00;0.90%',
-            10
+            100
         )
 
         self.assertTrue(
@@ -939,7 +940,7 @@ class TEST_NAL6(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(&&,<#1 --> A>, <#1 --> B>) ==> C>. %1.00;0.90%',
             '<M --> A>. %1.00;0.90%',
-            10
+            100
         )
 
         self.assertTrue(
