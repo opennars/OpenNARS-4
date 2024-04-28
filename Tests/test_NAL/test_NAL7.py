@@ -412,12 +412,11 @@ class TEST_NAL7(unittest.TestCase):
 
         10
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<John --> (/,open,_,door_101)>. :|: ',
             '<John --> (/,enter,_,room_101)>. :|: ',
-            'John.'
+            100
         )
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
         self.assertTrue(
             output_contains(tasks_derived, '<<$1 --> (/,enter,_,room_101)> =\> (&/,<$1 --> (/,open,_,door_101)>,+6)>. :!6: %1.00;0.45%')
         )
