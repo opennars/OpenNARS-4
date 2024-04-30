@@ -7,12 +7,6 @@ class KanrenEngine:
         with open(f'{Path(__file__).parent}/nal-rules.yml', 'r') as file:
             config = yaml.safe_load(file)
 
-        # print(config['rules'])
-        # for level, rules in config['rules'].items():
-        #     print(level)
-        #     for rule in split_rules(rules):
-        #         print(rule)
-
         nal1_rules = split_rules(config['rules']['nal1'])
         nal2_rules = split_rules(config['rules']['nal2'])
         nal3_rules = split_rules(config['rules']['nal3'])
@@ -79,7 +73,7 @@ class KanrenEngine:
         for rule in self.rules_backward:
             res = self.apply(rule, lt, lq, backward=True)
             if res is not None:
-                # print(res[0], res[0].complexity, q.term.complexity + t.term.complexity)
+                # TODO: what is a better way of handling this?
                 if res[0].complexity > (q.term.complexity + t.term.complexity):
                     continue
                 (p1, p2, c) = rule[0]
@@ -99,11 +93,11 @@ class KanrenEngine:
 
     # INFERENCE (SYLLOGISTIC)
     @cache_notify
-    def inference(self, t1: Sentence, t2: Sentence, common: Term) -> list:
+    def inference(self, t1: Sentence, t2: Sentence) -> list:
         # print(f'Inference syllogistic\n{t1}\n{t2}')
         results = []
 
-        t1e, t2e = variable_elimination(t1.term, t2.term, common)
+        t1e, t2e = variable_elimination(t1.term, t2.term)
 
         # TODO: what about other possibilities?
         t1t = t1e[0] if len(t1e) else t1.term
@@ -118,8 +112,7 @@ class KanrenEngine:
         l2 = logic(t2t)
 
         # temporal = t1.tense is not Tense.Eternal and t2.tense is not Tense.Eternal
-        # print(temporal)
-        # t0 = time()
+
         for rule in self.rules_syllogistic:
         
             # if temporal:
@@ -138,7 +131,6 @@ class KanrenEngine:
                     
             res = self.apply(rule, l1, l2)
             if res is not None:
-                # print('>', res[0])
                 r, _ = rule[1]
                 inverse = True if r[-1] == "'" else False
                 r = r.replace("'", '') # remove trailing '
@@ -164,12 +156,6 @@ class KanrenEngine:
             #     tr1, tr2 = (t1.truth, t2.truth) if not inverse else (t2.truth, t1.truth)
             #     truth = truth_functions[r](tr1, tr2)
             #     results.append((res, truth))
-            
-            # x = int((time()-t0)*1000)
-            # if x > 100:
-            #     print(rule)
-
-            # t0 = time()
 
         return results
 
@@ -183,10 +169,7 @@ class KanrenEngine:
             result = run(1, c, eq((p1, p2), (l1, l2)), *constraints)
 
         if result:
-            # t0 = time()
             conclusion = term(result[0])
-            # print('--', time()-t0)
-            # print(conclusion)
             
             # apply diff connector
             difference = diff(conclusion)
@@ -340,114 +323,4 @@ class KanrenEngine:
                 if diff < 0:
                     conclusion = conclusion.retrospective()
         return conclusion
-
-
-
-### EXAMPLES ###
-
-# engine = KanrenEngine()
-
-# from time import time
-
-# j1 = parse('<bird --> (&, animal, [flying])>.')
-
-# t = time()
-# print(
-#     engine.inference_structural(j1)
-# )
-# print(time() - t)
-
-# print("\n\n")
-
-# t1 = parse('<bird-->robin>. %1.000;0.474%')
-# t2 = parse('<bird-->animal>. %1.000;0.900%')
-# print(engine.inference_compositional(t1, t2))
-
-# print("\n")
-
-# exit()
-'''
-# CONDITIONAL
-
-t1 = parse('<(&&, A, B, C, D) ==> Z>.')
-
-t2 = parse('B.') # positive example
-print(engine.inference(t1, t2))
-
-t2 = parse('U.') # negative example
-print(engine.inference(t1, t2))
-
-t2 = parse('(&&, B, C).') # complex example
-print(engine.inference(t1, t2))
-
-print('\n--NAL 5--')
-
-t2 = parse('<U ==> B>.')
-print(engine.inference(t1, t2))
-
-t2 = parse('<B ==> Z>.')
-# print(engine.inference(t1, t2))
-for r in engine.inference(t1, t2):
-    print(r)
-
-t2 = parse('<U ==> B>.')
-print(engine.inference(t1, t2))
-
-print('\n----DEDUCTION')
-
-import time
-def timeit():
-    t = time.time()
-    engine.inference(t1, t2)
-    t = time.time() - t
-    print(len(engine.rules), 'rules processed in', t, 'seconds')
-
-# DEDUCTION
-
-t1 = parse('<bird --> animal>.')
-t2 = parse('<robin --> bird>.')
-print(engine.inference(t1, t2))
-timeit()
-
-print("\n\n----VARIABLE SUBSTITUTION")
-
-# CONDITIONAL SYLLOGISTIC
-
-print('\n--nal6.7')
-t1 = parse('<<$x --> bird> ==> <$x --> animal>>.')
-t2 = parse('<robin --> bird>.')
-print(engine.inference(t1, t2))
-timeit()
-
-print('\n--nal6.8')
-t1 = parse('<<$x --> bird> ==> <$x --> animal>>.')
-t2 = parse('<tiger --> animal>.')
-print(engine.inference(t1, t2))
-timeit()
-
-print('\n--nal6.12')
-
-t1 = parse('<(&&,<$x --> flyer>,<$x --> [chirping]>, <(*, $x, worms) --> food>) ==> <$x --> bird>>.')
-t2 = parse('<{Tweety} --> flyer>.')
-print(engine.inference(t1, t2))
-timeit()
-
-
-# THEOREMS
-
-print('\n\n----THEOREMS')
-
-theorem = parse('<<$S <-> $P> ==> <$S --> $P>>.', False)
-
-t1 = parse('<dog <-> pet>.', False)
-
-# t2 = engine._variable_elimination(theorem, t1)[0]
-
-# from pynars.Narsese import Base
-# from pynars import Global
-
-# t1 = Sentence(t1, Punctuation.Judgement, Stamp(Global.time, Global.time, None, Base((Global.get_input_id(),)), is_external=False))
-# t2 = Sentence(t2, Punctuation.Judgement, Stamp(Global.time, Global.time, None, Base((Global.get_input_id(),)), is_external=False))
-# print(t1, t2)
-print(engine.inference(theorem, t1))
-'''
+    

@@ -15,7 +15,7 @@ from pynars.Narsese._py.Compound import Compound
 from pynars.Narsese._py.Connector import Connector
 from pynars.Narsese._py.Task import Belief
 from pynars.Narsese._py.Evidence import Base
-from pynars.Narsese import Copula, Item
+from pynars.Narsese import Term, Copula, Item
 from ..DataStructures import Bag, Memory, NarseseChannel, Buffer, Task, Concept, EventBuffer
 from ..InferenceEngine import GeneralEngine, TemporalEngine, VariableEngine, KanrenEngine
 from pynars import Config
@@ -62,13 +62,6 @@ class Reasoner:
         else:
             self.inference = GeneralEngine(add_rules=nal_rules)
         
-        # a = util.parse('(*,a,b,(*,c,d),e,(*,f,g)).')
-        # b = util.logic(a.term)
-
-        # c = util.term(b)
-
-
-        # self.inference = GeneralEngine(add_rules=nal_rules)
         self.variable_inference = VariableEngine(add_rules=nal_rules)
         self.temporal_inference = TemporalEngine(
             add_rules=nal_rules)  # for temporal causal reasoning
@@ -359,30 +352,14 @@ class Reasoner:
 
         task: Task = task_link.target
 
-        # print('')
-        # print(task.sentence)
-
-        # _t0 = time()
-        # t0 = time()
-
-        # _t1 = time() - t0 + 1e-6 # add epsilon to avoid division by 0
-        # print('single premise', 1//_t1)
-        # t0 = _t1
-        # self._run_count += 1
-
         # inference for two-premises rules
         term_links = []
         term_link_valid = None
         is_valid = False
-        # n = len(concept.term_links)
-        # t0 = time()
-        # iter = 0
+
         for _ in range(len(concept.term_links)): # TODO: should limit max number of links to process
-            # iter += 1
             # To find a belief, which is valid to interact with the task, by iterating over the term-links.
-            # _t = time()
             term_link: TermLink = concept.term_links.take(remove=True)
-            # print(round((time() - _t)*1000, 2))
             term_links.append(term_link)
 
             if not task_link.novel(term_link, Global.time):
@@ -395,25 +372,18 @@ class Reasoner:
                 continue
 
             if task == belief:
+                # TODO: here
                 # if task.sentence.punct == belief.sentence.punct:
                 #     is_revision = revisible(task, belief)
                 continue
-            # TODO: currently causes infinite recursion with variables
+            # TODO: currently causes infinite recursion in some cases
             # elif task.term.equal(belief.term): 
-            #     # TODO: here
             #     continue
             elif not belief.evidential_base.is_overlaped(task.evidential_base):
                 term_link_valid = term_link
                 is_valid = True
                 break
 
-        # t1 = time() - t0
-        # loop_time = round(t1 * 1000, 2)
-        # if loop_time > 20:
-        #     print("hello")
-        # print(iter, '/', n, "- loop time", loop_time, is_valid)
-        # print(is_valid, "Concept", concept.term)
-            
         
         ### IMMEDIATE
 
@@ -452,7 +422,6 @@ class Reasoner:
                         tasks_derived.append(task_derived)
 
                     if task.is_judgement: # TODO: hadle other cases
-                        # TODO: calculate budget
                         budget = Budget_forward(truth, task_link.budget, None)
                         budget.priority = budget.priority * 1/term[0].complexity
                         sentence_derived = Judgement(term[0], stamp_task, truth)
@@ -470,25 +439,19 @@ class Reasoner:
         ### STRUCTURAL
         
         if self.structural_enabled:
-            # self.num_runs += 1
-            # print(self.num_runs)
-            if task.is_judgement or task.is_goal or task.is_question: #and not task.structural_rules_applied: # TODO: handle other cases
+            if task.is_judgement or task.is_goal or task.is_question: # TODO: handle other cases
                 Global.States.record_premises(task)
 
                 results = []
 
-                # t0 = time()
                 theorems = []
                 for _ in range(min(self.theorems_per_cycle, len(self.all_theorems))):
                     theorem = self.all_theorems.take(remove=False)
                     theorems.append(theorem)
                 
                 for theorem in theorems:
-                    # print(term(theorem._theorem))
-                    # results.extend(self.inference_structural(task.sentence))
                     res, cached = self.inference.inference_structural(task.sentence, theorem._theorem)
-                    # print(res)
-                    # print("")
+
                     if not cached:
                         if res:
                             new_priority = theorem.budget.priority + 0.1
@@ -499,13 +462,7 @@ class Reasoner:
                         self.all_theorems.put(theorem)
 
                     results.extend(res)
-                    # t1 = time() - t0
-                    # self._structural_time_avg += (t1 - self._structural_time_avg) / self._run_count
-                    # print("structural: ", 1 // self._structural_time_avg, "per second")
-                    # for r in results:
-                    #     print(r, r[0][0].complexity)
-                    # print(task.budget.priority)
-                    # print(task_link.budget.priority)
+                    
                     for term, truth in results:
                         # TODO: how to properly handle stamp for structural rules?
                         stamp_task: Stamp = task.stamp
@@ -520,31 +477,20 @@ class Reasoner:
                             tasks_derived.append(task_derived)
 
                         if task.is_judgement: # TODO: hadle other cases
-                            # TODO: calculate budget
                             budget = Budget_forward(truth, task_link.budget, None)
                             budget.priority = budget.priority * 1/term[0].complexity
                             sentence_derived = Judgement(term[0], stamp_task, truth)
                             task_derived = Task(sentence_derived, budget)
-                            # task_derived.structural_rules_applied = True
                             
                             # normalize the variable indices
                             task_derived.term._normalize_variables()
                             tasks_derived.append(task_derived)
-
-                    # record structural rule application for task
-                    # task.structural_rules_applied = True
-
-                    # _t1 = time() - t0 + 1e-6 # add epsilon to avoid division by 0
-                    # print('structural', 1//_t1)
-                    # t0 = _t1
         
 
         if is_valid \
             and task.is_judgement: # TODO: handle other cases
             
             Global.States.record_premises(task, belief)
-
-            # t0 = time()
                     
             results = []
 
@@ -566,32 +512,10 @@ class Reasoner:
                     # beleif_eternalized = belief # TODO: should it be added into the `tasks_derived`?
 
             # SYLLOGISTIC
-            res, cached = self.inference.inference(task.sentence, belief.sentence, concept.term)
-
-            # t1 = time() - t0 + 1e-6 # add epsilon to avoid division by 0
-            # print('syllogistic', 1//t1)
-            # t0 = t1
-            # t1 = time() - t0
-
-            # print("inf:", 1 // t1, "per second")
-
-            # self._inference_time_avg += (t1 - self._inference_time_avg) / self._run_count
-
-            # print("avg:", 1 // self._inference_time_avg, "per second")
-            
-            # t0 = time()
-
-            
-            # t1 = time() - t0
-            # print("inf comp:", 1 // t1, "per second")
-            # t1 = time() - t0 + 1e-6 # add epsilon to avoid division by 0
-            # print('compositional', 1//t1)
-            # t0 = t1
+            res, cached = self.inference.inference(task.sentence, belief.sentence)
 
             if not cached:
                 results.extend(res)
-
-            # print(">>>", results)
 
             for term, truth in results:
 
@@ -604,73 +528,7 @@ class Reasoner:
                 t1 = task.sentence.term
                 t2 = belief.sentence.term
 
-                if type(conclusion) is Compound \
-                and conclusion.connector == Connector.Conjunction:
-                    # TODO: finish this
-                    if type(belief.term) is Compound or type(belief.term) is Statement:
-                        if belief.term.is_predictive:
-                            conclusion = conclusion.predictive()
-                        if belief.term.is_concurrent:
-                            conclusion = conclusion.concurrent()
-
-                if type(conclusion) is Statement \
-                and (conclusion.copula == Copula.Equivalence \
-                or conclusion.copula == Copula.Implication):
-
-                    if type(t1) is Statement \
-                    and type(t2) is Statement:
-                        
-                        if t1.copula.is_concurrent and t2.copula.is_concurrent:
-                            # both concurrent
-                            conclusion = conclusion.concurrent()
-
-                        if t1.copula.is_predictive and t2.copula.is_predictive:
-                            # both predictive
-                            conclusion = conclusion.predictive()
-
-                        if t1.copula.is_retrospective and t2.copula.is_retrospective:
-                            # both retrospective
-                            conclusion = conclusion.retrospective()
-
-                        if (t1.copula.is_concurrent and t2.copula.is_predictive) \
-                        or (t2.copula.is_concurrent and t1.copula.is_predictive):
-                            # one concurrent, one predictive
-                            conclusion = conclusion.predictive()
-                        
-                        if (t1.copula.is_concurrent and t2.copula.is_retrospective) \
-                        or (t2.copula.is_concurrent and t1.copula.is_retrospective):
-                            # one concurrent, one retrospective
-                            conclusion = conclusion.retrospective()
-
-                        terms = [] # more complex combinations require extra work
-
-                        if t1.copula.is_predictive and t2.copula.is_retrospective:
-                            terms = [t1.subject, t1.predicate]
-                            if t2.subject in terms:
-                                idx = terms.index(t2.subject)
-                                terms.insert(idx, t2.predicate)
-                            if t2.predicate in terms:
-                                idx = terms.index(t2.predicate)
-                                terms.insert(idx + 1, t2.subject)
-                        elif t2.copula.is_predictive and t1.copula.is_retrospective:
-                            terms = [t2.subject, t2.predicate]
-                            if t1.subject in terms:
-                                idx = terms.index(t1.subject)
-                                terms.insert(idx, t1.predicate)
-                            if t1.predicate in terms:
-                                idx = terms.index(t1.predicate)
-                                terms.insert(idx + 1, t1.subject)
-
-                        if conclusion.predicate in terms and conclusion.subject in terms:
-                            cpi = terms.index(conclusion.predicate)
-                            csi = terms.index(conclusion.subject)
-                            if cpi > csi:
-                                # predicate after subject
-                                conclusion = conclusion.predictive()
-                            else:
-                                # predicate before subject
-                                conclusion = conclusion.retrospective()
-
+                conclusion = self.determine_temporal_order(t1, t2, conclusion)
 
                 # calculate new stamp
                 stamp_task: Stamp = task.stamp
@@ -697,9 +555,7 @@ class Reasoner:
                 
                 def add_task(term):
                     sentence_derived = Judgement(term, stamp, truth)
-                    # print(stamp.tense == sentence_derived.stamp.tense)
                     task_derived = Task(sentence_derived, budget)
-                    # print(task_derived.sentence.tense, task_derived)
                     # normalize the variable indices
                     task_derived.term._normalize_variables()
                     tasks_derived.append(task_derived)
@@ -722,7 +578,7 @@ class Reasoner:
             results = []
 
             res, cached = self.inference.backward(task.sentence, belief.sentence)
-            # print('\nBackward:', res)
+
             if not cached:
                 results.extend(res)
 
@@ -739,7 +595,7 @@ class Reasoner:
             results = []
 
             res, cached = self.inference.backward(task.sentence, belief.sentence)
-            # print('\nBackward:', res)
+
             if not cached:
                 results.extend(res)
 
@@ -766,3 +622,72 @@ class Reasoner:
         
         return list(filter(lambda t: t.is_question or t.truth.c > 0, tasks_derived))
     
+    def determine_temporal_order(self, t1: Term, t2: Term, conclusion: Term):
+        if type(conclusion) is Compound \
+        and conclusion.connector == Connector.Conjunction:
+            # TODO: finish this
+            if type(t2) is Compound or type(t2) is Statement:
+                if t2.is_predictive:
+                    conclusion = conclusion.predictive()
+                if t2.is_concurrent:
+                    conclusion = conclusion.concurrent()
+
+        if type(conclusion) is Statement \
+        and (conclusion.copula == Copula.Equivalence \
+        or conclusion.copula == Copula.Implication):
+
+            if type(t1) is Statement \
+            and type(t2) is Statement:
+                
+                if t1.copula.is_concurrent and t2.copula.is_concurrent:
+                    # both concurrent
+                    conclusion = conclusion.concurrent()
+
+                if t1.copula.is_predictive and t2.copula.is_predictive:
+                    # both predictive
+                    conclusion = conclusion.predictive()
+
+                if t1.copula.is_retrospective and t2.copula.is_retrospective:
+                    # both retrospective
+                    conclusion = conclusion.retrospective()
+
+                if (t1.copula.is_concurrent and t2.copula.is_predictive) \
+                or (t2.copula.is_concurrent and t1.copula.is_predictive):
+                    # one concurrent, one predictive
+                    conclusion = conclusion.predictive()
+                
+                if (t1.copula.is_concurrent and t2.copula.is_retrospective) \
+                or (t2.copula.is_concurrent and t1.copula.is_retrospective):
+                    # one concurrent, one retrospective
+                    conclusion = conclusion.retrospective()
+
+                terms = [] # more complex combinations require extra work
+
+                if t1.copula.is_predictive and t2.copula.is_retrospective:
+                    terms = [t1.subject, t1.predicate]
+                    if t2.subject in terms:
+                        idx = terms.index(t2.subject)
+                        terms.insert(idx, t2.predicate)
+                    if t2.predicate in terms:
+                        idx = terms.index(t2.predicate)
+                        terms.insert(idx + 1, t2.subject)
+                elif t2.copula.is_predictive and t1.copula.is_retrospective:
+                    terms = [t2.subject, t2.predicate]
+                    if t1.subject in terms:
+                        idx = terms.index(t1.subject)
+                        terms.insert(idx, t1.predicate)
+                    if t1.predicate in terms:
+                        idx = terms.index(t1.predicate)
+                        terms.insert(idx + 1, t1.subject)
+
+                if conclusion.predicate in terms and conclusion.subject in terms:
+                    cpi = terms.index(conclusion.predicate)
+                    csi = terms.index(conclusion.subject)
+                    if cpi > csi:
+                        # predicate after subject
+                        conclusion = conclusion.predictive()
+                    else:
+                        # predicate before subject
+                        conclusion = conclusion.retrospective()
+
+        return conclusion

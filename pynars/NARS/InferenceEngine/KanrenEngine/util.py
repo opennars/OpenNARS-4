@@ -118,13 +118,8 @@ def convert_immediate(rule):
 def convert_theorems(theorem):
     # TODO: can we parse statements instead?
     t = parse(theorem+'.', True)
-    # print(theorem)
-    # print(t)
-    # print("")
     l = logic(t, True, True, prefix='_theorem_')
-    # print(l)
-    # print(term(l))
-    # print("\n\n")
+
     matching_rules = []
     for i, rule in enumerate(rules_strong):
         (p1, p2, c) = rule[0]
@@ -253,14 +248,7 @@ def to_list(pair, con) -> list:
 # UNIFICATION #
 ###############
 
-def variable_elimination(t1: Term, t2: Term, common: Term) -> list:
-    # unified = list(filter(None, (unify(logic(t1), logic(t, True, True)) for t in t2.terms))) #if type(t) is not Variable)))
-    # unified.extend(list(filter(None, (unify(logic(t1), logic(_t, True, True)) for t in t2.terms for _t in t.terms)))) #if type(t) is not Variable)))
-    # unified.extend(list(filter(None, (unify(logic(_t), logic(t2, True, True)) for t in t1.terms for _t in t.terms \
-    #                                   if type(t) is not Variable and type(_t) is not Variable))))
-
-    unified = []
-
+def variable_elimination(t1: Term, t2: Term) -> list:
     terms = [
         t1, t2, \
         *t1.terms, *t2.terms, \
@@ -268,40 +256,11 @@ def variable_elimination(t1: Term, t2: Term, common: Term) -> list:
         *chain(*map(lambda t: t.terms if len(t.terms) > 1 else [], t2.terms))
     ]
 
-    # terms = [t1, t2]
-
-    # for t in t1.terms:
-    #     if len(t.terms) > 1 and common in t.terms:
-    #         terms.append(t)
-    #     for _t in t.terms:
-    #         if len(_t.terms) > 1 and common in _t.terms:
-    #             terms.append(_t)
-
-    # for t in t2.terms:
-    #     if len(t.terms) > 1 and common in t.terms:
-    #         terms.append(t)
-    #     for _t in t.terms:
-    #         if len(_t.terms) > 1 and common in _t.terms:
-    #             terms.append(_t)
-
-    # print(">>>", len(terms))
-    # for t in terms:
-    #     print(t)
-    # print('---')
-    # terms = list(filter(lambda x: common in x.terms, terms))
-    # print(">>>", len(terms))
+    unified = []
     for pair in permutations(set(terms), 2):
-        # print('.',pair)
         unified.append(unify(logic(pair[0]), logic(pair[1], True, True)))
-    # print("---")
-    unified = list(filter(None, unified))
 
-    # for r in product()
-    # print('')
-    # print(t1)
-    # print(t2)
-    # print('')
-    # print(list(unified))
+    unified = list(filter(None, unified))
 
     def valid(k, v):
         kname = vname = '.'
@@ -319,14 +278,12 @@ def variable_elimination(t1: Term, t2: Term, common: Term) -> list:
 
     substitution = []
     for u in unified:
-        # print(u)
         if len(u) > 1 and all(valid(k, v) for k, v in u.items()):
             substitution.append(u)
             
     t1s = []
     t2s = []
-    # print('>>', substitution)
-    # print('')
+
     for s in substitution:
         t1r = term(reify(logic(t1, True, True), s))
         if not t1r.identical(t1):

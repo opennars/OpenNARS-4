@@ -9,7 +9,7 @@ t1 = parse('(&/, <(*, SELF, {t002})-->reachable>, <(*, SELF, {t002})-->^pick>).'
 t2 = parse('<(&&, S1, S2) ==> S1>.')
 
 
-t1e, t2e = variable_elimination(t1.term, t2.term, None)
+t1e, t2e = variable_elimination(t1.term, t2.term)
 
 # TODO: what about other possibilities?
 t1t = t1.term#t1e[0] if len(t1e) else t1.term
@@ -32,43 +32,6 @@ conclusion = res[0]
 
 print(conclusion)
 exit()
-
-memory = {}
-
-
-def accept_task(task):
-    for term in get_terms(task):
-        add_task(task, term)
-
-    for concept in memory.items():
-        print(concept, len(concept[1]['tasks']))
-    print('---')
-
-def add_task(task, term):
-    if term not in memory:
-        memory[term] = {'tasks': set(), 'beliefs': set()}
-    memory[term]['tasks'].add(task)
-    memory[term]['beliefs'].add(task)
-
-def get_term(task):
-    return task[:-1]
-
-def get_terms(task):
-    return get_term(task).split()
-
-
-accept_task('A.')
-accept_task('B.')
-accept_task('C.')
-accept_task('A B.')
-accept_task('B C.')
-accept_task('A C.')
-
-
-
-exit()
-
-
 
 engine = KanrenEngine()
 print('--')

@@ -16,7 +16,6 @@ class Task(Item):
     best_solution: 'Task' = None
     processed = False
     immediate_rules_applied = False
-    structural_rules_applied = False
     
     def __init__(self, sentence: Sentence, budget: Budget=None, input_id: int=None) -> None:
         super().__init__(hash(sentence), budget)
