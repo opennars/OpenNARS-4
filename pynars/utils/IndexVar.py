@@ -5,8 +5,6 @@ from typing import Callable, List, Tuple, Type
 from ordered_set import OrderedSet
 from bidict import bidict
 
-from numpy import prod
-
 class IntVar:
     def __init__(self, num: int) -> None:
         self.num = int(num)

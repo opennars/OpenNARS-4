@@ -4,7 +4,6 @@ from pynars.Config import Enable, Config
 from typing import Iterable, List, Set, Type
 from enum import Enum
 from pynars.utils.IndexVar import IndexVar
-from numpy import prod
 from ordered_set import OrderedSet
 # from pynars.utils.tools import find_pos_with_pos, find_var_with_pos
 from copy import copy, deepcopy

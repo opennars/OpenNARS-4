@@ -49,8 +49,8 @@ def rand_seed(x: int):
     import random
     random.seed(x)
     
-    import numpy as np
-    np.random.seed(x)
+    # import numpy as np
+    # np.random.seed(x)
 
     # if using pytorch, set its seed!
     # # import torch

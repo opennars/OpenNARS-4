@@ -1,6 +1,5 @@
 from pynars.Config import Config
 from typing import Type
-import numpy as np
 
 class Truth:
     # analytic: Type['Truth']
