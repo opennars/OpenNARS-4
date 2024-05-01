@@ -136,7 +136,8 @@ class KanrenEngine:
                 r = r.replace("'", '') # remove trailing '
                 tr1, tr2 = (t1.truth, t2.truth) if not inverse else (t2.truth, t1.truth)
                 truth = truth_functions[r](tr1, tr2)
-                results.append((res, truth))
+                conclusion = self.determine_temporal_order(t1.term, t2.term, res[0])
+                results.append(((conclusion, r), truth))
 
             # r, _ = rule[1]
             # inverse = True if r[-1] == "'" else False
@@ -310,6 +311,9 @@ class KanrenEngine:
         conclusion = term(reified)
         return conclusion
 
+
+    # TODO: refactor and merge two temporal order functions
+
     def determine_order(self, t1: Sentence, t2: Sentence, conclusion: Term):
         # TODO: add .temporal() functions to Compound
         # remove this condition when done
@@ -322,5 +326,75 @@ class KanrenEngine:
                     conclusion = conclusion.predictive()
                 if diff < 0:
                     conclusion = conclusion.retrospective()
+        return conclusion
+    
+    def determine_temporal_order(self, t1: Term, t2: Term, conclusion: Term):
+        if type(conclusion) is Compound \
+        and conclusion.connector == Connector.Conjunction:
+            # TODO: finish this
+            if type(t2) is Compound or type(t2) is Statement:
+                if t2.is_predictive:
+                    conclusion = conclusion.predictive()
+                if t2.is_concurrent:
+                    conclusion = conclusion.concurrent()
+
+        if type(conclusion) is Statement \
+        and (conclusion.copula == Copula.Equivalence \
+        or conclusion.copula == Copula.Implication):
+
+            if type(t1) is Statement \
+            and type(t2) is Statement:
+                
+                if t1.copula.is_concurrent and t2.copula.is_concurrent:
+                    # both concurrent
+                    conclusion = conclusion.concurrent()
+
+                if t1.copula.is_predictive and t2.copula.is_predictive:
+                    # both predictive
+                    conclusion = conclusion.predictive()
+
+                if t1.copula.is_retrospective and t2.copula.is_retrospective:
+                    # both retrospective
+                    conclusion = conclusion.retrospective()
+
+                if (t1.copula.is_concurrent and t2.copula.is_predictive) \
+                or (t2.copula.is_concurrent and t1.copula.is_predictive):
+                    # one concurrent, one predictive
+                    conclusion = conclusion.predictive()
+                
+                if (t1.copula.is_concurrent and t2.copula.is_retrospective) \
+                or (t2.copula.is_concurrent and t1.copula.is_retrospective):
+                    # one concurrent, one retrospective
+                    conclusion = conclusion.retrospective()
+
+                terms = [] # more complex combinations require extra work
+
+                if t1.copula.is_predictive and t2.copula.is_retrospective:
+                    terms = [t1.subject, t1.predicate]
+                    if t2.subject in terms:
+                        idx = terms.index(t2.subject)
+                        terms.insert(idx, t2.predicate)
+                    if t2.predicate in terms:
+                        idx = terms.index(t2.predicate)
+                        terms.insert(idx + 1, t2.subject)
+                elif t2.copula.is_predictive and t1.copula.is_retrospective:
+                    terms = [t2.subject, t2.predicate]
+                    if t1.subject in terms:
+                        idx = terms.index(t1.subject)
+                        terms.insert(idx, t1.predicate)
+                    if t1.predicate in terms:
+                        idx = terms.index(t1.predicate)
+                        terms.insert(idx + 1, t1.subject)
+
+                if conclusion.predicate in terms and conclusion.subject in terms:
+                    cpi = terms.index(conclusion.predicate)
+                    csi = terms.index(conclusion.subject)
+                    if cpi > csi:
+                        # predicate after subject
+                        conclusion = conclusion.predictive()
+                    else:
+                        # predicate before subject
+                        conclusion = conclusion.retrospective()
+
         return conclusion
     

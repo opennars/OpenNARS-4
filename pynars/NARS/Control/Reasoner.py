@@ -521,14 +521,7 @@ class Reasoner:
 
                 budget = Budget_forward(truth, task_link.budget, term_link_valid.budget)
 
-                # Add temporal dimension
-
                 conclusion = term[0]
-
-                t1 = task.sentence.term
-                t2 = belief.sentence.term
-
-                conclusion = self.determine_temporal_order(t1, t2, conclusion)
 
                 # calculate new stamp
                 stamp_task: Stamp = task.stamp
@@ -622,72 +615,3 @@ class Reasoner:
         
         return list(filter(lambda t: t.is_question or t.truth.c > 0, tasks_derived))
     
-    def determine_temporal_order(self, t1: Term, t2: Term, conclusion: Term):
-        if type(conclusion) is Compound \
-        and conclusion.connector == Connector.Conjunction:
-            # TODO: finish this
-            if type(t2) is Compound or type(t2) is Statement:
-                if t2.is_predictive:
-                    conclusion = conclusion.predictive()
-                if t2.is_concurrent:
-                    conclusion = conclusion.concurrent()
-
-        if type(conclusion) is Statement \
-        and (conclusion.copula == Copula.Equivalence \
-        or conclusion.copula == Copula.Implication):
-
-            if type(t1) is Statement \
-            and type(t2) is Statement:
-                
-                if t1.copula.is_concurrent and t2.copula.is_concurrent:
-                    # both concurrent
-                    conclusion = conclusion.concurrent()
-
-                if t1.copula.is_predictive and t2.copula.is_predictive:
-                    # both predictive
-                    conclusion = conclusion.predictive()
-
-                if t1.copula.is_retrospective and t2.copula.is_retrospective:
-                    # both retrospective
-                    conclusion = conclusion.retrospective()
-
-                if (t1.copula.is_concurrent and t2.copula.is_predictive) \
-                or (t2.copula.is_concurrent and t1.copula.is_predictive):
-                    # one concurrent, one predictive
-                    conclusion = conclusion.predictive()
-                
-                if (t1.copula.is_concurrent and t2.copula.is_retrospective) \
-                or (t2.copula.is_concurrent and t1.copula.is_retrospective):
-                    # one concurrent, one retrospective
-                    conclusion = conclusion.retrospective()
-
-                terms = [] # more complex combinations require extra work
-
-                if t1.copula.is_predictive and t2.copula.is_retrospective:
-                    terms = [t1.subject, t1.predicate]
-                    if t2.subject in terms:
-                        idx = terms.index(t2.subject)
-                        terms.insert(idx, t2.predicate)
-                    if t2.predicate in terms:
-                        idx = terms.index(t2.predicate)
-                        terms.insert(idx + 1, t2.subject)
-                elif t2.copula.is_predictive and t1.copula.is_retrospective:
-                    terms = [t2.subject, t2.predicate]
-                    if t1.subject in terms:
-                        idx = terms.index(t1.subject)
-                        terms.insert(idx, t1.predicate)
-                    if t1.predicate in terms:
-                        idx = terms.index(t1.predicate)
-                        terms.insert(idx + 1, t1.subject)
-
-                if conclusion.predicate in terms and conclusion.subject in terms:
-                    cpi = terms.index(conclusion.predicate)
-                    csi = terms.index(conclusion.subject)
-                    if cpi > csi:
-                        # predicate after subject
-                        conclusion = conclusion.predictive()
-                    else:
-                        # predicate before subject
-                        conclusion = conclusion.retrospective()
-
-        return conclusion
