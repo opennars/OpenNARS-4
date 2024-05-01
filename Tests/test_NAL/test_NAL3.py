@@ -150,7 +150,7 @@ class TEST_NAL3(unittest.TestCase):
         '''
         tasks_derived = process_two_premises(
             '<robin --> (|,bird,swimmer)>. %1.00;0.90%', 
-            '(--, <robin --> swimmer>). %1.00;0.90%', 
+            '<robin --> swimmer>. %0.00;0.90%', 
             20
         )
         self.assertTrue(
@@ -160,7 +160,7 @@ class TEST_NAL3(unittest.TestCase):
         nars.reset()
 
         tasks_derived = process_two_premises(
-            '(--, <robin --> swimmer>). %1.00;0.90%', 
+            '<robin --> swimmer>. %0.00;0.90%', 
             '<robin --> (|,bird,swimmer)>. %1.00;0.90%', 
             20
         )
@@ -186,23 +186,23 @@ class TEST_NAL3(unittest.TestCase):
         ''outputMustContain('<robin --> mammal>. %0.00;0.81%')
         '''
         tasks_derived = process_two_premises(
-            '(--, <robin --> swimmer>). %1.00;0.90%', 
-            '(--, <robin --> (-,mammal,swimmer)>). %1.00;0.90%', 
+            '<robin --> swimmer>. %0.00;0.90%', 
+            '<robin --> (-,mammal,swimmer)>. %0.00;0.90%', 
             32
         )
         self.assertTrue(
-            output_contains(tasks_derived, '(--, <robin --> mammal>). %1.00;0.81%')
+            output_contains(tasks_derived, '<robin --> mammal>. %0.00;0.81%')
         )
 
         nars.reset()
 
         tasks_derived = process_two_premises(
-            '(--, <robin --> (-,mammal,swimmer)>). %1.00;0.90%', 
-            '(--, <robin --> swimmer>). %1.00;0.90%', 
+            '<robin --> (-,mammal,swimmer)>. %0.00;0.90%', 
+            '<robin --> swimmer>. %0.00;0.90%', 
             32
         )
         self.assertTrue(
-            output_contains(tasks_derived, '(--, <robin --> mammal>). %1.00;0.81%')
+            output_contains(tasks_derived, '<robin --> mammal>. %0.00;0.81%')
         )      
 
         pass

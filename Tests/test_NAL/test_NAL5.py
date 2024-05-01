@@ -557,12 +557,12 @@ class TEST_NAL5(unittest.TestCase):
         ''outputMustContain('<<robin --> bird> ==> <robin --> animal>>. %0.00;0.81%')
         '''
         tasks_derived = process_two_premises(
-            '(--, <<robin --> bird> ==> (&&,<robin --> animal>,<robin --> [flying]>)>). %1.00;0.90%', 
+            '<<robin --> bird> ==> (&&,<robin --> animal>,<robin --> [flying]>)>. %0.00;0.90%', 
             '<<robin --> bird> ==> <robin --> [flying]>>. %1.00;0.90%', 
-            10
+            200
         )
         self.assertTrue(
-            output_contains(tasks_derived, '(--, <<robin --> bird> ==> <robin --> animal>>). %1.00;0.81%')
+            output_contains(tasks_derived, '<<robin --> bird> ==> <robin --> animal>>. %0.00;0.81%')
         )
         pass
 
@@ -583,23 +583,23 @@ class TEST_NAL5(unittest.TestCase):
         ''outputMustContain('<robin --> swimmer>. %0.00;0.81%')
         '''
         tasks_derived = process_two_premises(
-            '(--, (&&,<robin --> [flying]>,<robin --> swimmer>)). %1.00;0.90% ', 
+            '(&&,<robin --> [flying]>,<robin --> swimmer>). %0.00;0.90% ', 
             '<robin --> [flying]>. %1.00;0.90%', 
-            20
+            100
         )
         self.assertTrue(
-            output_contains(tasks_derived, '(--, <robin --> swimmer>). %1.00;0.81%')
+            output_contains(tasks_derived, '<robin --> swimmer>. %0.00;0.81%')
         )
 
         nars.reset()
 
         tasks_derived = process_two_premises(
             '<robin --> [flying]>. %1.00;0.90%', 
-            '(--, (&&,<robin --> [flying]>,<robin --> swimmer>)). %1.00;0.90% ', 
-            20
+            '(&&,<robin --> [flying]>,<robin --> swimmer>). %0.00;0.90% ', 
+            100
         )
         self.assertTrue(
-            output_contains(tasks_derived, '(--, <robin --> swimmer>). %1.00;0.81%')
+            output_contains(tasks_derived, '<robin --> swimmer>. %0.00;0.81%')
         )
 
         pass
@@ -622,7 +622,7 @@ class TEST_NAL5(unittest.TestCase):
         '''
         tasks_derived = process_two_premises(
             '(||,<robin --> [flying]>,<robin --> swimmer>). %1.00;0.90% ', 
-            '(--, <robin --> swimmer>). %1.00;0.90%', 
+            '<robin --> swimmer>. %0.00;0.90%', 
             50
         )
         self.assertTrue(
