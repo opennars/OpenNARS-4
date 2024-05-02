@@ -84,6 +84,9 @@ class Config:
 
     maximum_evidental_base_length = 20000
 
+    # cycle metrics
+    cycle_durations_window_length = 100
+
     @classmethod
     def check(cls):
         '''Check if each parameter is valid'''
