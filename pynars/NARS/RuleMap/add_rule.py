@@ -8,8 +8,6 @@ from typing import Any, List, Tuple, Union
 from typing_extensions import Protocol
 from collections import OrderedDict
 
-from numpy import product
-
 from pynars.Config import Enable
 from pynars.NARS.RuleMap.Interface import Interface_CompositionalRules, Interface_SyllogisticRules, Interface_DecompositionalRules, Interface_TransformRules, Interface_ConditionalRules, Interface_TemporalRules, Interface_VariableRules
 from pynars.Narsese import Copula, Task
