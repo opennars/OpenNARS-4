@@ -120,21 +120,6 @@ class Reasoner:
         return tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest, (
             task_operation_return, task_executed)
 
-    def do_cycle_metrics(self, start_cycle_time_in_seconds: float):
-        #  record some metrics
-        total_cycle_duration_in_seconds = time() - start_cycle_time_in_seconds
-        self.last_cycle_duration = total_cycle_duration_in_seconds # store the cycle duration
-        # put it in with the others to find the avg duration
-        self.cycles_durations_window.append(total_cycle_duration_in_seconds)
-        self.cycles_duration_window_sum += total_cycle_duration_in_seconds
-
-        # we only want to keep track of a certain number of cycles, so remove old cycles
-        if len(self.cycles_durations_window) > Config.Config.cycle_durations_window_length:
-
-            self.cycles_duration_window_sum -= self.cycles_durations_window[0]
-            self.cycles_durations_window.pop(0)
-
-        self.avg_cycle_duration = self.cycles_duration_window_sum / len(self.cycles_durations_window) # avg seconds per 1 cycle
 
     def consider(self, tasks_derived: List[Task]):
         """
@@ -298,3 +283,20 @@ class Reasoner:
             Operation.register(op, callback)
             return op
         return None
+
+    def do_cycle_metrics(self, start_cycle_time_in_seconds: float):
+        #  record some metrics
+        total_cycle_duration_in_seconds = time() - start_cycle_time_in_seconds
+        self.last_cycle_duration = total_cycle_duration_in_seconds # store the cycle duration
+        # put it in with the others to find the avg duration
+        self.cycles_durations_window.append(total_cycle_duration_in_seconds)
+        self.cycles_duration_window_sum += total_cycle_duration_in_seconds
+
+        # we only want to keep track of a certain number of cycles, so remove old cycles
+        if len(self.cycles_durations_window) > Config.Config.cycle_durations_window_length:
+
+            self.cycles_duration_window_sum -= self.cycles_durations_window[0]
+            self.cycles_durations_window.pop(0)
+
+        self.avg_cycle_duration = self.cycles_duration_window_sum / len(self.cycles_durations_window) # avg seconds per 1 cycle
+
