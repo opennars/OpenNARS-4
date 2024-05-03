@@ -1,0 +1,12 @@
+bidict>=0.21.2
+depq>=1.5.5
+jstyleson>=0.0.2
+pyyaml
+lark==0.12.0
+ordered-set>=4.0.2
+sty>=1.0.0rc2
+tqdm<=3.1.4
+typing>=3.7.4.3
+typing_extensions>=4.0.1
+sparse-lut>=1.0.0
+miniKanren>=1.0.3

@@ -1,4 +1,3 @@
-from networkx.generators.random_graphs import fast_gnp_random_graph
 from pynars.NARS.DataStructures._py.Link import LinkType
 from pynars.NARS.RuleMap import Interface_SyllogisticRules, RuleMap
 from pynars.Narsese import Budget

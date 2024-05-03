@@ -1,10 +1,11 @@
 from functools import reduce
 from statistics import mean
+from operator import mul
 
 Not = lambda x: (1-x)
 
-And = lambda *x: reduce(lambda a,b: a*b, x, 1)
-Or  = lambda *x: 1 - reduce(lambda a,b: a*(1-b), x, 1)
+And = lambda *x: reduce(mul, x, 1)
+Or  = lambda *x: 1 - reduce(mul, (1 - xi for xi in x), 1)
 Average = lambda *x: mean(x)
 
 def Scalar(x): 

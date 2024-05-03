@@ -10,7 +10,6 @@ from typing import Iterable, List, Type, Union
 from ordered_set import OrderedSet
 from typing import Set
 from pynars.utils.tools import list_contains
-import numpy as np
 from pynars.Global import States
 
 
@@ -368,9 +367,13 @@ class Compound(Term):  # , OrderedSet):
                 set2: Iterable[Term] = o.terms - self.terms
                 if len(set1) == len(set2) == 0:
                     return True
-                eq_array = np.array([[term1.equal(term2)
-                                    for term2 in set2] for term1 in set1])
-                if np.prod(eq_array.sum(axis=0)) > 0 and np.prod(eq_array.sum(axis=1)) > 0:
+                # ChatGPT: directly returns the result of the logical AND condition, 
+                # checking if all column sums and all row sums are greater than zero. 
+                # This uses the built-in all() function to ensure every sum in each direction (column and row) 
+                # is greater than zero. The zip(*eq_array) unpacks each row of eq_array into columns.
+                eq_array = [[term1.equal(term2)
+                             for term2 in set2] for term1 in set1]
+                if all(sum(col) > 0 for col in zip(*eq_array)) and all(sum(row) > 0 for row in eq_array):
                     return True
                 else:
                     return False
