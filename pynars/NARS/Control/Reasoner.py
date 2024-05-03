@@ -50,9 +50,8 @@ class Reasoner:
         self.u_top_level_attention = 0.5
 
         # metrics
+        self.cycles_count = 0
         self.last_cycle_duration = 0
-        self.cycles_durations_window = []
-        self.cycles_duration_window_sum = 0
         self.avg_cycle_duration = 0
 
     def reset(self):
@@ -288,15 +287,6 @@ class Reasoner:
         #  record some metrics
         total_cycle_duration_in_seconds = time() - start_cycle_time_in_seconds
         self.last_cycle_duration = total_cycle_duration_in_seconds # store the cycle duration
-        # put it in with the others to find the avg duration
-        self.cycles_durations_window.append(total_cycle_duration_in_seconds)
-        self.cycles_duration_window_sum += total_cycle_duration_in_seconds
-
-        # we only want to keep track of a certain number of cycles, so remove old cycles
-        if len(self.cycles_durations_window) > Config.Config.cycle_durations_window_length:
-
-            self.cycles_duration_window_sum -= self.cycles_durations_window[0]
-            self.cycles_durations_window.pop(0)
-
-        self.avg_cycle_duration = self.cycles_duration_window_sum / len(self.cycles_durations_window) # avg seconds per 1 cycle
-
+        # calculate average
+        self.cycles_count += 1
+        self.avg_cycle_duration += (self.last_cycle_duration - self.avg_cycle_duration) / self.cycles_count
