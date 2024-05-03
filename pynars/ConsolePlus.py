@@ -223,9 +223,9 @@ def toggle_silent() -> None:
 @cmd_register('cycles')
 def cycles(*args: List[str]) -> None:
     '''Prints the "average cycles per second" metric'''
-    if(len(current_NARS_interface.reasoner.cycles_durations_window) == 0): current_NARS_interface.print_output(type=PrintType.INFO, content="No cycles have been run yet.")
+    if(current_NARS_interface.reasoner.cycles_count == 0): current_NARS_interface.print_output(type=PrintType.INFO, content="No cycles have been run yet.")
     else: current_NARS_interface.print_output(
-        type=PrintType.INFO, content=f'''The average cycles per second is {1 / current_NARS_interface.reasoner.avg_cycle_duration} based on the last {len(current_NARS_interface.reasoner.cycles_durations_window)} cycles. Last cycle took {current_NARS_interface.reasoner.last_cycle_duration:.32f} seconds.''')
+        type=PrintType.INFO, content=f'''The average cycles per second is {int(1 // current_NARS_interface.reasoner.avg_cycle_duration)} based on the last {current_NARS_interface.reasoner.cycles_count} cycles. Last cycle took {current_NARS_interface.reasoner.last_cycle_duration:.6f} seconds.''')
 
 @cmd_register(('volume'), (int, 100))
 def volume(vol:int) -> None:
