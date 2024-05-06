@@ -18,8 +18,8 @@ def project(truth: Truth, t_source: int, t_current: int, t_target: int):
     else:
         if t_current <= t_source and t_current >= t_target: t_current_is_in_interval = True
 
-    if t_current_is_in_interval: s = min(abs(t_source - t_current),abs(t_target-t_current))
-    else: s = 0.5
+    if t_current_is_in_interval: s = 0.5
+    else: s = min(abs(t_source - t_current),abs(t_target-t_current))
 
     confidence_discount = 1 - v/(2*s + v)
     c_new = truth.c * confidence_discount
