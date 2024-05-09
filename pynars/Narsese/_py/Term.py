@@ -217,8 +217,8 @@ class Term:
 
 
     def clone(self):
-        # clone = copy(self)
-        return self
+        clone = deepcopy(self)
+        return clone
 
     def _normalize_variables(self):
         ''''''

@@ -176,6 +176,7 @@ def logic(term: Term, rule=False, substitution=False, var_intro=False, structura
 #################
 # LOGIC TO TERM #
 #################
+@cache
 def term(logic, root=True):
     # additional variable handling
     if root: vars_all.clear()
