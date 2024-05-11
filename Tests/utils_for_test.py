@@ -18,7 +18,7 @@ from pynars import Global
 nars = Reasoner(100, 100)
 engine: GeneralEngine = nars.inference
 
-NUM_CYCLES_MULTIPLIER = 10
+NUM_CYCLES_MULTIPLIER = 20
 def process_two_premises(premise1: str, premise2: str, n_cycle: int = 0) -> List[Task]:
     ''''''
     time_before = Global.time
