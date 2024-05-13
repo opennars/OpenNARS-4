@@ -6,22 +6,23 @@ from pynars.Config import Config
 def project(truth: Truth, t_source: int, t_current: int, t_target: int):
     '''
     Reference:
-    [1] OpenNARS 3.1.0 TruthFunctions.java line 492~495:
-        ```
-            public static final float temporalProjection(final long sourceTime, final long targetTime, final long currentTime, Parameters param) {
-                final double a = 100000.0 * param.PROJECTION_DECAY; //projection less strict as we changed in v2.0.0  10000.0 slower decay than 100000.0
-                return 1.0f - abs(sourceTime - targetTime) / (float) (abs(sourceTime - currentTime) + abs(targetTime - currentTime) + a);
-            }
-        ```
-    [2] Hammer, Patrick, Tony Lofthouse, and Pei Wang. "The OpenNARS implementation of the non-axiomatic reasoning system." International conference on artificial general intelligence. Springer, Cham, 2016.
-
-        Section 5. Projection and Eternalization
-
-            $$k_c = \frac{|tB - tT|}{|tB - tC| + |tT - tC|}$$
-
-            $$c_{new} = (1 - k_c) * c_{old}$$
+        p.172 Non-Axiomatic Logic
+            — A Model of Intelligent Reasoning
+            (Second Edition)
     '''
-    c_new = truth.c * (Config.projection_decay ** (t_current - t_source))
+    v = abs(t_source - t_target)
+
+    t_current_is_in_interval = False
+    if t_source < t_target:
+        if t_current >= t_source and t_current <= t_target: t_current_is_in_interval = True
+    else:
+        if t_current <= t_source and t_current >= t_target: t_current_is_in_interval = True
+
+    if t_current_is_in_interval: s = 0.5
+    else: s = min(abs(t_source - t_current),abs(t_target-t_current))
+
+    confidence_discount = 1 - v/(2*s + v)
+    c_new = truth.c * confidence_discount
     return Truth(truth.f, c_new, truth.k)
 
 
