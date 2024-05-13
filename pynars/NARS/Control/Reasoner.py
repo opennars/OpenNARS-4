@@ -21,7 +21,6 @@ from pynars.NAL.Functions.Tools import project_truth, project
 from ..GlobalEval import GlobalEval
 
 
-
 class Reasoner:
 
     def __init__(self, n_memory, capacity, config='./config.json', nal_rules={1, 2, 3, 4, 5, 6, 7, 8, 9}) -> None:
@@ -51,6 +50,11 @@ class Reasoner:
 
         self.u_top_level_attention = 0.5
 
+        # metrics
+        self.cycles_count = 0
+        self.last_cycle_duration = 0
+        self.avg_cycle_duration = 0
+
     def reset(self):
         self.memory.reset()
         self.overall_experience.reset()
@@ -77,6 +81,7 @@ class Reasoner:
         return success, task, task_overflow
 
     def cycle(self):
+        start_cycle_time_in_seconds = time()
         """Everything to do by NARS in a single working cycle"""
         Global.States.reset()
         tasks_derived: List[Task] = []
@@ -108,8 +113,13 @@ class Reasoner:
         thresh_complexity = 20
         tasks_derived = [
             task for task in tasks_derived if task.term.complexity <= thresh_complexity]
+
+        """done with cycle"""
+        self.do_cycle_metrics(start_cycle_time_in_seconds)
+
         return tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest, (
             task_operation_return, task_executed)
+
 
     def consider(self, tasks_derived: List[Task]):
         """
@@ -279,3 +289,11 @@ class Reasoner:
             Operation.register(op, callback)
             return op
         return None
+
+    def do_cycle_metrics(self, start_cycle_time_in_seconds: float):
+        #  record some metrics
+        total_cycle_duration_in_seconds = time() - start_cycle_time_in_seconds
+        self.last_cycle_duration = total_cycle_duration_in_seconds # store the cycle duration
+        # calculate average
+        self.cycles_count += 1
+        self.avg_cycle_duration += (self.last_cycle_duration - self.avg_cycle_duration) / self.cycles_count
