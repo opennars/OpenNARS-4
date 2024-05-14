@@ -116,6 +116,6 @@ class EventBuffer:
             self.buffer.pop(0)
 
     def can_task_enter(self, task: Task):
-       return task.is_event \
-            and task.term.type == TermType.STATEMENT \
+        return (task.is_event or task.is_operation) \
+            and (task.term.type == TermType.STATEMENT or task.term.type == TermType.ATOM) \
             and not task.term.is_higher_order
