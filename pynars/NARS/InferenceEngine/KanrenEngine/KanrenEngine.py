@@ -78,6 +78,7 @@ class KanrenEngine:
                     continue
                 (p1, p2, c) = rule[0]
                 sub_terms = term(p1).sub_terms | term(p2).sub_terms | term(c).sub_terms
+                # conclusion should not have terms from the rule like S, P, or M
                 if sub_terms.isdisjoint(res[0].sub_terms):
                     r, _ = rule[1]
                     inverse = True if r[-1] == "'" else False
