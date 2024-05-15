@@ -3,7 +3,6 @@ from typing import Tuple, Union
 from pathlib import Path
 from pynars import Narsese, NAL, NARS
 from time import sleep
-from multiprocessing import Process
 import os
 from pynars.Narsese.Parser.parser import TreeToNarsese
 from pynars.Narsese import Sentence

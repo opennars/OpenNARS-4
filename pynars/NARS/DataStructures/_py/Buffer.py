@@ -117,5 +117,5 @@ class EventBuffer:
 
     def can_task_enter(self, task: Task):
        return task.is_event \
-            and task.term.type == TermType.STATEMENT \
-            and not task.term.is_higher_order
+            and task.term.type == TermType.STATEMENT
+            # and not task.term.is_higher_order

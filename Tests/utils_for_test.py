@@ -13,13 +13,16 @@ from pynars.Narsese._py.Term import Term
 from pynars.NAL.MentalOperation import execute
 from pynars.Narsese import Sentence, Judgement, Quest, Question, Goal
 from pynars.Config import Config, Enable
+from pynars import Global
 
 nars = Reasoner(100, 100)
 engine: GeneralEngine = nars.inference
 
-NUM_CYCLES_MULTIPLIER = 4
-def process_two_premises(premise1: str, premise2: str, n_cycle: int) -> List[Task]:
+NUM_CYCLES_MULTIPLIER = 10
+def process_two_premises(premise1: str, premise2: str, n_cycle: int = 0) -> List[Task]:
     ''''''
+    time_before = Global.time
+    
     tasks_all_cycles = []
 
     success, task, task_overflow = nars.input_narsese(premise1)
@@ -41,9 +44,14 @@ def process_two_premises(premise1: str, premise2: str, n_cycle: int) -> List[Tas
         if answers_quest is not None:
             tasks_all_cycles.extend(answers_quest)
 
+    # reset time to correctly reflect tense
+    # ignoring NUM_CYCLES_MULTIPLIER
+    Global.time = time_before + n_cycle
+
     return [t for t in tasks_all_cycles if t is not None]
 
 def rule_map_two_premises(premise1: str, premise2: str, term_common: str, inverse: bool=False, is_belief_term: bool=False, index_task=None, index_belief=None) -> Tuple[List[RuleCallable], Task, Belief, Concept, TaskLink, TermLink, Tuple[Task, Task, Task, Task]]:
+    # assert False
     ''''''
     premise1: Task = Narsese.parse(premise1)
     result1 = nars.memory.accept(premise1)

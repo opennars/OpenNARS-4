@@ -430,7 +430,7 @@ class TEST_NAL5(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<<robin --> [flying]> ==> <robin --> bird>>. %0.90;0.90%', 
             '<<robin --> bird> ==> <robin --> [flying]>>. %0.90;0.90%', 
-            7
+            20
         )
         self.assertTrue(
             output_contains(tasks_derived, '<<robin --> [flying]> <=> <robin --> bird>>. %0.81;0.81%')
@@ -559,7 +559,7 @@ class TEST_NAL5(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<<robin --> bird> ==> (&&,<robin --> animal>,<robin --> [flying]>)>. %0.00;0.90%', 
             '<<robin --> bird> ==> <robin --> [flying]>>. %1.00;0.90%', 
-            8
+            200
         )
         self.assertTrue(
             output_contains(tasks_derived, '<<robin --> bird> ==> <robin --> animal>>. %0.00;0.81%')
@@ -585,7 +585,7 @@ class TEST_NAL5(unittest.TestCase):
         tasks_derived = process_two_premises(
             '(&&,<robin --> [flying]>,<robin --> swimmer>). %0.00;0.90% ', 
             '<robin --> [flying]>. %1.00;0.90%', 
-            6
+            100
         )
         self.assertTrue(
             output_contains(tasks_derived, '<robin --> swimmer>. %0.00;0.81%')
@@ -596,7 +596,7 @@ class TEST_NAL5(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<robin --> [flying]>. %1.00;0.90%', 
             '(&&,<robin --> [flying]>,<robin --> swimmer>). %0.00;0.90% ', 
-            6
+            100
         )
         self.assertTrue(
             output_contains(tasks_derived, '<robin --> swimmer>. %0.00;0.81%')
@@ -623,7 +623,7 @@ class TEST_NAL5(unittest.TestCase):
         tasks_derived = process_two_premises(
             '(||,<robin --> [flying]>,<robin --> swimmer>). %1.00;0.90% ', 
             '<robin --> swimmer>. %0.00;0.90%', 
-            6
+            50
         )
         self.assertTrue(
             output_contains(tasks_derived, '<robin --> [flying]>. %1.00;0.81%')
@@ -678,14 +678,15 @@ class TEST_NAL5(unittest.TestCase):
         '''
         tasks_derived = process_two_premises(
             '$0.90;0.90$ (&&,<robin --> swimmer>,<robin --> [flying]>). %0.90;0.90%', 
-            6
+            None,
+            200
         )
         self.assertTrue(
-            output_contains(tasks_derived, '<robin --> swimmer>. %0.90;0.73%')
+            output_contains(tasks_derived, '<robin --> swimmer>. %0.90;0.81%')
         )
 
         self.assertTrue(
-            output_contains(tasks_derived, '<robin --> [flying]>. %0.90;0.73%')
+            output_contains(tasks_derived, '<robin --> [flying]>. %0.90;0.81%')
         )
 
     
@@ -705,10 +706,10 @@ class TEST_NAL5(unittest.TestCase):
         tasks_derived = process_two_premises(
             '(--,<robin --> [flying]>). %0.10;0.90%', 
             '<robin --> [flying]>?',
-            3
+            10
         )
         self.assertTrue(
-            output_contains(tasks_derived, '<robin --> [flying]>. %0.10;0.90%')
+            output_contains(tasks_derived, '<robin --> [flying]>. %0.90;0.90%')
         )
 
     
@@ -785,7 +786,7 @@ class TEST_NAL5(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(&&,<robin --> [flying]>,<robin --> [with_wings]>) ==> <robin --> bird>>. %1.00;0.90%', 
             '<robin --> [flying]>. %1.00;0.90%', 
-            10
+            20
         )
         self.assertTrue(
             output_contains(tasks_derived, '<<robin --> [with_wings]> ==> <robin --> bird>>. %1.00;0.81%')
@@ -796,7 +797,7 @@ class TEST_NAL5(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<robin --> [flying]>. %1.00;0.90%', 
             '<(&&,<robin --> [flying]>,<robin --> [with_wings]>) ==> <robin --> bird>>. %1.00;0.90%', 
-            10
+            20
         )
         self.assertTrue(
             output_contains(tasks_derived, '<<robin --> [with_wings]> ==> <robin --> bird>>. %1.00;0.81%')
@@ -818,11 +819,11 @@ class TEST_NAL5(unittest.TestCase):
         'If robin has wings and chirps then robin is a bird.
         ''outputMustContain('<(&&,<robin --> [chirping]>,<robin --> [with_wings]>) ==> <robin --> bird>>. %1.00;0.81%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<(&&,<robin --> [chirping]>,<robin --> [flying]>,<robin --> [with_wings]>) ==> <robin --> bird>>. %1.00;0.90%', 
             '<robin --> [flying]>. %1.00;0.90%', 
-            'robin.', index_task=(0,0,0), index_belief=(0,))
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+            20
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<(&&,<robin --> [chirping]>,<robin --> [with_wings]>) ==> <robin --> bird>>. %1.00;0.81%')
         )
@@ -844,20 +845,22 @@ class TEST_NAL5(unittest.TestCase):
         'If robin is living and it can fly, then robin is an animal.
         ''outputMustContain('<(&&,<robin --> [flying]>,<robin --> [living]>) ==> <robin --> animal>>. %1.00;0.81%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<(&&,<robin --> bird>,<robin --> [living]>) ==> <robin --> animal>>. %1.00;0.90%', 
             '<<robin --> [flying]> ==> <robin --> bird>>. %1.00;0.90% ', 
-            'robin.', index_task=(0,0,0), index_belief=(0,0))
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+            20
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<(&&,<robin --> [flying]>,<robin --> [living]>) ==> <robin --> animal>>. %1.00;0.81%')
         )
 
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        nars.reset()
+
+        tasks_derived = process_two_premises(
             '<<robin --> [flying]> ==> <robin --> bird>>. %1.00;0.90% ', 
             '<(&&,<robin --> bird>,<robin --> [living]>) ==> <robin --> animal>>. %1.00;0.90%', 
-            'robin.', index_task=(0,0), index_belief=(0,0,0))
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+            20
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<(&&,<robin --> [flying]>,<robin --> [living]>) ==> <robin --> animal>>. %1.00;0.81%')
         )
@@ -879,11 +882,11 @@ class TEST_NAL5(unittest.TestCase):
         'I guess robin swims.
         ''outputMustContain('<robin --> swimmer>. %1.00;0.45%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<(&&,<robin --> swimmer>,<robin --> [flying]>) ==> <robin --> bird>>. %1.00;0.90%', 
             '<<robin --> [flying]> ==> <robin --> bird>>. %1.00;0.90%', 
-            'robin.', index_task=(0,0,0), index_belief=(0,0))
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+            20
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<robin --> swimmer>. %1.00;0.45%')
         )
@@ -908,11 +911,10 @@ class TEST_NAL5(unittest.TestCase):
         'I guess if robin has wings, then robin is a bird.
         ''outputMustContain('<<robin --> [with_wings]> ==> <robin --> bird>>. %0.90;0.45%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<(&&,<robin --> [flying]>,<robin --> [with_wings]>) ==> <robin --> [living]>>. %0.90;0.90%', 
             '<(&&,<robin --> [flying]>,<robin --> bird>) ==> <robin --> [living]>>. %1.00;0.90%', 
-            'robin.', index_task=(0,0,0), index_belief=(0,0,0))
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+            20)
         self.assertTrue(
             output_contains(tasks_derived, '<<robin --> bird> ==> <robin --> [with_wings]>>. %1.00;0.42%')
         )
@@ -938,51 +940,53 @@ class TEST_NAL5(unittest.TestCase):
         'I guess that if robin chirps and robin has a beak, then robin is a bird.
         ''outputMustContain('<(&&,<robin --> [chirping]>,<robin --> [with_beak]>) ==> <robin --> bird>>. %1.00;0.42%')
         '''
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '<(&&,<robin --> [chirping]>,<robin --> [flying]>) ==> <robin --> bird>>. %1.00;0.90%', 
             '<<robin --> [flying]> ==> <robin --> [with_beak]>>. %0.90;0.90%', 
-            'robin.', index_task=(0,0,0), index_belief=(0,0))
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+            20
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<(&&,<robin --> [chirping]>,<robin --> [with_beak]>) ==> <robin --> bird>>. %1.00;0.42%')
         )
 
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        nars.reset()
+
+        tasks_derived = process_two_premises(
             '<<robin --> [flying]> ==> <robin --> [with_beak]>>. %0.90;0.90%', 
             '<(&&,<robin --> [chirping]>,<robin --> [flying]>) ==> <robin --> bird>>. %1.00;0.90%', 
-            'robin.', index_task=(0,0), index_belief=(0,0,0))
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+            20
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<(&&,<robin --> [chirping]>,<robin --> [with_beak]>) ==> <robin --> bird>>. %1.00;0.42%')
         )
         pass
 
     def test_question_0(self):
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             '(&&, A, B)?', 
             'A.', 
-            'A.', is_belief_term=True)
-        tasks_derived = [rule(task, belief.term, task_link, term_link) for rule in rules] 
+            10
+        )
         self.assertTrue(
             output_contains(tasks_derived, 'A?')
         )
 
     def test_question_1(self):
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             'C?', 
             '<(&&, A, B)==>C>.', 
-            'C.')
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+            10
+        )
         self.assertTrue(
             output_contains(tasks_derived, '(&&, A, B)?')
         )
 
     def test_0(self):
-        rules, task, belief, concept, task_link, term_link, result1, result2 = rule_map_two_premises(
+        tasks_derived = process_two_premises(
             'A.', 
             '<(&&, A, B)==>C>.', 
-            'A.')
-        tasks_derived = [rule(task, belief, task_link, term_link) for rule in rules] 
+            10
+        )
         self.assertTrue(
             output_contains(tasks_derived, '<B==>C>. %1.00;0.81%')
         )

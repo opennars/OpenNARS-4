@@ -2,6 +2,12 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python: KanrenEngine",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pynars.NARS.InferenceEngine.KanrenEngine"
+        },
+        {
             "name": "Python: pynars.GUI",
             "type": "python",
             "request": "launch",

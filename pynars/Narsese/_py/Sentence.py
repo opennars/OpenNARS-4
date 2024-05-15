@@ -176,7 +176,15 @@ class Judgement(Sentence):
 
 
     def repr(self,is_input=False):
-        return f'{self.term.repr()}{self.punct.value}{(" " + str(self.tense.value)) if self.tense != Tense.Eternal else ""} {self.truth}'
+        interval = ""
+        if self.tense != Tense.Eternal:
+            if self.tense == Tense.Present:
+                interval = str(self.tense.value)
+            if self.tense == Tense.Future:
+                interval = f':!{self.stamp.t_occurrence}:'
+            if self.tense == Tense.Past:
+                interval = f':!-{self.stamp.t_occurrence}:'
+        return f'{self.term.repr()}{self.punct.value} {interval} {self.truth}'
 
 
 class Goal(Sentence):
@@ -200,7 +208,7 @@ class Question(Sentence):
 
     def __init__(self, term: Term, stamp: Stamp = None, curiosiry: Truth = None) -> None:
         ''''''
-        stamp = stamp if stamp is not None else Stamp(Global.time, None, None, None, None)
+        stamp = stamp if stamp is not None else Stamp(Global.time, None, None, None)
         # stamp.set_eternal()
         Sentence.__init__(self, term, Punctuation.Question, stamp)
         self.is_query = False  # TODO: if there is a query variable in the sentence, then `self.is_query=True`

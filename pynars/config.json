@@ -27,10 +27,10 @@
             },
             "MAX_DURATION": 1000,
             "CONCEPT": {
-                "NUM_LEVELS_TASKLINK_BAG": 1000,
-                "CAPACITY_TASKLINK_BAG": 10000,
-                "NUM_LEVELS_TERMLINK_BAG": 1000,
-                "CAPACITY_TERMLINK_BAG": 10000,
+                "NUM_LEVELS_TASKLINK_BAG": 10,
+                "CAPACITY_TASKLINK_BAG": 100,
+                "NUM_LEVELS_TERMLINK_BAG": 10,
+                "CAPACITY_TERMLINK_BAG": 100,
                 "CAPACITY_TABLE": 100
             },
             "COMPLEXITY_UNIT": 1.0, //1.0 - oo

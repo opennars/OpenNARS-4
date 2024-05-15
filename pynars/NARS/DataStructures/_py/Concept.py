@@ -12,14 +12,13 @@ from .Bag import Bag
 from pynars.Config import Config, Enable
 from pynars.Narsese import place_holder
 
-
 class Concept(Item):
     '''Ref: OpenNARS 3.0.4 Concept.java'''
 
     # seq_before: Bag # Recent events that happened before the operation the concept represents was executed. 
     task_links: Bag
     term_links: Bag
-
+    
     # *Note*: since this is iterated frequently, an array should be used. To avoid iterator allocation, use .get(n) in a for-loop
     question_table: Table # Pending Question directly asked about the term
     quest_table: Table # Pending Question directly asked about the term
@@ -79,6 +78,10 @@ class Concept(Item):
             
             # return projectedBelief;     // return the first satisfying belief
             raise
+        # if self.belief_table.empty:
+        #     for term_link in self.term_links:
+        #         if not term_link.target.belief_table.empty:
+        #             return term_link.target.belief_table.first()
         return self.belief_table.first()
 
     # def match_candidate(self, sentence: Sentence) -> Task | Belief:

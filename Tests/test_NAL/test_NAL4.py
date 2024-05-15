@@ -44,7 +44,7 @@ class TEST_NAL4(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(*,acid, base) --> reaction>. %1.00;0.90%',
             None,
-            10
+            200
         )
 
         self.assertTrue(
@@ -72,7 +72,7 @@ class TEST_NAL4(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<acid --> (/,reaction,_,base)>. %1.00;0.90%',
             None,
-            10
+            200
         )
         
         self.assertTrue(
@@ -96,7 +96,7 @@ class TEST_NAL4(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<acid --> (/,reaction,_,base)>. %1.00;0.90%',
             None,
-            10
+            200
         )
         
         self.assertTrue(
@@ -120,7 +120,7 @@ class TEST_NAL4(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<base --> (/,reaction,acid,_)>. %1.00;0.90%',
             None,
-            10
+            200
         )
         
         self.assertTrue(
@@ -144,9 +144,9 @@ class TEST_NAL4(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(\,neutralization,_,base) --> acid>. %1.00;0.90%',
             None,
-            10
+            200
         )
-        
+
         self.assertTrue(
             output_contains(tasks_derived, '<neutralization --> (*,acid,base)>. %1.00;0.90%')
         )
@@ -168,7 +168,7 @@ class TEST_NAL4(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(\,neutralization,_,base) --> acid>. %1.00;0.90%',
             None,
-            10
+            200
         )
         
         self.assertTrue(
@@ -192,7 +192,7 @@ class TEST_NAL4(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(\,neutralization,acid,_) --> base>. %1.00;0.90%',
             None,
-            10
+            200
         )
         
         self.assertTrue(
@@ -216,7 +216,7 @@ class TEST_NAL4(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(\,neutralization,acid,_) --> base>. %1.00;0.90%',
             None,
-            10
+            200
         )
         
         self.assertTrue(
@@ -243,7 +243,7 @@ class TEST_NAL4(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<bird --> animal>. %1.00;0.90%', 
             '<(*,bird,plant) --> ?x>?', 
-            6
+            200
         )
         self.assertTrue(
             output_contains(tasks_derived, '<(*,bird,plant) --> (*,animal,plant)>. %1.00;0.81%')
@@ -268,7 +268,7 @@ class TEST_NAL4(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<neutralization --> reaction>. %1.00;0.90%', 
             '<(\,neutralization,acid,_) --> ?x>?', 
-            6
+            200
         )
         self.assertTrue(
             output_contains(tasks_derived, '<(\,neutralization,acid,_) --> (\,reaction,acid,_)>. %1.00;0.81%')
@@ -294,11 +294,34 @@ class TEST_NAL4(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<soda --> base>. %1.00;0.90%', 
             '<(/,neutralization,_,base) --> ?x>?', 
-            6
+            200
         )
         self.assertTrue(
             output_contains(tasks_derived, '<(/,neutralization,_,base) --> (/,neutralization,_,soda)>. %1.00;0.81%')
         )
+        pass
+
+    def test_other_stuff(self):
+        # tasks_derived = []
+        # # tasks_derived = process_two_premises(
+        # #     '<<(*, $a, $b) --> is> <=> <$a --> $b>>.',
+        # #     None
+        # # )
+        # tasks_derived.extend(process_two_premises(
+        #     '<(*,cat,animal)-->is>.',
+        #     '<cat-->animal>.'
+        # ))
+        # tasks_derived.extend(process_two_premises(
+        #     '<(*,dog,animal)-->is>.',
+        #     '<dog-->animal>?',
+        #     600
+        # ))
+        # # for t in tasks_derived: print(t)
+        # self.assertTrue(
+        #     output_contains(tasks_derived, '<dog --> animal>. %1.00;0.29%')
+        #     or
+        #     output_contains(tasks_derived, '<dog --> animal>. %1.00;0.40%')
+        # )
         pass
 
 if __name__ == '__main__':

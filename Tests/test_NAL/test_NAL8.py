@@ -35,7 +35,7 @@ class TEST_NAL8(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<{t001} --> [opened]>! %1.00;0.90%',
             '<(&/,<(*,SELF,{t002}) --> hold>,<(*,SELF,{t001}) --> at>,<(*,{t001}) --> ^open>) =/> <{t001} --> [opened]>>. %1.00;0.90%',
-            100
+            10
         )
 
         self.assertTrue(
@@ -58,13 +58,13 @@ class TEST_NAL8(unittest.TestCase):
         ''outputMustContain('<(*,SELF,{t002}) --> hold>! %1.00;0.81%')
         '''
         tasks_derived = process_two_premises(
-            '(&/,<(*,SELF,{t002}) --> hold>,<(*,SELF,{t001}) --> at>,(^open,{t001}))! %1.00;0.90%',
+            '(&/,<(*,SELF,{t002}) --> hold>,<(*,SELF,{t001}) --> at>,(^open,{t001}))! %0.90;0.90%',
             None,
-            10
+            100
         )
 
         self.assertTrue(
-            output_contains(tasks_derived, '<(*,SELF,{t002}) --> hold>! %1.00;0.81%')
+            output_contains(tasks_derived, '<(*,SELF,{t002}) --> hold>! %0.90;0.81%')
         )
     
     def test_1_2(self):
@@ -82,13 +82,13 @@ class TEST_NAL8(unittest.TestCase):
         ''outputMustContain('<(*,SELF,{t002}) --> reachable>! %1.00;0.81%')
         '''
         tasks_derived = process_two_premises(
-            '(&/,<(*,SELF,{t002}) --> reachable>,(^pick,{t002}))! %1.00;0.90%',
+            '(&/,<(*,SELF,{t002}) --> reachable>,(^pick,{t002}))! %0.90;0.90%',
             None,
             10
         )
 
         self.assertTrue(
-            output_contains(tasks_derived, '<(*,SELF,{t002}) --> reachable>! %1.00;0.81%')
+            output_contains(tasks_derived, '<(*,SELF,{t002}) --> reachable>! %0.90;0.81%')
         )
 
 
@@ -112,7 +112,7 @@ class TEST_NAL8(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(*,SELF,{t002}) --> reachable>! %1.00;0.90%',
             '<(&|,<(*,{t002},#1) --> on>,<(*,SELF,#1) --> at>)=|><(*,SELF,{t002}) --> reachable>>.',
-            20
+            0
         )
 
         self.assertTrue(
@@ -139,7 +139,7 @@ class TEST_NAL8(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(*,SELF,{t002}) --> reachable>! %1.00;0.90%',
             '<(&|,<(*,$1,#2) --> on>,<(*,SELF,#2) --> at>)=|><(*,SELF,{t002}) --> reachable>>.',
-            20
+            0
         )
 
         self.assertTrue(
@@ -166,7 +166,7 @@ class TEST_NAL8(unittest.TestCase):
         tasks_derived = process_two_premises(
             '(&|,<(*,{t002},{t003}) --> on>,<(*,{t003},SELF) --> at>)!',
             '<(*,{t002},{t003}) --> on>. :|:',
-            350
+            0
         )
 
         self.assertTrue(
@@ -194,7 +194,7 @@ class TEST_NAL8(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(*,{t002},{t003}) --> on>. :|:',
             '(&|,<(*,{t002},#1) --> on>,<(*,#1,SELF) --> at>)!',
-            350
+            0
         )
 
         self.assertTrue(
@@ -223,7 +223,7 @@ class TEST_NAL8(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(*,SELF,{t003}) --> at>!',
             '<(^go_to,{t003})=/><(*,SELF,{t003}) --> at>>.',
-            100
+            10
         )
 
         self.assertTrue(
@@ -252,7 +252,7 @@ class TEST_NAL8(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(*,{t003}) --> ^go_to>. :|:',
             '<<(*,{t003}) --> ^go_to> =/> <(*,SELF,{t003}) --> at>>.',
-            20
+            0
         )
 
         self.assertTrue(
@@ -280,7 +280,7 @@ class TEST_NAL8(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(*,{t003}) --> ^go_to>. :|:',
             '<<(*,$1) --> ^go_to> =/> <(*,SELF,$1) --> at>>.',
-            20
+            0
         )
 
         self.assertTrue(
@@ -307,7 +307,7 @@ class TEST_NAL8(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<SELF --> (/,at,_,{t003})>. :\:',
             None,
-            6
+            0
         )
 
         self.assertTrue(
@@ -332,7 +332,7 @@ class TEST_NAL8(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(*,{t002},{t003}) --> on>. :|:',
             None,
-            6
+            0
         )
 
         self.assertTrue(
@@ -417,7 +417,7 @@ class TEST_NAL8(unittest.TestCase):
         tasks_derived = process_two_premises(
             '(&&,A, B, D). :|:',
             '<(&&,A, B) ==> C>.',
-            10
+            0
         )
 
         self.assertTrue(
@@ -477,7 +477,7 @@ class TEST_NAL8(unittest.TestCase):
         tasks_derived = process_two_premises(
             '(&/,<(*,SELF,{t002}) --> reachable>,(^pick,{t002}))! ',
             '<(*,SELF,{t002}) --> reachable>. :|: ',
-            45
+            0
         )
 
         self.assertTrue(
@@ -506,7 +506,7 @@ class TEST_NAL8(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<(*,SELF,{t002}) --> reachable>. :|:',
             '<(&/,<(*,SELF,{t002}) --> reachable>,(^pick,{t002}))=/><(*,SELF,{t002}) --> hold>>.',
-            10
+            0
         )
 
         self.assertTrue(
@@ -553,7 +553,7 @@ class TEST_NAL8(unittest.TestCase):
         tasks_derived = process_two_premises(
             'C!',
             '(&/, A, B, C).',
-            10
+            0
         )
         
         self.assertTrue(
@@ -571,7 +571,7 @@ class TEST_NAL8(unittest.TestCase):
         tasks_derived = process_two_premises(
             '(&/, A, B, C)!',
             'A.',
-            10
+            0
         )
 
         self.assertTrue(

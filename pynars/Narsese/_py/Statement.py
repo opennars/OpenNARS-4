@@ -60,6 +60,18 @@ class Statement(Term):
         return self._is_higher_order
 
     @property
+    def is_predictive(self):
+        return self.copula.is_predictive
+    
+    @property
+    def is_concurrent(self):
+        return self.copula.is_concurrent
+    
+    @property
+    def is_retrospective(self):
+        return self.copula.is_retrospective
+
+    @property
     def terms(self):
         return (self.subject, self.predicate)
 
@@ -97,7 +109,7 @@ class Statement(Term):
         word_subject = str(self.subject) if not self.subject.has_var else self.subject.repr()
         word_predicate = str(self.predicate) if not self.predicate.has_var else self.predicate.repr()
         
-        return f'<{word_subject+str(self.copula.value)+word_predicate}>'
+        return f'<{word_subject+" "+str(self.copula.value)+" "+word_predicate}>'
 
     @classmethod
     def Inheritance(cls, subject: Term, predicate: Term, is_input: bool=False, is_subterm=True):
@@ -143,6 +155,20 @@ class Statement(Term):
     def ConcurrentEquivalence(cls, subject: Term, predicate: Term, is_input: bool=False, is_subterm=True):
         return cls(subject, Copula.ConcurrentEquivalence, predicate, is_input, is_subterm)
 
+    def concurrent(self):
+        return Statement(self.subject, self.copula.get_concurent, self.predicate)
+
+    def predictive(self):
+        return Statement(self.subject, self.copula.get_predictive, self.predicate)
+
+    def retrospective(self):
+        return Statement(self.subject, self.copula.get_retrospective, self.predicate)
+
+    def temporal_swapped(self):
+        if self.copula is Copula.PredictiveEquivalence:
+            return self # TODO: could be handled by introducing <\> copula
+        return Statement(self.predicate, self.copula.get_temporal_swapped, self.subject)
+    
     def clone(self):
         if not self.has_var: return self
         # now, not self.has_var
