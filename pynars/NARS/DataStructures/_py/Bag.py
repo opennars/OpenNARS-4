@@ -55,6 +55,7 @@ class Bag:
         self.n_levels = n_buckets if n_buckets is not None else Config.num_buckets
         self.pointer = self.n_levels - 1  # Pointing to the Bag's current bucket number
 
+        # TODO: Fix slowdown. See: https://github.com/bowen-xu/PyNARS/pull/84#issuecomment-1865381347
         self.distributor = Distributor.new(self.n_levels)
         
         self.levels = tuple(list() for i in range(self.n_levels))  # initialize buckets between 0 and capacity

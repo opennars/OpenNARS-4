@@ -592,7 +592,7 @@ def induction_composition(task: Task, belief: Belief, budget_tasklink: Budget=No
         truth = Truth_induction(premise1.truth, premise2.truth)
         budget = Budget_forward(truth, budget_tasklink if budget_tasklink is not None else task.budget, budget_termlink)
         sentence_derived = Judgement(statement, stamp, truth)
-    else: raise "Invalid case."
+    else: raise Exception("Invalid case.")
 
     return Task(sentence_derived, budget)
 

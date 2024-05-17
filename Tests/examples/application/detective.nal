@@ -6,7 +6,7 @@
 'the first deponent, a psychologist,
 'claims that people with sunglasses are more aggressive
 <<(*,$1,sunglasses) --> own> ==> <$1 --> [aggressive]>>.
-'the third deponent claims, that he has seen tom with sunglasses on:
+'the third deponent claims, that he has seen tom with sunglas1ses on:
 <(*,{tom},sunglasses) --> own>.
 'the teacher claims, that people who are aggressive tend to be murders
 <<$1 --> [aggressive]> ==> <$1 --> murder>>.
