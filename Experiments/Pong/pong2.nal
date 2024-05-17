@@ -9,7 +9,7 @@
 
 <(&|, dist_x_zero, dist_y_zero) =/> ball_holded>. %1.00;0.99%
 
-<(&/, <{ball}-->[left]>, (^move, right)) =/> dist_y_decrease>. %1.00;0.99%
-<(&/, <{ball}-->[right]>, (^move, left)) =/> dist_y_decrease>. %1.00;0.99%
+<(&/, <{ball}-->[left]>, (^move, left)) =/> dist_y_decrease>. %1.00;0.99%
+<(&/, <{ball}-->[right]>, (^move, right)) =/> dist_y_decrease>. %1.00;0.99%
 
 ball_holded! %1.00;0.99%

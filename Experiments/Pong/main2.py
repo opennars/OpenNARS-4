@@ -110,7 +110,7 @@ def policy_nars(env: gym.Env):
     
     nars = Reasoner(1000, 1000)
     # initialize nars
-    run_file(nars, './pynars/RL/Pong/pong.nal')
+    run_file(nars, 'Experiments/Pong/pong2.nal')
     for _ in range(1):
         handle_lines(nars, '100')
 
@@ -138,11 +138,28 @@ def policy_nars(env: gym.Env):
     while not done:
         if action == 0 and random() < 0.08: # random action
             action = sample((0, 2, 3), 1)[0]
-        observation, reward, done, info = env.step(action)
+
+        """
+        Requires to also fix:
+        
+        1) site-packages/atariari/benchmark/wrapper.py        
+            #observation, reward, done, info = self.env.step(action)
+            #return observation, reward, done, self.info(info)
+            observation, reward, done, truncated, info = self.env.step(action)
+            return observation, reward, done, truncated, self.info(info)
+            
+        2) site-packages/gym/wrappers/order_enforcing.py
+            #observation, reward, done, info = self.env.step(action)
+            #return observation, reward, done, info
+            return self.env.step(action)
+
+        """    
+        #observation, reward, done, info = env.step(action)
+        observation, reward, done, truncated, info = env.step(action)
         labels = info['labels']
         player_x, player_y = int(labels['player_x']), int(labels['player_y'])
         ball_x, ball_y = int(labels['ball_x']), int(labels['ball_y'])
-        if ball_y != 0: # the player and machine are not died
+        if ball_y != 0: # the player and machine are not dead
             dist_x, dist_y, change_x, change_y = perceptron.step(player_x, player_y, ball_x, ball_y)
             # info_str = f'obs: {observation.shape}; reward: {reward}; ball: ({ball_x}, {ball_y});'
             # # info_str += f'{dist_x.term if dist_x is not None else None, dist_y.term if dist_y is not None else None, change_x.term if change_x is not None else None, change_y.term if change_y is not None else None}'
@@ -152,6 +169,11 @@ def policy_nars(env: gym.Env):
                 nars.perception_channel.put(dist_y)
                 nars.perception_channel.put(change_x)
                 nars.perception_channel.put(change_y)
+
+                # Without this perceptions, NARS doesn't know where to move to
+                ball_location = "left" if ball_y < player_y else "right"
+                task = Task(Judgement(Statement.Inheritance(Compound.Instance(Term('ball')), Compound.Property(Term(ball_location))), Stamp(Global.time, Global.time, None, Base((Global.get_input_id(),)))))
+            
             handle_lines(nars, '10')
             # nars.cycles(10)
         else:
