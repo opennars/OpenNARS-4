@@ -141,6 +141,12 @@ class Reasoner:
         if random_number < self.u_top_level_attention:
             judgement_revised, goal_revised, answers_question, answers_quest = self.observe(
                 tasks_derived)
+
+            if answers_question is not None and len(answers_question) != 0:
+                for each in answers_question:
+                    if each.term.word == "<A ==> S>":
+                        print(1)
+
             data_structure_accessed_busyness = self.overall_experience.busyness
         else:
             self.consider(tasks_derived)
