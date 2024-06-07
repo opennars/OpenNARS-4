@@ -93,7 +93,7 @@ def policy_nars(env: gym.Env):
     
     nars = Reasoner(1000, 1000)
     # initialize nars
-    run_file(nars, './pynars/RL/Pong/pong.nal')
+    run_file(nars, './Experiments/Pong/pong.nal')
     for _ in range(1):
         handle_lines(nars, '9')
     handle_lines(nars, '1')
@@ -127,11 +127,13 @@ def policy_nars(env: gym.Env):
     while not done:
         if Action.value == 0 and random() < 0.08: # random action
             Action.value = sample((0, 2, 3), 1)[0]
-        observation, reward, done, info = env.step(Action.value)
+        # See comments in main2.py
+        #observation, reward, done, info = env.step(Action.value)
+        observation, reward, done, truncated, info = env.step(Action.value)
         labels = info['labels']
         player_x, player_y = int(labels['player_x']), int(labels['player_y'])
         ball_x, ball_y = int(labels['ball_x']), int(labels['ball_y'])
-        if ball_y != 0: # the player and machine are not died
+        if ball_y != 0: # the player and machine are not dead
             task = perceptron.step(player_x, player_y, ball_x, ball_y)
             # info_str = f'obs: {observation.shape}; reward: {reward}; ball: ({ball_x}, {ball_y});'
             # # info_str += f'{dist_x.term if dist_x is not None else None, dist_y.term if dist_y is not None else None, change_x.term if change_x is not None else None, change_y.term if change_y is not None else None}'
@@ -143,7 +145,7 @@ def policy_nars(env: gym.Env):
             # nars.cycles(10)
         else:
             game_reset = Task(Judgement(Statement.Inheritance(Compound.Instance(Term('game')), Compound.Property(Term('reset'))), Stamp(Global.time, Global.time, None, Base((Global.get_input_id(), )))))
-            nars.perception_channel.put(game_reset)
+            #nars.perception_channel.put(game_reset)
         if i_step % 4 == 0:
             goal = Task(Goal(Statement.Inheritance(Compound.Instance(Term('SELF')), Compound.Property(Term('good'))), Stamp(Global.time, Global.time, None, Base((Global.get_input_id(),))))) # remind the system the goal every 4 steps.
             nars.perception_channel.put(goal)
