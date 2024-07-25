@@ -9,18 +9,6 @@ from pynars.Narsese import Compound, Judgement, Task, Interval, parser, Term, Tr
 from typing import Iterable, List, Optional, Tuple
 
 
-class Anticipation:
-
-    matched: bool
-    task: Task
-    prediction: 'PredictiveImplication'
-
-    def __init__(self, task: Task, prediction: 'PredictiveImplication') -> None:
-        self.matched = False
-        self.task = task
-        self.prediction = prediction
-
-
 class PredictiveImplication:
 
     condition: Term
@@ -56,6 +44,18 @@ class PredictiveImplication:
         task = parser.parse(self.conclusion.word + ". " + str(truth))
 
         return self.interval, task
+
+
+class Anticipation:
+
+    matched: bool
+    task: Task
+    prediction: PredictiveImplication
+
+    def __init__(self, task: Task, prediction: PredictiveImplication) -> None:
+        self.matched = False
+        self.task = task
+        self.prediction = prediction
 
 
 class Slot:
