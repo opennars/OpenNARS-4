@@ -1,22 +1,29 @@
 import random
 
 from pynars.NAL.Functions import Or
+from pynars.NARS.DataStructures import Memory
+from pynars.Narsese import Task, Truth
+from typing import Any, Callable, Generic, List, Optional, Tuple, TypeVar
 
+T = TypeVar('T')
 
-class PriorityQueue:
+class PriorityQueue(Generic[T]):
     """
     It is not a heap, it is a sorted array by insertion sort. Since we need to 1) access the largest item, 2) access the
     smallest item, 3) access an item in the middle.
     """
 
-    def __init__(self, size):
+    pq: List[Tuple[float, T]]
+    size: int
+
+    def __init__(self, size: int) -> None:
         self.pq = []
         self.size = size
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.pq)
 
-    def push(self, item, value):
+    def push(self, item, value) -> None:
         """
         Add a new one, regardless whether there are duplicates.
         """
@@ -31,7 +38,7 @@ class PriorityQueue:
         if len(self.pq) > self.size:
             self.pq = self.pq[1:]
 
-    def edit(self, item, value, identifier):
+    def edit(self, item: T, value: float, identifier: Callable[[T], Any]) -> None:
         """
         Replacement.
         """
@@ -46,7 +53,7 @@ class PriorityQueue:
             return
         self.push(item, value)
 
-    def pop(self):
+    def pop(self) -> Tuple[T, float]:
         """
         Pop the highest.
         """
@@ -54,7 +61,7 @@ class PriorityQueue:
         self.pq = self.pq[:-1]
         return item, value
 
-    def random_pop(self):
+    def random_pop(self) -> Optional[T]:
         """
         Based on the priority (not budget.priority), randomly pop one buffer task.
         The higher the priority, the higher the probability to be popped.
@@ -70,13 +77,13 @@ class PriorityQueue:
                 return ret[1]
         return None
 
-    def show(self, identifier):
+    def show(self, identifier: Callable[[T], str]) -> None:
         """
         Show each item in the priority queue. Since it may contain items other than BufferTasks, you can design you own
         identifier to show what you want to show.
         """
         for each in sorted(self.pq, key=lambda x: x[0]):
-            print(round(each[0], 3), "|", each[1].interval, "|", identifier(each[1]))
+            print(round(each[0], 3), "|", each[1].interval, "|", identifier(each[1])) # ? Why assume that the element in the queue has an attribute "interval"?
         print("---")
 
 
@@ -87,7 +94,13 @@ class BufferTask:
     Therefore, we restore each factor independently; only when everything is decided, the final budget is given.
     """
 
-    def __init__(self, task):
+    task: Task
+    channel_parameter: int
+    preprocess_effect: float
+    is_component: int
+    expiration_effect: int
+
+    def __init__(self, task: Task) -> None:
         self.task = task  # the original task
         # the influence of a channel, currently, all channels have parameter 1 and can't be changed
         self.channel_parameter = 1
@@ -96,7 +109,7 @@ class BufferTask:
         self.expiration_effect = 1
 
     @property
-    def priority(self):
+    def priority(self) -> float:
         """
         The priority of a BufferTask, which is not the budget of the corresponding Task.
         """
@@ -104,19 +117,19 @@ class BufferTask:
                 ((2 - self.is_component) / 2))
 
 
-def preprocessing(task, memory):
+def preprocessing(task: Task, memory: Memory) -> float:
     """
     Check whether a task is already a concept in the memory. If not, its budget is greatly decreased (based on its
     complexity). Else, its budget is the OR of the existed budget.
     """
-    concept_in_memory = memory.take_by_key(task.term, False)
+    concept_in_memory = memory.take_by_key(task.term, False) # ? Why does `take_by_key` use `task` index instead of `task.term` using at this
     if concept_in_memory is None:
         return 1 / (1 + task.term.complexity)
     else:
         return Or(task.budget.priority, concept_in_memory.budget.priority)
 
 
-def satisfaction_level(truth_1, truth_2):
+def satisfaction_level(truth_1: Truth, truth_2: Truth) -> float:
     """
     Mainly used for check whether an anticipation is satisfied.
     """
