@@ -35,7 +35,7 @@ class PredictiveImplication:
         self.expiration = 0
         self.task = task
 
-    def get_conclusion(self, condition_task: 'BufferTask') -> Tuple[Optional[Interval], Optional[Task]]:
+    def get_conclusion(self, condition_task: BufferTask) -> Tuple[Optional[Interval], Optional[Task]]:
         # when "A" is matched with "A =/> B", return B with truth deduction
         truth = Truth_deduction(self.task.truth, condition_task.task.truth)
         if truth.c < 0.3:
