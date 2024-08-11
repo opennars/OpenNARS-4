@@ -89,7 +89,7 @@ class Concept(Item):
     #     else:
     #         raise "Invalid type." # TODO: What about question and quest?
 
-    def match_belief(self, sentence: Union[Judgement, Question, Goal]) -> Belief:
+    def match_belief(self, sentence: Union[Judgement, Question, Goal]) -> 'Belief | None':
         '''
         Select a belief with highest quality, within the belief_table, according to the task
         '''
