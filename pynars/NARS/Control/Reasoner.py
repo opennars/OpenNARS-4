@@ -13,17 +13,18 @@ from ..DataStructures import Bag, Memory, NarseseChannel, Buffer, Task, Concept,
 from ..InferenceEngine import GeneralEngine, TemporalEngine, VariableEngine
 from pynars import Config
 from pynars.Config import Enable
-from typing import Callable, List, Tuple, Union
+from typing import Callable, List, Tuple, Union, Dict
 import pynars.NARS.Operation as Operation
 from pynars import Global
 from time import time
 from pynars.NAL.Functions.Tools import project_truth, project
 from ..GlobalEval import GlobalEval
-
+from ..Channels.SensorimotorChannel import SensorimotorChannel
+from loguru import logger
 
 class Reasoner:
 
-    def __init__(self, n_memory, capacity, config='./config.json', nal_rules={1, 2, 3, 4, 5, 6, 7, 8, 9}) -> None:
+    def __init__(self, n_memory, capacity, config='./config.json', nal_rules={1, 2, 3, 4, 5, 6, 7, 8, 9}, record=False) -> None:
         # print('''Init...''')
         Config.load(config)
 
@@ -37,13 +38,15 @@ class Reasoner:
         self.memory = Memory(n_memory, global_eval=self.global_eval)
         self.overall_experience = Buffer(capacity)
         self.internal_experience = Buffer(capacity)
-        self.event_buffer = EventBuffer(3)
+
+        self.record = record
+        if self.record:
+            logger.remove()
+            logger.add("experience_{time}.log", rotation="1 MB")  # 文件达到1 MB时轮转
+
         self.narsese_channel = NarseseChannel(capacity)
-        self.perception_channel = Channel(capacity)
-        self.channels: List[Channel] = [
-            self.narsese_channel,
-            self.perception_channel
-        ]  # TODO: other channels
+        # self.channels: Dict[Channel, int] = {}
+        self.channels: List[Channel] = []
 
         self.sequence_buffer = Buffer(capacity)
         self.operations_buffer = Buffer(capacity)
@@ -59,8 +62,8 @@ class Reasoner:
         self.memory.reset()
         self.overall_experience.reset()
         self.internal_experience.reset()
-        self.narsese_channel.reset()
-        self.perception_channel.reset()
+        # self.narsese_channel.reset()
+        # self.perception_channel.reset()
         for channel in self.channels:
             channel.reset()
 
@@ -79,6 +82,11 @@ class Reasoner:
             tasks = self.cycle()
             return success, task, task_overflow, tasks
         return success, task, task_overflow
+    
+    def add_channel(self, channel: Channel):
+        channel_id = len(self.channels)
+        self.channels[channel] = channel_id
+        self.channels.append(channel)
 
     def cycle(self):
         start_cycle_time_in_seconds = time()
@@ -116,6 +124,10 @@ class Reasoner:
 
         """done with cycle"""
         self.do_cycle_metrics(start_cycle_time_in_seconds)
+
+        if self.record:
+            if len(tasks_derived)>0:
+                logger.debug(f"{{{Global.States.task}, {Global.States.belief}, {Global.States.term_belief}}} |- {tasks_derived}")
 
         return tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest, (
             task_operation_return, task_executed)
@@ -282,7 +294,13 @@ class Reasoner:
         return task_operation_return, task_executed, belief_awared
 
     def register_operator(self, name_operator: str, callback: Callable):
-        '''register an operator and return the operator if successful (otherwise, return None)'''
+        '''register an operator and return the operator if successful (otherwise, return None)
+        Args:
+            name_operator: for example, `"left"`. Don't add `^` to the begining of the string.
+            callback: for example, `my_callback`, where
+                def my_callback(*args):
+                    pass
+        '''
         if not Operation.is_registered_by_name(name_operator):
             from pynars.Narsese import Operator as Op
             op = Op(name_operator)
