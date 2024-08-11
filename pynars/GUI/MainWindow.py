@@ -3,7 +3,7 @@ from PySide6 import QtWidgets
 # from PySide6
 from PySide6.QtWidgets import QMainWindow, QLabel, QPushButton, QApplication
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QStackedLayout
-from PySide6.QtWidgets import QFrame, QTextEdit, QToolBar, QPushButton, QSlider, QSplitter, QDockWidget
+from PySide6.QtWidgets import QFrame, QTextEdit, QToolBar, QPushButton, QSlider, QSplitter, QDockWidget, QMenuBar, QMenu
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QScreen, QAction, QIcon, QColor, QFont, QKeyEvent, QFontDatabase
 import qtawesome as qta
@@ -71,6 +71,7 @@ class NARSWindow(QMainWindow):
         main_layout.addWidget(left_widget)
         main_layout.addWidget(right_splitter)  # 添加可调整大小的右侧区域
 
+        self.init_menubar()
         self.init_output_toolbar()
         self.init_output_textbox()
         self.init_input_textbox()
@@ -83,6 +84,26 @@ class NARSWindow(QMainWindow):
 
         self.button_clear.clicked.connect(
             lambda *args: self.text_output.clear())
+
+    def init_menubar(self):
+        ''''''
+        menubar = self.menuBar()
+        menubar.setNativeMenuBar(False)
+        self.left_layout.setMenuBar(menubar)
+        # Memory
+        menu_memory = menubar.addMenu("Memory")
+        menu_memory.addAction("Reset")
+        menu_memory.addSeparator()
+        menu_memory.addAction("Load Experience")
+        menu_memory.addAction("Save Experience")
+        menu_memory.addAction("Load Memory")
+        menu_memory.addAction("Save Memory")
+
+        # menu_windows = menubar.addMenu("Windows")
+
+        # Help
+        menu_help = menubar.addMenu("Help")
+        menu_help.addAction("About NARS")
 
     def init_output_toolbar(self):
         ''''''
