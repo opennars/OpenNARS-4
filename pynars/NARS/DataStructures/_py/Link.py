@@ -1,6 +1,6 @@
 from enum import Enum
 import enum
-from pynars.Narsese import Item, Budget, Task, Term
+from pynars.Narsese import Item, Budget, Task, Term, Belief
 from typing import List, Type, Union
 from pynars.Narsese._py.Compound import Compound
 from pynars.Narsese._py.Connector import Connector
@@ -234,6 +234,7 @@ class TaskLink(Link):
 
     def __init__(self, source: 'Concept', target: 'Concept', budget: Budget, copy_budget=True, index: list=None) -> None:
         self.records: Deque[self.Recording] = deque()
+        self.records_belief: Deque[self.Recording] = deque()
         super().__init__(source, target, budget, True, copy_budget=copy_budget, index=index)
 
     def set_type(self, source_is_component=True, type: LinkType=None):
@@ -255,13 +256,13 @@ class TaskLink(Link):
         )
 
     def novel(self, term_link: TermLink, current_time: int) -> bool:
-        if term_link.target.term == self.target.term:
-            return False
+        # if term_link.target.term == self.target.term:
+        #     return False
         
         term_link_key = term_link.target.term
 
         # iterating the FIFO deque from oldest (first) to newest (last)
-        for record in list(self.records):
+        for record in self.records:
             if record.term == term_link_key:
                 if current_time < record.time + Config.novelty_horizon:
                     # too recent, not novel
@@ -277,6 +278,31 @@ class TaskLink(Link):
             self.records.popleft()
         # add knowledge reference to recordedLinks
         self.records.append(self.Recording(term_link_key, current_time))
+        return True
+    
+    def novel_belief(self, belief: Belief, current_time: int) -> bool:
+        # if term_link.target.term == self.target.term:
+        #     return False
+        
+        belief_key = hash(belief)
+
+        # iterating the FIFO deque from oldest (first) to newest (last)
+        for record in self.records:
+            if record.term == belief_key:
+                if current_time < record.time + Config.novelty_horizon:
+                    # too recent, not novel
+                    return False
+                else:
+                    self.records.remove(record)
+                    record.time = current_time
+                    self.records.append(record)
+                    return True
+
+        # keep recordedLinks queue a maximum finite size
+        while len(self.records) + 1 >= Config.term_link_record_length:
+            self.records.popleft()
+        # add knowledge reference to recordedLinks
+        self.records.append(self.Recording(belief_key, current_time))
         return True
     
     def __str__(self) -> str:

@@ -366,12 +366,37 @@ class GeneralEngine(Engine):
             term_link: TermLink = concept.term_links.take(remove=True)
             term_links.append(term_link)
 
-            if not task_link_valid.novel(term_link, Global.time):
-                continue
             
             concept_target: Concept = term_link.target
-            belief = concept_target.get_belief() # TODO: consider all beliefs.
-            if belief is None: continue
+
+            # Note:
+            #   I think it is a bug to use TaskLink.novel to check whether the task is novel,
+            #   because a new belief can be inserted to a concept and it can be interact with the task, while the termlink is not novel.
+            #   For example, given `(&/, A, B, C)!`` and `A.`, `(&/, B, C)!` should be derived. If a new belief `A.`
+            #   is inserted to the table, it will not be handled because of the non-novel termlink.
+            #   In OpenNARS 3.0.4, this bug was not noticed, because new goals are derived from Product-Image transformation and `^want` operation,
+            #   so that new tasks (as goals) are derived, and the termlink is novel for them.
+            #   Here, my soluton is that 
+            #   if the termlink is novel, then just check the belief table and get the max one;
+            #   otherwise, find a novel belief (as None if not found) from the table. 
+            #   If the termlink is novel, then the belief is allowed to be None, so that structural inference can be executed.
+            #   Otherwise, the belief is not allowed to be None.
+            # -- B. X., Jul 11, 2024
+            if not task_link_valid.novel(term_link, Global.time):
+                for belief in concept_target.belief_table:
+                    if belief is None: break
+                    elif not task_link_valid.novel_belief(belief, Global.time):
+                        continue
+                    else: break
+                else:
+                    belief = None
+                if belief is None:
+                    continue
+            else:
+                belief = concept_target.get_belief() 
+                    
+            # if belief is None: continue # (&/, A, B, C)! |- A!, in this case, the belief is None.
+            # Note: belief is allowed to be None
             term_belief = concept_target.term
             # if belief is None: continue
 
@@ -389,7 +414,7 @@ class GeneralEngine(Engine):
                 
         
         if is_valid:
-            Global.States.record_premises(task, belief)
+            Global.States.record_premises(task, belief, term_belief)
             Global.States.record_rules(rules)
             new_tasks = self.inference(task, belief, term_belief, task_link_valid, term_link_valid, rules)
             if term_link_valid is not None:
