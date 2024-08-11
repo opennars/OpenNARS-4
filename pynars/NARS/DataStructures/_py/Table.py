@@ -31,6 +31,9 @@ class Table:
     def __iter__(self):
         return (value for value, _ in self._table)
     
+    def __contains__(self, item):
+        return item in self._table
+    
     def values(self):
         return tuple(iter(self))
     
