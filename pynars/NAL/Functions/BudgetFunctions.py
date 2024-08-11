@@ -137,7 +137,7 @@ def Budget_merge(budget_base: Budget, budget_merged: Budget, replace=True):
 '''Belief and Desire'''
 '''Processing Units'''
 '''Goal Evaluations'''
-def Budget_evaluate_goal_solution(problem: Goal, solution: Judgement, budget_problem: Budget, budget_tasklink: Budget=None) -> Budget:
+def Budget_evaluate_goal_solution(problem: Goal, solution: Judgement, budget_problem: Budget, budget_tasklink: Budget=None, budget_termlink: Budget=None) -> Budget:
     '''
     Evaluate the quality of a belief as a solution to a problem, then reward the belief and de-prioritize the problem
     '''
@@ -152,7 +152,10 @@ def Budget_evaluate_goal_solution(problem: Goal, solution: Judgement, budget_pro
     budget_problem.priority = min(1-quality, budget_problem.quality)
 
 
+    """Ref.: Line 317~322, LocalRules.java, OpenNARS 3.0.4"""
     if budget_tasklink is not None:
-        raise NotImplementedError("TODO: feedback to links")
+        budget_tasklink.priority = min(1-quality, budget_tasklink.priority)
+    if budget_termlink is not None:
+        budget_termlink.priority = min(1.0, Or(budget_termlink.priority, quality)) # bLink.incPriority(quality);
 
     return budget
