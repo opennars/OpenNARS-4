@@ -175,8 +175,15 @@ class Memory:
             if revisible(task, desire):
                 # TODO: Temporal projection
                 desire_revised = local__revision(task, desire)  # TODO: handling the stamps
-                # reduce priority by achieving level
-                task.reduce_budget_by_achieving_level(desire)
+
+                # TODO: Reduce priority by achieving level. 
+                #       If the goal has been achieved previously, its priority should be reduced. 
+                #       However, if it was acheived long time ago, the achieving level should also be low.
+
+                # # reduce priority by achieving level
+                # belief: Belief = concept.match_belief(g1)
+                # if belief is not None:
+                #     task.reduce_budget_by_achieving_level(belief)
 
         if not task.budget.is_above_thresh:
             return desire_revised, belief_selected, (task_operation_return, task_executed), tasks_derived
@@ -250,10 +257,13 @@ class Memory:
         else:
             truth = task.truth
         if truth.e > Config.Td_decision_threshold:
-            if (task is not None) and task.is_executable and not (desire is not None and desire.evidential_base.contains(task.evidential_base)):
+            if (task is not None) and task.is_operation and not (desire is not None and desire.evidential_base.contains(task.evidential_base)):
                     #   execute with registered operators 
                     stat: Statement = task.term
-                    op = stat.predicate
+                    if stat.is_atom:
+                        op = stat
+                    else:
+                        op = stat.predicate
                     from pynars.NARS.Operation.Register import registered_operators
                     from pynars.NARS.Operation.Execution import execute
                     # ! if `op` isn't registered, an error "AttributeError: 'NoneType' object has no attribute 'stamp'" from "key: Callable[[Task], Any] = lambda task: (hash(task), hash(task.stamp.evidential_base))" will be raised
@@ -392,7 +402,7 @@ class Memory:
             return tasks, None
         old_best = goal_task.best_solution
 
-        belief_task = belief_task or concept.match_belief(goal_task.sentence)
+        # belief_task = belief_task or concept.match_belief(goal_task.sentence)
         if belief_task is None or belief_task == old_best:
             return tasks, None
         elif belief_task != old_best:
