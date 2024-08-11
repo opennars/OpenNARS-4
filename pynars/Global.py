@@ -11,6 +11,7 @@ def get_input_id():
 class States:
     task = None
     belief = None
+    term_belief = None
     concept = None
     rules = None
 
@@ -26,9 +27,10 @@ class States:
             setattr(cls, name, None)
 
     @classmethod
-    def record_premises(cls, task=None, belief=None):
+    def record_premises(cls, task=None, belief=None, term_belief=None):
         cls.task = task
         cls.belief = belief
+        cls.term_belief = term_belief
     
     @classmethod
     def record_concept(cls, concept=None):

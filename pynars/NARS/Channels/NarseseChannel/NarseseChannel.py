@@ -1,19 +1,10 @@
 from pynars.Narsese import Sentence
-from .Buffer import Buffer
+from pynars.NARS.DataStructures._py.Channel import Channel
+from pynars.NARS.DataStructures._py.Channel import Buffer
 from queue import Queue
 from pynars.Narsese import Task
 from pynars.Narsese import parser
 from pynars.utils.Print import print_out, PrintType
-
-class Channel(Buffer):
-    ''''''
-    channel_id = -1
-    def put(self, task: Task):
-        task_overflow = Buffer.put(self, task)
-        return task_overflow
-    
-    def take(self) -> Sentence:
-        return Buffer.take_max(self, remove=True)
 
 class NarseseChannel(Channel):
     ''''''
@@ -27,5 +18,3 @@ class NarseseChannel(Channel):
         task_overflow = Buffer.put(self, task)
         return True, task, task_overflow
             
-            
-    
