@@ -161,7 +161,7 @@ def revisible(task: Task, belief: Task):
         return False
     if s1.evidential_base.is_overlaped(s2.evidential_base):
         return False
-    if not s1.is_eternal and not s2.is_eternal and abs(s1.stamp.t_occurrence - belief.stamp.t_occurrence) > Config.revision_max_occurence_distance:
+    if not s1.is_eternal and not s2.is_eternal and abs(s1.stamp.t_occurrence - s2.stamp.t_occurrence) > Config.revision_max_occurence_distance:
         return False
     
     # if(s1.term.term_indices != null and s2.term.term_indices != null):
