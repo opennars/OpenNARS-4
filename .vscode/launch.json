@@ -2,6 +2,12 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python: pynars",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pynars"
+        },
+        {
             "name": "Python: pynars.GUI",
             "type": "python",
             "request": "launch",
@@ -33,12 +39,6 @@
             "type": "python",
             "request": "launch",
             "module": "Tests.test_Budget_decay"
-        },
-        {
-            "name": "Python: Pong",
-            "type": "python",
-            "request": "launch",
-            "module": "pynars.RL.Pong.main"
         },
         {
             "name": "Python: test_nal9",
@@ -276,6 +276,13 @@
             "env": {
                 "CODON_PATH": "/Users/bowenxu/.codon/lib/codon/stdlib"
             }
-        }
+        },
+        {
+            "name": "Python: Current Module",
+            "type": "debugpy",
+            "request": "launch",
+            "console": "integratedTerminal",
+            "module": "${command:extension.commandvariable.file.relativeDirDots}.${fileBasenameNoExtension}"
+        },
     ]
 }

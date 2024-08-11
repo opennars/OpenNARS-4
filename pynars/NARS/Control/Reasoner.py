@@ -21,6 +21,8 @@ from pynars.NAL.Functions.Tools import project_truth, project
 from ..GlobalEval import GlobalEval
 from ..Channels.SensorimotorChannel import SensorimotorChannel
 from loguru import logger
+from pynars.utils.Print import print_out, PrintType
+
 
 class Reasoner:
 
@@ -38,6 +40,7 @@ class Reasoner:
         self.memory = Memory(n_memory, global_eval=self.global_eval)
         self.overall_experience = Buffer(capacity)
         self.internal_experience = Buffer(capacity)
+        self.event_buffer = EventBuffer(3)
 
         self.record = record
         if self.record:
@@ -58,6 +61,9 @@ class Reasoner:
         self.last_cycle_duration = 0
         self.avg_cycle_duration = 0
 
+        # running
+        self.paused = False
+
     def reset(self):
         self.memory.reset()
         self.overall_experience.reset()
@@ -76,17 +82,104 @@ class Reasoner:
             tasks_all_cycles.append(self.cycle())
         return tasks_all_cycles
 
+    def run(self, paused=False):
+        from time import sleep
+        from pynput import keyboard
+        from pynars.utils.Print import print_out, PrintType
+        from pynars.NARS.Channels.ConsoleChannel import ConsoleChannel
+
+        # TODO: channel capacity as a parameter
+        console_channel = ConsoleChannel(self, 1000)
+
+        def on_ctrl_p():
+            print_out(PrintType.COMMENT, 'Paused.', comment_title='\n\nNARS')
+            print_out(PrintType.COMMENT, '', comment_title='Input', end='')
+            self.paused = True
+
+        def on_ctrl_r():
+            if self.paused:
+                print_out(PrintType.COMMENT, 'Running...', comment_title='\n\nNARS')
+            self.paused = False
+
+        def on_ctrl_c():
+            raise KeyboardInterrupt()
+
+        self.add_channel(console_channel)
+        self.paused = paused
+        try:
+            with keyboard.GlobalHotKeys({'<ctrl>+r': on_ctrl_r}):
+                while True:
+                    if not self.paused:
+                        with keyboard.GlobalHotKeys({'<ctrl>+p': on_ctrl_p, '<ctrl>+c': on_ctrl_c}) as listener:
+                            while not self.paused:
+                                tasks = self.cycle()
+                                self.print_tasks(tasks)
+                    sleep(0.1)
+        except KeyboardInterrupt:
+            print_out(PrintType.COMMENT, 'Stop...', comment_title='\n\nNARS')
+            console_channel.terminated = True
+            exit()
+            # console_channel.thread_console.join()
+
+    @staticmethod
+    def print_tasks(tasks_packed: Tuple[
+            List[Task],
+            Task,
+            Task,
+            List[Task],
+            List[Task],
+            Tuple[Task, Task]]):
+        # unpack one of lines of tasks, and then print out
+        tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest, \
+            (task_operation_return, task_executed) = tasks_packed
+
+        # while derived task(s)
+        for task in tasks_derived:
+            print_out(PrintType.OUT, task.sentence.repr(), *task.budget)
+
+        # while revising a judgement
+        if judgement_revised is not None:
+            print_out(PrintType.OUT, judgement_revised.sentence.repr(),
+                      *judgement_revised.budget)
+
+        # while revising a goal
+        if goal_revised is not None:
+            print_out(PrintType.OUT, goal_revised.sentence.repr(),
+                      *goal_revised.budget)
+
+        # while answering a question for truth value
+        if answers_question is not None:
+            for answer in answers_question:
+                print_out(
+                    PrintType.ANSWER,
+                    answer.sentence.repr(),
+                    *answer.budget)
+        # while answering a quest for desire value
+        if answers_quest is not None:
+            for answer in answers_quest:
+                print_out(PrintType.ACHIEVED,
+                          answer.sentence.repr(), *answer.budget)
+        # while executing an operation
+        if task_executed is not None:
+            print_out(
+                PrintType.EXE,
+                f'''{task_executed.term.repr()} = {
+                    str(task_operation_return) 
+                    if task_operation_return is not None
+                    else None}''')
+
     def input_narsese(self, text, go_cycle: bool = False) -> Tuple[bool, Union[Task, None], Union[Task, None]]:
         success, task, task_overflow = self.narsese_channel.put(text)
         if go_cycle:
             tasks = self.cycle()
             return success, task, task_overflow, tasks
         return success, task, task_overflow
-    
+
     def add_channel(self, channel: Channel):
         channel_id = len(self.channels)
-        self.channels[channel] = channel_id
+        # self.channels[channel] = channel_id
         self.channels.append(channel)
+        channel.channel_id = channel_id
 
     def cycle(self):
         start_cycle_time_in_seconds = time()
@@ -126,12 +219,12 @@ class Reasoner:
         self.do_cycle_metrics(start_cycle_time_in_seconds)
 
         if self.record:
-            if len(tasks_derived)>0:
-                logger.debug(f"{{{Global.States.task}, {Global.States.belief}, {Global.States.term_belief}}} |- {tasks_derived}")
+            if len(tasks_derived) > 0:
+                logger.debug(
+                    f"{{{Global.States.task}, {Global.States.belief}, {Global.States.term_belief}}} |- {tasks_derived}")
 
         return tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest, (
             task_operation_return, task_executed)
-
 
     def consider(self, tasks_derived: List[Task]):
         """
@@ -311,7 +404,8 @@ class Reasoner:
     def do_cycle_metrics(self, start_cycle_time_in_seconds: float):
         #  record some metrics
         total_cycle_duration_in_seconds = time() - start_cycle_time_in_seconds
-        self.last_cycle_duration = total_cycle_duration_in_seconds # store the cycle duration
+        self.last_cycle_duration = total_cycle_duration_in_seconds  # store the cycle duration
         # calculate average
         self.cycles_count += 1
-        self.avg_cycle_duration += (self.last_cycle_duration - self.avg_cycle_duration) / self.cycles_count
+        self.avg_cycle_duration += (self.last_cycle_duration -
+                                    self.avg_cycle_duration) / self.cycles_count
