@@ -7,6 +7,9 @@ See:
 
     [1] https://gym.openai.com/envs/Pong-v0/
 
+Note:
+    In this experiment, we do not use NARS to play the game, but rather we use a special controller track the ball.
+
 '''
 
 from operator import truth
@@ -15,29 +18,37 @@ from random import sample
 from typing import Iterable
 from typing_extensions import Literal
 import gym
-from atariari.benchmark.wrapper import AtariARIWrapper
+from Experiments.utils.AtariARI import AtariARIWrapper
 from time import sleep
 from pynars.NARS.DataStructures._py.Memory import Memory
 
 from pynars.Narsese import Task, Judgement, Term, Stamp, Base
 from pynars import Global
 from pynars.NARS import Reasoner
-from pynars.Console import handle_lines, run_file
+from pynars.Console import handle_lines
 from pynars.Narsese._py.Compound import Compound
+from pynars.Narsese._py.Sentence import Goal
 from pynars.Narsese._py.Statement import Statement
 from pynars.Narsese._py.Truth import Truth
+from pynars.utils.Print import PrintType, print_out
 from pynars.utils.tools import rand_seed
+from pynput import keyboard
+
 
 rander_mode: Literal['human'] = 'human'
+remind_cycle = 4  # remind the system the goal every x cycles
 
 
 class Perceptron:
-    ''''''
+    """
+    To convert game states into NARS tasks
+    """
     player_x_last: int = None
     player_y_last: int = None
     ball_x_last: int = None
     ball_y_last: int = None
-    i_step: int = 0
+    ball_x_last2: int = None
+    fist_iter: bool = True
 
     def __init__(self) -> None:
         x_min, x_max, y_min, y_max = 68, 205, 46, 205
@@ -50,145 +61,182 @@ class Perceptron:
         self.thresh_x_0, self.thresh_y_0, self.thresh_x_1, self.thresh_x_2, self.thresh_y_1, self.thresh_y_2 = thresh_x_0, thresh_y_0, thresh_x_1, thresh_x_2, thresh_y_1, thresh_y_2
 
     def percetption(self, x_p, y_p, x_b, y_b, x_p_last, y_p_last, x_b_last, y_b_last):
-        '''
+        """
         range of x: 68~205
         range of y: 46~205
-        '''
-        
-
-        diff_x = x_p - x_b
-        diff_y = y_p - y_b
-        diff_x_last = x_p_last - x_b_last
-        diff_y_last = y_p_last - y_b_last
-        if abs(diff_x) < self.thresh_x_0: dist_x = 'zero'
-        elif abs(diff_x) < self.thresh_x_1: dist_x = 'little'
-        elif abs(diff_x) < self.thresh_x_2: dist_x = 'middle'
-        else: dist_x = 'large'
-        
-        if abs(diff_y) < self.thresh_y_0: dist_y = 'zero'
-        elif abs(diff_y) < self.thresh_y_1: dist_y = 'little'
-        elif abs(diff_y) < self.thresh_y_2: dist_y = 'middle'
-        else: dist_y = 'large'
-
-        if abs(diff_x) < abs(diff_x_last): change_x = 'decrease'
-        else: change_x = 'increase'
-        if abs(diff_y) < abs(diff_y_last): change_y = 'decrease'
-        else: change_y = 'increase'
-
-        word_dist_x = f'dist_x_{dist_x}'
-        word_dist_y = f'dist_y_{dist_y}'
-        word_change_x = f'dist_x_{change_x}'
-        word_change_y = f'dist_y_{change_y}'
-            
-        dist_x = Task(Judgement(Term(word_dist_x), Stamp(Global.time, Global.time, None, Base((Global.get_input_id(),)))))
-        dist_y = Task(Judgement(Term(word_dist_y), Stamp(Global.time, Global.time, None, Base((Global.get_input_id(),)))))
-        change_x = Task(Judgement(Term(word_change_x), Stamp(Global.time, Global.time, None, Base((Global.get_input_id(),)))))
-        change_y = Task(Judgement(Term(word_change_y), Stamp(Global.time, Global.time, None, Base((Global.get_input_id(),)))))
-        return dist_x, dist_y, change_x, change_y
-
+        """
+        width = 7
+        if y_p-width > y_b:
+            task = Task(Judgement(Term('ball_right'), Stamp(
+                Global.time, Global.time, None, Base((Global.get_input_id(),)))))
+        elif y_p+width < y_b:
+            task = Task(Judgement(Term('ball_left'), Stamp(
+                Global.time, Global.time, None, Base((Global.get_input_id(),)))))
+        else:
+            task = Task(Judgement(Term('ball_middle'), Stamp(
+                Global.time, Global.time, None, Base((Global.get_input_id(),)))))
+        return task
 
     def step(self, player_x, player_y, ball_x, ball_y):
-        ''''''
-        result = None, None, None, None
-        if self.i_step != 0:
-            result = self.percetption(player_x, player_y, ball_x, ball_y, self.player_x_last, self.player_y_last, self.ball_x_last, self.ball_y_last)
+        result = None
+        hit = False
+        if not self.fist_iter:
+            result = self.percetption(player_x, player_y, ball_x, ball_y, self.player_x_last,
+                                      self.player_y_last, self.ball_x_last, self.ball_y_last)
+        else:
+            self.fist_iter = False
+        if self.ball_x_last2 is not None:
+            if self.ball_x_last2 < self.ball_x_last and ball_x < self.ball_x_last:
+                hit = True
+        self.ball_x_last2 = self.ball_x_last
         self.player_x_last, self.player_y_last, self.ball_x_last, self.ball_y_last = player_x, player_y, ball_x, ball_y
-        self.i_step += 1
-        return result
+        return result, hit
+
+    def reset(self):
+        self.fist_iter = True
+        self.ball_x_last2 = None
+        self.player_x_last, self.player_y_last, self.ball_x_last, self.ball_y_last = None, None, None, None
+
+
+class Action:
+    value: Literal[0, 2, 3] = 0  # 3: left, 0: stop, 2: right
+    time = -100
+
+
+term_left = Term('left')
+term_right = Term('right')
+term_stop = Term('stop')
+
+
+class Controller:
+    def __init__(self):
+        self.ball_left = Term("ball_left")
+        self.ball_right = Term("ball_right")
+        self.ball_middle = Term("ball_middle")
+
+    def put(self, event: Task):
+        if event.term == self.ball_left:
+            player_move((term_left, ))
+        elif event.term == self.ball_right:
+            player_move((term_right, ))
+        elif event.term == self.ball_middle:
+            player_move((term_stop, ))
+
+
+def player_move(arguments: Iterable[Term], task: Task = None, memory: Memory = None):
+    """
+    It is called back when NARS executes the operation 'move'.
+    """
+    # assert not task.is_eternal, 'The task should not be eternal.'
+
+    direction = arguments[0]
+    # t_occ = task.stamp.t_occurrence
+    # if t_occ > Action.time:
+    #     Action.time = t_occ
+    # else:
+    #     return
+    if direction == term_left:
+        Action.value = 3
+    elif direction == term_right:
+        Action.value = 2
+    elif direction == term_stop:
+        Action.value = 0
 
 
 def policy_nars(env: gym.Env):
     ''''''
+    # global action
     seed = 137
     rand_seed(seed)
     epsilon = 0.08
 
     env.reset()
     # env.render()
-    done = False
     perceptron = Perceptron()
-    
-    nars = Reasoner(1000, 1000)
-    # initialize nars
-    run_file(nars, './pynars/RL/Pong/pong.nal')
-    for _ in range(1):
-        handle_lines(nars, '100')
 
-    # register operations 
-    action: Literal[0, 2, 3] = 0 # 2: left, 0: stop, 3: right
-    action_last = action
-    term_left = Term('left')
-    term_right = Term('right')
-    def player_move(arguments: Iterable[Term], task: Task=None, memory: Memory=None):
-        ''''''
-        direction = arguments[1]
-        if direction == term_left:
-            action = 2
-        elif direction == term_right:
-            action = 3
+    nars = Controller()
 
-    def player_stop(arguments: Iterable[Term], task: Task=None, memory: Memory=None):
-        action = 0
+    # register operations
+    action_last = Action.value
 
-    nars.register_operator('move', player_move)
-    nars.register_operator('stop', player_stop)
-        
+    motor_bablling = 0
+
     # begin playing
     i_step = 0
-    while not done:
-        if action == 0 and random() < 0.08: # random action
-            action = sample((0, 2, 3), 1)[0]
-        observation, reward, done, info = env.step(action)
+    while True:
+        if i_step < motor_bablling:
+            Action.value = sample((0, 2, 3), 1)[0]
+        else:
+            pass
+        observation, reward, terminated, truncated, info = env.step(
+            Action.value)
         labels = info['labels']
         player_x, player_y = int(labels['player_x']), int(labels['player_y'])
         ball_x, ball_y = int(labels['ball_x']), int(labels['ball_y'])
-        if ball_y != 0: # the player and machine are not died
-            dist_x, dist_y, change_x, change_y = perceptron.step(player_x, player_y, ball_x, ball_y)
-            # info_str = f'obs: {observation.shape}; reward: {reward}; ball: ({ball_x}, {ball_y});'
-            # # info_str += f'{dist_x.term if dist_x is not None else None, dist_y.term if dist_y is not None else None, change_x.term if change_x is not None else None, change_y.term if change_y is not None else None}'
-            # print(info_str)
-            if dist_x is not None:
-                nars.perception_channel.put(dist_x)
-                nars.perception_channel.put(dist_y)
-                nars.perception_channel.put(change_x)
-                nars.perception_channel.put(change_y)
-            handle_lines(nars, '10')
-            # nars.cycles(10)
-        else:
-            game_reset = Task(Judgement(Statement.Inheritance(Compound.Instance(Term('game')), Compound.Property(Term('reset'))), Stamp(Global.time, Global.time, None, Base((Global.get_input_id(), )))))
-            nars.perception_channel.put(game_reset)
-        if i_step % 4 == 0:
-            goal = Task(Judgement(Term('ball_holded'), Stamp(Global.time, Global.time, None, Base((Global.get_input_id(), ))), truth=Truth(1.00, 0.99, 1))) # remind the system the goal every 4 steps.
-            nars.perception_channel.put(goal)
+        # print(ball_x, ball_y, reward)
+        hit_event = None
+        sensory_event = None
+        motor_event = None
+        if ball_y != 0:  # the player and machine are not died
+            sensory_event, hit = perceptron.step(
+                player_x, player_y, ball_x, ball_y)
+            if Action.value == 0:
+                motor_event = Task(Judgement(Term('stop'), Stamp(
+                    Global.time, Global.time, None, Base((Global.get_input_id(),)))))
+            elif Action.value == 2:
+                motor_event = Task(Judgement(Term('right'), Stamp(
+                    Global.time, Global.time, None, Base((Global.get_input_id(),)))))
+            elif Action.value == 3:
+                motor_event = Task(Judgement(Term('left'), Stamp(
+                    Global.time, Global.time, None, Base((Global.get_input_id(),)))))
 
-        action_last = action
+            if hit:
+                print("hit!!!!!!!!!!!!!!!!")
+                hit_event = Task(Judgement(Term('hit_ball'), Stamp(
+                    Global.time, Global.time, None, Base((Global.get_input_id(),)))))
+
+            if sensory_event is not None:
+                nars.put(sensory_event)
+            if hit_event is not None:
+                nars.put(hit_event)
+            if motor_event is not None:
+                nars.put(motor_event)
+
+        else:
+            perceptron.reset()
+
+        if i_step % remind_cycle == 0:
+            goal = Task(
+                Goal(Term('hit'), Stamp(Global.time, Global.time,
+                     None, Base((Global.get_input_id(),))))
+            )  # remind the system the goal of hitting the ball.
+            nars.put(goal)
+
+        action_last = Action.value
         i_step += 1
+        if terminated:
+            env.reset()
         pass
-        
+
 
 def run():
     '''
     Installation:
-        1. gym
         ```
         pip install gym
-        pip install gym[atari]
-        pip install gym[accept-rom-license]
+        pip install 'gym[atari]'
+        pip install 'gym[accept-rom-license]'
         pip install pyglet
         ```
-        2. interface
-        ```
-        pip install git+git://github.com/mila-iqia/atari-representation-learning.git
-        ```
     '''
-    # env = gym.make("Pong-v0", render_mode='human')  
-    env = gym.make("Pong-ram-v0", render_mode='human') 
+    # env = gym.make("Pong-v0", render_mode='human')
+    env = gym.make("Pong-ram-v0", render_mode='human')
     env = AtariARIWrapper(env)
 
     # observation space
-    print(env.observation_space.shape) # (210, 160, 3)
+    print(env.observation_space.shape)  # (210, 160, 3)
     # action space
-    print(env.action_space) # Discrete(6)
+    print(env.action_space)  # Discrete(6)
 
     act_meanings = env.unwrapped.get_action_meanings()
     print(f'actions (0~{len(act_meanings)-1}): {act_meanings}')
