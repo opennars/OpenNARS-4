@@ -17,7 +17,7 @@ class Task(Item):
     processed = False
     
     def __init__(self, sentence: Sentence, budget: Budget=None, input_id: int=None) -> None:
-        super().__init__(hash(sentence), budget)
+        super().__init__(hash((hash(sentence), hash(sentence.evidential_base))), budget)
         self.sentence: Sentence = sentence
         self.input_id = self.input_id if input_id is None else input_id
 
