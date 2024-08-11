@@ -8,20 +8,6 @@
             "module": "pynars"
         },
         {
-            "name": "Python: pynars.GUI",
-            "type": "python",
-            "request": "launch",
-            "module": "pynars.GUI",
-            "justMyCode": true
-        },
-        {
-            "name": "Python: goal_agent",
-            "type": "python",
-            "request": "launch",
-            "module": "Experiments.GoalAgent.main",
-            "justMyCode": true
-        },
-        {
             "name": "Python: plane_game",
             "type": "python",
             "request": "launch",
