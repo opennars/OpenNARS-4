@@ -34,8 +34,12 @@ def execute(task: Task, concept: Concept, memory: Memory):
     if task.term != concept.term:
         concept = memory.take_by_key(task.term, remove=False)
     stat: Statement = task.term
-    operator: Operator = stat.predicate
-    args = stat.subject.terms
+    if stat.is_atom:
+        operator = stat
+        args = ()
+    else:
+        operator: Operator = stat.predicate
+        args = stat.subject.terms
     function_op: Callable = registered_operators.get(operator, None)
 
     if function_op is not None: 
