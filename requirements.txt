@@ -19,12 +19,13 @@ typing_extensions>=4.0.1
 sparse-lut>=1.0.0
 miniKanren>=1.0.3
 loguru>=0.7.2
-# GUI related packages
-qt-material>=2.14
-qtawesome>=1.2.3
 readchar>=4.2.0
-
-as-rpc>=1.0.1
+# GUI related packages
+qtawesome>=1.2.3
+as-rpc>=1.0.2
 qasync
 pyqtgraph
+qtawesome
 PySide6
+qdarkstyle
+# qt-material>=2.14

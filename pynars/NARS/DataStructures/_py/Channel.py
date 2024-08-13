@@ -14,12 +14,16 @@ class Channel(Buffer):
     
     def take(self) -> Sentence:
         return Buffer.take_max(self, remove=True)
+    
+    def on_cycle_finished(self):
+        pass # virtual function
 
 class NarseseChannel(Channel):
     ''''''
     def put(self, text: str):
         try:
             task: Task = parser.parse(text)
+            task.channel_id = self.channel_id
         except Exception as e:
             task = None
             return False, None, None

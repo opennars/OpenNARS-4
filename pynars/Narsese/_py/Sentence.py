@@ -71,7 +71,7 @@ class Stamp:
         self.evidential_base.extend(base)
 
     def __str__(self):
-        return f'{{{self.t_occurrence}: {", ".join(str(b) for b in self.evidential_base._set)}}}'
+        return f'{{{self.t_occurrence if self.t_occurrence is not None else "-"}: {", ".join(str(b) for b in self.evidential_base._set)}}}'
 
     def __repr__(self):
         return f'<Stamp: {str(self)}>'

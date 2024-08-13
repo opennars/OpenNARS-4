@@ -18,6 +18,7 @@ from as_rpc import AioRpcClient
 
 class NARSWindow(QMainWindow):
     client: AioRpcClient = None
+    instance_id: int = None
 
     def __init__(self):
         super().__init__()
@@ -224,28 +225,30 @@ class NARSWindow(QMainWindow):
     def input_narsese(self):
         content: str = self.text_input.toPlainText()
         self.text_input.clear()
+        def callback(*args):
+            pass
         if self.client is not None:
-            self.client.call_func("handle_lines", self.print_out, content)
+            self.client.call_method(self.instance_id, f"handle_lines", callback, content)
         else:
             print(content)
 
     def print_out(self, content):
         ''''''
-        # print(content)
-        out, err = content
-        if err is not None:
-            print(err)
-            self.text_output.append(':Error')
-        else:
-            text, (satisfaction, busyness, alertness, wellbeing) = out
-            # print(satisfactions)
-            if len(satisfaction) > 0:
-                self.plot_satisfaction.update_values(satisfaction)
-                self.plot_busyness.update_values(busyness)
-                self.plot_alertness.update_values(alertness)
-                self.plot_wellbeing.update_values(wellbeing)
-            if len(text) > 0:
-                self.text_output.append(text)
+        out = content
+        # out, err = content
+        # if err is not None:
+        #     print(err)
+        #     self.text_output.append(':Error')
+        # else:
+        text, (satisfaction, busyness, alertness, wellbeing) = out
+        # print(satisfactions)
+        if len(satisfaction) > 0:
+            self.plot_satisfaction.update_values(satisfaction)
+            self.plot_busyness.update_values(busyness)
+            self.plot_alertness.update_values(alertness)
+            self.plot_wellbeing.update_values(wellbeing)
+        if len(text) > 0:
+            self.text_output.append(text)
         # self.text_output.append('\n')
 
     def _center_window(self):

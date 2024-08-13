@@ -13,6 +13,7 @@ from .Truth import Truth
 
 class Task(Item):
     input_id = -1
+    channel_id = -1
     best_solution: 'Task' = None
     processed = False
     
@@ -115,7 +116,8 @@ class Task(Item):
 
     def __str__(self) -> str:
         '''$p;d;q$ sentence %f;c%'''
-        return f'{(str(self.budget) if self.budget is not None else "$-;-;-$") + " "}{self.sentence.repr(False)} {str(self.stamp)}'
+        channel_id = f"[{self.channel_id}] " if self.channel_id > -1 else ''
+        return f'{channel_id}{(str(self.budget) if self.budget is not None else "$-;-;-$") + " "}{self.sentence.repr(False)} {str(self.stamp)}'
 
     def __repr__(self) -> str:
         return str(self)

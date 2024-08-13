@@ -15,34 +15,46 @@ from pathlib import Path
 
 class ConsoleChannel(NarseseChannel):
     ''''''
+
     def __init__(self, reasoner, capacity: int, seed=137, n_buckets: int = None, take_in_order: bool = False, max_duration: int = None) -> None:
         import threading
         from time import sleep
         from readchar import key
         from pynars.NARS import Reasoner
         self.nars: Reasoner = reasoner
-        
+
         super().__init__(capacity, n_buckets, take_in_order, max_duration)
 
         rand_seed(seed)
-        print_out(PrintType.COMMENT, f'rand_seed={seed}', comment_title='Setup')
+        print_out(PrintType.COMMENT,
+                  f'rand_seed={seed}', comment_title='Setup')
         print_out(PrintType.COMMENT, 'Console.', comment_title='NARS')
 
-
         self.terminated = False
+
         def console_input():
             while not self.terminated:
                 if self.nars.paused:
                     while self.nars.paused:
-                        print_out(PrintType.COMMENT, '', comment_title='Input', end='')
-                        lines = input()
+                        print_out(PrintType.COMMENT, '',
+                                  comment_title='Input', end='')
+                        try:
+                            lines = input()
+                        except Exception as e:
+                            print("KeyboardInterrupt")
                         lines = lines.split(key.CTRL_P)[-1]
                         self.handle_lines(lines)
                 else:
                     sleep(0.1)
-        
+
         self.thread_console = threading.Thread(target=console_input)
+        # set as daemon thread, so that it exits when the main thread exits
+        self.thread_console.setDaemon(True)
         self.thread_console.start()
+
+    def on_cycle_finished(self):
+        tasks = self.nars.get_derived_tasks()
+        self.print_tasks(tasks)
 
     def run_line(self, line: str):
         nars = self.nars
@@ -96,6 +108,7 @@ class ConsoleChannel(NarseseChannel):
                 if success:
                     print_out(
                         PrintType.IN,
+                        (f"[{task.channel_id}] " if task.channel_id > -1 else '') +
                         task.sentence.repr(),
                         *task.budget)
                 else:
@@ -107,7 +120,6 @@ class ConsoleChannel(NarseseChannel):
                 return [deepcopy(tasks_all)]
             except Exception as e:
                 print_out(PrintType.ERROR, f'Unknown error: {line}. \n{e}')
-
 
     def handle_lines(self, lines: str):
         nars = self.nars
@@ -124,8 +136,7 @@ class ConsoleChannel(NarseseChannel):
                 tasks_lines.extend(tasks_line)
         # print the output #
         for tasks_line in tasks_lines:
-            nars.print_tasks(tasks_line)
-
+            self.print_tasks(tasks_line)
 
     def run_file(self, filepath: str = None):
         '''Run the content of file'''
@@ -143,4 +154,52 @@ class ConsoleChannel(NarseseChannel):
                 lines = f.read()
                 self.handle_lines(lines)
 
-    
+    @staticmethod
+    def print_tasks(tasks_packed: Tuple[
+            List[Task],
+            Task,
+            Task,
+            List[Task],
+            List[Task],
+            Tuple[Task, Task]]):
+        # unpack one of lines of tasks, and then print out
+        tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest, \
+            (task_operation_return, task_executed) = tasks_packed
+
+        # while derived task(s)
+        for task in tasks_derived:
+            channel_id = f"[{task.channel_id}] " if task.channel_id > -1 else ''
+            print_out(PrintType.OUT, channel_id +
+                      task.sentence.repr(), *task.budget)
+
+        # while revising a judgement
+        if judgement_revised is not None:
+            print_out(PrintType.OUT, channel_id + judgement_revised.sentence.repr(),
+                      *judgement_revised.budget)
+
+        # while revising a goal
+        if goal_revised is not None:
+            print_out(PrintType.OUT, channel_id + goal_revised.sentence.repr(),
+                      *goal_revised.budget)
+
+        # while answering a question for truth value
+        if answers_question is not None:
+            for answer in answers_question:
+                print_out(
+                    PrintType.ANSWER,
+                    channel_id +
+                    answer.sentence.repr(),
+                    *answer.budget)
+        # while answering a quest for desire value
+        if answers_quest is not None:
+            for answer in answers_quest:
+                print_out(PrintType.ACHIEVED, channel_id +
+                          answer.sentence.repr(), *answer.budget)
+        # while executing an operation
+        if task_executed is not None:
+            print_out(
+                PrintType.EXE, channel_id +
+                f'''{task_executed.term.repr()} = {
+                    str(task_operation_return) 
+                    if task_operation_return is not None
+                    else None}''')

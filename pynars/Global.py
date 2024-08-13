@@ -14,6 +14,7 @@ class States:
     term_belief = None
     concept = None
     rules = None
+    tasks_derived = None
 
     @classmethod
     def reset(cls):

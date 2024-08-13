@@ -162,9 +162,12 @@ def run_nars(filepath: str, seed: int = 137, n_memory: int = 100, capacity: int 
     '''Load the datas and launch the NARS reasoner'''
     # info('Console')
     # init status #
+    from pynars.NARS.DataStructures import NarseseChannel
     rand_seed(seed)
     print_out(PrintType.COMMENT, f'rand_seed={seed}', comment_title='Setup')
     nars = Reasoner(n_memory, capacity)
+    nars.narsese_channel = NarseseChannel(1000)
+    nars.add_channel(nars.narsese_channel)
     nars.register_operator('left', lambda *args: print('execute left.'))
     # try to run file if exists
     print_out(PrintType.COMMENT, 'Init...', comment_title='NARS')

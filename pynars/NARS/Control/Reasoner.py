@@ -22,6 +22,8 @@ from ..GlobalEval import GlobalEval
 from ..Channels.SensorimotorChannel import SensorimotorChannel
 from loguru import logger
 from pynars.utils.Print import print_out, PrintType
+from pynars.NARS.Channels.ConsoleChannel import ConsoleChannel
+import threading
 
 
 class Reasoner:
@@ -47,7 +49,7 @@ class Reasoner:
             logger.remove()
             logger.add("experience_{time}.log", rotation="1 MB")  # 文件达到1 MB时轮转
 
-        self.narsese_channel = NarseseChannel(capacity)
+        self.narsese_channel = NarseseChannel(capacity) # TODO: this line will be deprecated soon. All channels
         # self.channels: Dict[Channel, int] = {}
         self.channels: List[Channel] = []
 
@@ -63,6 +65,13 @@ class Reasoner:
 
         # running
         self.paused = False
+
+
+        # TODO: channel capacity as a parameter
+        console_channel = ConsoleChannel(self, 1000)
+        self.add_channel(console_channel)
+        self.console_channel = console_channel
+
 
     def reset(self):
         self.memory.reset()
@@ -86,10 +95,7 @@ class Reasoner:
         from time import sleep
         from pynput import keyboard
         from pynars.utils.Print import print_out, PrintType
-        from pynars.NARS.Channels.ConsoleChannel import ConsoleChannel
 
-        # TODO: channel capacity as a parameter
-        console_channel = ConsoleChannel(self, 1000)
 
         def on_ctrl_p():
             print_out(PrintType.COMMENT, 'Paused.', comment_title='\n\nNARS')
@@ -101,72 +107,24 @@ class Reasoner:
                 print_out(PrintType.COMMENT, 'Running...', comment_title='\n\nNARS')
             self.paused = False
 
-        def on_ctrl_c():
-            raise KeyboardInterrupt()
-
-        self.add_channel(console_channel)
         self.paused = paused
-        try:
-            with keyboard.GlobalHotKeys({'<ctrl>+r': on_ctrl_r}):
-                while True:
-                    if not self.paused:
-                        with keyboard.GlobalHotKeys({'<ctrl>+p': on_ctrl_p, '<ctrl>+c': on_ctrl_c}) as listener:
-                            while not self.paused:
-                                tasks = self.cycle()
-                                self.print_tasks(tasks)
-                    sleep(0.1)
-        except KeyboardInterrupt:
-            print_out(PrintType.COMMENT, 'Stop...', comment_title='\n\nNARS')
-            console_channel.terminated = True
-            exit()
-            # console_channel.thread_console.join()
-
-    @staticmethod
-    def print_tasks(tasks_packed: Tuple[
-            List[Task],
-            Task,
-            Task,
-            List[Task],
-            List[Task],
-            Tuple[Task, Task]]):
-        # unpack one of lines of tasks, and then print out
-        tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest, \
-            (task_operation_return, task_executed) = tasks_packed
-
-        # while derived task(s)
-        for task in tasks_derived:
-            print_out(PrintType.OUT, task.sentence.repr(), *task.budget)
-
-        # while revising a judgement
-        if judgement_revised is not None:
-            print_out(PrintType.OUT, judgement_revised.sentence.repr(),
-                      *judgement_revised.budget)
-
-        # while revising a goal
-        if goal_revised is not None:
-            print_out(PrintType.OUT, goal_revised.sentence.repr(),
-                      *goal_revised.budget)
-
-        # while answering a question for truth value
-        if answers_question is not None:
-            for answer in answers_question:
-                print_out(
-                    PrintType.ANSWER,
-                    answer.sentence.repr(),
-                    *answer.budget)
-        # while answering a quest for desire value
-        if answers_quest is not None:
-            for answer in answers_quest:
-                print_out(PrintType.ACHIEVED,
-                          answer.sentence.repr(), *answer.budget)
-        # while executing an operation
-        if task_executed is not None:
-            print_out(
-                PrintType.EXE,
-                f'''{task_executed.term.repr()} = {
-                    str(task_operation_return) 
-                    if task_operation_return is not None
-                    else None}''')
+        def run_console():
+            try:
+                with keyboard.GlobalHotKeys({'<ctrl>+r': on_ctrl_r}):
+                    while True:
+                        if not self.paused:
+                            with keyboard.GlobalHotKeys({'<ctrl>+p': on_ctrl_p}) as listener:
+                                while not self.paused:
+                                    tasks = self.cycle()
+                        sleep(0.1)
+            except KeyboardInterrupt:
+                print_out(PrintType.COMMENT, 'Stop...', comment_title='\n\nNARS')
+                self.console_channel.terminated = True            
+                exit()
+                # console_channel.thread_console.join()
+        thread_console = threading.Thread(target=run_console)
+        thread_console.start()
+        thread_console.join()
 
     def input_narsese(self, text, go_cycle: bool = False) -> Tuple[bool, Union[Task, None], Union[Task, None]]:
         success, task, task_overflow = self.narsese_channel.put(text)
@@ -223,8 +181,28 @@ class Reasoner:
                 logger.debug(
                     f"{{{Global.States.task}, {Global.States.belief}, {Global.States.term_belief}}} |- {tasks_derived}")
 
-        return tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest, (
+        ret =  tasks_derived, judgement_revised, goal_revised, answers_question, answers_quest, (
             task_operation_return, task_executed)
+        Global.States.tasks_derived = ret
+
+        for channel in self.channels:
+            channel.on_cycle_finished()
+        return ret
+    
+    @staticmethod
+    def get_derived_tasks() -> Union[None, Tuple[
+            List[Task],
+            Task,
+            Task,
+            List[Task],
+            List[Task],
+            Tuple[Task, Task]]]:
+        tasks = Global.States.tasks_derived
+        return tasks
+    
+
+    def get_global_evaluations(self) -> Tuple[float, float, float, float]:
+        return self.global_eval.S, self.global_eval.B, self.global_eval.A, self.global_eval.W
 
     def consider(self, tasks_derived: List[Task]):
         """
