@@ -1,7 +1,7 @@
-from pynars.NAL.Functions.BudgetFunctions import Budget_decay
-from pynars.Narsese import Budget
+from opennars.NAL.Functions.BudgetFunctions import Budget_decay
+from opennars.Narsese import Budget
 import matplotlib.pyplot as plt
-from pynars.Config import Config
+from opennars.Config import Config
 import math
 
 def Budget_decay2(budget: Budget):

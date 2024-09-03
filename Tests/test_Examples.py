@@ -1,13 +1,13 @@
 from typing import List
 import unittest
 
-from pynars.NARS.DataStructures import Bag, Task, Concept
-from pynars.Narsese import Judgement, Term, Statement, Copula, Truth   
+from opennars.NARS.DataStructures import Bag, Task, Concept
+from opennars.Narsese import Judgement, Term, Statement, Copula, Truth   
 
 from pathlib import Path
-from pynars import Narsese, NARS
+from opennars import Narsese, NARS
 
-from pynars.utils.Print import print_out, PrintType, print_filename
+from opennars.utils.Print import print_out, PrintType, print_filename
 
 examples_path = Path(__file__).parent/'examples'
 

@@ -1,8 +1,8 @@
-from pynars.Narsese import Budget
+from opennars.Narsese import Budget
 import unittest
 
-from pynars.NARS.DataStructures import Bag, Task, Concept
-from pynars.Narsese import Judgement, Term, Statement, Copula, Truth   
+from opennars.NARS.DataStructures import Bag, Task, Concept
+from opennars.Narsese import Judgement, Term, Statement, Copula, Truth   
 
 import matplotlib.pyplot as plt
 

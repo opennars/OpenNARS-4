@@ -1,17 +1,17 @@
-'''PyNARS-Explore-Experiment
-This program is used to experiment on some projects of PyNARS and import local NARS for detailed study
+'''OpenNARS-Explore-Experiment
+This program is used to experiment on some projects of OpenNARS and import local NARS for detailed study
 ! using backslash `\` to run experimental commands
 '''
 
 # Interface
-from pynars.ConsolePlus import *
+from opennars.ConsolePlus import *
 # need to report errors to ** timely detection of ** "invalid statement input" caused by the bug
-from pynars.Narsese import parser as NarseseParser
+from opennars.Narsese import parser as NarseseParser
 
-# PyNARS: Import internal modules
-from pynars.NARS.DataStructures._py.Channel import *
-from pynars.NARS.DataStructures import *
-from pynars.Narsese import *
+# OpenNARS: Import internal modules
+from opennars.NARS.DataStructures._py.Channel import *
+from opennars.NARS.DataStructures import *
+from opennars.Narsese import *
 
 # other native modules
 from random import randint
@@ -154,7 +154,7 @@ def help_of_experiments() -> None:
 def channel_addition_test() -> None:
     # add new channel
     channel: Channel = Channel(capacity=5, n_buckets=5, max_duration=10000)
-    # [2023-09-21 23:51:23] PyNARS does not currently have a built-in "add channel" method
+    # [2023-09-21 23:51:23] OpenNARS does not currently have a built-in "add channel" method
     current_NARS_interface.reasoner.channels.append(channel)
     print(show_channel(channel=channel))
     # test new channel
@@ -207,8 +207,8 @@ def shared_memory_test() -> None:
 
 @exp_register('op')
 def operations_test() -> None:
-    # register operation, the register of mental operations can be seen in pynars\NARS\InferenceEngine\GeneralEngine\Rules\NAL9.py
-    from pynars.NARS import Operation
+    # register operation, the register of mental operations can be seen in opennars\NARS\InferenceEngine\GeneralEngine\Rules\NAL9.py
+    from opennars.NARS import Operation
     def exeF(arguments: Iterable[Term], task: Task=None, memory: Memory=None) -> Union[Task,None]:
         '''
         The execution should accepts arguments (terms), task(current) and current memory(to deal mental operations)

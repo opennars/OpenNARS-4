@@ -1,14 +1,14 @@
 import NARS
 import unittest
 
-from pynars.NARS.DataStructures import Bag, Task, Concept, Link
-from pynars.Narsese import Judgement, Term, Statement, Copula, Truth, Connector
+from opennars.NARS.DataStructures import Bag, Task, Concept, Link
+from opennars.Narsese import Judgement, Term, Statement, Copula, Truth, Connector
 
 from pathlib import Path
 import Narsese
-from pynars.Narsese._py.Compound import Compound
+from opennars.Narsese._py.Compound import Compound
 
-from pynars.utils.Print import print_out, PrintType, print_filename
+from opennars.utils.Print import print_out, PrintType, print_filename
 
 class TEST_Get_Index(unittest.TestCase):
     '''Examples files in `application`.'''

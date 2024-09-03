@@ -1,9 +1,9 @@
 import unittest
 
-from pynars import Narsese
-from pynars.Config import Config
-from pynars.NARS.DataStructures import EventBuffer
-from pynars.Narsese import Judgement, Term, Task, Stamp, Base, Statement
+from opennars import Narsese
+from opennars.Config import Config
+from opennars.NARS.DataStructures import EventBuffer
+from opennars.Narsese import Judgement, Term, Task, Stamp, Base, Statement
 
 
 class TEST_Buffer(unittest.TestCase):

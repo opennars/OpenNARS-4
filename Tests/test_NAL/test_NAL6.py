@@ -1,13 +1,13 @@
 import unittest
 
-from pynars.NARS.DataStructures import Task
-from pynars.NAL.MetaLevelInference.VariableSubstitution import *
-# from pynars.NARS.RuleMap import RuleMap
+from opennars.NARS.DataStructures import Task
+from opennars.NAL.MetaLevelInference.VariableSubstitution import *
+# from opennars.NARS.RuleMap import RuleMap
 
 # import Tests.utils_for_test as utils_for_test
 from Tests.utils_for_test import *
-from pynars.utils.Print import PrintType, print_out
-from pynars.NARS.InferenceEngine.VariableEngine.VariableEngine import VariableEngine
+from opennars.utils.Print import PrintType, print_out
+from opennars.NARS.InferenceEngine.VariableEngine.VariableEngine import VariableEngine
 
 class TEST_NAL6(unittest.TestCase):
     def setUp(self):
@@ -1150,7 +1150,7 @@ class TEST_NAL6(unittest.TestCase):
         |-
         <(&&, <#x-->A>, <#x-->B>, <<$y-->C>==><$y-->D>>, <$z-->E>) ==> <$x-->H>>.
         '''
-        from pynars.Narsese import Budget
+        from opennars.Narsese import Budget
         task = Narsese.parse("(&&, <#x-->A>, <#x-->B>, <<$y-->C>==><$y-->D>>).")
         belief = Narsese.parse("<$x-->D>.")
         term_common = Narsese.parse("<<$y-->C>==><$y-->D>>.").term

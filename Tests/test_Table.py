@@ -1,12 +1,12 @@
 import NARS
 import unittest
 
-from pynars.NARS.DataStructures import Bag, Task, Concept, Table
-from pynars.Narsese import Judgement, Term, Statement, Copula, Truth   
+from opennars.NARS.DataStructures import Bag, Task, Concept, Table
+from opennars.Narsese import Judgement, Term, Statement, Copula, Truth   
 
 from pathlib import Path
 import Narsese
-from pynars.Narsese import Compound, Connector
+from opennars.Narsese import Compound, Connector
 
 
 class TEST_Table(unittest.TestCase):

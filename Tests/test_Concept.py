@@ -1,10 +1,10 @@
-from pynars.Narsese import Budget
+from opennars.Narsese import Budget
 import unittest
 
-from pynars.NARS.DataStructures import Bag, Task
-from pynars.Narsese import Judgement, Term, Statement, Copula, Truth   
-from pynars import Narsese
-from pynars.NARS.DataStructures import Concept
+from opennars.NARS.DataStructures import Bag, Task
+from opennars.Narsese import Judgement, Term, Statement, Copula, Truth   
+from opennars import Narsese
+from opennars.NARS.DataStructures import Concept
 
 class TEST_Concept(unittest.TestCase):
     def __init__(self, methodName: str = ...) -> None:

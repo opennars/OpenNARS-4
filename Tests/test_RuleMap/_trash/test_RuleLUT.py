@@ -1,16 +1,16 @@
-from pynars.utils.RuleLUT import RuleLUT, Any
+from opennars.utils.RuleLUT import RuleLUT, Any
 
-from pynars.NARS.DataStructures._py.Link import LinkType
-from pynars.NARS.RuleMap import Interface_SyllogisticRules, RuleMap
-from pynars.Narsese import Budget
+from opennars.NARS.DataStructures._py.Link import LinkType
+from opennars.NARS.RuleMap import Interface_SyllogisticRules, RuleMap
+from opennars.Narsese import Budget
 import unittest
 
-from pynars.NARS.DataStructures import Bag, Task, Concept
-from pynars.Narsese import Judgement, Term, Statement, Copula, Truth   
+from opennars.NARS.DataStructures import Bag, Task, Concept
+from opennars.Narsese import Judgement, Term, Statement, Copula, Truth   
 
 from sparse_lut import SparseLUT
 
-from pynars.NARS.RuleMap.RuleMap import CommonId
+from opennars.NARS.RuleMap.RuleMap import CommonId
 
 class TEST_RuleLUT(unittest.TestCase):
     

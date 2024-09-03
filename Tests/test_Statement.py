@@ -3,26 +3,26 @@ import unittest
 
 class TEST_Statement(unittest.TestCase):
     def test_0(self):
-        from pynars.Narsese import Statement, Term, Copula
+        from opennars.Narsese import Statement, Term, Copula
         stat = Statement(Term("robin"), Copula.Inheritance, Term("bird"))
         pass
     
     def test_1(self):
-        from pynars.Narsese import Statement, Term, Copula
-        from pynars import Narsese
+        from opennars.Narsese import Statement, Term, Copula
+        from opennars import Narsese
         stat = Narsese.parse("<robin-->bird>.").term
         pass
 
     def test_2(self):
-        from pynars.Narsese import Statement, Term, Copula
-        from pynars import Narsese
+        from opennars.Narsese import Statement, Term, Copula
+        from opennars import Narsese
         stat = Narsese.parse("<$x-->$y>.").term
         repr(stat)
         pass
 
     def test_3(self):
-        from pynars.Narsese import Statement, Term, Copula
-        from pynars import Narsese
+        from opennars.Narsese import Statement, Term, Copula
+        from opennars import Narsese
         stat = Narsese.parse("<<$x-->A> ==> <$x-->B>>.").term
         repr(stat)
         pass

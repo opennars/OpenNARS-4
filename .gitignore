@@ -1,11 +1,16 @@
 .idea
+.DS_Store
+
+# jekyll
+Gemfile.lock
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
 Tests/*.png
 *.pkl
-!pynars/utils/SparseLUT/*.pyd
+!opennars/utils/SparseLUT/*.pyd
 lab.ipynb
 .DS_Store
 cache

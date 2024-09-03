@@ -13,8 +13,8 @@ def CLEAR_SCREEN(): os.system('cls' if os.name == 'nt' else 'clear')
 def SLEEP(ms=20): time.sleep(ms/1000)
 
 
-from pynars.Narsese import Task, Judgement, Term, Stamp, Base
-from pynars.NARS import Reasoner
+from opennars.Narsese import Task, Judgement, Term, Stamp, Base
+from opennars.NARS import Reasoner
 
 
 

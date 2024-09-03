@@ -20,18 +20,18 @@ from typing_extensions import Literal
 import gym
 from Experiments.utils.AtariARI import AtariARIWrapper
 from time import sleep
-from pynars.NARS.DataStructures._py.Memory import Memory
+from opennars.NARS.DataStructures._py.Memory import Memory
 
-from pynars.Narsese import Task, Judgement, Term, Stamp, Base
-from pynars import Global
-from pynars.NARS import Reasoner
-from pynars.Console import handle_lines
-from pynars.Narsese._py.Compound import Compound
-from pynars.Narsese._py.Sentence import Goal
-from pynars.Narsese._py.Statement import Statement
-from pynars.Narsese._py.Truth import Truth
-from pynars.utils.Print import PrintType, print_out
-from pynars.utils.tools import rand_seed
+from opennars.Narsese import Task, Judgement, Term, Stamp, Base
+from opennars import Global
+from opennars.NARS import Reasoner
+from opennars.Console import handle_lines
+from opennars.Narsese._py.Compound import Compound
+from opennars.Narsese._py.Sentence import Goal
+from opennars.Narsese._py.Statement import Statement
+from opennars.Narsese._py.Truth import Truth
+from opennars.utils.Print import PrintType, print_out
+from opennars.utils.tools import rand_seed
 from pynput import keyboard
 
 

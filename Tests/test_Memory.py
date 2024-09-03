@@ -1,13 +1,13 @@
 import NARS
 import unittest
 
-from pynars.NARS.DataStructures import Bag, Task, Memory, Concept
-from pynars.NARS.DataStructures._py.Concept import Concept
-from pynars.Narsese import Judgement, Term, Statement, Copula, Truth   
+from opennars.NARS.DataStructures import Bag, Task, Memory, Concept
+from opennars.NARS.DataStructures._py.Concept import Concept
+from opennars.Narsese import Judgement, Term, Statement, Copula, Truth   
 
 from pathlib import Path
 import Narsese
-from pynars.Narsese import Compound, Connector
+from opennars.Narsese import Compound, Connector
 
 
 def test_conceptualize(self):

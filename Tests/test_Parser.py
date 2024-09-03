@@ -1,14 +1,14 @@
 
-from pynars.Narsese._py.Variable import VarPrefix, Variable
-from pynars.Narsese._py.Sentence import Sentence, Tense
-from pynars import Narsese
-from pynars.Narsese import Budget
-from pynars.Narsese import Compound, Connector
+from opennars.Narsese._py.Variable import VarPrefix, Variable
+from opennars.Narsese._py.Sentence import Sentence, Tense
+from opennars import Narsese
+from opennars.Narsese import Budget
+from opennars.Narsese import Compound, Connector
 import unittest
-from pynars.Narsese import Question, Quest, Judgement, Goal
+from opennars.Narsese import Question, Quest, Judgement, Goal
 
-from pynars.NARS.DataStructures import Bag, Task, Concept
-from pynars.Narsese import Judgement, Term, Statement, Copula, Truth   
+from opennars.NARS.DataStructures import Bag, Task, Concept
+from opennars.Narsese import Judgement, Term, Statement, Copula, Truth   
 
 class TEST_Parser(unittest.TestCase):
     def __init__(self, methodName: str = ...) -> None:

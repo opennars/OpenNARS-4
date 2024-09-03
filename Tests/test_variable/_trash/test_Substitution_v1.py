@@ -1,13 +1,13 @@
 import NARS
 import unittest
 
-from pynars.NARS.DataStructures import Bag, Task, Concept, Table
-from pynars.Narsese import Judgement, Term, Statement, Copula, Truth   
+from opennars.NARS.DataStructures import Bag, Task, Concept, Table
+from opennars.Narsese import Judgement, Term, Statement, Copula, Truth   
 
 from pathlib import Path
 import Narsese
-from pynars.Narsese import Compound, Connector
-from pynars.NAL.MetaLevelInference.VariableSubstitution import *
+from opennars.Narsese import Compound, Connector
+from opennars.NAL.MetaLevelInference.VariableSubstitution import *
 
 class TEST_Substitution(unittest.TestCase):
 

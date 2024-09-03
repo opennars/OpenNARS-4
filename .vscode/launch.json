@@ -2,10 +2,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: pynars",
+            "name": "Python: opennars",
             "type": "debugpy",
             "request": "launch",
-            "module": "pynars"
+            "module": "opennars"
         },
         {
             "name": "Python: plane_game",
@@ -210,7 +210,7 @@
             "name": "Python: console",
             "type": "python",
             "request": "launch",
-            "module": "pynars.Console",
+            "module": "opennars.Console",
             "console": "integratedTerminal",
             "env": {
                 "CODON_PATH": "/Users/bowenxu/.codon/lib/codon/stdlib"
@@ -224,7 +224,7 @@
             "name": "Python: console plus",
             "type": "python",
             "request": "launch",
-            "module": "pynars.ConsolePlus",
+            "module": "opennars.ConsolePlus",
             "console": "integratedTerminal",
             "env": {
                 "CODON_PATH": "/Users/bowenxu/.codon/lib/codon/stdlib"
@@ -245,7 +245,7 @@
             "name": "Python: _generate_init_file",
             "type": "python",
             "request": "launch",
-            "module": "pynars.NAL._generate_init_file"
+            "module": "opennars.NAL._generate_init_file"
         },
         {
             "name": "Python: Parser test",

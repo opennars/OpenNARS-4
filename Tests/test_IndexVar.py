@@ -1,20 +1,20 @@
-from pynars import NARS, Narsese
+from opennars import NARS, Narsese
 import unittest
 
-from pynars.NARS.DataStructures import Bag, Task, Concept, Link
-from pynars.Narsese import Judgement, Term, Statement, Copula, Truth, Connector
+from opennars.NARS.DataStructures import Bag, Task, Concept, Link
+from opennars.Narsese import Judgement, Term, Statement, Copula, Truth, Connector
 
 from pathlib import Path
-from pynars.Narsese._py.Compound import Compound
+from opennars.Narsese._py.Compound import Compound
 
-from pynars.utils.Print import print_out, PrintType, print_filename
+from opennars.utils.Print import print_out, PrintType, print_filename
 
 class TEST_IndexVar(unittest.TestCase):
     '''Examples files in `application`.'''
 
     def test_int_var(self):
         ''''''
-        from pynars.utils.IndexVar import IndexVar, IntVar
+        from opennars.utils.IndexVar import IndexVar, IntVar
 
         a = IntVar(2)
         b = IntVar(1)
@@ -30,7 +30,7 @@ class TEST_IndexVar(unittest.TestCase):
     
     def test_index_var_0(self):
         ''''''
-        from pynars.utils.IndexVar import IndexVar, IntVar
+        from opennars.utils.IndexVar import IndexVar, IntVar
         idxvar_0 = IndexVar()
 
         idxvar_1_0= IndexVar()
@@ -66,7 +66,7 @@ class TEST_IndexVar(unittest.TestCase):
 
     def test_index_var_1(self):
         ''''''
-        from pynars.utils.IndexVar import IndexVar, IntVar
+        from opennars.utils.IndexVar import IndexVar, IntVar
         idxvar_0 = IndexVar()
 
         idxvar_1_0= IndexVar()
@@ -96,7 +96,7 @@ class TEST_IndexVar(unittest.TestCase):
 
     def test_index_var_2(self):
         ''''''
-        from pynars.utils.IndexVar import IndexVar, IntVar
+        from opennars.utils.IndexVar import IndexVar, IntVar
         idxvar_0 = IndexVar()
 
         idxvar_1_0= IndexVar()
@@ -121,7 +121,7 @@ class TEST_IndexVar(unittest.TestCase):
 
     def test_index_var__add_0(self):
         ''''''
-        from pynars.utils.IndexVar import IndexVar, IntVar
+        from opennars.utils.IndexVar import IndexVar, IntVar
         idxvar_0 = IndexVar()
 
         idxvar_1_0= IndexVar()
@@ -152,7 +152,7 @@ class TEST_IndexVar(unittest.TestCase):
 
     def test_index_var__add_1(self):
         ''''''
-        from pynars.utils.IndexVar import IndexVar, IntVar
+        from opennars.utils.IndexVar import IndexVar, IntVar
         '''<(&&, <E-->A>, <E-->B>, <$y-->C>)==><$y-->D>>'''
         idxvar_0 = IndexVar()
 
@@ -199,7 +199,7 @@ class TEST_IndexVar(unittest.TestCase):
 
     def test_index_var__remove(self):
         ''''''
-        from pynars.utils.IndexVar import IndexVar, IntVar
+        from opennars.utils.IndexVar import IndexVar, IntVar
         '''<(&&, <#x-->A>, <#x-->B>, <$y-->C>)==><$y-->D>>'''
         idxvar_0 = IndexVar()
 

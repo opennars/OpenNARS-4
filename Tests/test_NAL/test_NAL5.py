@@ -4,14 +4,14 @@ test NAL5
 import unittest
 from pathlib import Path
 
-from pynars import NARS, Narsese
+from opennars import NARS, Narsese
 import Tests.utils_for_test as utils_for_test
-from pynars.NAL.MetaLevelInference.VariableSubstitution import *
-from pynars.NARS import Reasoner as Reasoner
-from pynars.NARS.DataStructures import Bag, Concept, Table, Task
-from pynars.NARS.DataStructures._py.Link import TaskLink, TermLink
-from pynars.NARS.RuleMap import RuleMap
-from pynars.Narsese import (Compound, Connector, Copula, Judgement, Statement, Term,
+from opennars.NAL.MetaLevelInference.VariableSubstitution import *
+from opennars.NARS import Reasoner as Reasoner
+from opennars.NARS.DataStructures import Bag, Concept, Table, Task
+from opennars.NARS.DataStructures._py.Link import TaskLink, TermLink
+from opennars.NARS.RuleMap import RuleMap
+from opennars.Narsese import (Compound, Connector, Copula, Judgement, Statement, Term,
                      Truth, Variable, VarPrefix)
 from Tests.utils_for_test import *
 

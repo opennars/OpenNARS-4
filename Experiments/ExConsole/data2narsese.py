@@ -68,9 +68,9 @@ Narsese:
 from typing import List, Dict, Tuple, Union
 
 
-from pynars.Narsese import Punctuation
-from pynars.Narsese import parser
-# pynars
+from opennars.Narsese import Punctuation
+from opennars.Narsese import parser
+# opennars
 
 # Constants #
 

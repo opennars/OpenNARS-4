@@ -1,11 +1,11 @@
 import NARS
 import unittest
 
-from pynars.NARS.DataStructures import Bag
-from pynars.NARS.DataStructures._py.Concept import Concept
-from pynars.NARS.DataStructures._py.Memory import Memory
+from opennars.NARS.DataStructures import Bag
+from opennars.NARS.DataStructures._py.Concept import Concept
+from opennars.NARS.DataStructures._py.Memory import Memory
 
-from pynars.NARS.InferenceEngine import GeneralEngine
+from opennars.NARS.InferenceEngine import GeneralEngine
 import Narsese
 
 

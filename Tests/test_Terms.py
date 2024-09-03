@@ -3,12 +3,12 @@ import unittest
 
 class TEST_Terms(unittest.TestCase):
     def test_0(self):
-        from pynars.Narsese import Term, Terms
+        from opennars.Narsese import Term, Terms
         terms = Terms((Term("A"), Term("B"), Term("C")), False) 
         pass
 
     def test_1(self):
-        from pynars.Narsese import Term, Terms, Statement, Variable
+        from opennars.Narsese import Term, Terms, Statement, Variable
         stat1 = Statement.Inheritance(Variable.Independent("x", idx=0), Term("A"))
         repr(stat1)
         stat2 = Statement.Inheritance(Variable.Independent("x", idx=0), Term("B"))
@@ -18,7 +18,7 @@ class TEST_Terms(unittest.TestCase):
         pass
 
     def test_2(self):
-        from pynars.Narsese import Term, Terms, Statement, Variable
+        from opennars.Narsese import Term, Terms, Statement, Variable
         stat1 = Statement.Inheritance(Variable.Independent("x", idx=0), Term("A"))
         repr(stat1)
         stat2 = Statement.Inheritance(Variable.Independent("x", idx=0), Term("B"))
@@ -28,7 +28,7 @@ class TEST_Terms(unittest.TestCase):
         pass
 
     def test_3(self):
-        from pynars.Narsese import Term, Terms, Statement, Variable
+        from opennars.Narsese import Term, Terms, Statement, Variable
         stat1 = Statement.Inheritance(Variable.Independent("x", idx=0), Term("A"))
         repr(stat1)
         stat2 = Statement.Inheritance(Variable.Independent("x", idx=0), Term("B"))
@@ -40,7 +40,7 @@ class TEST_Terms(unittest.TestCase):
         pass
 
     def test_4(self):
-        from pynars.Narsese import Term, Terms, Statement, Variable
+        from opennars.Narsese import Term, Terms, Statement, Variable
         stat1 = Statement.Inheritance(Variable.Independent("x", idx=0), Term("A"))
         repr(stat1)
         stat2 = Statement.Inheritance(Variable.Independent("x", idx=0), Term("B"))
