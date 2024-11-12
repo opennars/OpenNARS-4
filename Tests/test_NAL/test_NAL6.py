@@ -1,15 +1,8 @@
 import unittest
 import timeit
-
-from pynars.NARS.DataStructures import Task
 from pynars.Narsese import Variable, VarPrefix
-from pynars.NAL.MetaLevelInference.VariableSubstitution import *
-# from pynars.NARS.RuleMap import RuleMap
-
-# import Tests.utils_for_test as utils_for_test
 from Tests.utils_for_test import *
-from pynars.utils.Print import PrintType, print_out
-from pynars.NARS.InferenceEngine.VariableEngine.VariableEngine import VariableEngine
+
 
 class TEST_NAL6(unittest.TestCase):
     def setUp(self):

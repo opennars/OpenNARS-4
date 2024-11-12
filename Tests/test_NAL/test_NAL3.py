@@ -1,21 +1,6 @@
-from pynars import NARS, Narsese
 import unittest
-
-from pynars.NARS.DataStructures import Bag, Task, Concept, Table
-from pynars.NARS.DataStructures._py.Link import TaskLink, TermLink
-from pynars.Narsese import Judgement, Term, Statement, Copula, Truth   
-
-from pathlib import Path
-from pynars.Narsese import Compound, Connector
-from pynars.NAL.MetaLevelInference.VariableSubstitution import *
-from pynars.Narsese import VarPrefix, Variable
-from pynars.NARS.RuleMap import RuleMap
 from pynars.NARS import Reasoner as Reasoner
-
-import Tests.utils_for_test as utils_for_test
 from Tests.utils_for_test import *
-
-# utils_for_test.rule_map = RuleMap_v2()
 
 
 class TEST_NAL3(unittest.TestCase):
