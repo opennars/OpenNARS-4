@@ -1,11 +1,10 @@
 from pynars.NARS.DataStructures import Bag, Memory, NarseseChannel, Buffer, Task, Concept
-from pynars.NARS.DataStructures._py.Link import TaskLink, TermLink
+from pynars.NARS.DataStructures.Link import TaskLink, TermLink
 from pynars import Global
 from pynars.Narsese._py.Sentence import Judgement, Stamp, Question, Goal
 from pynars.NAL.Functions.BudgetFunctions import Budget_forward, Budget_backward
 from pynars.NAL.Functions.StampFunctions import Stamp_merge
 from pynars.NAL.Functions.Tools import project_truth, project
-from pynars.NARS.DataStructures._py.Link import TaskLink, TermLink
 from pynars.Narsese import Term, Copula, Statement, Compound, Connector, Item, Budget
 from pynars.NAL.InferenceEngine.KanrenEngine import KanrenEngine
 import random

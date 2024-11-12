@@ -1,7 +1,6 @@
 from typing import List
 import pynars.NAL.MentalOperation._aware as aware
-from pynars.NARS.DataStructures._py.Concept import Concept
-from pynars.NARS.DataStructures._py.Memory import Memory
+from pynars.NARS.DataStructures import Concept, Memory
 from pynars.Narsese import Task, Term
 from ..DataStructures import Bag   
 from copy import copy, deepcopy

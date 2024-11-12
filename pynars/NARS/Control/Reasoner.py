@@ -1,5 +1,5 @@
 import random
-from pynars.NARS.DataStructures._py.Channel import Channel
+from pynars.NARS.DataStructures.Channel import Channel
 
 from pynars.Narsese._py.Budget import Budget
 from pynars.Narsese import Term, Copula, Item

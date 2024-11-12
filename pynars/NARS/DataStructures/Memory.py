@@ -7,7 +7,7 @@ from pynars.NAL.Functions.Tools import revisible
 from pynars.NAL.Inference import local__revision
 from pynars.NAL.Inference.LocalRules import solution_query, solution_question
 from pynars.NAL.MetaLevelInference.VariableSubstitution import get_elimination__var_const
-from pynars.NARS.DataStructures._py.Link import TaskLink
+from pynars.NARS.DataStructures.Link import TaskLink
 from pynars.NARS.GlobalEval import GlobalEval
 from pynars.Narsese import Statement, Budget, Task
 from pynars.Narsese._py.Sentence import Goal, Question

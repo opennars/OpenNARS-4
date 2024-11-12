@@ -1,7 +1,6 @@
 from typing import Callable, List
 from pynars.Config import Config
-from pynars.NARS.DataStructures._py.Concept import Concept
-from pynars.NARS.DataStructures._py.Memory import Memory
+from pynars.NARS.DataStructures import Concept, Memory
 from pynars.Narsese._py.Budget import Budget
 from pynars.Narsese._py.Operation import *
 from pynars.Narsese._py.Sentence import Goal, Judgement, Quest, Question, Sentence, Stamp

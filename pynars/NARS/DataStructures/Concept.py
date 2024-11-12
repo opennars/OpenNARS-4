@@ -28,7 +28,7 @@ class Concept(Item):
     
     desire_table: Table # Desire values on the term, similar to the above one
 
-    termLinkTemplates: List[TermLink] # Link templates of TermLink, only in concepts with CompoundTerm Templates are used to improve the efficiency of TermLink building
+    termLinkTemplates: List['TermLink'] # Link templates of TermLink, only in concepts with CompoundTerm Templates are used to improve the efficiency of TermLink building
 
     _subterms: List[Term]
 
@@ -209,14 +209,14 @@ class Concept(Item):
                     sub_concept._build_term_links(concepts, task, sub_budget)
         
 
-    def _insert_task_link(self, task_link: TaskLink, concepts: Bag):
+    def _insert_task_link(self, task_link: 'TaskLink', concepts: Bag):
         self.task_links.put(task_link)
         # update the concept's budget using the link's budget
         self.update_priority(task_link.budget.priority, concepts)
         self.update_durability(task_link.budget.durability, concepts)
         # TODO: more handling. see OpenNARS 3.1.0 Concept.java line 318~366.
     
-    def _insert_term_link(self, term_link: TermLink, concepts: Bag):
+    def _insert_term_link(self, term_link: 'TermLink', concepts: Bag):
         self.term_links.put(term_link)
         # update the concept's budget using the link's budget
         self.update_priority(term_link.budget.priority, concepts)
