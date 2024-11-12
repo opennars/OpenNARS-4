@@ -21,9 +21,9 @@ setup(
     description="An implementation of Non-Axiomatic Reasoning System",  # introduction, displayed on PyPI
     long_description=read_file('README.md'), # Readme
     long_description_content_type="text/markdown",  # markdown
-    author="Bowen XU",
-    author_email='xubowen@pku.edu.cn',
-    url='https://github.com/bowen-xu/PyNARS',
+    author="Temple AGI Team, and all other contributors",  # author
+    author_email='bowen.xu@temple.edu',
+    url='https://cis.temple.edu/tagit',
     packages=find_packages(),
     install_requires=read_requirements('requirements.txt'), 
     include_package_data=True,
