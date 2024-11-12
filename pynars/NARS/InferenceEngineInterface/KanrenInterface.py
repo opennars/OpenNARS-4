@@ -1,25 +1,28 @@
-from pynars.NARS.DataStructures import Bag, Memory, NarseseChannel, Buffer, Task, Concept
-from pynars.NARS.DataStructures.Link import TaskLink, TermLink
+import random
 from pynars import Global
-from pynars.Narsese._py.Sentence import Judgement, Stamp, Question, Goal
+
+from pynars.Narsese import Term, Copula, Statement, Compound, Connector, Item, Budget
+from pynars.Narsese import Judgement, Stamp, Question, Goal
+
 from pynars.NAL.Functions.BudgetFunctions import Budget_forward, Budget_backward
 from pynars.NAL.Functions.StampFunctions import Stamp_merge
-from pynars.NAL.Functions.Tools import project_truth, project
-from pynars.Narsese import Term, Copula, Statement, Compound, Connector, Item, Budget
+from pynars.NAL.Functions.Tools import project_truth
 from pynars.NAL.InferenceEngine.KanrenEngine import KanrenEngine
-import random
 
+from pynars.NARS.DataStructures import Bag, Task, Concept
+from pynars.NARS.DataStructures.Link import TaskLink, TermLink
+
+
+class TheoremItem(Item):
+    def __init__(self, theorem, budget: Budget) -> None:
+        super().__init__(hash(theorem), budget)
+        self._theorem = theorem
 
 class InferenceEngine:
     structural_enabled = True
     immediate_enabled = True
     compositional_enabled = True
     theorems_per_cycle = 1
-
-    class TheoremItem(Item):
-        def __init__(self, theorem, budget: Budget) -> None:
-            super().__init__(hash(theorem), budget)
-            self._theorem = theorem
 
     def __init__(self):
         self.inference = KanrenEngine()
@@ -28,7 +31,7 @@ class InferenceEngine:
         if self.structural_enabled:
             for theorem in self.inference.theorems:
                 priority = random.randint(0,9) * 0.01
-                item = self.TheoremItem(theorem, Budget(0.5 + priority, 0.8, 0.5))
+                item = TheoremItem(theorem, Budget(0.5 + priority, 0.8, 0.5))
                 self.all_theorems.put(item)
 
     def reset(self):
@@ -37,7 +40,7 @@ class InferenceEngine:
             self.all_theorems.reset()
             for theorem in self.inference.theorems:
                 priority = random.randint(0,9) * 0.01
-                item = self.TheoremItem(theorem, Budget(0.5 + priority, 0.8, 0.5))
+                item = TheoremItem(theorem, Budget(0.5 + priority, 0.8, 0.5))
                 self.all_theorems.put(item)
 
 
@@ -149,7 +152,7 @@ class InferenceEngine:
 
                 results = []
 
-                theorems = []
+                theorems: list[TheoremItem] = []
                 for _ in range(min(self.theorems_per_cycle, len(self.all_theorems))):
                     theorem = self.all_theorems.take(remove=False)
                     theorems.append(theorem)
@@ -192,8 +195,7 @@ class InferenceEngine:
                             tasks_derived.append(task_derived)
         
 
-        if is_valid \
-            and task.is_judgement: # TODO: handle other cases
+        if is_valid and task.is_judgement: # TODO: handle other cases
             
             Global.States.record_premises(task, belief)
                     
@@ -261,6 +263,7 @@ class InferenceEngine:
                 add_task(conclusion)
 
                 if  conclusion.is_statement:
+                    conclusion: Statement
                     if conclusion.is_predictive or conclusion.is_retrospective:
                         add_task(conclusion.temporal_swapped())
 
@@ -270,8 +273,7 @@ class InferenceEngine:
                     term_link.reward_budget(reward)
 
         # BACKWARD
-        if is_valid \
-            and task.is_question: # TODO: handle other cases
+        if is_valid and task.is_question: # TODO: handle other cases
 
             results = []
 
@@ -287,8 +289,7 @@ class InferenceEngine:
                 task_derived = Task(question_derived) #, budget)
                 tasks_derived.append(task_derived)
 
-        if is_valid \
-            and task.is_goal: # TODO: handle other cases
+        if is_valid and task.is_goal: # TODO: handle other cases
 
             results = []
 

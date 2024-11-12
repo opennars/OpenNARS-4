@@ -49,31 +49,9 @@ class Memory:
             answers_question, answer_quest = answers[Question], answers[Goal]
         elif task.is_goal:
             task_revised, belief_selected, (task_operation_return, task_executed), tasks_derived = self._accept_goal(task, concept)
-            # # TODO, ugly!
-            # if self.output_buffer is not None:
-            #     exist = False
-            #     for i in range(len(self.output_buffer.active_goals)):
-            #         if self.output_buffer.active_goals[i][0].term.equal(task.term):
-            #             self.output_buffer.active_goals = self.output_buffer.active_goals[:i] + [
-            #                 [task, "updated"]] + self.output_buffer.active_goals[i:]
-            #             exist = True
-            #             break
-            #     if not exist:
-            #         self.output_buffer.active_goals.append([task, "initialized"])
         elif task.is_question:
             # add the question to the question-table of the concept, and try to find a solution.
             answers_question = self._accept_question(task, concept)
-            # TODO, ugly!
-            # if self.output_buffer is not None:
-            #     exist = False
-            #     for i in range(len(self.output_buffer.active_questions)):
-            #         if self.output_buffer.active_questions[i][0].term.equal(task.term):
-            #             self.output_buffer.active_questions = self.output_buffer.active_questions[:i] + [
-            #                 [task, "updated"]] + self.output_buffer.active_questions[i:]
-            #             exist = True
-            #             break
-            #     if not exist:
-            #         self.output_buffer.active_questions.append([task, "initialized"])
         elif task.is_quest:
             answer_quest = self._accept_quest(task, concept)
         else:
@@ -81,12 +59,6 @@ class Memory:
 
         # Build the concepts corresponding to the terms of those components within the task.
         concept.accept(task, self.concepts, conceptualize=False)
-
-        if Enable.temporal_reasoning or Enable.operation:
-            # if (!task.sentence.isEternal() && !(task.sentence.term instanceof Operation)) {
-            #     globalBuffer.eventInference(task, cont, false); //can be triggered by Buffer itself in the future
-            # }
-            raise  # TODO
 
         return task_revised, goal_derived, answers_question, answer_quest, (task_operation_return, task_executed), tasks_derived
 
@@ -102,18 +74,6 @@ class Memory:
         if belief is not None:
             # j2: Judgement = belief.sentence
             if revisible(task, belief):
-                if Enable.temporal_reasoning:
-                    '''
-                    nal.setTheNewStamp(newStamp, oldStamp, nal.time.time());
-                    final Sentence projectedBelief = oldBelief.projection(nal.time.time(), newStamp.getOccurrenceTime(), concept.memory);
-                    
-                    if (projectedBelief!=null) {
-                        nal.setCurrentBelief(projectedBelief);
-                        revision(judg, projectedBelief, concept, false, nal);
-                        task.setAchievement(calcTaskAchievement(task.sentence.truth, projectedBelief.truth));
-                    }
-                    '''
-                    raise
                 belief_revised_task: Task = local__revision(task, belief)  # TODO: handling the stamps
                 # reduce priority by achieving level
                 task.reduce_budget_by_achieving_level(belief)
@@ -274,14 +234,6 @@ class Memory:
                         # if task_operation_return is not None: tasks_derived.append(task_operation_return)
                         # if task_executed is not None: tasks_derived.append(task_executed)
 
-                        
-
-
-
-        
-        # if Enable.operation: raise  # InternalExperienceBuffer.handleOperationFeedback(task, nal);
-        # if Enable.anticipation: raise  # ProcessAnticipation.confirmAnticipation(task, concept, nal);
-
         return desire_revised, belief_selected, (task_operation_return, task_executed), tasks_derived
 
     def _accept_quest(self, task: Task, concept: Concept):
@@ -306,6 +258,7 @@ class Memory:
         answers = []
         # 1. try to solve yn-questions
         for question_task in concept.question_table:
+            question_task: Task
             question: Question = question_task.sentence
             old_answer = question.best_answer
             answer = solution_question(question_task, belief_task)
