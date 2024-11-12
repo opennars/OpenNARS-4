@@ -1,12 +1,6 @@
 import unittest
 
-from opennars.NARS.DataStructures import Task
-from opennars.NAL.MetaLevelInference.VariableSubstitution import *
-# from opennars.NARS.RuleMap import RuleMap
-
-# import Tests.utils_for_test as utils_for_test
 from Tests.utils_for_test import *
-from opennars.utils.Print import PrintType, print_out
 from opennars.NARS.InferenceEngine.VariableEngine.VariableEngine import VariableEngine
 
 class TEST_NAL6(unittest.TestCase):

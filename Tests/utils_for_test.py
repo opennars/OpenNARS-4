@@ -15,6 +15,8 @@ from opennars.Narsese import Sentence, Judgement, Quest, Question, Goal
 from opennars.Config import Config, Enable
 
 nars = Reasoner(100, 100)
+nars.add_channel(nars.narsese_channel)
+
 engine: GeneralEngine = nars.inference
 
 NUM_CYCLES_MULTIPLIER = 4
@@ -22,11 +24,11 @@ def process_two_premises(premise1: str, premise2: str, n_cycle: int) -> List[Tas
     ''''''
     tasks_all_cycles = []
 
-    success, task, task_overflow = nars.input_narsese(premise1)
+    success, task, task_overflow = nars.input_narsese(premise1, go_cycle=False)
     tasks_all_cycles.append(task)
     
     if premise2 is not None:
-        success, task, task_overflow = nars.input_narsese(premise2)
+        success, task, task_overflow = nars.input_narsese(premise2, go_cycle=False)
         tasks_all_cycles.append(task)
 
     for tasks_all in nars.cycles(n_cycle*NUM_CYCLES_MULTIPLIER):
@@ -42,62 +44,6 @@ def process_two_premises(premise1: str, premise2: str, n_cycle: int) -> List[Tas
             tasks_all_cycles.extend(answers_quest)
 
     return [t for t in tasks_all_cycles if t is not None]
-
-def rule_map_two_premises(premise1: str, premise2: str, term_common: str, inverse: bool=False, is_belief_term: bool=False, index_task=None, index_belief=None) -> Tuple[List[RuleCallable], Task, Belief, Concept, TaskLink, TermLink, Tuple[Task, Task, Task, Task]]:
-    ''''''
-    premise1: Task = Narsese.parse(premise1)
-    result1 = nars.memory.accept(premise1)
-    premise2: Task = Narsese.parse(premise2)
-    result2 = nars.memory.accept(premise2)
-
-    task, belief = (premise1, premise2) if not inverse else( premise2, premise1)
-    
-    term_common: Term = Narsese.parse(term_common).term
-    concept = nars.memory.take_by_key(term_common)
-
-
-    if index_task is None:
-        if task.term == concept.term: index_task = ()
-        else: 
-            if task.term.complexity > concept.term.complexity: indices_task = Link.get_index(task.term, concept.term)
-            else: indices_task = Link.get_index(concept.term, task.term)
-            if indices_task is not None: index_task = indices_task[0]
-
-
-    if index_belief is None:
-        if belief.term == concept.term: index_belief = ()
-        else:
-            if belief.term.complexity > concept.term.complexity: indices_belief = Link.get_index(belief.term, concept.term)
-            else: indices_belief = Link.get_index(concept.term, belief.term)
-            if indices_belief is not None: index_belief = indices_belief[0]
-
-    tl = TaskLink(concept, task, None, index=index_task)
-    task_link = [link for link in concept.task_links.item_lut.lut.values() if link.source == tl.source and link.target==tl.target and link.component_index==tl.component_index]
-    task_link = task_link[0] if len(task_link) > 0 else None
-    tl = TermLink(concept, belief, None, index=index_belief)
-    term_link = [link for link in concept.term_links.item_lut.lut.values() if link.source == tl.source and link.target==tl.target and link.component_index==tl.component_index]
-    term_link = term_link[0] if len(term_link) > 0 else None
-    
-    subst, elimn, intro = GeneralEngine.unify(task.term, belief.term, term_common, task_link, term_link)
-    task_subst, task_elimn, task_intro = GeneralEngine.substitute(subst, elimn, intro, task)
-    task = task_subst or task_elimn or task_intro or task
-
-    belief: Belief
-    _, _, rules = engine.match(task, (belief if not is_belief_term else None), belief.term, task_link, term_link)
-    return rules, task, belief, concept, task_link, term_link, result1, result2
-
-def rule_map_task_only(premise1: str, conecept_term: str, index_concept_task: tuple):
-    ''''''
-    task = Narsese.parse(premise1)
-    result1 = nars.memory.accept(task)
-    concept_term = Narsese.parse(conecept_term+".").term
-    
-    concept = nars.memory.take_by_key(concept_term)
-    task_link = concept.task_links.take_by_key(TaskLink(concept, task, None, index=index_concept_task))
-
-    _, _, rules = engine.match(task, None, None, task_link, None)
-    return rules, task, concept, task_link, result1
-
 
 def memory_accept_revision(judgement1: str, judgement2: str):
     task1 = Narsese.parse(judgement1)

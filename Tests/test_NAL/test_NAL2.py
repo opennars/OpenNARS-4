@@ -1,8 +1,4 @@
 import unittest
-
-from opennars import Narsese
-from opennars.NAL.MetaLevelInference.VariableSubstitution import *
-
 from Tests.utils_for_test import *
 
 

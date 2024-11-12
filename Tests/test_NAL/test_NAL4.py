@@ -1,23 +1,6 @@
-from opennars import NARS, Narsese
 import unittest
-
-from opennars.NARS.DataStructures import Bag, Task, Concept, Table
-from opennars.NARS.DataStructures._py.Link import TaskLink, TermLink
-from opennars.Narsese import Judgement, Term, Statement, Copula, Truth   
-
-from pathlib import Path
-from opennars.Narsese import Compound, Connector
-from opennars.NAL.MetaLevelInference.VariableSubstitution import *
-from opennars.Narsese import VarPrefix, Variable
-from opennars.NARS.RuleMap import RuleMap
 from opennars.NARS import Reasoner as Reasoner
-
-import Tests.utils_for_test as utils_for_test
 from Tests.utils_for_test import *
-from opennars.NARS.RuleMap import Interface_TransformRules
-
-# utils_for_test.rule_map = RuleMap_v2()
-
 
 
 class TEST_NAL4(unittest.TestCase):

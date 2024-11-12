@@ -1,13 +1,7 @@
 import unittest
-
 from opennars.NAL.MetaLevelInference.VariableSubstitution import *
-from opennars.NARS.InferenceEngine import GeneralEngine
-from opennars.NARS.RuleMap import RuleMap
-
-import Tests.utils_for_test as utils_for_test
 from Tests.utils_for_test import *
 
-# utils_for_test.rule_map = RuleMap_v2()
 
 class TEST_NAL7(unittest.TestCase):
     def setUp(self):

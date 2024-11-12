@@ -1,21 +1,8 @@
-from opennars import NARS, Narsese
 import unittest
 
-from opennars.NARS.DataStructures import Bag, Task, Concept, Table
-from opennars.NARS.DataStructures._py.Link import TaskLink, TermLink
-from opennars.Narsese import Judgement, Term, Statement, Copula, Truth   
-
-from pathlib import Path
-from opennars.Narsese import Compound, Connector
-from opennars.NAL.MetaLevelInference.VariableSubstitution import *
-from opennars.Narsese import VarPrefix, Variable
-from opennars.NARS.RuleMap import RuleMap
 from opennars.NARS import Reasoner as Reasoner
-
-import Tests.utils_for_test as utils_for_test
 from Tests.utils_for_test import *
 
-# utils_for_test.engine = RuleMap()
 
 class TEST_NAL1(unittest.TestCase):
     def setUp(self):
@@ -39,7 +26,7 @@ class TEST_NAL1(unittest.TestCase):
         tasks_derived = process_two_premises(
             '<bird --> swimmer>. %1.00;0.90%',
             '<bird --> swimmer>. %0.10;0.60%',
-            2
+            5
         )
         self.assertTrue(
             output_contains(tasks_derived, '<bird --> swimmer>. %0.87;0.91%')
