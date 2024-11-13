@@ -1,3 +1,4 @@
+# python version >= 3.10
 # ale-py>=0.7.3
 # git+git://github.com/mila-iqia/atari-representation-learning.git
 # AutoROM>=0.4.2

@@ -105,6 +105,17 @@ class Term:
     def do_hashing(self):        
         self._hash_value = hash(self.word)
         return self._hash_value
+    
+    def contain_term(self, target: 'Term') -> bool:
+        '''
+        Recursively check if a compound contains a term
+        
+        Args:
+            target: The term to be searched
+        Returns:
+            Whether the two have the same content
+        '''
+        return self == target
 
     def __hash__(self) -> int:
         return self._hash_value if self._hash_value is not None else self.do_hashing()

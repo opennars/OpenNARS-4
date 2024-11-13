@@ -133,7 +133,20 @@ class Statement(Term):
     #     if not statement.is_statement: return False
     #     return ((statement.copula is self.copula) if same_copula else True) and (not {self.subject, self.predicate}.isdisjoint({statement.subject, statement.predicate}))
 
-
+    def contain_term(self, target: Term) -> bool:
+        '''
+        Recursively check if a compound contains a term
+        
+        Args:
+            target: The term to be searched
+        Returns:
+            Whether the two have the same content
+        '''
+        for term in (self.subject, self.predicate):
+            if term.contain_term(target):
+                return True
+        return False
+    
     def __repr__(self) -> str:
         return  f'<Statement: {self.repr()}>'
     

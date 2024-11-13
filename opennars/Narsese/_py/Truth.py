@@ -11,6 +11,18 @@ class Truth:
     def e(self):
         return (self.c * (self.f - 0.5) + 0.5)
 
+    @property
+    def is_negative(self) -> bool:
+        return self.f < 0.5
+    
+    @staticmethod
+    def from_w( w_plus, w, k) -> 'Truth':
+        if w>0:
+            f, c = w_plus/w, w/(w+k)        
+            return Truth(f, c, k)
+        else:
+            return Truth(0.5, 0, k)
+    
     def __iter__(self):
         '''return (f, c, k)'''
         return iter((self.f, self.c, self.k))

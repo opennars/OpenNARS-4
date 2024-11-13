@@ -84,6 +84,7 @@ Doubt that are Question and Quest have got a tense?
 
 class Sentence:
     truth: Truth = None
+    revisible: bool = True
 
     def __init__(self, term: Term, punct: Punctuation, stamp: Stamp, do_hashing: bool = False) -> None:
         ''''''

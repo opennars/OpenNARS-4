@@ -13,6 +13,7 @@ from .Evidence import *
 from .Operation import *
 from .Interval import *
 from .Terms import *
+from .LinkType import *
 
 SELF = Compound(Connector.ExtensionalSet, Term('SELF', do_hashing=True))
 

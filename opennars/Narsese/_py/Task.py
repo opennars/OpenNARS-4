@@ -16,8 +16,11 @@ class Task(Item):
     channel_id = -1
     best_solution: 'Task' = None
     processed = False
+
+    parent_task: 'Task' = None # Task from which the Task is derived, or null if input
+    parent_belief: Sentence = None # Belief from which the Task is derived, or null if derived from a theorem
     
-    def __init__(self, sentence: Sentence, budget: Budget=None, input_id: int=None) -> None:
+    def __init__(self, sentence: Sentence, budget: Budget=None, input_id: int=None, parent_task: 'Task'=None, parent_belief: Sentence=None) -> None:
         super().__init__(hash((hash(sentence), hash(sentence.evidential_base))), budget)
         self.sentence: Sentence = sentence
         self.input_id = self.input_id if input_id is None else input_id

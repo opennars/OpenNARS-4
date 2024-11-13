@@ -1,6 +1,7 @@
 .idea
 .DS_Store
 _deprecated
+reference
 
 # jekyll
 Gemfile.lock
