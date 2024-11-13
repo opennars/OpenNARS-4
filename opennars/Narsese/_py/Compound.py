@@ -1,4 +1,3 @@
-# from opennars.NAL.Functions.ExtendedBooleanFunctions import Or
 from copy import copy
 from opennars.Config import Enable
 from opennars.Narsese._py.Interval import Interval
@@ -11,53 +10,44 @@ from ordered_set import OrderedSet
 from typing import Set
 from opennars.utils.tools import list_contains
 from opennars.Global import States
+from collections import Counter
 
-
-class Compound(Term):  # , OrderedSet):
+class Compound(Term):
     type = TermType.COMPOUND
 
-    _terms: Terms
+    components: set[Term]|list[Term]
+    connector: Connector
 
-    def __init__(self, connector: Connector, *terms: Term, is_input=False) -> None:
+    def __init__(self, connector: Connector, *terms: Term) -> None:
         ''''''
         self._is_commutative = connector.is_commutative
-        terms = Terms(terms, self._is_commutative)
-        # the connector may be changed, for example, (|, {A}, {B}) is changed into {A, B}.
-        self.connector, self._terms = self.prepocess_terms(
-            connector, terms, is_input)
-
-        terms = self._terms
-        if len(terms) == 0:
-            raise Exception("Empty")
-
-        self._height = max((term._height for term in terms))+1
-
-        word = self._terms_to_word(*terms)
         if self.is_commutative:
-            terms_sorted = sorted(terms, key=hash)
-            word_sorted = self._terms_to_word(*terms_sorted)
+            self.components = OrderedSet(sorted(terms, key=hash))
         else:
-            word_sorted = None
-        Term.__init__(self, word, word_sorted=word_sorted)
+            self.components = list(terms)
+        self.connector = connector
 
-        compound: Set[Term] = self
-        self._components = OrderedSet(
-            term for component in compound for term in component.sub_terms)
+        word = self._terms_to_word(self.components)
+        Term.__init__(self, word)
 
         self._complexity += sum(term.complexity for term in terms)
-        self._is_higher_order = False  # connector.is_higher_order
 
         self._is_single_only = self.connector.is_single_only
         self._is_double_only = self.connector.is_double_only
         self._is_multiple_only = self.connector.is_multiple_only
 
-        self._handle_variables(compound)
-        # self.handle_index_var(compound, is_input)
+        self.has_ivar = any(term.has_ivar for term in self.components)
+        self.has_dvar = any(term.has_dvar for term in self.components)
+        self.has_qvar = any(term.has_qvar for term in self.components)
+        self.has_var = self.has_ivar or self.has_dvar or self.has_qvar
+
+        if self.has_var:
+            self.normalized = False
 
     @property
-    def copula(self):
-        return self.connector
-
+    def recursive_terms(self) -> Iterable[Term]:
+        return (term for component in self.components for term in component.recursive_terms)
+    
     @property
     def is_commutative(self):
         return self._is_commutative
@@ -73,34 +63,86 @@ class Compound(Term):  # , OrderedSet):
     @property
     def is_multiple_only(self):
         return self._is_multiple_only
+    
+    def contains_component(self, t: Term) -> bool:
+        '''
+        Check whether the compound contains a certain component
 
-    @property
-    def is_higher_order(self):
-        return super().is_higher_order
+        Args:
+            t: The component to be checked
+        Returns:
+            Whether the component is in the compound
+        '''
+        return t in self.components
+    
+    def contains_term(self, target: Term, count_self: bool=False) -> bool:
+        '''
+        Recursively check if a compound contains a term
+        Args:
+            target: The term to be searched
+            count_self: Whether to count the compound itself
+        Returns:
+            Whether the target is in the current term
+        '''
+        if count_self:
+            if Term.contains_term(self, target):
+                return True
+        for term in self.components:
+            if term.contains_term(target):
+                return True
+        return False
+    
+    def count_term_recursively(self, count_self: bool=False) -> dict[Term, int]:
+        '''
+        Recursively count how often the terms are contained
 
-    @property
-    def terms(self) -> Terms:  # Union[Set[Term], List[Term]]:
-        return self._terms
+        Args:
+            count_self: Whether to count the compound itself
+        Returns:
+            The counts of the terms
+        '''
+        map: dict[Term, int] = dict(Counter(self.recursive_terms))
+        if count_self:
+            map[self] = 1
+        return map
 
-    # @property
-    # def index_var(self):
-    #     return self._terms._index_var
+    def contains_all_components(self, t: Term) -> bool:
+        '''
+        Check whether the compound contains all components of another term, or that term as a whole
+        Args:
+            t: The other term
+        Returns:
+            Whether the components are all in the compound
+        
+        '''
+        if t.is_compound and (t.connector is self.connector):
+            components1 = t.components if t.is_commutative else set(t.components)
+            components2 = self.components if self._is_commutative else set(self.components)
+            return components1 <= components2
+        else:
+            return t in self.components
+    
+    @staticmethod
+    def set_component(compound: 'Compound', index: int, t: Term) -> Term:
+        '''
+        Try to replace a component in a compound at a given index by another one
 
-    @property
-    def variables(self):
-        return self._terms.variables
-
-    @property
-    def _vars_independent(self):
-        return self._terms._vars_independent
-
-    @property
-    def _vars_dependent(self):
-        return self._terms._vars_dependent
-
-    @property
-    def _vars_query(self):
-        return self._terms._vars_query
+        Args:
+            compound: The compound   
+            index: The location of replacement
+            t: The new component
+            memory Reference to the memory
+        Returns:
+            The new compound
+        '''
+        if t is not None:
+            l = list(compound.components)
+            if t.is_compound and compound.connector is t.connector:
+                l = [*l[:index], *t.components, *l[index+1:]]
+            else:
+                l[index] = t
+            
+        return Compound(compound.connector, *l)
 
     def _merge_compounds(self, connector_parent: Connector, connector: Connector, compounds: List[Type['Compound']],
                          is_input: bool):
@@ -268,123 +310,127 @@ class Compound(Term):  # , OrderedSet):
 
             return connector_parent, Terms(terms, is_commutative=False, is_input=is_input)
 
-    def count_components(self):
-        return len(self.terms)  # OrderedSet.__len__(self)
-
-    def contains(self, compound: Type['Compound']) -> bool:
-        if compound.is_compound and compound.connector is self.connector:
-            return self.terms.issuperset(compound.terms)
-        else:
-            return compound in self.terms
 
     def __iter__(self):
-        return iter(self.terms)  # OrderedSet.__iter__(self)
+        return iter(self.components)  # OrderedSet.__iter__(self)
 
-    def __getitem__(self, index: List[int]) -> Term:
+    def __getitem__(self, index: int|tuple[int]) -> Term:
         if isinstance(index, int):
-            index = (index,)
+            return self.components[index]
         if len(index) == 0:
             return self
 
         idx = index[0]
-        if idx > self.count():
+        if idx >= len(self.components):
             raise "Out of bounds."
 
         index = index[1:]
-        term: Term = self.terms[idx]  # OrderedSet.__getitem__(self, idx)
+        term: Term = self.components[idx]  # OrderedSet.__getitem__(self, idx)
+        if term.is_atom:
+            if len(index) > 0:
+                return None
+            return term
         return term.__getitem__(index)
 
-    def __sub__(self, s: Type['Compound']) -> Union[Type['Compound'], Term]:
-        # if self.is_double_only or self.is_single_only: raise 'Invalid case.'
-        # if OrderedSet.__contains__(self, s): s = (s,)
+    # def __sub__(self, s: Type['Compound']) -> Union[Type['Compound'], Term]:
+    #     # if self.is_double_only or self.is_single_only: raise 'Invalid case.'
+    #     # if OrderedSet.__contains__(self, s): s = (s,)
 
-        if self.is_commutative:
-            if s.is_compound and s.connector:
-                s = s.terms  # s should be a type of `Term`
-            else:
-                s = Terms((s,), False, is_input=False)
-            terms = self.terms - s
-        else:
-            if s.is_compound and s.connector:
-                s = s.terms  # s should be a type of `Term`
-                terms = [term for term in self.terms if term not in s]
-            else:
-                terms = [term for term in self.terms if term != s]
+    #     if self.is_commutative:
+    #         if s.is_compound and s.connector:
+    #             s = s.terms  # s should be a type of `Term`
+    #         else:
+    #             s = Terms((s,), False, is_input=False)
+    #         terms = self.terms - s
+    #     else:
+    #         if s.is_compound and s.connector:
+    #             s = s.terms  # s should be a type of `Term`
+    #             terms = [term for term in self.terms if term not in s]
+    #         else:
+    #             terms = [term for term in self.terms if term != s]
 
-        if self.is_multiple_only and len(terms) == 1:
-            result = terms[0]
-        else:
-            result = Compound(self.connector, *terms)
-        return result
+    #     if self.is_multiple_only and len(terms) == 1:
+    #         result = terms[0]
+    #     else:
+    #         result = Compound(self.connector, *terms)
+    #     return result
 
-    def __rsub__(self, s: Term) -> Union[Type['Compound'], Term]:
-        return self - s
+    # def __rsub__(self, s: Term) -> Union[Type['Compound'], Term]:
+    #     return self - s
 
-    def has_common(self, compound: Type['Compound'], same_connector: bool = True) -> bool:
-        if not compound.is_compound:
-            return False
+    # def has_common(self, compound: Type['Compound'], same_connector: bool = True) -> bool:
+    #     if not compound.is_compound:
+    #         return False
 
-        return ((self.connector is compound.connector) if same_connector else True) and (
-            (not self.terms.isdisjoint(compound.terms)) if self.is_commutative else list_contains(self.terms,
-                                                                                                  list(compound.terms)))
+    #     return ((self.connector is compound.connector) if same_connector else True) and (
+    #         (not self.terms.isdisjoint(compound.terms)) if self.is_commutative else list_contains(self.terms,
+    #                                                                                               list(compound.terms)))
 
-    @classmethod
-    def copy(cls, compound: Type['Compound']):
-        '''
-        create a new list, but each element in the list is identical to that in the input(old) one correspondingly.
-        returns a shallow copy of the input compound.
-        '''
-        return cls(compound.connector, *compound)
+    # @classmethod
+    # def copy(cls, compound: Type['Compound']):
+    #     '''
+    #     create a new list, but each element in the list is identical to that in the input(old) one correspondingly.
+    #     returns a shallow copy of the input compound.
+    #     '''
+    #     return cls(compound.connector, *compound)
 
-    def replace(self, term_old: Term, term_new: Term, connector: Connector = None, idx: int = None) -> Type['Compound']:
-        # if term_old.is_atom: term_old = (term_old,)
-        # elif term_old.is_compo
-        terms: Union[OrderedSet, list] = self.terms
-        idx = terms.index(term_old) if idx is None else idx
-        return Compound(self.connector if connector is None else connector,
-                        *(term if i != idx else term_new for i, term in enumerate(self)))
+    # def replace(self, term_old: Term, term_new: Term, connector: Connector = None, idx: int = None) -> Type['Compound']:
+    #     # if term_old.is_atom: term_old = (term_old,)
+    #     # elif term_old.is_compo
+    #     terms: Union[OrderedSet, list] = self.terms
+    #     idx = terms.index(term_old) if idx is None else idx
+    #     return Compound(self.connector if connector is None else connector,
+    #                     *(term if i != idx else term_new for i, term in enumerate(self)))
 
-    def equal(self, o: Type['Compound']) -> bool:
-        '''
-        Return:
-            is_equal (bool), is_replacable(bool)
-        '''
-        if o.is_compound:
-            if not self.connector is o.connector:
-                return False
-            if self.is_commutative:
-                set1: Iterable[Term] = self.terms - o.terms
-                set2: Iterable[Term] = o.terms - self.terms
-                if len(set1) == len(set2) == 0:
-                    return True
-                # ChatGPT: directly returns the result of the logical AND condition, 
-                # checking if all column sums and all row sums are greater than zero. 
-                # This uses the built-in all() function to ensure every sum in each direction (column and row) 
-                # is greater than zero. The zip(*eq_array) unpacks each row of eq_array into columns.
-                eq_array = [[term1.equal(term2)
-                             for term2 in set2] for term1 in set1]
-                if all(sum(col) > 0 for col in zip(*eq_array)) and all(sum(row) > 0 for row in eq_array):
-                    return True
-                else:
-                    return False
-            else:
-                if len(self) != len(o):
-                    return False
-                term1: Term
-                term2: Term
-                for term1, term2 in zip(self.terms, o.terms):
-                    if not term1.equal(term2):
-                        return False
-                return True
-        elif o.is_atom and o.is_var:
-            return True
-        else:
-            return False
+    # def equal(self, o: Type['Compound']) -> bool:
+    #     '''
+    #     Return:
+    #         is_equal (bool), is_replacable(bool)
+    #     '''
+    #     if o.is_compound:
+    #         if not self.connector is o.connector:
+    #             return False
+    #         if self.is_commutative:
+    #             set1: Iterable[Term] = self.terms - o.terms
+    #             set2: Iterable[Term] = o.terms - self.terms
+    #             if len(set1) == len(set2) == 0:
+    #                 return True
+    #             # ChatGPT: directly returns the result of the logical AND condition, 
+    #             # checking if all column sums and all row sums are greater than zero. 
+    #             # This uses the built-in all() function to ensure every sum in each direction (column and row) 
+    #             # is greater than zero. The zip(*eq_array) unpacks each row of eq_array into columns.
+    #             eq_array = [[term1.equal(term2)
+    #                          for term2 in set2] for term1 in set1]
+    #             if all(sum(col) > 0 for col in zip(*eq_array)) and all(sum(row) > 0 for row in eq_array):
+    #                 return True
+    #             else:
+    #                 return False
+    #         else:
+    #             if len(self) != len(o):
+    #                 return False
+    #             term1: Term
+    #             term2: Term
+    #             for term1, term2 in zip(self.terms, o.terms):
+    #                 if not term1.equal(term2):
+    #                     return False
+    #             return True
+    #     elif o.is_atom and o.is_var:
+    #         return True
+    #     else:
+    #         return False
 
     def __repr__(self, *args) -> str:
         return f'<Compound: {self.repr()}>'
 
-    def _terms_to_word(self, *terms: Term):
+    def __len__(self):
+        return len(self.components)
+    
+    def __eq___(self, o: Term):
+        if not o.is_compound: return False
+        if self.connector is not o.connector: return False
+        return Term.__eq__(self, o)
+
+    def _terms_to_word(self, terms: Iterable[Term]):
         connector = self.connector
         if connector == Connector.ExtensionalSet:
             word = f"{{{', '.join([str(term) for term in terms])}}}"
@@ -394,28 +440,45 @@ class Compound(Term):  # , OrderedSet):
             word = f"({connector.value}, {', '.join([str(term) for term in terms])})"
         return word
 
-    def repr(self):
-        compound: Set[Term] = self
-        word_terms = (str(component) if not component.has_var else component.repr()
-                      for component in compound)
+    # def repr(self):
+    #     compound: Set[Term] = self
+    #     word_terms = (str(component) for component in compound)
 
-        return self._terms_to_word(*word_terms)
+    #     return self._terms_to_word(word_terms)
 
-    @staticmethod
-    def _convert(compound: Type['Compound']):
+    def deep_clone(self, variables_only=False) -> 'Compound|None':
         '''
-        convert the form of the compound.
-        for example, if the compound is multiple-only and the length of its terms is 1, then return the first term, instead of the compound, of the terms.
+        Deep copy the compound. Recursively copy the components.
+        Returns:
+            Compound if the deep copy of the components succeeded.
+            None if the deep copy of the components failed.
         '''
-        if compound.is_compound:
-            # it cannot be 0.
-            if compound.is_multiple_only and len(compound.terms) == 1:
-                return compound[0]
-            elif compound.is_single_only and len(compound.terms) > 1:
-                raise "Invalid case!"
-            elif compound.is_double_only and len(compound.terms) != 2:
-                raise "Invalid case!"
-        return compound
+        l = list[Term]()
+        for component in self.components:
+            if not variables_only:
+                component = component.deep_clone()
+            else:
+                if component.has_var:
+                    component = component.deep_clone()
+                else:
+                    component = component.clone()
+            if component is None:
+                return None
+            l.append(component)
+        c = Compound(self.connector, *l)
+        if self.normalized:
+            c.normalized = True
+        return c
+
+
+    def clone(self):
+        '''
+        Shallow copy the compound.
+        '''
+        clone = copy(self)
+        return clone
+
+    """ -------------- Constructors -------------- """
 
     @classmethod
     def ExtensionalSet(cls, *terms: Term, is_input=False) -> Type['Compound']:
@@ -534,11 +597,18 @@ class Compound(Term):  # , OrderedSet):
     def ParallelEvents(cls, *terms: Term, is_input=False) -> Type['Compound']:
         return cls._convert(Compound(Connector.ParallelEvents, *terms, is_input=is_input))
 
-    def clone(self):
-        if not self.has_var:
-            return self
-        # now, not self.has_var
-        clone = copy(self)
-        clone._terms = self._terms.clone()
-
-        return clone
+    @staticmethod
+    def _convert(compound: Type['Compound']):
+        '''
+        convert the form of the compound.
+        for example, if the compound is multiple-only and the length of its terms is 1, then return the first term, instead of the compound, of the terms.
+        '''
+        if compound.is_compound:
+            # it cannot be 0.
+            if compound.is_multiple_only and len(compound.terms) == 1:
+                return compound[0]
+            elif compound.is_single_only and len(compound.terms) > 1:
+                raise "Invalid case!"
+            elif compound.is_double_only and len(compound.terms) != 2:
+                raise "Invalid case!"
+        return compound

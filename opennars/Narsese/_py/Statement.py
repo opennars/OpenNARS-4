@@ -7,39 +7,27 @@ from .Copula import Copula
 from typing import List, Type
 # from .Compound import *f
 from ordered_set import OrderedSet
+from collections import Counter
 
 class Statement(Term):
     type = TermType.STATEMENT
     
     def __init__(self, subject: Term, copula: Copula, predicate: Term, is_input: bool=False, is_subterm=True) -> None:
         self._is_commutative = copula.is_commutative
-        word = "<"+str(subject)+str(copula.value)+str(predicate)+">"
         if self.is_commutative:
-            subject_word, predicate_word = sorted((subject, predicate), key=hash)
-            word_sorted = "<"+subject_word.word_sorted+str(copula.value)+predicate_word.word_sorted+">"
-        else: word_sorted = "<"+subject.word_sorted+str(copula.value)+predicate.word_sorted+">"
-        super().__init__(word, word_sorted=word_sorted)
+            subject, predicate = sorted((subject, predicate), key=hash)
+        word = f"<{str(subject)}{str(copula.value)}{str(predicate)}>"
+        super().__init__(word)
 
         self.subject = subject
         self.copula = copula
         self.predicate = predicate
 
-        self._components = OrderedSet((*self.subject.sub_terms, *self.predicate.sub_terms))
         self._complexity += (subject.complexity + predicate.complexity)
         self._is_higher_order = copula.is_higher_order
 
         self.is_operation = self.predicate.is_operation
 
-        # self._height = max((self.subject._height, self.predicate._height))+1
-
-        ''' Variables related initialization '''
-        terms = (self.subject, self.predicate)
-        self._handle_variables(terms)
-        self._init_variables(self.variables, terms)
-        self._build_vars()
-
-        pass
-        
     def __getitem__(self, index: List[int]) -> Term:
         if isinstance(index, int): index = (index,)
         if len(index) == 0: return self
@@ -52,6 +40,10 @@ class Statement(Term):
         return term.__getitem__(index)
 
     @property
+    def recursive_terms(self):
+        return (*self.subject.recursive_terms, *self.predicate.recursive_terms)
+    
+    @property
     def is_commutative(self):
         return self._is_commutative
     
@@ -59,45 +51,101 @@ class Statement(Term):
     def is_higher_order(self):
         return self._is_higher_order
 
-    @property
-    def terms(self):
-        return (self.subject, self.predicate)
 
-    def equal(self, o: Type['Statement']) -> bool:
+    def contains_component(self, t: Term) -> bool:
         '''
-        Return:
-            is_equal (bool), is_replacable(bool)
+        Check whether the compound contains a certain component
+
+        Args:
+            t: The component to be checked
+        Returns:
+            Whether the component is in the compound
         '''
+        return t == self.subject or t == self.predicate
+    
+    def contains_term(self, target: Term, count_self: bool=False) -> bool:
+        '''
+        Recursively check if a compound contains a term
+        Args:
+            target: The term to be searched
+            count_self: Whether to count the compound itself
+        Returns:
+            Whether the target is in the current term
+        '''
+        if count_self:
+            if Term.contains_term(self, target):
+                return True
+        for term in (self.subject, self.predicate):
+            if term.contains_term(target):
+                return True
+        return False
+    
 
-        if o.is_statement:
-            if not self.copula is o.copula: return False
+    def count_term_recursively(self, count_self: bool=False) -> dict[Term, int]:
+        '''
+        Recursively count how often the terms are contained
 
-            if self.subject.equal(o.subject) and self.predicate.equal(o.predicate): return True
-            elif not o.is_commutative: return False
-            else: return self.subject.equal(o.predicate) and self.predicate.equal(o.subject)
+        Args:
+            count_self: Whether to count the compound itself
+        Returns:
+            The counts of the terms
+        '''
+        map: dict[Term, int] = dict(Counter(self.recursive_terms))
+        if count_self:
+            map[self] = 1
+        return map
 
-        elif o.is_atom and o.is_var:
-            return True
-        else: return False
+    def contains_all_components(self, t: 'Term|Statement') -> bool:
+        '''
+        Check whether the compound contains all components of another term, or that term as a whole
+        Args:
+            t: The other term
+        Returns:
+            Whether the components are all in the compound
+        
+        '''
+        if t.is_statement and (t.copula is self.copula):
+            components1 = set(t.subject, t.predicate)
+            components2 = set(self.subject, self.predicate)
+            return components1 <= components2
+        else:
+            return t in self.components
+
+    # def equal(self, o: Type['Statement']) -> bool:
+    #     '''
+    #     Return:
+    #         is_equal (bool), is_replacable(bool)
+    #     '''
+
+    #     if o.is_statement:
+    #         if not self.copula is o.copula: return False
+
+    #         if self.subject.equal(o.subject) and self.predicate.equal(o.predicate): return True
+    #         elif not o.is_commutative: return False
+    #         else: return self.subject.equal(o.predicate) and self.predicate.equal(o.subject)
+
+    #     elif o.is_atom and o.is_var:
+    #         return True
+    #     else: return False
             
 
-    def has_common(self, statement: Type['Statement'], same_copula: bool=True) -> bool:
-        if not statement.is_statement: return False
-        return ((statement.copula is self.copula) if same_copula else True) and (not {self.subject, self.predicate}.isdisjoint({statement.subject, statement.predicate}))
+    # def has_common(self, statement: Type['Statement'], same_copula: bool=True) -> bool:
+    #     if not statement.is_statement: return False
+    #     return ((statement.copula is self.copula) if same_copula else True) and (not {self.subject, self.predicate}.isdisjoint({statement.subject, statement.predicate}))
 
 
     def __repr__(self) -> str:
         return  f'<Statement: {self.repr()}>'
     
-    def repr(self, *args):
-        '''
-        index_var (IndexVar): the `index_var` of the root/topmost term.
-        pos (list): the position of the current term within the root/topmost term.
-        '''
-        word_subject = str(self.subject) if not self.subject.has_var else self.subject.repr()
-        word_predicate = str(self.predicate) if not self.predicate.has_var else self.predicate.repr()
+    # def repr(self, *args):
+    #     '''
+    #     index_var (IndexVar): the `index_var` of the root/topmost term.
+    #     pos (list): the position of the current term within the root/topmost term.
+    #     '''
+    #     word_subject = str(self.subject) if not self.subject.has_var else self.subject.repr()
+    #     word_predicate = str(self.predicate) if not self.predicate.has_var else self.predicate.repr()
         
-        return f'<{word_subject+str(self.copula.value)+word_predicate}>'
+    #     return f'<{word_subject+str(self.copula.value)+word_predicate}>'
 
     @classmethod
     def Inheritance(cls, subject: Term, predicate: Term, is_input: bool=False, is_subterm=True):
@@ -145,17 +193,9 @@ class Statement(Term):
 
     def clone(self):
         if not self.has_var: return self
-        # now, not self.has_var
+        # now, self.has_var is False
         clone = copy(self)
         clone.subject = self.subject.clone()
         clone.predicate = self.predicate.clone()
-
-        clone._vars_independent = IndexVar() # self._vars_independent.clone()
-        clone._vars_dependent = IndexVar() # self._vars_dependent.clone()
-        clone._vars_query = IndexVar() # self._vars_query.clone()
-        for idx in (clone.subject._vars_independent, clone.predicate._vars_independent): clone._vars_independent.connect(idx, True)
-        for idx in (clone.subject._vars_dependent, clone.predicate._vars_dependent): clone._vars_dependent.connect(idx, True)
-        for idx in (clone.subject._vars_query, clone.predicate._vars_query): clone._vars_query.connect(idx, True)
-        
         
         return clone

@@ -6,10 +6,10 @@ class Tense(Enum):
     Future      = r":/:"
     Eternal     = r":-:"
     
-# class TemporalOrder(Enum):
-#     '''for temporal reasoning'''
-#     NONE = 2
-#     FORWARD = 1
-#     CONCURRENT = 0
-#     BACKWARD = -1
-#     INVALID = 
+class TemporalOrder(Enum):
+    '''for temporal reasoning'''
+    NONE = 2
+    FORWARD = 1
+    CONCURRENT = 0
+    BACKWARD = -1
+    INVALID = -2

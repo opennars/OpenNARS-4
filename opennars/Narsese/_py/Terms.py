@@ -9,51 +9,14 @@ from typing import Tuple
 
 class Terms:
     ''''''
-    # index_var: IndexVar = None
-    _vars_independent: IndexVar = None
-    _vars_dependent: IndexVar = None
-    _vars_query: IndexVar = None
     def __init__(self, terms: Iterable[Term], is_commutative: bool, **kwargs) -> None:
         self._is_commutative = is_commutative
-
         terms = tuple(term.clone() for term in terms)
-        terms_const: Iterable[Term] = tuple(term for term in terms if not term.has_var)
-        # terms_var: Iterable[Term] = tuple(term for term in terms if term.has_var)
-
-        if self._vars_independent is None: self._vars_independent = IndexVar()
-        if self._vars_dependent is None: self._vars_dependent = IndexVar()
-        if self._vars_query is None: self._vars_query = IndexVar()
-
-        # convert terms's form <Term> into (<Term>, (ivars), (dvars), (qvars)), so that the terms, which have variables, with the same hash-value can be distinguished.
-        Term._init_variables(self.variables, terms) # self.handle_index_var(terms_var, is_input=is_input)
-        self._build_vars()
-        # ivars = tuple(tuple(find_var_with_pos([i], self._vars_independent.indices, self._vars_independent.positions)) for i in range(len(terms_var)))
-        # dvars = tuple(tuple(find_var_with_pos([i], self._vars_dependent.indices, self._vars_independent.positions)) for i in range(len(terms_var)))
-        # qvars = tuple(tuple(find_var_with_pos([i], self._vars_query.indices, self._vars_query.positions)) for i in range(len(terms_var)))
-        ivars = tuple(tuple(idxvar.indices) for idxvar in self._vars_independent.successors)
-        dvars = tuple(tuple(idxvar.indices) for idxvar in self._vars_dependent.successors)
-        qvars = tuple(tuple(idxvar.indices) for idxvar in self._vars_query.successors)
-        terms_var = tuple((term, ivar, dvar, qvar) for term, ivar, dvar, qvar in zip(terms, ivars, dvars, qvars) if term.has_var)
-
-        # store the terms
-        if is_commutative: 
-            self._terms_const = OrderedSet(terms_const)
-            self._terms_var = OrderedSet(terms_var)
-            self._terms = tuple((*self._terms_const, *(term[0] for term in self._terms_var)))
-        else:
-            self._terms_const = terms_const
-            self._terms_var = terms_var
-            self._terms = terms
-
-        # set index_var
-        # TODO
-        # self._index_var = self.handle_index_var(self._terms, is_input=False)
-        pass
+        self._terms = terms
 
     @property
     def is_commutative(self):
         return self._is_commutative
-    
     
     @property
     def terms(self) -> Iterable[Term]:
@@ -175,16 +138,3 @@ class Terms:
     def index(self, term: Term):
         ''''''
         return self._terms.index(term)
-
-    
-    def _rebuild_vars(self):
-        ''''''
-        self._vars_independent.rebuild()
-        self._vars_dependent.rebuild()
-        self._vars_query.rebuild()
-
-    def _build_vars(self):
-        ''''''
-        self._vars_independent.build()
-        self._vars_dependent.build()
-        self._vars_query.build()

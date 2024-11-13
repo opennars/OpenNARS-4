@@ -1,18 +1,10 @@
-from typing import List, Tuple
-from opennars.NAL import Inference
-from opennars.NARS.DataStructures._py.Concept import Concept
-from opennars.NARS.DataStructures._py.Link import Link, TaskLink, TermLink
+from typing import List
 from opennars.NARS.InferenceEngine.GeneralEngine.GeneralEngine import GeneralEngine
 from opennars.Narsese import Task
 from opennars import Narsese
-from opennars.NARS.RuleMap import RuleMap, RuleCallable
 from opennars.NARS import Reasoner as Reasoner
 from opennars.Narsese._py.Statement import Statement
-from opennars.Narsese._py.Task import Belief
-from opennars.Narsese._py.Term import Term
 from opennars.NAL.MentalOperation import execute
-from opennars.Narsese import Sentence, Judgement, Quest, Question, Goal
-from opennars.Config import Config, Enable
 
 nars = Reasoner(100, 100)
 nars.add_channel(nars.narsese_channel)
