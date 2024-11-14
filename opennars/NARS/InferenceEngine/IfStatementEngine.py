@@ -6,7 +6,7 @@
 from opennars import NAL
 from opennars.NAL import Inference
 from opennars.NARS.DataStructures import Concept, TermLink
-from opennars.Narsese import Task, Sentence, Question, Compound, Statement, Goal, Judgement, Copula, Connector
+from opennars.Narsese import Task, Sentence, Question, Compound, Statement, Goal, Judgement, Copula, Connector, Budget
 
 
 def do_semantic_inference_two_premise(j1, j2):
@@ -23,7 +23,8 @@ def do_semantic_inference_two_premise(j1, j2):
     return results
 
 
-def do_semantic_inference_two_judgment(j1_task: Task, j2: Sentence) -> [Task]:
+def do_semantic_inference_two_judgment(j1_task: Task, j2: Sentence,
+                                       budget_tasklink: Budget = None, budget_termlink: Budget = None) -> [Task]:
     """
         Derives a new task by performing the appropriate inference rules on the given semantically related sentences.
         The resultant sentence's evidential base is merged from its parents.
@@ -36,7 +37,10 @@ def do_semantic_inference_two_judgment(j1_task: Task, j2: Sentence) -> [Task]:
 
         :returns An array of the derived Tasks, or an empty array if the inputs have evidential overlap
     """
+
     j1: Sentence = j1_task.sentence
+
+    budget_args = [budget_tasklink, budget_termlink]
 
     """
     ===============================================
@@ -47,7 +51,7 @@ def do_semantic_inference_two_judgment(j1_task: Task, j2: Sentence) -> [Task]:
     """
 
     if j1.truth.c == 0 or j2.truth.c == 0:
-        return []  # can't do inference with 2 entirely negative premises
+        return []  # can't do inference with 0 confidence
 
     all_derived_sentences = []
 
@@ -67,7 +71,7 @@ def do_semantic_inference_two_judgment(j1_task: Task, j2: Sentence) -> [Task]:
         return all_derived_sentences
 
     if j1.truth.f == 0 or j2.truth.f == 0:
-        return []  # can't do inference with 2 entirely negative premises
+        return []  # can't do inference with a negative premise
 
     """
     ===============================================
@@ -81,9 +85,9 @@ def do_semantic_inference_two_judgment(j1_task: Task, j2: Sentence) -> [Task]:
                 and not j2.term.copula.is_first_order():
             if j2.term.copula == Copula.Implication \
                     or j2.term.copula == Copula.PredictiveImplication:
-                derived_sentence = Inference.ConditionalSyllogisticRules.ConditionalJudgmentDeduction(j2, j1)  # S-->P
-                #if j2.term.copula == Copula.PredictiveImplication: derived_sentence.stamp.occurrence_time = Global.Global.get_current_cycle_number()
-                add_to_derived_sentences(derived_sentence, all_derived_sentences, j2, j1)
+                # derived_sentence = Inference.ConditionalSyllogisticRules.ConditionalJudgmentDeduction(j2, j1)  # S-->P
+                # #if j2.term.copula == Copula.PredictiveImplication: derived_sentence.stamp.occurrence_time = Global.Global.get_current_cycle_number()
+                # add_to_derived_sentences(derived_sentence, all_derived_sentences, j2, j1)
                 return all_derived_sentences
 
     if isinstance(j2.term, Compound):
@@ -91,15 +95,18 @@ def do_semantic_inference_two_judgment(j1_task: Task, j2: Sentence) -> [Task]:
                 and not j1.term.copula.is_first_order():
             if j1.term.copula == Copula.Implication \
                     or j1.term.copula == Copula.PredictiveImplication:
-                derived_sentence = Inference.ConditionalSyllogisticRules.ConditionalJudgmentDeduction(j1, j2)  # S-->P
-                #if j1.term.copula == Copula.PredictiveImplication: derived_sentence.stamp.occurrence_time = Global.Global.get_current_cycle_number()
-                add_to_derived_sentences(derived_sentence, all_derived_sentences, j1, j2)
+                # derived_sentence = Inference.ConditionalSyllogisticRules.ConditionalJudgmentDeduction(j1, j2)  # S-->P
+                # #if j1.term.copula == Copula.PredictiveImplication: derived_sentence.stamp.occurrence_time = Global.Global.get_current_cycle_number()
+                # add_to_derived_sentences(derived_sentence, all_derived_sentences, j1, j2)
                 return all_derived_sentences
 
     swapped = False
 
     if isinstance(j1.term, Statement) and isinstance(j2.term,Statement) and \
             j1.term.copula.is_first_order() == j2.term.copula.is_first_order():
+        """
+            Both sentences are first-order or higher-order
+        """
         j1_subject_term = j1.term.get_subject_term()
         j2_subject_term = j2.term.get_subject_term()
         j1_predicate_term = j1.term.get_predicate_term()
@@ -146,13 +153,13 @@ def do_semantic_inference_two_judgment(j1_task: Task, j2: Sentence) -> [Task]:
                 # Deduction
                 """
 
-                derived_sentence = Inference.SyllogisticRules.deduction(j1, j2)  # S-->P
+                derived_sentence = Inference.SyllogisticRules.deduction(j1, j2, *budget_args)  # S-->P
                 add_to_derived_sentences(derived_sentence, all_derived_sentences, j1, j2)
 
                 """
                 # Swapped Exemplification
                 """
-                derived_sentence = Inference.SyllogisticRules.exemplification(j2, j1)  # P-->S
+                derived_sentence = Inference.SyllogisticRules.exemplification(j2, j1, *budget_args)  # P-->S
                 add_to_derived_sentences(derived_sentence, all_derived_sentences, j1, j2)
 
             elif j1.term.get_subject_term() == j2.term.get_subject_term():
@@ -164,43 +171,43 @@ def do_semantic_inference_two_judgment(j1_task: Task, j2: Sentence) -> [Task]:
                 """
                 # Induction
                 """
-                derived_sentence = Inference.SyllogisticRules.induction(j1, j2)  # S-->P
+                derived_sentence = Inference.SyllogisticRules.induction(j1, j2, *budget_args)  # S-->P
                 add_to_derived_sentences(derived_sentence, all_derived_sentences, j1, j2)
 
                 """
                 # Swapped Induction
                 """
-                derived_sentence = Inference.SyllogisticRules.induction(j2, j1)  # P-->S
+                derived_sentence = Inference.SyllogisticRules.induction(j2, j1, *budget_args)  # P-->S
                 add_to_derived_sentences(derived_sentence, all_derived_sentences, j1, j2)
 
                 """
                 # Comparison
                 """
-                derived_sentence = Inference.SyllogisticRules.comparison(j1, j2)  # S<->P
+                derived_sentence = Inference.SyllogisticRules.comparison(j1, j2, *budget_args)  # S<->P
                 add_to_derived_sentences(derived_sentence, all_derived_sentences, j1, j2)
 
                 """
                 # Intensional Intersection or Disjunction
                 """
-                derived_sentence = Inference.CompositionalRules.intersection_extension(j1,j2)  # M --> (S | P)
+                derived_sentence = Inference.CompositionalRules.intersection_extension(j1,j2, *budget_args)  # M --> (S | P)
                 add_to_derived_sentences(derived_sentence, all_derived_sentences, j1, j2)
 
                 """
                 # Extensional Intersection or Conjunction
                 """
-                derived_sentence = Inference.CompositionalRules.intersection_extension(j1,j2)  # M --> (S & P)
+                derived_sentence = Inference.CompositionalRules.intersection_extension(j1,j2, *budget_args)  # M --> (S & P)
                 add_to_derived_sentences(derived_sentence, all_derived_sentences, j1, j2)
 
                 """
                 # Extensional Difference
                 """
-                derived_sentence = Inference.CompositionalRules.difference_extension(j1, j2)  # M --> (S - P)
+                derived_sentence = Inference.CompositionalRules.difference_extension(j1, j2, *budget_args)  # M --> (S - P)
                 add_to_derived_sentences(derived_sentence, all_derived_sentences, j1, j2)
 
                 """
                 # Swapped Extensional Difference
                 """
-                derived_sentence = Inference.CompositionalRules.difference_extension(j2, j1)  # M --> (P - S)
+                derived_sentence = Inference.CompositionalRules.difference_extension(j2, j1, *budget_args)  # M --> (P - S)
                 add_to_derived_sentences(derived_sentence, all_derived_sentences, j1, j2)
             elif j1.term.get_predicate_term() == j2.term.get_predicate_term():
                 """
@@ -211,13 +218,13 @@ def do_semantic_inference_two_judgment(j1_task: Task, j2: Sentence) -> [Task]:
                 """
                 # Abduction
                 """
-                derived_sentence = Inference.SyllogisticRules.abduction(j1, j2)  # S-->P or S==>P
+                derived_sentence = Inference.SyllogisticRules.abduction(j1, j2, *budget_args)  # S-->P or S==>P
                 add_to_derived_sentences(derived_sentence, all_derived_sentences, j1, j2)
 
                 """
                 # Swapped Abduction
                 """
-                derived_sentence = Inference.SyllogisticRules.abduction(j2, j1)  # P-->S or P==>S
+                derived_sentence = Inference.SyllogisticRules.abduction(j2, j1, *budget_args)  # P-->S or P==>S
                 add_to_derived_sentences(derived_sentence, all_derived_sentences, j1, j2)
 
                 if not j1_copula.is_first_order():
@@ -238,40 +245,38 @@ def do_semantic_inference_two_judgment(j1_task: Task, j2: Sentence) -> [Task]:
                                other statement's subject by 1 term
                             """
                             if len(j1_subject_statement_terms) > len(j2_subject_statement_terms):
-                                derived_sentence = Inference.ConditionalSyllogisticRules.ConditionalConjunctionalAbduction(j1,
-                                                                                                                   j2)  # S
+                                # derived_sentence = Inference.ConditionalSyllogisticRules.ConditionalConjunctionalAbduction(j1,j2)  # S
                             else:
-                                derived_sentence = Inference.ConditionalSyllogisticRules.ConditionalConjunctionalAbduction(j2,
-                                                                                                                   j1)  # S
+                                # derived_sentence = Inference.ConditionalSyllogisticRules.ConditionalConjunctionalAbduction(j2,j1)  # S
                             add_to_derived_sentences(derived_sentence, all_derived_sentences, j1, j2)
 
                 """
                 # Intensional Intersection Disjunction
                 """
-                derived_sentence = Inference.CompositionalRules.intersection_intension(j1,j2)  # (P | S) --> M
+                derived_sentence = Inference.CompositionalRules.intersection_intension(j1,j2,*budget_args)  # (P | S) --> M
                 add_to_derived_sentences(derived_sentence, all_derived_sentences, j1, j2)
 
                 """
                 # Extensional Intersection Conjunction
                 """
-                derived_sentence = Inference.CompositionalRules.intersection_extension(j1,j2)  # (P & S) --> M
+                derived_sentence = Inference.CompositionalRules.intersection_extension(j1,j2,*budget_args)  # (P & S) --> M
                 add_to_derived_sentences(derived_sentence, all_derived_sentences, j1, j2)
 
                 """
                 # Intensional Difference
                 """
-                derived_sentence = Inference.CompositionalRules.difference_intension(j1, j2)  # (P ~ S) --> M
+                derived_sentence = Inference.CompositionalRules.difference_intension(j1, j2,*budget_args)  # (P ~ S) --> M
                 add_to_derived_sentences(derived_sentence, all_derived_sentences, j1, j2)
 
                 """
                 # Swapped Intensional Difference
                 """
-                derived_sentence = Inference.CompositionalRules.difference_intension(j2, j1)  # (S ~ P) --> M
+                derived_sentence = Inference.CompositionalRules.difference_intension(j2, j1,*budget_args)  # (S ~ P) --> M
                 add_to_derived_sentences(derived_sentence, all_derived_sentences, j1, j2)
                 """
                 # Comparison
                 """
-                derived_sentence = Inference.SyllogisticRules.comparison(j1, j2)  # S<->P or S<=>P
+                derived_sentence = Inference.SyllogisticRules.comparison(j1, j2,*budget_args)  # S<->P or S<=>P
                 add_to_derived_sentences(derived_sentence, all_derived_sentences, j1, j2)
         elif not j1.term.copula.is_symmetric() and j2.term.copula.is_symmetric():
             """
@@ -279,16 +284,16 @@ def do_semantic_inference_two_judgment(j1_task: Task, j2: Sentence) -> [Task]:
             # j2 = S<->M or M<->S
             # Analogy
             """
-            derived_sentence = Inference.SyllogisticRules.analogy(j1, j2)  # S-->P or P-->S
-            add_to_derived_sentences(derived_sentence, all_derived_sentences, j1, j2)
+            derived_sentence = Inference.SyllogisticRules.analogy(j1, j2,*budget_args)  # S-->P or P-->S
+            add_to_derived_sentences(derived_sentence, all_derived_sentences, j1, j2,)
         elif j1.term.copula.is_symmetric() and not j2.term.copula.is_symmetric():
             """
             # j1 = M<->S or S<->M
             # j2 = P-->M or M-->P
             # Swapped Analogy
             """
-            derived_sentence = Inference.SyllogisticRules.Analogy(j2, j1)  # S-->P or P-->S
-            add_to_derived_sentences(derived_sentence, all_derived_sentences, j1, j2)
+            derived_sentence = Inference.SyllogisticRules.analogy(j2, j1,*budget_args)  # S-->P or P-->S
+            add_to_derived_sentences(derived_sentence, all_derived_sentences, j1, j2,)
         elif j1.term.copula.is_symmetric() and j2.term.copula.is_symmetric():
             """
             # j1 = M<->P or P<->M
@@ -437,23 +442,23 @@ def do_semantic_inference_goal_judgment(j1: Sentence, j2: Sentence) -> [
         if not j2_statement.copula.is_symmetric():
             if j2_statement.get_predicate_term() == j1_statement:
                 # j1 = P!, j2 = S=>P!
-                derived_sentence = Inference.ConditionalSyllogisticRules.ConditionalGoalDeduction(j1, j2)  #:- S! i.e. (P ==> D)
-                add_to_derived_sentences(derived_sentence, all_derived_sentences, j1, j2)
+                # derived_sentence = Inference.ConditionalSyllogisticRules.ConditionalGoalDeduction(j1, j2)  #:- S! i.e. (P ==> D)
+                # add_to_derived_sentences(derived_sentence, all_derived_sentences, j1, j2)
             elif j2_statement.get_subject_term() == j1_statement:
                 # j1 = S!, j2 = (S=>P).
-                derived_sentence = Inference.ConditionalSyllogisticRules.ConditionalGoalInduction(j1, j2)  #:- P! i.e. (P ==> D)
-                add_to_derived_sentences(derived_sentence, all_derived_sentences, j1, j2)
+                # derived_sentence = Inference.ConditionalSyllogisticRules.ConditionalGoalInduction(j1, j2)  #:- P! i.e. (P ==> D)
+                # add_to_derived_sentences(derived_sentence, all_derived_sentences, j1, j2)
     elif j2_statement.copula.is_first_order():
         if j1_statement.connector.is_conjunction():
             # j1 = (C &/ S)!, j2 = C. )
-            derived_sentence = Inference.ConditionalSyllogisticRules.SimplifyConjunctiveGoal(j1, j2)  # S!
-            add_to_derived_sentences(derived_sentence, all_derived_sentences, j1, j2)
+            # derived_sentence = Inference.ConditionalSyllogisticRules.SimplifyConjunctiveGoal(j1, j2)  # S!
+            # add_to_derived_sentences(derived_sentence, all_derived_sentences, j1, j2)
         elif j1_statement.connector == Connector.Negation:
             # j1 = (--,G)!, j2 = C. )
             if j1_statement.subterms[0].connector.is_conjunction():
                 # j1 = (--,(A &/ B))!, j2 = A. )
-                derived_sentence = Inference.ConditionalSyllogisticRules.SimplifyNegatedConjunctiveGoal(j1, j2)  # B!
-                add_to_derived_sentences(derived_sentence, all_derived_sentences, j1, j2)
+                # derived_sentence = Inference.ConditionalSyllogisticRules.SimplifyNegatedConjunctiveGoal(j1, j2)  # B!
+                # add_to_derived_sentences(derived_sentence, all_derived_sentences, j1, j2)
 
     else:
         assert False, "ERROR"
@@ -472,11 +477,11 @@ def do_semantic_inference_goal_judgment(j1: Sentence, j2: Sentence) -> [
 def do_temporal_inference_two_premise(A: Sentence, B: Sentence) -> [Task]:
     derived_sentences = []
 
-    derived_sentence = Inference.TemporalRules.TemporalIntersection(A, B)  # A &/ B or  A &/ B or B &/ A
-    add_to_derived_sentences(derived_sentence, derived_sentences, A, B)
-
-    derived_sentence = Inference.TemporalRules.TemporalInduction(A, B)  # A =|> B or A =/> B or B =/> A
-    add_to_derived_sentences(derived_sentence, derived_sentences, A, B)
+    # derived_sentence = Inference.TemporalRules.TemporalIntersection(A, B)  # A &/ B or  A &/ B or B &/ A
+    # add_to_derived_sentences(derived_sentence, derived_sentences, A, B)
+    #
+    # derived_sentence = Inference.TemporalRules.TemporalInduction(A, B)  # A =|> B or A =/> B or B =/> A
+    # add_to_derived_sentences(derived_sentence, derived_sentences, A, B)
 
     """
     ===============================================
