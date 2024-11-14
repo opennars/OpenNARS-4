@@ -238,8 +238,10 @@ def do_semantic_inference_two_judgment(j1_task: Task, j2: Sentence,
                             """
                             if len(j1_subject_statement_terms) > len(j2_subject_statement_terms):
                                 # derived_sentence = Inference.ConditionalSyllogisticRules.ConditionalConjunctionalAbduction(j1,j2)  # S
+                                pass
                             else:
                                 # derived_sentence = Inference.ConditionalSyllogisticRules.ConditionalConjunctionalAbduction(j2,j1)  # S
+                                pass
                             add_to_derived_sentences(derived_sentence, all_derived_sentences, j1, j2)
 
                 """
@@ -446,21 +448,26 @@ def do_semantic_inference_goal_judgment(j1: Sentence, j2: Sentence) -> [
                 # j1 = P!, j2 = S=>P!
                 # derived_sentence = Inference.ConditionalSyllogisticRules.ConditionalGoalDeduction(j1, j2)  #:- S! i.e. (P ==> D)
                 # add_to_derived_sentences(derived_sentence, all_derived_sentences, j1, j2)
+                pass
             elif j2_statement.subject == j1_statement:
                 # j1 = S!, j2 = (S=>P).
                 # derived_sentence = Inference.ConditionalSyllogisticRules.ConditionalGoalInduction(j1, j2)  #:- P! i.e. (P ==> D)
                 # add_to_derived_sentences(derived_sentence, all_derived_sentences, j1, j2)
+                pass
     elif j2_statement.copula.is_first_order():
         if j1_statement.connector.is_conjunction():
             # j1 = (C &/ S)!, j2 = C. )
             # derived_sentence = Inference.ConditionalSyllogisticRules.SimplifyConjunctiveGoal(j1, j2)  # S!
             # add_to_derived_sentences(derived_sentence, all_derived_sentences, j1, j2)
+            pass
+
         elif j1_statement.connector == Connector.Negation:
             # j1 = (--,G)!, j2 = C. )
             if j1_statement.subterms[0].connector.is_conjunction():
                 # j1 = (--,(A &/ B))!, j2 = A. )
                 # derived_sentence = Inference.ConditionalSyllogisticRules.SimplifyNegatedConjunctiveGoal(j1, j2)  # B!
                 # add_to_derived_sentences(derived_sentence, all_derived_sentences, j1, j2)
+                pass
 
     else:
         assert False, "ERROR"
