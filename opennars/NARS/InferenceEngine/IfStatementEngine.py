@@ -1,8 +1,3 @@
-"""
-    Author: Christian Hahm
-    Created: March 8, 2021
-    Purpose: Given premises, performs proper inference and returns the resultant sentences as Tasks.
-"""
 from opennars import NAL
 from opennars.NAL import Inference
 from opennars.NARS.DataStructures import Concept, TermLink
