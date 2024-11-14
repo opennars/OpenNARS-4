@@ -60,15 +60,7 @@ def do_semantic_inference_two_judgment(j1_task: Task, j2: Sentence,
 
     # same statement
     if j1_statement == j2_statement:
-        """
-        # Revision
-        # j1 = j2
-        """
-        if isinstance(j1, Question): return all_derived_sentences  # can't do revision with questions
-
-        derived_sentence = Inference.LocalRules.revision(j1_task, j2)  # S-->P
-        add_to_derived_sentences(derived_sentence, all_derived_sentences, j1, j2)
-        return all_derived_sentences
+        assert False,"Error: use Revision function"
 
     if j1.truth.f == 0 or j2.truth.f == 0:
         return []  # can't do inference with a negative premise
@@ -406,6 +398,16 @@ def do_semantic_inference_two_judgment(j1_task: Task, j2: Sentence,
 
     return all_derived_sentences
 
+def Revision(j1_task: Task, j2: Sentence, budget_tasklink: Budget = None, budget_termlink: Budget = None) -> Task:
+    """
+            # Revision
+            # j1 = j2
+            """
+    j1: Sentence = j1_task.sentence
+    assert not (isinstance(j1, Question) or isinstance(j2, Question)),"Can't do revision with Questions, they don't have a truth value"
+
+    derived_sentence = Inference.LocalRules.revision(j1_task, j2, budget_tasklink, budget_termlink)  # S-->P
+    return derived_sentence
 
 def do_semantic_inference_goal_judgment(j1: Sentence, j2: Sentence) -> [
     Task]:
