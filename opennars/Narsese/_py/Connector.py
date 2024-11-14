@@ -68,7 +68,15 @@ class Connector(IdEnum):
         elif self.is_double_only: return len_terms == 2
         elif self.is_multiple_only: return len_terms > 1
         else: return len_terms > 0
-    
+
+    @property
+    def is_conjunction(self):
+        return self in (
+            Connector.Conjunction,
+            Connector.SequentialEvents,
+            Connector.ParallelEvents
+        )
+
     # @property
     # def is_higher_order(self):
     #     return self in (

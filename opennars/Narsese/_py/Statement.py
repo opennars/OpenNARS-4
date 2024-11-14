@@ -212,3 +212,4 @@ class Statement(Term):
         clone.predicate = self.predicate.clone()
         
         return clone
+

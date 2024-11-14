@@ -30,6 +30,28 @@ class Copula(IdEnum):
             Copula.PredictiveEquivalence,
             Copula.ConcurrentEquivalence
         )
+
+    @property
+    def is_implication(self):
+        return self in (
+            Copula.Implication,
+            Copula.PredictiveImplication,
+            Copula.ConcurrentImplication,
+            Copula.RetrospectiveImplication,
+        )
+
+    @property
+    def is_symmetric(self):
+        return self in (
+            Copula.Similarity,
+            Copula.Equivalence,
+            Copula.PredictiveEquivalence,
+            Copula.ConcurrentEquivalence,
+        )
+
+    @property
+    def is_first_order(self):
+        return not self.is_higher_order
     
     @property
     def is_temporal(self):
