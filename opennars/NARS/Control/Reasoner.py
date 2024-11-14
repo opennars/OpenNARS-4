@@ -23,7 +23,7 @@ from loguru import logger
 from opennars.utils.Print import print_out, PrintType
 from opennars.NARS.Channels.ConsoleChannel import ConsoleChannel
 import threading
-
+from opennars.NARS.InferenceEngine.Interface import InferenceEngine
 
 class Reasoner:
 
@@ -33,7 +33,8 @@ class Reasoner:
 
         self.global_eval = GlobalEval()
 
-        self.inference = GeneralEngine(add_rules=nal_rules)
+        # self.inference = GeneralEngine(add_rules=nal_rules)
+        self.inference = InferenceEngine("IfStatementEngine")
         self.variable_inference = VariableEngine(add_rules=nal_rules)
         self.temporal_inference = TemporalEngine(
             add_rules=nal_rules)  # for temporal causal reasoning
