@@ -15,7 +15,7 @@ from opennars.Config import Enable
 
 from opennars.NAL.Functions.Tools import calculate_solution_quality, truth_to_quality
 
-def revision(task: Task, belief: Task, budget_tasklink: Budget=None, budget_termlink: Budget=None):
+def revision(task: Task, belief: Sentence, budget_tasklink: Budget=None, budget_termlink: Budget=None):
     '''
     S. %f1;c1%
     S. %f2;c2%
@@ -23,7 +23,7 @@ def revision(task: Task, belief: Task, budget_tasklink: Budget=None, budget_term
     S. %F_rev%
     '''
     premise1: Union[Judgement, Goal] = task.sentence
-    premise2: Union[Judgement, Goal] = belief.sentence
+    premise2: Union[Judgement, Goal] = belief
     truth1 = premise1.truth
     truth2 = premise2.truth
     if Enable.temporal_reasoning:

@@ -18,10 +18,10 @@ class AnticipationMC:
         self.solved = False
 
     def satisfied(self, buffer: InputBufferMC, event: Task):
-        revised_t = revision(self.t, event)  # revision if satisfied
+        revised_t = revision(self.t, event.sentence)  # revision if satisfied
 
         tmp_prediction = parser.parse(self.parent_prediction.sentence.word + "%1.0; 0.5%")  # one positive case
-        revised_prediction = revision(self.parent_prediction, tmp_prediction)
+        revised_prediction = revision(self.parent_prediction, tmp_prediction.sentence)
 
         buffer.update_prediction(revised_prediction)
 
@@ -29,5 +29,5 @@ class AnticipationMC:
 
     def unsatisfied(self, buffer: InputBufferMC):
         tmp_prediction = parser.parse(self.parent_prediction.sentence.word + "%0.0; 0.5%")
-        revised_prediction = revision(self.parent_prediction, tmp_prediction)
+        revised_prediction = revision(self.parent_prediction, tmp_prediction.sentence)
         buffer.update_prediction(revised_prediction)
