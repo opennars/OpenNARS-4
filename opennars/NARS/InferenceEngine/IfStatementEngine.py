@@ -55,11 +55,8 @@ def do_semantic_inference_two_judgment(j1_task: Task, j2: Sentence,
 
     all_derived_sentences = []
 
-    j1_statement = j1.term
-    j2_statement = j2.term
-
     # same statement
-    if j1_statement == j2_statement:
+    if j1.term == j2.term:
         assert False,"Error: use Revision function"
 
     if j1.truth.f == 0 or j2.truth.f == 0:
