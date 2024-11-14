@@ -159,3 +159,4 @@ class Statement(Term):
         
         
         return clone
+
