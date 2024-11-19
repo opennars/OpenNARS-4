@@ -5,7 +5,9 @@ It is transated into python.
 @author: Bowen Xu
 @date: Nov 11, 2024
 """
-from opennars.Narsese import Term, Statement, Sentence, Budget, Truth
+from opennars.NAL.Functions import Desire_weak, Desire_strong
+from opennars.NAL.InferenceEngine.ClassicalEngine.TemporalRules import analogy_order
+from opennars.Narsese import Term, Statement, Sentence, Budget, Truth, TemporalOrder
 from opennars.NAL.Functions.BudgetFunctions import *
 from opennars.NAL.Functions.TruthValueFunctions import *
 from opennars.NAL.Functions.StampFunctions import *
@@ -99,3 +101,44 @@ def abd_ind_com(task: Task, belief: Sentence, term1: Term, term2: Term, figure: 
     tasks_derived.append(util.double_premise_task(task, belief, statement1, truth1, budget1))
     tasks_derived.append(util.double_premise_task(task, belief, statement2, truth2, budget2))
     tasks_derived.append(util.double_premise_task(task, belief, statement3, truth3, budget3))
+
+
+def analogy(term1: Term, term2: Term, task: Task, belief: Sentence, figure: int,
+            budget_tasklink: Budget, budget_termlink: Budget = None):
+
+    if util.invalid_statement(term1, term2) or util.invalid_pair(str(term1), str(term2)):
+        return
+
+    order1 = task.term.temporal_order
+    order2 = belief.term.temporal_order
+    order = analogy_order(order1, order2, figure)
+
+    if order == TemporalOrder.INVALID:
+        return
+
+    truth = None
+    sentence = task.sentence
+    taskTerm = sentence.term
+    if sentence.is_question or sentence.is_quest:
+        if taskTerm.is_commutative:
+            if task.truth is None:
+                return
+            budget = Budget_backward_weak(task.truth, budget_tasklink, budget_termlink)
+        else:
+            if belief.truth is None:
+                return
+            budget = Budget_backward(belief.truth, budget_tasklink, budget_termlink)
+    else:
+        if sentence.is_goal:
+            if taskTerm.is_commutative:
+                truth = Desire_weak(task.truth, belief.truth)
+            else:
+                truth = Desire_strong(task.truth, belief.truth)
+        else:
+            truth = Truth_analogy(task.truth, belief.truth)
+
+        budget = Budget_forward(truth, budget_tasklink, budget_termlink)
+
+        content = util.make_statement(task.term, term1, term2)
+
+    return util.double_premise_task(task, belief, content, truth, budget)
