@@ -13,3 +13,7 @@ class TemporalOrder(Enum):
     CONCURRENT = 0
     BACKWARD = -1
     INVALID = -2
+
+    def __neg__(self):
+        return TemporalOrder(-self.value)
+

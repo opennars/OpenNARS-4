@@ -86,3 +86,11 @@ class Copula(IdEnum):
             return Copula.PredictiveImplication
         else:
             return self
+    
+    @property
+    def is_implication(self):
+        return self in (Copula.Implication, Copula.PredictiveImplication, Copula.ConcurrentImplication, Copula.RetrospectiveImplication)
+
+    @property
+    def is_equivalence(self):
+        return self in (Copula.Equivalence, Copula.PredictiveEquivalence, Copula.ConcurrentEquivalence)

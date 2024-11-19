@@ -76,7 +76,16 @@ class Connector(IdEnum):
             Connector.SequentialEvents,
             Connector.ParallelEvents
         )
-
+    
+    @property
+    def is_junction(self):
+        return self in (
+            Connector.Conjunction, 
+            Connector.Disjunction, 
+            Connector.ParallelEvents,
+            Connector.SequentialEvents
+        )
+    
     # @property
     # def is_higher_order(self):
     #     return self in (

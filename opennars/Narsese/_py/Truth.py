@@ -35,6 +35,9 @@ class Truth:
     
     def __repr__(self) -> str:
         return str(self)
+    
+    def clone(self) -> 'Truth':
+        return Truth(self.f, self.c, self.k)
 
 truth_analytic = Truth(Config.f, Config.c, Config.k)
     

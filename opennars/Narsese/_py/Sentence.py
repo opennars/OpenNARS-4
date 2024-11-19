@@ -69,6 +69,9 @@ class Stamp:
             elif self.evidential_base is None:
                 self.evidential_base = Base(())
         self.evidential_base.extend(base)
+    
+    def clone(self):
+        return Stamp(self.t_creation, self.t_occurrence, self.t_put, copy(self.evidential_base))
 
     def __str__(self):
         return f'{{{self.t_occurrence if self.t_occurrence is not None else "-"}: {", ".join(str(b) for b in self.evidential_base._set)}}}'
@@ -163,10 +166,25 @@ class Sentence:
     @property
     def is_external_event(self) -> bool: # TODO: ???
         return not self.is_eternal and self.stamp.is_external
+    
+    @property
+    def occurence_time(self):
+        return self.stamp.t_occurrence
 
+    @staticmethod
+    def make(self, term: Term, punct: Punctuation, stamp: Stamp, truth: Truth = None, normalize: bool=False) -> 'Sentence':
+        match punct:
+            case Punctuation.Judgement:
+                return Judgement(term, stamp, truth, normalize)
+            case Punctuation.Goal:
+                return Goal(term, stamp, truth, normalize)
+            case Punctuation.Question:
+                return Question(term, stamp, truth, normalize)
+            case Punctuation.Quest:
+                return Quest(term, stamp, truth, normalize)
 
 class Judgement(Sentence):
-    def __init__(self, term: Term, stamp: Stamp = None, truth: Truth = None) -> None:
+    def __init__(self, term: Term, stamp: Stamp = None, truth: Truth = None, normalize: bool=False) -> None:
         ''''''
         stamp = stamp if stamp is not None else Stamp(Global.time, None, None, None)
         Sentence.__init__(self, term, Punctuation.Judgement, stamp)
@@ -183,7 +201,7 @@ class Judgement(Sentence):
 class Goal(Sentence):
     best_solution: 'Judgement' = None
 
-    def __init__(self, term: Term, stamp: Stamp = None, desire: Truth = None) -> None:
+    def __init__(self, term: Term, stamp: Stamp = None, desire: Truth = None, normalize: bool=False) -> None:
         ''''''
         stamp = stamp if stamp is not None else Stamp(Global.time, None, None, None, None)
         Sentence.__init__(self, term, Punctuation.Goal, stamp)
@@ -199,7 +217,7 @@ class Goal(Sentence):
 class Question(Sentence):
     best_answer: 'Judgement' = None
 
-    def __init__(self, term: Term, stamp: Stamp = None, curiosiry: Truth = None) -> None:
+    def __init__(self, term: Term, stamp: Stamp = None, curiosiry: Truth = None, normalize: bool=False) -> None:
         ''''''
         stamp = stamp if stamp is not None else Stamp(Global.time, None, None, None, None)
         # stamp.set_eternal()
@@ -216,7 +234,7 @@ class Question(Sentence):
 
 class Quest(Sentence):
     best_answer: 'Goal' = None
-    def __init__(self, term: Term, stamp: Stamp = None, curiosiry: Truth = None) -> None:
+    def __init__(self, term: Term, stamp: Stamp = None, curiosiry: Truth = None, normalize: bool=False) -> None:
         ''''''
         stamp = stamp if stamp is not None else Stamp(Global.time, None, None, None, None)
         # stamp.set_eternal()

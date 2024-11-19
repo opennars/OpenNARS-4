@@ -8,11 +8,14 @@ from typing import List, Type
 # from .Compound import *f
 from ordered_set import OrderedSet
 from collections import Counter
+from .Tense import TemporalOrder
 
 class Statement(Term):
     type = TermType.STATEMENT
     
-    def __init__(self, subject: Term, copula: Copula, predicate: Term, is_input: bool=False, is_subterm=True) -> None:
+    temporal_order = TemporalOrder.NONE
+
+    def __init__(self, subject: Term, copula: Copula, predicate: Term) -> None:
         self._is_commutative = copula.is_commutative
         if self.is_commutative:
             subject, predicate = sorted((subject, predicate), key=hash)
@@ -27,6 +30,18 @@ class Statement(Term):
         self._is_higher_order = copula.is_higher_order
 
         self.is_operation = self.predicate.is_operation
+
+        match self.copula:
+            case Copula.PredictiveImplication:
+                self.temporal_order = TemporalOrder.FORWARD
+            case Copula.ConcurrentImplication:
+                self.temporal_order = TemporalOrder.CONCURRENT
+            case Copula.RetrospectiveImplication:
+                self.temporal_order = TemporalOrder.BACKWARD
+            case Copula.PredictiveEquivalence:
+                self.temporal_order = TemporalOrder.FORWARD
+            case Copula.ConcurrentEquivalence:
+                self.temporal_order = TemporalOrder.CONCURRENT
 
     def __getitem__(self, index: List[int]) -> Term:
         if isinstance(index, int): index = (index,)
@@ -50,6 +65,19 @@ class Statement(Term):
     @property
     def is_higher_order(self):
         return self._is_higher_order
+    
+    @property
+    def contained_temporal_relations(self) -> int:
+        if self._contained_temporal_relations == -1:
+            self._contained_temporal_relations = 0
+            
+            if (self.copula is Copula.Equivalence) or (self.copula is Copula.Implication):
+                if self.temporal_order in (TemporalOrder.FORWARD, TemporalOrder.CONCURRENT, TemporalOrder.BACKWARD)
+                    self._contained_temporal_relations = 1
+            
+            self._contained_temporal_relations += self.subject._contained_temporal_relations
+            self._contained_temporal_relations += self.predicate._contained_temporal_relations
+        return self._contained_temporal_relations
 
 
     def contains_component(self, t: Term) -> bool:
@@ -161,48 +189,64 @@ class Statement(Term):
     #     return f'<{word_subject+str(self.copula.value)+word_predicate}>'
 
     @classmethod
-    def Inheritance(cls, subject: Term, predicate: Term, is_input: bool=False, is_subterm=True):
-        return cls(subject, Copula.Inheritance, predicate, is_input, is_subterm)
+    def Inheritance(cls, subject: Term, predicate: Term):
+        return cls(subject, Copula.Inheritance, predicate)
     
     
     @classmethod
-    def Implication(cls, subject: Term, predicate: Term, is_input: bool=False, is_subterm=True):
-        return cls(subject, Copula.Implication, predicate, is_input, is_subterm)
+    def Implication(cls, subject: Term, predicate: Term, temporal_order: TemporalOrder=None):
+        if temporal_order is None or temporal_order is TemporalOrder.NONE:
+            return cls(subject, Copula.Implication, predicate)
+        elif temporal_order is TemporalOrder.FORWARD:
+            return cls(subject, Copula.PredictiveImplication, predicate)
+        elif temporal_order is TemporalOrder.CONCURRENT:
+            return cls(subject, Copula.ConcurrentImplication, predicate)
+        elif temporal_order is TemporalOrder.BACKWARD:
+            return cls(subject, Copula.RetrospectiveImplication, predicate)
+        else:
+            raise ValueError("Invalid temporal order")
 
 
     @classmethod
-    def Similarity(cls, subject: Term, predicate: Term, is_input: bool=False, is_subterm=True):
-        return cls(subject, Copula.Similarity, predicate, is_input, is_subterm)
+    def Similarity(cls, subject: Term, predicate: Term):
+        return cls(subject, Copula.Similarity, predicate)
 
     
     @classmethod
-    def Equivalence(cls, subject: Term, predicate: Term, is_input: bool=False, is_subterm=True):
-        return cls(subject, Copula.Equivalence, predicate, is_input, is_subterm)
+    def Equivalence(cls, subject: Term, predicate: Term, temporal_order: TemporalOrder=None):
+        if temporal_order is None or temporal_order is TemporalOrder.NONE:
+            return cls(subject, Copula.Equivalence, predicate)
+        elif temporal_order is TemporalOrder.FORWARD:
+            return cls(subject, Copula.PredictiveEquivalence, predicate)
+        elif temporal_order is TemporalOrder.CONCURRENT:
+            return cls(subject, Copula.ConcurrentEquivalence, predicate)
+        else:
+            raise ValueError("Invalid temporal order")
 
 
     @classmethod
-    def PredictiveImplication(cls, subject: Term, predicate: Term, is_input: bool=False, is_subterm=True):
-        return cls(subject, Copula.PredictiveImplication, predicate, is_input, is_subterm)
+    def PredictiveImplication(cls, subject: Term, predicate: Term):
+        return cls(subject, Copula.PredictiveImplication, predicate)
 
 
     @classmethod
-    def ConcurrentImplication(cls, subject: Term, predicate: Term, is_input: bool=False, is_subterm=True):
-        return cls(subject, Copula.ConcurrentImplication, predicate, is_input, is_subterm)
+    def ConcurrentImplication(cls, subject: Term, predicate: Term):
+        return cls(subject, Copula.ConcurrentImplication, predicate)
 
 
     @classmethod
-    def RetrospectiveImplication(cls, subject: Term, predicate: Term, is_input: bool=False, is_subterm=True):
-        return cls(subject, Copula.RetrospectiveImplication, predicate, is_input, is_subterm)
+    def RetrospectiveImplication(cls, subject: Term, predicate: Term):
+        return cls(subject, Copula.RetrospectiveImplication, predicate)
 
 
     @classmethod
-    def PredictiveEquivalence(cls, subject: Term, predicate: Term, is_input: bool=False, is_subterm=True):
-        return cls(subject, Copula.PredictiveEquivalence, predicate, is_input, is_subterm)
+    def PredictiveEquivalence(cls, subject: Term, predicate: Term):
+        return cls(subject, Copula.PredictiveEquivalence, predicate)
 
 
     @classmethod
-    def ConcurrentEquivalence(cls, subject: Term, predicate: Term, is_input: bool=False, is_subterm=True):
-        return cls(subject, Copula.ConcurrentEquivalence, predicate, is_input, is_subterm)
+    def ConcurrentEquivalence(cls, subject: Term, predicate: Term):
+        return cls(subject, Copula.ConcurrentEquivalence, predicate)
 
     def clone(self):
         if not self.has_var: return self

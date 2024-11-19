@@ -37,7 +37,7 @@ class Term:
     components: set['Term'] = None
 
     normalized: bool = True # used for variable normalization
-
+    _contained_temporal_relations: int = -1
     
     def __init__(self, word, do_hashing=False) -> None:
         self.word = word
@@ -95,6 +95,10 @@ class Term:
     @property
     def temporal_order(self):
         return TemporalOrder.NONE
+
+    @property
+    def contained_temporal_relations(self) -> int:
+        return 0
 
     def contains_term(self, term: 'Term') -> bool:
         return self == term
