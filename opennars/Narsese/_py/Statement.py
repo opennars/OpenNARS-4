@@ -72,7 +72,7 @@ class Statement(Term):
             self._contained_temporal_relations = 0
             
             if (self.copula is Copula.Equivalence) or (self.copula is Copula.Implication):
-                if self.temporal_order in (TemporalOrder.FORWARD, TemporalOrder.CONCURRENT, TemporalOrder.BACKWARD)
+                if self.temporal_order in (TemporalOrder.FORWARD, TemporalOrder.CONCURRENT, TemporalOrder.BACKWARD):
                     self._contained_temporal_relations = 1
             
             self._contained_temporal_relations += self.subject._contained_temporal_relations
